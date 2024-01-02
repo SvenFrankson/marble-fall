@@ -1,0 +1,38 @@
+html {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+    touch-action: none;
+}
+
+body {
+    background-color: black;
+}
+
+.debug-log {
+    position: relative;
+    color: red;
+    z-index: 1;
+	font-family: monospace;
+}
+
+#render-canvas.square {
+    width: min(90vw, 90vh);
+    height: min(90vw, 90vh);
+    position: fixed;
+    left: calc((100vw - min(90vw, 90vh)) * 0.5);
+    top: calc((100vh - min(90vw, 90vh)) * 0.5);
+    outline: none;
+    border: 1px solid white;
+}
+
+#render-canvas.full-screen {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    outline: none;
+    border: none;
+    z-index: 0;
+}
