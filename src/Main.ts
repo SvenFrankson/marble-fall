@@ -16,7 +16,7 @@ class Game {
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
     public scene: BABYLON.Scene;
-    public camera: BABYLON.Camera;
+    public camera: BABYLON.FreeCamera;
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
     
@@ -38,6 +38,9 @@ class Game {
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(- 1, 3, 2)).normalize(), this.scene);
 
         this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
+        this.camera.speed = 0.1;
+        this.camera.minZ = 0.01;
+        this.camera.maxZ = 10;
         (this.camera as BABYLON.FreeCamera).rotation.x = 1;
         (this.camera as BABYLON.FreeCamera).rotation.y = 1;
         let savedPos = window.localStorage.getItem("saved-pos");
@@ -57,7 +60,12 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
-        let cube = BABYLON.MeshBuilder.CreateBox("cube", {});
+        let ball = new Ball();
+        ball.instantiate();
+
+        let track = new Track();
+        track.position.copyFromFloats(-0.05, -0.05, 0);
+        track.instantiate();
 	}
 
     public download(filename: string, text: string) {
