@@ -29,17 +29,31 @@ class Ball extends BABYLON.Mesh {
         dt = dt / 8;
 
         let weight = new BABYLON.Vector3(0, -9 * m, 0);
-        let a = weight.scaleInPlace(1 / m);
-        
-        this.velocity.addInPlace(a.scale(dt));
+        let reactions = BABYLON.Vector3.Zero();
+        let reactionsCount = 0;
 
-        this.position.addInPlace(this.velocity.scale(dt));
+        let forcedDisplacement = BABYLON.Vector3.Zero();
 
         Wire.Instances.forEach(wire => {
             let col = Mummu.SphereCapsuleIntersection(this.position, this.radius, wire.path[0], wire.path[1], wire.size * 0.5);
             if (col.hit) {
-                this.position.addInPlace(col.normal.scale(col.depth));
+                // Move away from collision
+                forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                // Cancel depth component of speed
+                this.velocity.addInPlace(col.normal.scale(- BABYLON.Vector3.Dot(this.velocity, col.normal)));
+                // Add ground reaction
+                let reaction = col.normal.scale(- BABYLON.Vector3.Dot(weight, col.normal));
+                reactions.addInPlace(reaction);
+                reactionsCount++;
             }
         });
+        this.position.addInPlace(forcedDisplacement);
+        if (reactionsCount > 0) {
+            reactions.scale(1 / reactionsCount);
+        }
+
+        let acceleration = weight.add(reactions).scaleInPlace(1 / m);
+        this.velocity.addInPlace(acceleration.scale(dt));
+        this.position.addInPlace(this.velocity.scale(dt));
     }
 }

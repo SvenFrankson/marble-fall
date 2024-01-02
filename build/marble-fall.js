@@ -8,15 +8,29 @@ class Ball extends BABYLON.Mesh {
             let dt = 0.015;
             dt = dt / 8;
             let weight = new BABYLON.Vector3(0, -9 * m, 0);
-            let a = weight.scaleInPlace(1 / m);
-            this.velocity.addInPlace(a.scale(dt));
-            this.position.addInPlace(this.velocity.scale(dt));
+            let reactions = BABYLON.Vector3.Zero();
+            let reactionsCount = 0;
+            let forcedDisplacement = BABYLON.Vector3.Zero();
             Wire.Instances.forEach(wire => {
                 let col = Mummu.SphereCapsuleIntersection(this.position, this.radius, wire.path[0], wire.path[1], wire.size * 0.5);
                 if (col.hit) {
-                    this.position.addInPlace(col.normal.scale(col.depth));
+                    // Move away from collision
+                    forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                    // Cancel depth component of speed
+                    this.velocity.addInPlace(col.normal.scale(-BABYLON.Vector3.Dot(this.velocity, col.normal)));
+                    // Add ground reaction
+                    let reaction = col.normal.scale(-BABYLON.Vector3.Dot(weight, col.normal));
+                    reactions.addInPlace(reaction);
+                    reactionsCount++;
                 }
             });
+            this.position.addInPlace(forcedDisplacement);
+            if (reactionsCount > 0) {
+                reactions.scale(1 / reactionsCount);
+            }
+            let acceleration = weight.add(reactions).scaleInPlace(1 / m);
+            this.velocity.addInPlace(acceleration.scale(dt));
+            this.position.addInPlace(this.velocity.scale(dt));
         };
     }
     get radius() {
@@ -57,7 +71,7 @@ class Game {
         this.scene.clearColor = BABYLON.Color4.FromHexString("#66b0ff");
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(-1, 3, 2)).normalize(), this.scene);
         this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
-        this.camera.speed = 0.1;
+        this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.rotation.x = 1;
@@ -79,6 +93,7 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
         let ball = new Ball();
+        ball.position.z = 0;
         ball.instantiate();
         let track = new Track();
         track.position.copyFromFloats(-0.05, -0.05, 0);
