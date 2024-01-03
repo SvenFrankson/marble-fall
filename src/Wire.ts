@@ -11,7 +11,6 @@ class Wire extends BABYLON.Mesh {
         this.parent = this.track;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         Wire.Instances.push(this);
-
     }
 
     public recomputeAbsolutePath(): void {

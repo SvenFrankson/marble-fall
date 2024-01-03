@@ -67,59 +67,59 @@ class Game {
         ball.position.z = 0;
         ball.instantiate();
 
-        let track = new Track();
+        let track = new Ramp();
         track.position.copyFromFloats(-0.05, -0.05, 0);
         track.instantiate();
 
-        let track2 = new Track();
+        let track2 = new Turn();
         track2.position.copyFromFloats(0.15, -0.07, 0);
-        track2.instantiate(true);
+        track2.instantiate();
 
-        let track3 = new Track();
+        let track3 = new Ramp();
         track3.position.copyFromFloats(0.15, -0.07, -0.1);
         track3.rotation.y = Math.PI;
         track3.instantiate();
 
-        let track4 = new Track();
+        let track4 = new Turn();
         track4.position.copyFromFloats(-0.05, -0.09, -0.1);
         track4.rotation.y = Math.PI;
-        track4.instantiate(true);
+        track4.instantiate();
 
-        let track5 = new Track();
+        let track5 = new Ramp();
         track5.position.copyFromFloats(-0.05, -0.09, 0);
         track5.instantiate();
 
-        let track6 = new Track();
+        let track6 = new Turn();
         track6.position.copyFromFloats(0.15, -0.11, 0);
-        track6.instantiate(true);
+        track6.instantiate();
 
-        let track7 = new Track();
+        let track7 = new Ramp();
         track7.position.copyFromFloats(0.15, -0.11, -0.1);
         track7.rotation.y = Math.PI;
         track7.instantiate();
 
-        let track8 = new Track();
+        let track8 = new Turn();
         track8.position.copyFromFloats(-0.05, -0.13, -0.1);
         track8.rotation.y = Math.PI;
-        track8.instantiate(true);
+        track8.instantiate();
 
-        let track9 = new Track();
+        let track9 = new Ramp();
         track9.position.copyFromFloats(-0.05, -0.13, 0);
         track9.instantiate();
 
-        let track10 = new Track();
+        let track10 = new Turn();
         track10.position.copyFromFloats(0.15, -0.15, 0);
-        track10.instantiate(true);
+        track10.instantiate();
 
-        let track11 = new Track();
+        let track11 = new Ramp();
         track11.position.copyFromFloats(0.15, -0.15, -0.1);
         track11.rotation.y = Math.PI;
         track11.instantiate();
 
-        let track12 = new Track();
+        let track12 = new Turn();
         track12.position.copyFromFloats(-0.05, -0.17, -0.1);
         track12.rotation.y = Math.PI;
-        track12.instantiate(true);
+        track12.instantiate();
 
         requestAnimationFrame(() => {
             track.recomputeAbsolutePath();

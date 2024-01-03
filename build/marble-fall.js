@@ -114,48 +114,48 @@ class Game {
         let ball = new Ball(this);
         ball.position.z = 0;
         ball.instantiate();
-        let track = new Track();
+        let track = new Ramp();
         track.position.copyFromFloats(-0.05, -0.05, 0);
         track.instantiate();
-        let track2 = new Track();
+        let track2 = new Turn();
         track2.position.copyFromFloats(0.15, -0.07, 0);
-        track2.instantiate(true);
-        let track3 = new Track();
+        track2.instantiate();
+        let track3 = new Ramp();
         track3.position.copyFromFloats(0.15, -0.07, -0.1);
         track3.rotation.y = Math.PI;
         track3.instantiate();
-        let track4 = new Track();
+        let track4 = new Turn();
         track4.position.copyFromFloats(-0.05, -0.09, -0.1);
         track4.rotation.y = Math.PI;
-        track4.instantiate(true);
-        let track5 = new Track();
+        track4.instantiate();
+        let track5 = new Ramp();
         track5.position.copyFromFloats(-0.05, -0.09, 0);
         track5.instantiate();
-        let track6 = new Track();
+        let track6 = new Turn();
         track6.position.copyFromFloats(0.15, -0.11, 0);
-        track6.instantiate(true);
-        let track7 = new Track();
+        track6.instantiate();
+        let track7 = new Ramp();
         track7.position.copyFromFloats(0.15, -0.11, -0.1);
         track7.rotation.y = Math.PI;
         track7.instantiate();
-        let track8 = new Track();
+        let track8 = new Turn();
         track8.position.copyFromFloats(-0.05, -0.13, -0.1);
         track8.rotation.y = Math.PI;
-        track8.instantiate(true);
-        let track9 = new Track();
+        track8.instantiate();
+        let track9 = new Ramp();
         track9.position.copyFromFloats(-0.05, -0.13, 0);
         track9.instantiate();
-        let track10 = new Track();
+        let track10 = new Turn();
         track10.position.copyFromFloats(0.15, -0.15, 0);
-        track10.instantiate(true);
-        let track11 = new Track();
+        track10.instantiate();
+        let track11 = new Ramp();
         track11.position.copyFromFloats(0.15, -0.15, -0.1);
         track11.rotation.y = Math.PI;
         track11.instantiate();
-        let track12 = new Track();
+        let track12 = new Turn();
         track12.position.copyFromFloats(-0.05, -0.17, -0.1);
         track12.rotation.y = Math.PI;
-        track12.instantiate(true);
+        track12.instantiate();
         requestAnimationFrame(() => {
             track.recomputeAbsolutePath();
             track2.recomputeAbsolutePath();
@@ -206,40 +206,83 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+class TrackPoint {
+    constructor(point, up = BABYLON.Vector3.Up()) {
+        this.point = point;
+        this.up = up;
+    }
+}
 class Track extends BABYLON.Mesh {
     constructor() {
         super("track");
+        this.wireSize = 0.002;
+        this.wireGauge = 0.012;
+    }
+    generateWires() {
+        console.log("X");
         this.wires = [
             new Wire(this),
             new Wire(this)
         ];
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
+            let p = this.trackPoints[i].point;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+            let dir = pNext.subtract(pPrev).normalize();
+            let up = this.trackPoints[i].up;
+            let rotation = BABYLON.Quaternion.Identity();
+            Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
+            let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
+            this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.wireGauge * 0.5, 0, 0), matrix);
+            this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
+        }
+        console.log([...this.wires[0].path]);
+        for (let n = 0; n < 3; n++) {
+            Mummu.CatmullRomPathInPlace(this.wires[0].path);
+            Mummu.CatmullRomPathInPlace(this.wires[1].path);
+        }
     }
     recomputeAbsolutePath() {
         this.wires.forEach(wire => {
             wire.recomputeAbsolutePath();
         });
     }
-    async instantiate(test = false) {
-        if (test) {
-            this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.05, 0, 0.006), new BABYLON.Vector3(0.106, 0, -0.05), new BABYLON.Vector3(0.05, 0, -0.106), new BABYLON.Vector3(0, 0, -0.106)];
-            Mummu.CatmullRomPathInPlace(this.wires[0].path);
-            Mummu.CatmullRomPathInPlace(this.wires[0].path);
-            Mummu.CatmullRomPathInPlace(this.wires[0].path);
-            Mummu.CatmullRomPathInPlace(this.wires[0].path);
-            //Mummu.CatmullRomPathInPlace(this.wires[0].path);
-            this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.05, -0.0025, -0.006), new BABYLON.Vector3(0.094, -0.005, -0.05), new BABYLON.Vector3(0.05, -0.0025, -0.094), new BABYLON.Vector3(0, 0, -0.094)];
-            Mummu.CatmullRomPathInPlace(this.wires[1].path);
-            Mummu.CatmullRomPathInPlace(this.wires[1].path);
-            Mummu.CatmullRomPathInPlace(this.wires[1].path);
-            Mummu.CatmullRomPathInPlace(this.wires[1].path);
-            //Mummu.CatmullRomPathInPlace(this.wires[1].path);
-        }
-        else {
-            this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.2, -0.02, 0.006)];
-            this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.2, -0.02, -0.006)];
-        }
+    async instantiate() {
         await this.wires[0].instantiate();
         await this.wires[1].instantiate();
+    }
+}
+class Ramp extends Track {
+    constructor() {
+        super();
+        this.trackPoints = [
+            new TrackPoint(new BABYLON.Vector3(0, 0, 0), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(0.2, -0.02, 0), BABYLON.Vector3.Up())
+        ];
+        this.generateWires();
+    }
+}
+class Turn extends Track {
+    constructor() {
+        super();
+        let nMin = BABYLON.Vector3.Up();
+        let nMax = (new BABYLON.Vector3(-4, 1, 0)).normalize();
+        this.trackPoints = [
+            new TrackPoint(new BABYLON.Vector3(0, 0, 0), BABYLON.Vector3.Lerp(nMin, nMax, 0)),
+            new TrackPoint(new BABYLON.Vector3(0.05, -0.005, 0), BABYLON.Vector3.Lerp(nMin, nMax, 0.5)),
+            new TrackPoint(new BABYLON.Vector3(0.085, 0, -0.015), BABYLON.Vector3.Lerp(nMin, nMax, 0.75)),
+            new TrackPoint(new BABYLON.Vector3(0.1, 0, -0.05), BABYLON.Vector3.Lerp(nMin, nMax, 1)),
+            new TrackPoint(new BABYLON.Vector3(0.085, 0, -0.085), BABYLON.Vector3.Lerp(nMin, nMax, 0.5)),
+            new TrackPoint(new BABYLON.Vector3(0.05, 0.005, -0.1), BABYLON.Vector3.Lerp(nMin, nMax, 0.75)),
+            new TrackPoint(new BABYLON.Vector3(0, 0, -0.1), BABYLON.Vector3.Lerp(nMin, nMax, 0))
+        ];
+        this.generateWires();
     }
 }
 class Wire extends BABYLON.Mesh {
