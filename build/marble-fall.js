@@ -7,7 +7,9 @@ class Ball extends BABYLON.Mesh {
         this._timer = 0;
         this.update = () => {
             let gameDt = this.getScene().deltaTime / 1000;
-            this._timer += gameDt * this.game.timeFactor;
+            if (isFinite(gameDt)) {
+                this._timer += gameDt * this.game.timeFactor;
+            }
             while (this._timer > 0) {
                 let m = this.mass;
                 let dt = this.game.physicDT;
@@ -76,8 +78,8 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 0.3;
-        this.physicDT = 0.001;
+        this.timeFactor = 0.5;
+        this.physicDT = 0.0005;
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
@@ -112,50 +114,74 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
         let ball = new Ball(this);
-        ball.position.z = 0;
+        ball.position.x = -0.05;
+        ball.position.y = 0.1;
         ball.instantiate();
-        let track = new Ramp();
-        track.position.copyFromFloats(-0.05, -0.05, 0);
+        let track = new FlatLoop(this, 0, 0);
         track.instantiate();
-        let track2 = new Turn();
-        track2.position.copyFromFloats(0.15, -0.07, 0);
+        let track2 = new FlatLoop(this, 1, 0);
         track2.instantiate();
-        let track3 = new Ramp();
+        let track3 = new FlatLoop(this, 2, 0);
+        track3.instantiate();
+        let track4 = new FlatLoop(this, 3, 0);
+        track4.instantiate();
+        let track5 = new FlatLoop(this, 4, 0);
+        track5.instantiate();
+        let track6 = new FlatLoop(this, 5, 0);
+        track6.instantiate();
+        let track7 = new FlatLoop(this, 6, 0);
+        track7.instantiate();
+        let track8 = new FlatLoop(this, 7, 0);
+        track8.instantiate();
+        let track9 = new FlatLoop(this, 8, 0);
+        track9.instantiate();
+        /*
+        let track3 = new Ramp(this);
         track3.position.copyFromFloats(0.15, -0.07, -0.1);
         track3.rotation.y = Math.PI;
         track3.instantiate();
-        let track4 = new Turn();
+
+        let track4 = new Turn(this);
         track4.position.copyFromFloats(-0.05, -0.09, -0.1);
         track4.rotation.y = Math.PI;
         track4.instantiate();
-        let track5 = new Ramp();
+
+        let track5 = new Ramp(this);
         track5.position.copyFromFloats(-0.05, -0.09, 0);
         track5.instantiate();
-        let track6 = new Turn();
+
+        let track6 = new Turn(this);
         track6.position.copyFromFloats(0.15, -0.11, 0);
         track6.instantiate();
-        let track7 = new Ramp();
+
+        let track7 = new Ramp(this);
         track7.position.copyFromFloats(0.15, -0.11, -0.1);
         track7.rotation.y = Math.PI;
         track7.instantiate();
-        let track8 = new Turn();
+
+        let track8 = new Turn(this);
         track8.position.copyFromFloats(-0.05, -0.13, -0.1);
         track8.rotation.y = Math.PI;
         track8.instantiate();
-        let track9 = new Ramp();
+
+        let track9 = new Ramp(this);
         track9.position.copyFromFloats(-0.05, -0.13, 0);
         track9.instantiate();
-        let track10 = new Turn();
+
+        let track10 = new Turn(this);
         track10.position.copyFromFloats(0.15, -0.15, 0);
         track10.instantiate();
-        let track11 = new Ramp();
+
+        let track11 = new Ramp(this);
         track11.position.copyFromFloats(0.15, -0.15, -0.1);
         track11.rotation.y = Math.PI;
         track11.instantiate();
-        let track12 = new Turn();
+
+        let track12 = new Turn(this);
         track12.position.copyFromFloats(-0.05, -0.17, -0.1);
         track12.rotation.y = Math.PI;
         track12.instantiate();
+        */
         requestAnimationFrame(() => {
             track.recomputeAbsolutePath();
             track2.recomputeAbsolutePath();
@@ -166,9 +192,11 @@ class Game {
             track7.recomputeAbsolutePath();
             track8.recomputeAbsolutePath();
             track9.recomputeAbsolutePath();
+            /*
             track10.recomputeAbsolutePath();
             track11.recomputeAbsolutePath();
             track12.recomputeAbsolutePath();
+            */
         });
     }
     download(filename, text) {
@@ -206,6 +234,9 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+var baseRadius = 0.075;
+var xDist = 0.75 * baseRadius;
+var yDist = Math.sqrt(3) / 2 * 0.5 * baseRadius;
 class TrackPoint {
     constructor(point, up = BABYLON.Vector3.Up()) {
         this.point = point;
@@ -213,10 +244,15 @@ class TrackPoint {
     }
 }
 class Track extends BABYLON.Mesh {
-    constructor() {
-        super("track");
+    constructor(game, i, j) {
+        super("track", game.scene);
+        this.game = game;
+        this.i = i;
+        this.j = j;
         this.wireSize = 0.002;
         this.wireGauge = 0.012;
+        this.position.x = i * 2 * xDist;
+        this.position.y = -i * 2 * yDist;
     }
     generateWires() {
         console.log("X");
@@ -242,7 +278,6 @@ class Track extends BABYLON.Mesh {
             this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.wireGauge * 0.5, 0, 0), matrix);
             this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
         }
-        console.log([...this.wires[0].path]);
         for (let n = 0; n < 3; n++) {
             Mummu.CatmullRomPathInPlace(this.wires[0].path);
             Mummu.CatmullRomPathInPlace(this.wires[1].path);
@@ -254,23 +289,66 @@ class Track extends BABYLON.Mesh {
         });
     }
     async instantiate() {
+        let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
+        if (data[0]) {
+            let baseMesh = new BABYLON.Mesh("base-mesh");
+            baseMesh.parent = this;
+            baseMesh.position.z += 0.02;
+            data[0].applyToMesh(baseMesh);
+        }
         await this.wires[0].instantiate();
         await this.wires[1].instantiate();
     }
 }
 class Ramp extends Track {
-    constructor() {
-        super();
+    constructor(game, i, j) {
+        super(game, i, j);
         this.trackPoints = [
-            new TrackPoint(new BABYLON.Vector3(0, 0, 0), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(0.2, -0.02, 0), BABYLON.Vector3.Up())
+            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
         ];
         this.generateWires();
     }
 }
+class FlatLoop extends Track {
+    constructor(game, i, j) {
+        super(game, i, j);
+        this.trackPoints = [
+            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(-0.3 * xDist, 0.8 * yDist, -0.05 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(0.5 * xDist, 0.6 * yDist, -0.3 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(0.8 * xDist, 0.4 * yDist, -1 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(0.5 * xDist, 0.2 * yDist, -1.6 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(0, 0, -1.8 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(-0.5 * xDist, -0.2 * yDist, -1.6 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(-0.8 * xDist, -0.4 * yDist, -1 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(-0.5 * xDist, -0.6 * yDist, -0.3 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(0.3 * xDist, -0.8 * yDist, -0.05 * xDist), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
+        ];
+        let minA = 0;
+        let maxA = -Math.PI / 3;
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
+            let p = this.trackPoints[i].point;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+            let dir = pNext.subtract(pPrev).normalize();
+            let f = Math.cos((i / (this.trackPoints.length - 1) - 0.5) * Math.PI);
+            let up = Mummu.Rotate(BABYLON.Vector3.Up(), dir, (1 - f) * minA + f * maxA);
+            this.trackPoints[i].up = up;
+        }
+        this.generateWires();
+    }
+}
 class Turn extends Track {
-    constructor() {
-        super();
+    constructor(game, i, j) {
+        super(game, i, j);
         let nMin = BABYLON.Vector3.Up();
         let nMax = (new BABYLON.Vector3(-4, 1, 0)).normalize();
         this.trackPoints = [
