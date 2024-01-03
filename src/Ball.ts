@@ -10,6 +10,9 @@ class Ball extends BABYLON.Mesh {
     public get mass(): number {
         return 7850 * this.volume;
     }
+    public get sectionArea(): number {
+        return Math.PI * this.radius * this.radius;
+    }
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     constructor(public game: Game) {
@@ -41,7 +44,7 @@ class Ball extends BABYLON.Mesh {
             let canceledSpeed = BABYLON.Vector3.Zero();
     
             Wire.Instances.forEach(wire => {
-                let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.path, wire.size * 0.5);
+                let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
                 if (col.hit) {
                     let colDig = col.normal.scale(-1);
                     // Move away from collision
