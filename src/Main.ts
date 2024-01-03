@@ -25,6 +25,7 @@ class Game {
 
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
+    public insertHandleMaterial: BABYLON.StandardMaterial;
     
     constructor(canvasElement: string) {
         Game.Instance = this;
@@ -52,6 +53,11 @@ class Game {
         this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
         this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
         this.handleMaterialActive.alpha = 0.5;
+        
+        this.insertHandleMaterial = new BABYLON.StandardMaterial("handle-material");
+        this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
+        this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.insertHandleMaterial.alpha = 0.5;
 
         this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
         this.camera.speed = 0.05;

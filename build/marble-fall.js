@@ -106,6 +106,10 @@ class Game {
         this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
         this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
         this.handleMaterialActive.alpha = 0.5;
+        this.insertHandleMaterial = new BABYLON.StandardMaterial("handle-material");
+        this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
+        this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.insertHandleMaterial.alpha = 0.5;
         this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
         this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
@@ -267,12 +271,13 @@ class Track extends BABYLON.Mesh {
         this.j = j;
         this.wireSize = 0.002;
         this.wireGauge = 0.012;
-        this.handles = [];
+        this.trackPointhandles = [];
+        this.insertTrackPointHandle = [];
         this.offset = BABYLON.Vector3.Zero();
         this.onPointerEvent = (eventData, eventState) => {
             if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                 let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
-                    return mesh instanceof BABYLON.Mesh && this.handles.indexOf(mesh) != -1;
+                    return mesh instanceof BABYLON.Mesh && this.trackPointhandles.indexOf(mesh) != -1;
                 });
                 this.selectedHandle = pick.pickedMesh;
                 if (this.selectedHandle) {
@@ -296,15 +301,33 @@ class Track extends BABYLON.Mesh {
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this.selectedHandle) {
-                    let trackPoint = this.trackPoints[this.handles.indexOf(this.selectedHandle)];
+                    let trackPoint = this.trackPoints[this.trackPointhandles.indexOf(this.selectedHandle)];
                     if (trackPoint) {
                         trackPoint.point.copyFrom(this.selectedHandle.position);
                         this.generateWires();
+                        this.autoTrackNormals();
                         this.recomputeAbsolutePath();
                         this.wires[0].instantiate();
                         this.wires[1].instantiate();
                     }
                     this.selectedHandle.material = this.game.handleMaterial;
+                }
+                else {
+                    let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
+                        return mesh instanceof BABYLON.Mesh && this.insertTrackPointHandle.indexOf(mesh) != -1;
+                    });
+                    let insertTrackPoint = pick.pickedMesh;
+                    if (insertTrackPoint) {
+                        let trackPoint = new TrackPoint(insertTrackPoint.position.clone());
+                        let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
+                        this.trackPoints.splice(index, 0, trackPoint);
+                        this.generateWires();
+                        this.autoTrackNormals();
+                        this.recomputeAbsolutePath();
+                        this.wires[0].instantiate();
+                        this.wires[1].instantiate();
+                        this.showHandles();
+                    }
                 }
                 this.selectedHandle = undefined;
                 this.getScene().activeCamera.attachControl();
@@ -318,17 +341,31 @@ class Track extends BABYLON.Mesh {
         ];
     }
     showHandles() {
-        if (this.handles) {
-            this.handles.forEach(h => {
+        if (this.trackPointhandles) {
+            this.trackPointhandles.forEach(h => {
                 h.dispose();
             });
         }
+        this.trackPointhandles = [];
+        if (this.insertTrackPointHandle) {
+            this.insertTrackPointHandle.forEach(h => {
+                h.dispose();
+            });
+        }
+        this.insertTrackPointHandle = [];
         for (let i = 0; i < this.trackPoints.length; i++) {
             let handle = BABYLON.MeshBuilder.CreateBox("handle-" + i, { size: 1.5 * this.wireGauge });
             handle.material = this.game.handleMaterial;
             handle.position.copyFrom(this.trackPoints[i].point);
             handle.parent = this;
-            this.handles.push(handle);
+            this.trackPointhandles.push(handle);
+            if (i < this.trackPoints.length - 1) {
+                let insertHandle = BABYLON.MeshBuilder.CreateSphere("insert-handle-" + i, { diameter: 0.5 * this.wireGauge });
+                insertHandle.material = this.game.insertHandleMaterial;
+                insertHandle.position.copyFrom(this.trackPoints[i].point).addInPlace(this.trackPoints[i + 1].point).scaleInPlace(0.5);
+                insertHandle.parent = this;
+                this.insertTrackPointHandle.push(insertHandle);
+            }
         }
         this.getScene().onPointerObservable.add(this.onPointerEvent);
     }
@@ -377,6 +414,26 @@ class Track extends BABYLON.Mesh {
         await this.wires[0].instantiate();
         await this.wires[1].instantiate();
     }
+    autoTrackNormals() {
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
+            let p = this.trackPoints[i].point;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+            let dirPrev = p.subtract(pPrev).normalize();
+            let dirNext = pNext.subtract(p).normalize();
+            let angle = Mummu.AngleFromToAround(dirPrev, dirNext, BABYLON.Axis.Y);
+            let dir = pNext.subtract(pPrev).normalize();
+            let f = Math.cos((i / (this.trackPoints.length - 1) - 0.5) * Math.PI);
+            let up = Mummu.Rotate(BABYLON.Vector3.Up(), dir, -angle);
+            this.trackPoints[i].up = up;
+        }
+    }
 }
 class Ramp extends Track {
     constructor(game, i, j) {
@@ -385,6 +442,7 @@ class Ramp extends Track {
             new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
             new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
         ];
+        this.autoTrackNormals();
         this.generateWires();
     }
 }
@@ -404,40 +462,7 @@ class FlatLoop extends Track {
             new TrackPoint(new BABYLON.Vector3(0.3 * xDist, -0.8 * yDist, -0.05 * xDist), BABYLON.Vector3.Up()),
             new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
         ];
-        let minA = 0;
-        let maxA = -Math.PI / 3;
-        for (let i = 0; i < this.trackPoints.length; i++) {
-            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
-            let p = this.trackPoints[i].point;
-            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
-            if (!pPrev) {
-                pPrev = p.subtract(pNext.subtract(p));
-            }
-            if (!pNext) {
-                pNext = p.add(p.subtract(pPrev));
-            }
-            let dir = pNext.subtract(pPrev).normalize();
-            let f = Math.cos((i / (this.trackPoints.length - 1) - 0.5) * Math.PI);
-            let up = Mummu.Rotate(BABYLON.Vector3.Up(), dir, (1 - f) * minA + f * maxA);
-            this.trackPoints[i].up = up;
-        }
-        this.generateWires();
-    }
-}
-class Turn extends Track {
-    constructor(game, i, j) {
-        super(game, i, j);
-        let nMin = BABYLON.Vector3.Up();
-        let nMax = (new BABYLON.Vector3(-4, 1, 0)).normalize();
-        this.trackPoints = [
-            new TrackPoint(new BABYLON.Vector3(0, 0, 0), BABYLON.Vector3.Lerp(nMin, nMax, 0)),
-            new TrackPoint(new BABYLON.Vector3(0.05, -0.005, 0), BABYLON.Vector3.Lerp(nMin, nMax, 0.5)),
-            new TrackPoint(new BABYLON.Vector3(0.085, 0, -0.015), BABYLON.Vector3.Lerp(nMin, nMax, 0.75)),
-            new TrackPoint(new BABYLON.Vector3(0.1, 0, -0.05), BABYLON.Vector3.Lerp(nMin, nMax, 1)),
-            new TrackPoint(new BABYLON.Vector3(0.085, 0, -0.085), BABYLON.Vector3.Lerp(nMin, nMax, 0.5)),
-            new TrackPoint(new BABYLON.Vector3(0.05, 0.005, -0.1), BABYLON.Vector3.Lerp(nMin, nMax, 0.75)),
-            new TrackPoint(new BABYLON.Vector3(0, 0, -0.1), BABYLON.Vector3.Lerp(nMin, nMax, 0))
-        ];
+        this.autoTrackNormals();
         this.generateWires();
     }
 }
