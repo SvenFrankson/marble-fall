@@ -21,14 +21,34 @@ class Track extends BABYLON.Mesh {
         super("track", game.scene);
         this.position.x = i * 2 * xDist;
         this.position.y = - i * 2 * yDist;
-    }
 
-    public generateWires(): void {
-        console.log("X");
         this.wires = [
             new Wire(this),
             new Wire(this)
         ];
+    }
+    
+    public handles: BABYLON.Mesh[] = [];
+
+    public showHandles(): void {
+        if (this.handles) {
+            this.handles.forEach(h => {
+                h.dispose();
+            })
+        }
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            let handle = BABYLON.MeshBuilder.CreateBox("handle-" + i, { size: 1.5 * this.wireGauge });
+            handle.material = this.game.handleMaterial;
+            handle.position.copyFrom(this.trackPoints[i].point);
+            handle.parent = this;
+            this.handles.push(handle);
+        }
+        this.getScene().onPointerObservable.add(this.onPointerEvent);
+    }
+
+    public generateWires(): void {
+        this.wires[0].path = [];
+        this.wires[1].path = [];
 
         for (let i = 0; i < this.trackPoints.length; i++) {
             let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
@@ -66,6 +86,10 @@ class Track extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
+        this.pointerPlane = BABYLON.MeshBuilder.CreateGround("pointer-plane", { width: 10, height: 10 });
+        this.pointerPlane.visibility = 0;
+        this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
+
         let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
         if (data[0]) {
             let baseMesh = new BABYLON.Mesh("base-mesh");
@@ -75,6 +99,65 @@ class Track extends BABYLON.Mesh {
         }
         await this.wires[0].instantiate();
         await this.wires[1].instantiate();
+    }
+
+    public pointerPlane: BABYLON.Mesh;
+    public selectedHandle: BABYLON.Mesh;
+    public offset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
+    public onPointerEvent = (eventData: BABYLON.PointerInfo, eventState: BABYLON.EventState) => {
+        if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+            let pick = this.getScene().pick(
+                this.getScene().pointerX,
+                this.getScene().pointerY,
+                (mesh) => {
+                    return mesh instanceof BABYLON.Mesh && this.handles.indexOf(mesh) != - 1;
+                }
+            )
+
+            this.selectedHandle = pick.pickedMesh as BABYLON.Mesh;
+
+            if (this.selectedHandle) {
+                this.offset.copyFrom(this.selectedHandle.position).subtractInPlace(pick.pickedPoint);
+                this.selectedHandle.material = this.game.handleMaterialActive;
+
+                let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedHandle.position);
+                Mummu.QuaternionFromYZAxisToRef(pick.getNormal(), d, this.pointerPlane.rotationQuaternion);
+
+                this.pointerPlane.position.copyFrom(pick.pickedPoint);
+                this.getScene().activeCamera.detachControl();
+            }
+        }
+        else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+            if (this.selectedHandle) {
+                let pick = this.getScene().pick(
+                    this.getScene().pointerX,
+                    this.getScene().pointerY,
+                    (mesh) => {
+                        return mesh === this.pointerPlane;
+                    }
+                )
+        
+                if (pick && pick.hit) {
+                    this.selectedHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
+                }
+            }
+        }
+        else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
+            if (this.selectedHandle) {
+                let trackPoint = this.trackPoints[this.handles.indexOf(this.selectedHandle)];
+                if (trackPoint) {
+                    trackPoint.point.copyFrom(this.selectedHandle.position);
+                    this.generateWires();
+                    this.recomputeAbsolutePath();
+                    this.wires[0].instantiate();
+                    this.wires[1].instantiate();
+                }
+                this.selectedHandle.material = this.game.handleMaterial;
+            }
+            this.selectedHandle = undefined;
+            this.getScene().activeCamera.attachControl();
+        }
     }
 }
 

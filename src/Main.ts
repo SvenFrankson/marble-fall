@@ -20,8 +20,11 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 0.5;
+    public timeFactor: number = 0.1;
     public physicDT: number = 0.0005;
+
+    public handleMaterial: BABYLON.StandardMaterial;
+    public handleMaterialActive: BABYLON.StandardMaterial;
     
     constructor(canvasElement: string) {
         Game.Instance = this;
@@ -39,6 +42,16 @@ class Game {
         this.scene.clearColor = BABYLON.Color4.FromHexString("#66b0ff");
 
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(- 1, 3, 2)).normalize(), this.scene);
+
+        this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
+        this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterial.alpha = 0.5;
+        
+        this.handleMaterialActive = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
+        this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterialActive.alpha = 0.5;
 
         this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
         this.camera.speed = 0.05;
@@ -145,6 +158,7 @@ class Game {
 
         requestAnimationFrame(() => {
             track.recomputeAbsolutePath();
+            track.showHandles();
             track2.recomputeAbsolutePath();
             track3.recomputeAbsolutePath();
             track4.recomputeAbsolutePath();

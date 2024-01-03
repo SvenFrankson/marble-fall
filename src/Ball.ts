@@ -26,6 +26,12 @@ class Ball extends BABYLON.Mesh {
         this.getScene().onBeforeRenderObservable.add(this.update);
     }
 
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
+        
+        this.getScene().onBeforeRenderObservable.removeCallback(this.update);
+    }
+
     private _timer: number = 0;
     public update = () => {
         let gameDt = this.getScene().deltaTime / 1000;
@@ -73,6 +79,10 @@ class Ball extends BABYLON.Mesh {
             let acceleration = weight.add(reactions).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
+        }
+
+        if (this.position.y < - 10000) {
+            this.dispose();
         }
     }
 }

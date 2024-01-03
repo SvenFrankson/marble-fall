@@ -47,6 +47,9 @@ class Ball extends BABYLON.Mesh {
                 this.velocity.addInPlace(acceleration.scale(dt));
                 this.position.addInPlace(this.velocity.scale(dt));
             }
+            if (this.position.y < -10000) {
+                this.dispose();
+            }
         };
     }
     get radius() {
@@ -66,6 +69,10 @@ class Ball extends BABYLON.Mesh {
         data.applyToMesh(this);
         this.getScene().onBeforeRenderObservable.add(this.update);
     }
+    dispose(doNotRecurse, disposeMaterialAndTextures) {
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
+        this.getScene().onBeforeRenderObservable.removeCallback(this.update);
+    }
 }
 /// <reference path="../lib/babylon.d.ts"/>
 /// <reference path="../../nabu/nabu.d.ts"/>
@@ -78,7 +85,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 0.5;
+        this.timeFactor = 0.1;
         this.physicDT = 0.0005;
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
@@ -91,6 +98,14 @@ class Game {
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.scene.clearColor = BABYLON.Color4.FromHexString("#66b0ff");
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(-1, 3, 2)).normalize(), this.scene);
+        this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
+        this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterial.alpha = 0.5;
+        this.handleMaterialActive = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
+        this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterialActive.alpha = 0.5;
         this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
         this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
@@ -184,6 +199,7 @@ class Game {
         */
         requestAnimationFrame(() => {
             track.recomputeAbsolutePath();
+            track.showHandles();
             track2.recomputeAbsolutePath();
             track3.recomputeAbsolutePath();
             track4.recomputeAbsolutePath();
@@ -251,15 +267,74 @@ class Track extends BABYLON.Mesh {
         this.j = j;
         this.wireSize = 0.002;
         this.wireGauge = 0.012;
+        this.handles = [];
+        this.offset = BABYLON.Vector3.Zero();
+        this.onPointerEvent = (eventData, eventState) => {
+            if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
+                    return mesh instanceof BABYLON.Mesh && this.handles.indexOf(mesh) != -1;
+                });
+                this.selectedHandle = pick.pickedMesh;
+                if (this.selectedHandle) {
+                    this.offset.copyFrom(this.selectedHandle.position).subtractInPlace(pick.pickedPoint);
+                    this.selectedHandle.material = this.game.handleMaterialActive;
+                    let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedHandle.position);
+                    Mummu.QuaternionFromYZAxisToRef(pick.getNormal(), d, this.pointerPlane.rotationQuaternion);
+                    this.pointerPlane.position.copyFrom(pick.pickedPoint);
+                    this.getScene().activeCamera.detachControl();
+                }
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                if (this.selectedHandle) {
+                    let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
+                        return mesh === this.pointerPlane;
+                    });
+                    if (pick && pick.hit) {
+                        this.selectedHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
+                    }
+                }
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
+                if (this.selectedHandle) {
+                    let trackPoint = this.trackPoints[this.handles.indexOf(this.selectedHandle)];
+                    if (trackPoint) {
+                        trackPoint.point.copyFrom(this.selectedHandle.position);
+                        this.generateWires();
+                        this.recomputeAbsolutePath();
+                        this.wires[0].instantiate();
+                        this.wires[1].instantiate();
+                    }
+                    this.selectedHandle.material = this.game.handleMaterial;
+                }
+                this.selectedHandle = undefined;
+                this.getScene().activeCamera.attachControl();
+            }
+        };
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist;
-    }
-    generateWires() {
-        console.log("X");
         this.wires = [
             new Wire(this),
             new Wire(this)
         ];
+    }
+    showHandles() {
+        if (this.handles) {
+            this.handles.forEach(h => {
+                h.dispose();
+            });
+        }
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            let handle = BABYLON.MeshBuilder.CreateBox("handle-" + i, { size: 1.5 * this.wireGauge });
+            handle.material = this.game.handleMaterial;
+            handle.position.copyFrom(this.trackPoints[i].point);
+            handle.parent = this;
+            this.handles.push(handle);
+        }
+        this.getScene().onPointerObservable.add(this.onPointerEvent);
+    }
+    generateWires() {
+        this.wires[0].path = [];
+        this.wires[1].path = [];
         for (let i = 0; i < this.trackPoints.length; i++) {
             let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
             let p = this.trackPoints[i].point;
@@ -289,6 +364,9 @@ class Track extends BABYLON.Mesh {
         });
     }
     async instantiate() {
+        this.pointerPlane = BABYLON.MeshBuilder.CreateGround("pointer-plane", { width: 10, height: 10 });
+        this.pointerPlane.visibility = 0;
+        this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
         if (data[0]) {
             let baseMesh = new BABYLON.Mesh("base-mesh");
