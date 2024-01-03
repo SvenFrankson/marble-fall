@@ -19,6 +19,9 @@ class Game {
     public camera: BABYLON.FreeCamera;
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
+
+    public timeFactor: number = 0.2;
+    public physicDT: number = 0.001;
     
     constructor(canvasElement: string) {
         Game.Instance = this;
@@ -60,7 +63,7 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
-        let ball = new Ball();
+        let ball = new Ball(this);
         ball.position.z = 0;
         ball.instantiate();
 
