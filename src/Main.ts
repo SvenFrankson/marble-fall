@@ -67,6 +67,11 @@ class Game {
         let track = new Track();
         track.position.copyFromFloats(-0.05, -0.05, 0);
         track.instantiate();
+
+        let track2 = new Track();
+        track2.position.copyFromFloats(0.15, -0.08, 0.005);
+        track2.rotation.y = 0.2;
+        track2.instantiate();
 	}
 
     public download(filename: string, text: string) {

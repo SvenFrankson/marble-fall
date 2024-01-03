@@ -13,12 +13,12 @@ class Track extends BABYLON.Mesh {
 
     public async instantiate(): Promise<void> {
 
-        this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.005), new BABYLON.Vector3(0.5, -0.05, 0.005)];
-        this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.005), new BABYLON.Vector3(0.5, -0.05, -0.005)];
+        this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.2, -0.02, 0.006)];
+        this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.2, -0.02, -0.006)];
 
         this.wires.forEach(wire => {
             wire.path.forEach(point => {
-                point.addInPlace(this.position);
+                BABYLON.Vector3.TransformCoordinatesToRef(point, this.getWorldMatrix(), point);
             })
         });
 

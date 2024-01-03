@@ -106,6 +106,10 @@ class Game {
         let track = new Track();
         track.position.copyFromFloats(-0.05, -0.05, 0);
         track.instantiate();
+        let track2 = new Track();
+        track2.position.copyFromFloats(0.15, -0.08, 0.005);
+        track2.rotation.y = 0.2;
+        track2.instantiate();
     }
     download(filename, text) {
         var e = document.createElement('a');
@@ -151,11 +155,11 @@ class Track extends BABYLON.Mesh {
         ];
     }
     async instantiate() {
-        this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.005), new BABYLON.Vector3(0.5, -0.05, 0.005)];
-        this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.005), new BABYLON.Vector3(0.5, -0.05, -0.005)];
+        this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.2, -0.02, 0.006)];
+        this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.2, -0.02, -0.006)];
         this.wires.forEach(wire => {
             wire.path.forEach(point => {
-                point.addInPlace(this.position);
+                BABYLON.Vector3.TransformCoordinatesToRef(point, this.getWorldMatrix(), point);
             });
         });
         await this.wires[0].instantiate();
