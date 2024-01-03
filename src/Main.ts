@@ -20,7 +20,7 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 0.2;
+    public timeFactor: number = 1;
     public physicDT: number = 0.001;
     
     constructor(canvasElement: string) {
@@ -72,9 +72,14 @@ class Game {
         track.instantiate();
 
         let track2 = new Track();
-        track2.position.copyFromFloats(0.15, -0.08, 0.005);
-        track2.rotation.y = 0.2;
-        track2.instantiate();
+        track2.position.copyFromFloats(0.15, -0.07, 0);
+        //track2.rotation.y = 0.2;
+        track2.instantiate(true);
+
+        let track3 = new Track();
+        track3.position.copyFromFloats(0.15, -0.07, -0.1);
+        track3.rotation.y = Math.PI;
+        track3.instantiate();
 	}
 
     public download(filename: string, text: string) {

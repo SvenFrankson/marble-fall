@@ -41,7 +41,7 @@ class Ball extends BABYLON.Mesh {
             let canceledSpeed = BABYLON.Vector3.Zero();
     
             Wire.Instances.forEach(wire => {
-                let col = Mummu.SphereCapsuleIntersection(this.position, this.radius, wire.path[0], wire.path[1], wire.size * 0.5);
+                let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.path, wire.size * 0.5);
                 if (col.hit) {
                     let colDig = col.normal.scale(-1);
                     // Move away from collision

@@ -13,12 +13,17 @@ class Wire extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-        let dir = this.path[1].subtract(this.path[0]).normalize();
-        let l = BABYLON.Vector3.Distance(this.path[0], this.path[1]);
-        let data = BABYLON.CreateCylinderVertexData({ diameter: this.size, height: l });
-        data.applyToMesh(this);
+        while (this.getChildren().length > 0) {
+            this.getChildren()[0].dispose();
+        }
 
-        this.position.copyFrom(this.path[0]).addInPlace(this.path[1]).scaleInPlace(0.5);
-        Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, this.rotationQuaternion);
+        for (let i = 0; i < this.path.length - 1; i++) {
+            let dir = this.path[i].subtract(this.path[i + 1]).normalize();
+            let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
+            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.5, height: l });    
+            wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
+            wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
+            Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
+        }        
     }
 }

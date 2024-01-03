@@ -18,7 +18,7 @@ class Ball extends BABYLON.Mesh {
                 let forcedDisplacement = BABYLON.Vector3.Zero();
                 let canceledSpeed = BABYLON.Vector3.Zero();
                 Wire.Instances.forEach(wire => {
-                    let col = Mummu.SphereCapsuleIntersection(this.position, this.radius, wire.path[0], wire.path[1], wire.size * 0.5);
+                    let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.path, wire.size * 0.5);
                     if (col.hit) {
                         let colDig = col.normal.scale(-1);
                         // Move away from collision
@@ -73,7 +73,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 0.2;
+        this.timeFactor = 1;
         this.physicDT = 0.001;
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
@@ -115,9 +115,13 @@ class Game {
         track.position.copyFromFloats(-0.05, -0.05, 0);
         track.instantiate();
         let track2 = new Track();
-        track2.position.copyFromFloats(0.15, -0.08, 0.005);
-        track2.rotation.y = 0.2;
-        track2.instantiate();
+        track2.position.copyFromFloats(0.15, -0.07, 0);
+        //track2.rotation.y = 0.2;
+        track2.instantiate(true);
+        let track3 = new Track();
+        track3.position.copyFromFloats(0.15, -0.07, -0.1);
+        track3.rotation.y = Math.PI;
+        track3.instantiate();
     }
     download(filename, text) {
         var e = document.createElement('a');
@@ -162,9 +166,25 @@ class Track extends BABYLON.Mesh {
             new Wire()
         ];
     }
-    async instantiate() {
-        this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.2, -0.02, 0.006)];
-        this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.2, -0.02, -0.006)];
+    async instantiate(test = false) {
+        if (test) {
+            this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.05, 0, 0.006), new BABYLON.Vector3(0.106, 0, -0.05), new BABYLON.Vector3(0.05, 0, -0.106), new BABYLON.Vector3(0, 0, -0.106)];
+            Mummu.CatmullRomPathInPlace(this.wires[0].path);
+            Mummu.CatmullRomPathInPlace(this.wires[0].path);
+            Mummu.CatmullRomPathInPlace(this.wires[0].path);
+            Mummu.CatmullRomPathInPlace(this.wires[0].path);
+            //Mummu.CatmullRomPathInPlace(this.wires[0].path);
+            this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.05, -0.001, -0.006), new BABYLON.Vector3(0.094, -0.002, -0.05), new BABYLON.Vector3(0.05, -0.001, -0.094), new BABYLON.Vector3(0, 0, -0.094)];
+            Mummu.CatmullRomPathInPlace(this.wires[1].path);
+            Mummu.CatmullRomPathInPlace(this.wires[1].path);
+            Mummu.CatmullRomPathInPlace(this.wires[1].path);
+            Mummu.CatmullRomPathInPlace(this.wires[1].path);
+            //Mummu.CatmullRomPathInPlace(this.wires[1].path);
+        }
+        else {
+            this.wires[0].path = [new BABYLON.Vector3(0, 0, 0.006), new BABYLON.Vector3(0.2, -0.02, 0.006)];
+            this.wires[1].path = [new BABYLON.Vector3(0, 0, -0.006), new BABYLON.Vector3(0.2, -0.02, -0.006)];
+        }
         this.wires.forEach(wire => {
             wire.path.forEach(point => {
                 BABYLON.Vector3.TransformCoordinatesToRef(point, this.getWorldMatrix(), point);
@@ -183,12 +203,17 @@ class Wire extends BABYLON.Mesh {
         Wire.Instances.push(this);
     }
     async instantiate() {
-        let dir = this.path[1].subtract(this.path[0]).normalize();
-        let l = BABYLON.Vector3.Distance(this.path[0], this.path[1]);
-        let data = BABYLON.CreateCylinderVertexData({ diameter: this.size, height: l });
-        data.applyToMesh(this);
-        this.position.copyFrom(this.path[0]).addInPlace(this.path[1]).scaleInPlace(0.5);
-        Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, this.rotationQuaternion);
+        while (this.getChildren().length > 0) {
+            this.getChildren()[0].dispose();
+        }
+        for (let i = 0; i < this.path.length - 1; i++) {
+            let dir = this.path[i].subtract(this.path[i + 1]).normalize();
+            let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
+            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.5, height: l });
+            wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
+            wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
+            Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
+        }
     }
 }
 Wire.Instances = new Nabu.UniqueList();
