@@ -33,24 +33,32 @@ class Ball extends BABYLON.Mesh {
         let reactionsCount = 0;
 
         let forcedDisplacement = BABYLON.Vector3.Zero();
+        let canceledSpeed = BABYLON.Vector3.Zero();
 
         Wire.Instances.forEach(wire => {
             let col = Mummu.SphereCapsuleIntersection(this.position, this.radius, wire.path[0], wire.path[1], wire.size * 0.5);
             if (col.hit) {
+                let colDig = col.normal.scale(-1);
                 // Move away from collision
                 forcedDisplacement.addInPlace(col.normal.scale(col.depth));
                 // Cancel depth component of speed
-                this.velocity.addInPlace(col.normal.scale(- BABYLON.Vector3.Dot(this.velocity, col.normal)));
+                let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
+                if (depthSpeed > 0) {
+                    canceledSpeed.addInPlace(colDig.scale(depthSpeed));
+                }
                 // Add ground reaction
                 let reaction = col.normal.scale(- BABYLON.Vector3.Dot(weight, col.normal));
                 reactions.addInPlace(reaction);
                 reactionsCount++;
             }
         });
-        this.position.addInPlace(forcedDisplacement);
         if (reactionsCount > 0) {
-            reactions.scale(1 / reactionsCount);
+            reactions.scaleInPlace(1 / reactionsCount);
+            canceledSpeed.scaleInPlace(1 / reactionsCount);
+            forcedDisplacement.scaleInPlace(1 / reactionsCount);
         }
+        this.velocity.subtractInPlace(canceledSpeed);
+        this.position.addInPlace(forcedDisplacement);
 
         let acceleration = weight.add(reactions).scaleInPlace(1 / m);
         this.velocity.addInPlace(acceleration.scale(dt));
