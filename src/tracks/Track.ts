@@ -45,11 +45,30 @@ class Track extends BABYLON.Mesh {
         }
         this.insertTrackPointHandle = [];
         for (let i = 0; i < this.trackPoints.length; i++) {
-            let handle = BABYLON.MeshBuilder.CreateBox("handle-" + i, { size: 1.5 * this.wireGauge });
+            let handle = BABYLON.MeshBuilder.CreateBox("handle-" + i, { size: 1.2 * this.wireGauge });
             handle.material = this.game.handleMaterial;
             handle.position.copyFrom(this.trackPoints[i].point);
+            handle.rotationQuaternion = BABYLON.Quaternion.Identity();
             handle.parent = this;
             this.trackPointhandles.push(handle);
+
+            let handleUp = BABYLON.MeshBuilder.CreateBox("handle-up-" + i, { width: 0.001, depth: 0.001, height: 0.05 });
+            handleUp.material = this.game.handleMaterial;
+            handleUp.parent = handle;
+            handleUp.position.y = 0.6 * this.wireGauge + 0.025;
+
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
+            let p = this.trackPoints[i].point;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+
+            Mummu.QuaternionFromYZAxisToRef(this.trackPoints[i].up, pNext.subtract(pPrev), handle.rotationQuaternion);
 
             if (i < this.trackPoints.length - 1) {
                 let insertHandle = BABYLON.MeshBuilder.CreateSphere("insert-handle-" + i, { diameter: 0.5 * this.wireGauge });
@@ -138,7 +157,7 @@ class Track extends BABYLON.Mesh {
                 this.selectedHandle.material = this.game.handleMaterialActive;
 
                 let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedHandle.position);
-                Mummu.QuaternionFromYZAxisToRef(pick.getNormal(), d, this.pointerPlane.rotationQuaternion);
+                Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
 
                 this.pointerPlane.position.copyFrom(pick.pickedPoint);
                 this.getScene().activeCamera.detachControl();
@@ -203,7 +222,7 @@ class Track extends BABYLON.Mesh {
     }
 
     public autoTrackNormals(): void {
-        for (let i = 0; i < this.trackPoints.length; i++) {
+        for (let i = 1; i < this.trackPoints.length - 1; i++) {
             let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
             let p = this.trackPoints[i].point;
             let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
@@ -217,10 +236,52 @@ class Track extends BABYLON.Mesh {
 
             let dirPrev = p.subtract(pPrev).normalize();
             let dirNext = pNext.subtract(p).normalize();
-            let angle = Mummu.AngleFromToAround(dirPrev, dirNext, BABYLON.Axis.Y);
-            let dir = pNext.subtract(pPrev).normalize();
-            let f = Math.cos((i / (this.trackPoints.length - 1) - 0.5) * Math.PI);
-            let up = Mummu.Rotate(BABYLON.Vector3.Up(), dir, - angle);
+            let dir = dirPrev.add(dirNext).normalize();
+            let nPrev = this.trackPoints[i - 1].up;
+            
+            let right = BABYLON.Vector3.Cross(nPrev, dir).normalize();
+            right.y = 0;
+            right.normalize();
+            let up = BABYLON.Vector3.Cross(dir, right).normalize();
+            this.trackPoints[i].up = up;
+
+            /*
+            this.trackPoints[i].up = nPrev.clone();
+            let q = BABYLON.Quaternion.Identity();
+            BABYLON.Quaternion.FromUnitVectorsToRef(dirNext, dirPrev, q);
+            this.trackPoints[i - 1].up.rotateByQuaternionToRef(q, this.trackPoints[i].up);
+            */
+
+            /*
+            let axis = BABYLON.Vector3.Cross(dirNext, dirPrev.scale(-1));
+            axis.y = 0;
+            if (axis.length() > 0.01) {
+                axis.normalize();
+                let angle = Mummu.AngleFromToAround(dirPrev, dirNext, axis);
+                this.trackPoints[i].up = Mummu.Rotate(this.trackPoints[i].up, axis, angle);
+            }
+            */
+        }
+
+        for (let i = 1; i < this.trackPoints.length - 1; i++) {
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
+            let p = this.trackPoints[i].point;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+
+            let dirPrev = p.subtract(pPrev).normalize();
+            let dirNext = pNext.subtract(p).normalize();
+
+            let angleAroundY = Mummu.AngleFromToAround(dirPrev, dirNext, this.trackPoints[i].up);
+            let dir = dirPrev.add(dirNext).normalize();
+            
+            let up = Mummu.Rotate(this.trackPoints[i].up, dir, - angleAroundY);
             this.trackPoints[i].up = up;
         }
     }
