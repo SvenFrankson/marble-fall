@@ -11,8 +11,8 @@ class Ramp extends Track {
             new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
         ];
 
-        this.subdivisions = 5;
-        
+        this.subdivisions = 3;
+
         this.autoTrackNormals();
         this.generateWires();
     }

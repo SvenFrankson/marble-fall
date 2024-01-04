@@ -429,10 +429,17 @@ class Track extends BABYLON.Mesh {
         await this.wires[1].instantiate();
     }
     autoTrackNormals() {
-        for (let i = 1; i < this.trackPoints.length - 1; i++) {
-            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
-            let p = this.trackPoints[i].point;
-            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point.clone(); });
+        let interpolatedNormals = [this.trackPoints[0].up];
+        let f = 1;
+        for (let n = 0; n < this.subdivisions; n++) {
+            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            f = f * 2;
+        }
+        for (let i = 1; i < interpolatedPoints.length - 1; i++) {
+            let pPrev = interpolatedPoints[i - 1];
+            let p = interpolatedPoints[i];
+            let pNext = interpolatedPoints[i + 1];
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
             }
@@ -441,14 +448,20 @@ class Track extends BABYLON.Mesh {
             }
             let dirPrev = p.subtract(pPrev).normalize();
             let dirNext = pNext.subtract(p).normalize();
-            let dir = dirPrev.add(dirNext).normalize();
-            let nPrev = this.trackPoints[i - 1].up;
-            let right = BABYLON.Vector3.Cross(nPrev, dir).normalize();
-            //right.y = 0;
+            let dir = pNext.subtract(pPrev).normalize();
+            let upPrev = interpolatedNormals[i - 1];
+            let rightPrev = BABYLON.Vector3.Cross(upPrev, dirPrev).normalize();
+            let up = BABYLON.Vector3.Cross(dirNext, rightPrev).normalize();
+            let right = BABYLON.Vector3.Cross(up, dirNext).normalize();
+            right.y = 0;
             right.normalize();
-            let up = BABYLON.Vector3.Cross(dir, right).normalize();
-            this.trackPoints[i].up = up;
+            up = BABYLON.Vector3.Cross(dirNext, right);
+            interpolatedNormals[i] = up;
+            if (i % f === 0) {
+                this.trackPoints[i / f].up = up;
+            }
         }
+        interpolatedNormals.push(this.trackPoints[0].up);
         for (let i = 1; i < this.trackPoints.length - 1; i++) {
             let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
             let p = this.trackPoints[i].point;
@@ -530,7 +543,7 @@ class Ramp extends Track {
             new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
             new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
         ];
-        this.subdivisions = 5;
+        this.subdivisions = 3;
         this.autoTrackNormals();
         this.generateWires();
     }
