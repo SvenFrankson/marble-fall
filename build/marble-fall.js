@@ -426,10 +426,17 @@ class Track extends BABYLON.Mesh {
     generateWires() {
         this.wires[0].path = [];
         this.wires[1].path = [];
-        for (let i = 0; i < this.trackPoints.length; i++) {
-            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
-            let p = this.trackPoints[i].point;
-            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point; });
+        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
+        for (let n = 0; n < 3; n++) {
+            Mummu.CatmullRomPathInPlace(interpolatedPoints);
+            Mummu.CatmullRomPathInPlace(interpolatedNormals);
+        }
+        let N = interpolatedPoints.length;
+        for (let i = 0; i < N; i++) {
+            let pPrev = interpolatedPoints[i - 1] ? interpolatedPoints[i - 1] : undefined;
+            let p = interpolatedPoints[i];
+            let pNext = interpolatedPoints[i + 1] ? interpolatedPoints[i + 1] : undefined;
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
             }
@@ -437,16 +444,12 @@ class Track extends BABYLON.Mesh {
                 pNext = p.add(p.subtract(pPrev));
             }
             let dir = pNext.subtract(pPrev).normalize();
-            let up = this.trackPoints[i].up;
+            let up = interpolatedNormals[i];
             let rotation = BABYLON.Quaternion.Identity();
             Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
             let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
             this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.wireGauge * 0.5, 0, 0), matrix);
             this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
-        }
-        for (let n = 0; n < 3; n++) {
-            Mummu.CatmullRomPathInPlace(this.wires[0].path);
-            Mummu.CatmullRomPathInPlace(this.wires[1].path);
         }
     }
     recomputeAbsolutePath() {
