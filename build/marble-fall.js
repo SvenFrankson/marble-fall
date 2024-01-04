@@ -136,6 +136,13 @@ class Game {
         ball.position.x = -0.05;
         ball.position.y = 0.1;
         ball.instantiate();
+        document.getElementById("reset").addEventListener("click", () => {
+            ball.position.copyFromFloats(-0.05, 0.1, 0);
+            ball.velocity.copyFromFloats(0, 0, 0);
+        });
+        document.getElementById("remesh").addEventListener("click", () => {
+            tracks[1].remesh();
+        });
         let tracks = [];
         for (let n = 0; n < 4; n++) {
             let track = new FlatLoop(this, 2 * n, 0);
@@ -149,7 +156,7 @@ class Game {
             tracks.forEach(track => {
                 track.recomputeAbsolutePath();
             });
-            tracks[0].showHandles();
+            tracks[1].showHandles();
         });
     }
     download(filename, text) {
@@ -275,7 +282,6 @@ class Track extends BABYLON.Mesh {
                     let trackPoint = this.trackPoints[this.trackPointhandles.indexOf(this.selectedHandle)];
                     if (trackPoint) {
                         trackPoint.point.copyFrom(this.selectedHandle.position);
-                        this.remesh();
                         this.generateWires();
                         this.autoTrackNormals();
                         this.recomputeAbsolutePath();
@@ -294,7 +300,6 @@ class Track extends BABYLON.Mesh {
                         let trackPoint = new TrackPoint(insertTrackPoint.position.clone());
                         let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
                         this.trackPoints.splice(index, 0, trackPoint);
-                        this.remesh();
                         this.generateWires();
                         this.autoTrackNormals();
                         this.recomputeAbsolutePath();
@@ -422,25 +427,10 @@ class Track extends BABYLON.Mesh {
             let dir = dirPrev.add(dirNext).normalize();
             let nPrev = this.trackPoints[i - 1].up;
             let right = BABYLON.Vector3.Cross(nPrev, dir).normalize();
-            right.y = 0;
+            //right.y = 0;
             right.normalize();
             let up = BABYLON.Vector3.Cross(dir, right).normalize();
             this.trackPoints[i].up = up;
-            /*
-            this.trackPoints[i].up = nPrev.clone();
-            let q = BABYLON.Quaternion.Identity();
-            BABYLON.Quaternion.FromUnitVectorsToRef(dirNext, dirPrev, q);
-            this.trackPoints[i - 1].up.rotateByQuaternionToRef(q, this.trackPoints[i].up);
-            */
-            /*
-            let axis = BABYLON.Vector3.Cross(dirNext, dirPrev.scale(-1));
-            axis.y = 0;
-            if (axis.length() > 0.01) {
-                axis.normalize();
-                let angle = Mummu.AngleFromToAround(dirPrev, dirNext, axis);
-                this.trackPoints[i].up = Mummu.Rotate(this.trackPoints[i].up, axis, angle);
-            }
-            */
         }
         for (let i = 1; i < this.trackPoints.length - 1; i++) {
             let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;

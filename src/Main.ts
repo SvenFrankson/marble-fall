@@ -87,6 +87,15 @@ class Game {
         ball.position.y = 0.1;
         ball.instantiate();
 
+        document.getElementById("reset").addEventListener("click", () => {
+            ball.position.copyFromFloats(-0.05, 0.1, 0);
+            ball.velocity.copyFromFloats(0, 0, 0);
+        })
+
+        document.getElementById("remesh").addEventListener("click", () => {
+            tracks[1].remesh();
+        })
+
         let tracks = [];
         for (let n = 0; n < 4; n++) {
             let track = new FlatLoop(this, 2 * n, 0);
@@ -102,7 +111,7 @@ class Game {
             tracks.forEach(track => {
                 track.recomputeAbsolutePath();
             })
-            tracks[0].showHandles();
+            tracks[1].showHandles();
         })
 	}
 

@@ -36,3 +36,12 @@ body {
     border: none;
     z-index: 0;
 }
+
+#reset {
+    position: fixed;
+}
+
+#remesh {
+    position: fixed;
+    top: 30px;
+}
