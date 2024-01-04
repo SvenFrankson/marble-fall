@@ -4,7 +4,12 @@ var yDist = Math.sqrt(3) / 2 * 0.5 * baseRadius;
 
 class TrackPoint {
 
-    constructor(public point: BABYLON.Vector3, public up: BABYLON.Vector3 = BABYLON.Vector3.Up()) {
+    constructor(
+        public point: BABYLON.Vector3,
+        public up: BABYLON.Vector3 = new BABYLON.Vector3(0, 1, 0),
+        public dir: BABYLON.Vector3 = new BABYLON.Vector3(1, 0, 0),
+        public right: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, - 1)
+    ) {
 
     }
 }
@@ -89,7 +94,7 @@ class Track extends BABYLON.Mesh {
         let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
 
         for (let n = 0; n < 3; n++) {
-            Mummu.CatmullRomPathInPlace(interpolatedPoints);
+            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
             Mummu.CatmullRomPathInPlace(interpolatedNormals);
         }
 
@@ -294,10 +299,10 @@ class Track extends BABYLON.Mesh {
 
     public remesh(): void {
         let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.point; });
-        Mummu.CatmullRomPathInPlace(smoothedPath);
-        Mummu.CatmullRomPathInPlace(smoothedPath);
-        Mummu.CatmullRomPathInPlace(smoothedPath);
-        Mummu.CatmullRomPathInPlace(smoothedPath);
+
+        for (let n = 0; n < 4; n++) {
+            Mummu.CatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
+        }
 
         let cumulDist = [0];
         for (let i = 1; i < smoothedPath.length; i++) {
