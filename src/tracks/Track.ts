@@ -164,11 +164,13 @@ class Track extends BABYLON.Mesh {
                 let trackPoint = this.trackPoints[this.trackPointhandles.indexOf(this.selectedHandle)];
                 if (trackPoint) {
                     trackPoint.point.copyFrom(this.selectedHandle.position);
+                    this.remesh();
                     this.generateWires();
                     this.autoTrackNormals();
                     this.recomputeAbsolutePath();
                     this.wires[0].instantiate();
                     this.wires[1].instantiate();
+                    this.showHandles();
                 }
                 this.selectedHandle.material = this.game.handleMaterial;
             }
@@ -186,6 +188,7 @@ class Track extends BABYLON.Mesh {
                     let trackPoint = new TrackPoint(insertTrackPoint.position.clone());
                     let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
                     this.trackPoints.splice(index, 0, trackPoint);
+                    this.remesh();
                     this.generateWires();
                     this.autoTrackNormals();
                     this.recomputeAbsolutePath();
@@ -221,43 +224,35 @@ class Track extends BABYLON.Mesh {
             this.trackPoints[i].up = up;
         }
     }
-}
 
-class Ramp extends Track {
+    public remesh(): void {
+        let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.point; });
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        Mummu.CatmullRomPathInPlace(smoothedPath);
 
-    constructor(game: Game, i: number, j: number) {
-        super(game, i, j);
-        this.trackPoints = [
-            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
-        ];
+        let cumulDist = [0];
+        for (let i = 1; i < smoothedPath.length; i++) {
+            let dist = BABYLON.Vector3.Distance(smoothedPath[i - 1], smoothedPath[i]);
+            cumulDist[i] = cumulDist[i - 1] + dist;
+        }
 
-        this.autoTrackNormals();
-        this.generateWires();
-    }
-}
+        let totalLength = cumulDist[cumulDist.length - 1];
+        let step = totalLength / (this.trackPoints.length - 1);
 
-class FlatLoop extends Track {
-
-    constructor(game: Game, i: number, j: number) {
-        super(game, i, j);
-        this.trackPoints = [
-            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(- 0.3 * xDist, 0.8 * yDist, - 0.05 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(0.5 * xDist, 0.6 * yDist, - 0.3 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(0.8 * xDist, 0.4 * yDist, - 1 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(0.5 * xDist, 0.2 * yDist, - 1.6 * xDist), BABYLON.Vector3.Up()),
-
-            new TrackPoint(new BABYLON.Vector3(0, 0, -1.8 * xDist), BABYLON.Vector3.Up()),
-
-            new TrackPoint(new BABYLON.Vector3(- 0.5 * xDist, - 0.2 * yDist, - 1.6 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(- 0.8 * xDist, - 0.4 * yDist, - 1 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(- 0.5 * xDist, - 0.6 * yDist, - 0.3 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(0.3 * xDist, - 0.8 * yDist, - 0.05 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
-        ];
-
-        this.autoTrackNormals();
-        this.generateWires();
+        for (let i = 1; i < this.trackPoints.length - 1; i++) {
+            let targetCumulDist = step * i;
+            let bestDelta = Infinity;
+            let bestIndex = -1;
+            for (let j = 0; j < cumulDist.length; j++) {
+                let delta = Math.abs(targetCumulDist - cumulDist[j]);
+                if (delta < bestDelta) {
+                    bestDelta = delta;
+                    bestIndex = j;
+                }
+            }
+            this.trackPoints[i].point.copyFrom(smoothedPath[bestIndex]);
+        }
     }
 }

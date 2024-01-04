@@ -254,6 +254,42 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+class Wire extends BABYLON.Mesh {
+    constructor(track) {
+        super("wire");
+        this.track = track;
+        this.path = [];
+        this.absolutePath = [];
+        this.size = 0.002;
+        this.parent = this.track;
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        Wire.Instances.push(this);
+    }
+    recomputeAbsolutePath() {
+        this.absolutePath.splice(this.path.length);
+        for (let i = 0; i < this.path.length; i++) {
+            if (!this.absolutePath[i]) {
+                this.absolutePath[i] = BABYLON.Vector3.Zero();
+            }
+            BABYLON.Vector3.TransformCoordinatesToRef(this.path[i], this.getWorldMatrix(), this.absolutePath[i]);
+        }
+    }
+    async instantiate() {
+        while (this.getChildren().length > 0) {
+            this.getChildren()[0].dispose();
+        }
+        for (let i = 0; i < this.path.length - 1; i++) {
+            let dir = this.path[i].subtract(this.path[i + 1]).normalize();
+            let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
+            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.5, height: l });
+            wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
+            wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
+            wireSection.parent = this;
+            Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
+        }
+    }
+}
+Wire.Instances = new Nabu.UniqueList();
 var baseRadius = 0.075;
 var xDist = 0.75 * baseRadius;
 var yDist = Math.sqrt(3) / 2 * 0.5 * baseRadius;
@@ -304,11 +340,13 @@ class Track extends BABYLON.Mesh {
                     let trackPoint = this.trackPoints[this.trackPointhandles.indexOf(this.selectedHandle)];
                     if (trackPoint) {
                         trackPoint.point.copyFrom(this.selectedHandle.position);
+                        this.remesh();
                         this.generateWires();
                         this.autoTrackNormals();
                         this.recomputeAbsolutePath();
                         this.wires[0].instantiate();
                         this.wires[1].instantiate();
+                        this.showHandles();
                     }
                     this.selectedHandle.material = this.game.handleMaterial;
                 }
@@ -321,6 +359,7 @@ class Track extends BABYLON.Mesh {
                         let trackPoint = new TrackPoint(insertTrackPoint.position.clone());
                         let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
                         this.trackPoints.splice(index, 0, trackPoint);
+                        this.remesh();
                         this.generateWires();
                         this.autoTrackNormals();
                         this.recomputeAbsolutePath();
@@ -434,18 +473,35 @@ class Track extends BABYLON.Mesh {
             this.trackPoints[i].up = up;
         }
     }
-}
-class Ramp extends Track {
-    constructor(game, i, j) {
-        super(game, i, j);
-        this.trackPoints = [
-            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
-            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
-        ];
-        this.autoTrackNormals();
-        this.generateWires();
+    remesh() {
+        let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.point; });
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        Mummu.CatmullRomPathInPlace(smoothedPath);
+        let cumulDist = [0];
+        for (let i = 1; i < smoothedPath.length; i++) {
+            let dist = BABYLON.Vector3.Distance(smoothedPath[i - 1], smoothedPath[i]);
+            cumulDist[i] = cumulDist[i - 1] + dist;
+        }
+        let totalLength = cumulDist[cumulDist.length - 1];
+        let step = totalLength / (this.trackPoints.length - 1);
+        for (let i = 1; i < this.trackPoints.length - 1; i++) {
+            let targetCumulDist = step * i;
+            let bestDelta = Infinity;
+            let bestIndex = -1;
+            for (let j = 0; j < cumulDist.length; j++) {
+                let delta = Math.abs(targetCumulDist - cumulDist[j]);
+                if (delta < bestDelta) {
+                    bestDelta = delta;
+                    bestIndex = j;
+                }
+            }
+            this.trackPoints[i].point.copyFrom(smoothedPath[bestIndex]);
+        }
     }
 }
+/// <reference path="./Track.ts"/>
 class FlatLoop extends Track {
     constructor(game, i, j) {
         super(game, i, j);
@@ -466,39 +522,14 @@ class FlatLoop extends Track {
         this.generateWires();
     }
 }
-class Wire extends BABYLON.Mesh {
-    constructor(track) {
-        super("wire");
-        this.track = track;
-        this.path = [];
-        this.absolutePath = [];
-        this.size = 0.002;
-        this.parent = this.track;
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
-        Wire.Instances.push(this);
-    }
-    recomputeAbsolutePath() {
-        this.absolutePath.splice(this.path.length);
-        for (let i = 0; i < this.path.length; i++) {
-            if (!this.absolutePath[i]) {
-                this.absolutePath[i] = BABYLON.Vector3.Zero();
-            }
-            BABYLON.Vector3.TransformCoordinatesToRef(this.path[i], this.getWorldMatrix(), this.absolutePath[i]);
-        }
-    }
-    async instantiate() {
-        while (this.getChildren().length > 0) {
-            this.getChildren()[0].dispose();
-        }
-        for (let i = 0; i < this.path.length - 1; i++) {
-            let dir = this.path[i].subtract(this.path[i + 1]).normalize();
-            let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
-            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.5, height: l });
-            wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
-            wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
-            wireSection.parent = this;
-            Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
-        }
+class Ramp extends Track {
+    constructor(game, i, j) {
+        super(game, i, j);
+        this.trackPoints = [
+            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), BABYLON.Vector3.Up()),
+            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), BABYLON.Vector3.Up())
+        ];
+        this.autoTrackNormals();
+        this.generateWires();
     }
 }
-Wire.Instances = new Nabu.UniqueList();
