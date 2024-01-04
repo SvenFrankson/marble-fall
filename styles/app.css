@@ -39,9 +39,20 @@ body {
 
 #reset {
     position: fixed;
+    top: 10px;
 }
 
 #remesh {
     position: fixed;
-    top: 30px;
+    top: 40px;
+}
+
+#save {
+    position: fixed;
+    top: 70px;
+}
+
+#load {
+    position: fixed;
+    top: 100px;
 }

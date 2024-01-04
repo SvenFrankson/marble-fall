@@ -96,6 +96,28 @@ class Game {
             tracks[1].remesh();
         })
 
+        document.getElementById("save").addEventListener("click", () => {
+            let data = tracks[1].serialize();
+            window.localStorage.setItem("saved-track", JSON.stringify(data));
+        })
+
+        let debugLoad = () => {
+            let s = window.localStorage.getItem("saved-track");
+            if (s) {
+                let data = JSON.parse(s);
+                tracks[1].deserialize(data);
+                tracks[1].autoTrackNormals();
+                tracks[1].generateWires();
+                tracks[1].recomputeAbsolutePath();
+                tracks[1].wires[0].instantiate();
+                tracks[1].wires[1].instantiate();
+                tracks[1].showHandles();
+            }
+        }
+        document.getElementById("load").addEventListener("click", () => {
+            debugLoad();
+        })
+
         let tracks = [];
         for (let n = 0; n < 4; n++) {
             let track = new FlatLoop(this, 2 * n, 0);
@@ -112,6 +134,7 @@ class Game {
                 track.recomputeAbsolutePath();
             })
             tracks[1].showHandles();
+            debugLoad();
         })
 	}
 

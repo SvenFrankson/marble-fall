@@ -14,6 +14,16 @@ class TrackPoint {
     }
 }
 
+interface ITrackPointData {
+    position: { x: number, y: number, z: number};
+    up?: { x: number, y: number, z: number};
+    dir?: { x: number, y: number, z: number};
+}
+
+interface ITrackData {
+    points: ITrackPointData[];
+}
+
 class Track extends BABYLON.Mesh {
 
     public subdivisions: number = 3;
@@ -218,8 +228,8 @@ class Track extends BABYLON.Mesh {
                     let trackPoint = new TrackPoint(insertTrackPoint.position.clone());
                     let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
                     this.trackPoints.splice(index, 0, trackPoint);
-                    this.generateWires();
                     this.autoTrackNormals();
+                    this.generateWires();
                     this.recomputeAbsolutePath();
                     this.wires[0].instantiate();
                     this.wires[1].instantiate();
@@ -324,6 +334,41 @@ class Track extends BABYLON.Mesh {
                 }
             }
             this.trackPoints[i].point.copyFrom(smoothedPath[bestIndex]);
+        }
+    }
+
+    public serialize(): ITrackData {
+        let data: ITrackData = { points: []};
+
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            data.points.push({
+                position: { x: this.trackPoints[i].point.x, y: this.trackPoints[i].point.y, z: this.trackPoints[i].point.z }
+            });
+        }
+        data.points[0].up = { x: this.trackPoints[0].up.x, y: this.trackPoints[0].up.y, z: this.trackPoints[0].up.z }
+        data.points[0].dir = { x: this.trackPoints[0].dir.x, y: this.trackPoints[0].dir.y, z: this.trackPoints[0].dir.z }
+
+        let i = this.trackPoints.length - 1;
+        data.points[i].up = { x: this.trackPoints[i].up.x, y: this.trackPoints[i].up.y, z: this.trackPoints[i].up.z }
+        data.points[i].dir = { x: this.trackPoints[i].dir.x, y: this.trackPoints[i].dir.y, z: this.trackPoints[i].dir.z }
+
+        return data;
+    }
+
+    public deserialize(data: ITrackData): void {
+        this.trackPoints = [];
+        for (let i = 0; i < data.points.length; i++) {
+            let pointData = data.points[i];
+            let trackPoint = new TrackPoint(
+                new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z)
+            );
+            if (pointData.up) {
+                trackPoint.up = new BABYLON.Vector3(pointData.up.x, pointData.up.y, pointData.up.z);
+            }
+            if (pointData.dir) {
+                trackPoint.dir = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
+            }
+            this.trackPoints[i] = trackPoint;
         }
     }
 }
