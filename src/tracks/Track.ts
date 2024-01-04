@@ -16,6 +16,7 @@ class TrackPoint {
 
 class Track extends BABYLON.Mesh {
 
+    public subdivisions: number = 3;
     public trackPoints: TrackPoint[];
     public wires: Wire[];
 
@@ -93,7 +94,7 @@ class Track extends BABYLON.Mesh {
         let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point; });
         let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
 
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < this.subdivisions; n++) {
             Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
             Mummu.CatmullRomPathInPlace(interpolatedNormals);
         }

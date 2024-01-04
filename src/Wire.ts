@@ -3,8 +3,12 @@ class Wire extends BABYLON.Mesh {
     public static Instances: Nabu.UniqueList<Wire> = new Nabu.UniqueList<Wire>();
 
     public path: BABYLON.Vector3[] = [];
+    public normals: BABYLON.Vector3[] = [];
     public absolutePath: BABYLON.Vector3[] = [];
     public size: number = 0.002;
+    public get radius(): number {
+        return this.size * 0.5;
+    }
 
     constructor(public track: Track) {
         super("wire");
@@ -28,6 +32,17 @@ class Wire extends BABYLON.Mesh {
             this.getChildren()[0].dispose();
         }
 
+        let n = 8;
+        let shape: BABYLON.Vector3[] = [];
+        for (let i = 0; i < n; i++) {
+            let a = i / n * 2 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            shape[i] = new BABYLON.Vector3(cosa * this.radius, sina * this.radius, 0);
+        }
+        let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+        wire.parent = this;
+        /*
         for (let i = 0; i < this.path.length - 1; i++) {
             let dir = this.path[i].subtract(this.path[i + 1]).normalize();
             let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
@@ -36,6 +51,7 @@ class Wire extends BABYLON.Mesh {
             wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
             wireSection.parent = this;
             Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
-        }        
+        }
+        */
     }
 }
