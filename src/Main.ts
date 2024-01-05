@@ -20,7 +20,7 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 0.1;
+    public timeFactor: number = 0.5;
     public physicDT: number = 0.0005;
 
     public handleMaterial: BABYLON.StandardMaterial;
@@ -124,7 +124,7 @@ class Game {
             track.instantiate();
             tracks.push(track);
     
-            let track2 = new Ramp(this, 2 * n + 1, 0);
+            let track2 = new DoubleLoop(this, 2 * n + 1, 0);
             track2.instantiate();
             tracks.push(track2);
         }

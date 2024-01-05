@@ -105,8 +105,16 @@ class Track extends BABYLON.Mesh {
         let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
 
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.CatmullRomPathInPlace(interpolatedNormals);
+            Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.AltCatmullRomPathInPlace(interpolatedNormals);
+        }
+
+        for (let n = 0; n < 3; n++) {
+            let smoothed = interpolatedPoints.map(pt => { return pt.clone(); });
+            for (let i = 1; i < interpolatedPoints.length - 1; i++) {
+                smoothed[i].addInPlace(interpolatedPoints[i - 1]).addInPlace(interpolatedPoints[i + 1]).scaleInPlace(1/3);
+            }
+            interpolatedPoints = smoothed;
         }
 
         let N = interpolatedPoints.length;
@@ -246,7 +254,7 @@ class Track extends BABYLON.Mesh {
         let interpolatedNormals = [this.trackPoints[0].up];
         let f = 1;
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
             f = f * 2;
         }
 
@@ -301,7 +309,7 @@ class Track extends BABYLON.Mesh {
             let angleAroundY = Mummu.AngleFromToAround(dirPrev, dirNext, this.trackPoints[i].up);
             let dir = dirPrev.add(dirNext).normalize();
             
-            let up = Mummu.Rotate(this.trackPoints[i].up, dir, - angleAroundY);
+            let up = Mummu.Rotate(this.trackPoints[i].up, dir, - angleAroundY * 1);
             this.trackPoints[i].up = up;
         }
     }
@@ -310,7 +318,7 @@ class Track extends BABYLON.Mesh {
         let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.point; });
 
         for (let n = 0; n < 4; n++) {
-            Mummu.CatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
+            Mummu.AltCatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
         }
 
         let cumulDist = [0];

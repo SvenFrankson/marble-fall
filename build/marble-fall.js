@@ -43,7 +43,8 @@ class Ball extends BABYLON.Mesh {
                 }
                 this.velocity.subtractInPlace(canceledSpeed);
                 this.position.addInPlace(forcedDisplacement);
-                let acceleration = weight.add(reactions).scaleInPlace(1 / m);
+                let friction = this.velocity.scale(-1).scaleInPlace(0.002);
+                let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
                 this.velocity.addInPlace(acceleration.scale(dt));
                 this.position.addInPlace(this.velocity.scale(dt));
             }
@@ -85,7 +86,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 0.1;
+        this.timeFactor = 0.5;
         this.physicDT = 0.0005;
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
@@ -168,7 +169,7 @@ class Game {
             let track = new FlatLoop(this, 2 * n, 0);
             track.instantiate();
             tracks.push(track);
-            let track2 = new Ramp(this, 2 * n + 1, 0);
+            let track2 = new DoubleLoop(this, 2 * n + 1, 0);
             track2.instantiate();
             tracks.push(track2);
         }
@@ -407,8 +408,15 @@ class Track extends BABYLON.Mesh {
         let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point; });
         let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.CatmullRomPathInPlace(interpolatedNormals);
+            Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.AltCatmullRomPathInPlace(interpolatedNormals);
+        }
+        for (let n = 0; n < 3; n++) {
+            let smoothed = interpolatedPoints.map(pt => { return pt.clone(); });
+            for (let i = 1; i < interpolatedPoints.length - 1; i++) {
+                smoothed[i].addInPlace(interpolatedPoints[i - 1]).addInPlace(interpolatedPoints[i + 1]).scaleInPlace(1 / 3);
+            }
+            interpolatedPoints = smoothed;
         }
         let N = interpolatedPoints.length;
         for (let i = 0; i < N; i++) {
@@ -454,7 +462,7 @@ class Track extends BABYLON.Mesh {
         let interpolatedNormals = [this.trackPoints[0].up];
         let f = 1;
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
             f = f * 2;
         }
         for (let i = 1; i < interpolatedPoints.length - 1; i++) {
@@ -497,14 +505,14 @@ class Track extends BABYLON.Mesh {
             let dirNext = pNext.subtract(p).normalize();
             let angleAroundY = Mummu.AngleFromToAround(dirPrev, dirNext, this.trackPoints[i].up);
             let dir = dirPrev.add(dirNext).normalize();
-            let up = Mummu.Rotate(this.trackPoints[i].up, dir, -angleAroundY);
+            let up = Mummu.Rotate(this.trackPoints[i].up, dir, -angleAroundY * 1);
             this.trackPoints[i].up = up;
         }
     }
     remesh() {
         let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.point; });
         for (let n = 0; n < 4; n++) {
-            Mummu.CatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
+            Mummu.AltCatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
         }
         let cumulDist = [0];
         for (let i = 1; i < smoothedPath.length; i++) {
@@ -557,6 +565,30 @@ class Track extends BABYLON.Mesh {
     }
 }
 /// <reference path="./Track.ts"/>
+class DoubleLoop extends Track {
+    constructor(game, i, j) {
+        super(game, i, j);
+        this.deserialize({
+            points: [
+                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, up: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+                { position: { x: -0.02247276854298, y: 0.033123278840042014, z: 0.002954409933442207 } },
+                { position: { x: -0.004806679736589367, y: 0.05233107801664711, z: 0.003136151115902047 } },
+                { position: { x: -0.025953415041307312, y: 0.07023608132278716, z: -0.0057761936067418475 } },
+                { position: { x: -0.04187220593297156, y: 0.046647031744568704, z: -0.013617848089849673 } },
+                { position: { x: -0.004782729582494746, y: 0.005448401551669577, z: -0.016730026157779007 } },
+                { position: { x: 0.03392457799318907, y: 0.006222947045886634, z: -0.007715187355032786 } },
+                { position: { x: 0.02912696033523811, y: 0.02701941918436778, z: -0.004721568668964358 } },
+                { position: { x: 0.004463062684720603, y: 0.024485514735595473, z: -0.0025526625841006245 } },
+                { position: { x: 0.016665422691149664, y: -0.01818856367050191, z: 0.0029672655628109152 } },
+                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, up: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+            ],
+        });
+        this.subdivisions = 4;
+        this.autoTrackNormals();
+        this.generateWires();
+    }
+}
+/// <reference path="./Track.ts"/>
 class FlatLoop extends Track {
     constructor(game, i, j) {
         super(game, i, j);
@@ -592,7 +624,7 @@ class Ramp extends Track {
             new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
             new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
         ];
-        this.subdivisions = 3;
+        this.subdivisions = 4;
         this.autoTrackNormals();
         this.generateWires();
     }
