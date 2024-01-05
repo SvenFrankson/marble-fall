@@ -252,19 +252,17 @@ class Wire extends BABYLON.Mesh {
             let sina = Math.sin(a);
             shape[i] = new BABYLON.Vector3(cosa * this.radius, sina * this.radius, 0);
         }
-        let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-        wire.parent = this;
-        /*
+        //let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+        //wire.parent = this;
         for (let i = 0; i < this.path.length - 1; i++) {
             let dir = this.path[i].subtract(this.path[i + 1]).normalize();
             let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
-            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.5, height: l });
+            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.6, height: l });
             wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
             wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
             wireSection.parent = this;
             Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
         }
-        */
     }
 }
 Wire.Instances = new Nabu.UniqueList();
@@ -405,8 +403,8 @@ class Track extends BABYLON.Mesh {
     generateWires() {
         this.wires[0].path = [];
         this.wires[1].path = [];
-        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point; });
-        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
+        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point.clone(); });
+        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up.clone(); });
         for (let n = 0; n < this.subdivisions; n++) {
             Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
             Mummu.AltCatmullRomPathInPlace(interpolatedNormals);
@@ -484,7 +482,12 @@ class Track extends BABYLON.Mesh {
             let right = BABYLON.Vector3.Cross(up, dirNext).normalize();
             right.y = 0;
             right.normalize();
-            up = BABYLON.Vector3.Cross(dirNext, right);
+            up = BABYLON.Vector3.Cross(dirNext, right).normalize();
+            if (Math.abs(up.y) > 0.05) {
+                let dy = Math.abs(dir.y / dir.length());
+                let vert = new BABYLON.Vector3(0, Math.sign(up.y), 0);
+                up = BABYLON.Vector3.Lerp(vert, up, dy).normalize();
+            }
             interpolatedNormals[i] = up;
             if (i % f === 0) {
                 this.trackPoints[i / f].up = up;
@@ -583,7 +586,7 @@ class DoubleLoop extends Track {
                 { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, up: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
             ],
         });
-        this.subdivisions = 4;
+        this.subdivisions = 3;
         this.autoTrackNormals();
         this.generateWires();
     }
@@ -624,7 +627,7 @@ class Ramp extends Track {
             new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
             new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
         ];
-        this.subdivisions = 4;
+        this.subdivisions = 3;
         this.autoTrackNormals();
         this.generateWires();
     }

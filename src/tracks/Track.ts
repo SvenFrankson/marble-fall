@@ -101,8 +101,8 @@ class Track extends BABYLON.Mesh {
         this.wires[0].path = [];
         this.wires[1].path = [];
 
-        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point; });
-        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up; });
+        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point.clone(); });
+        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up.clone(); });
 
         for (let n = 0; n < this.subdivisions; n++) {
             Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
@@ -281,7 +281,13 @@ class Track extends BABYLON.Mesh {
             let right = BABYLON.Vector3.Cross(up, dirNext).normalize();
             right.y = 0;
             right.normalize();
-            up = BABYLON.Vector3.Cross(dirNext, right);
+            up = BABYLON.Vector3.Cross(dirNext, right).normalize();
+
+            if (Math.abs(up.y) > 0.05) {
+                let dy = Math.abs(dir.y / dir.length());
+                let vert = new BABYLON.Vector3(0, Math.sign(up.y), 0);
+                up = BABYLON.Vector3.Lerp(vert, up, dy).normalize();
+            }
             
             interpolatedNormals[i] = up;
            

@@ -40,18 +40,17 @@ class Wire extends BABYLON.Mesh {
             let sina = Math.sin(a);
             shape[i] = new BABYLON.Vector3(cosa * this.radius, sina * this.radius, 0);
         }
-        let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-        wire.parent = this;
-        /*
+        //let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+        //wire.parent = this;
+        
         for (let i = 0; i < this.path.length - 1; i++) {
             let dir = this.path[i].subtract(this.path[i + 1]).normalize();
             let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
-            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.5, height: l });
+            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.6, height: l });
             wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
             wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
             wireSection.parent = this;
             Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
         }
-        */
     }
 }
