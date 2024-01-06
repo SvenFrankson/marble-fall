@@ -586,9 +586,9 @@ class Track extends BABYLON.Mesh {
                     }
                 }
                 trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
-                let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
-                trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
             }
+            let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
+            trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
         }
         this.wires[0].path = [];
         this.wires[1].path = [];
@@ -643,32 +643,6 @@ class Track extends BABYLON.Mesh {
         }
         await this.wires[0].instantiate();
         await this.wires[1].instantiate();
-    }
-    remesh() {
-        let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.position; });
-        for (let n = 0; n < 4; n++) {
-            Mummu.AltCatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
-        }
-        let cumulDist = [0];
-        for (let i = 1; i < smoothedPath.length; i++) {
-            let dist = BABYLON.Vector3.Distance(smoothedPath[i - 1], smoothedPath[i]);
-            cumulDist[i] = cumulDist[i - 1] + dist;
-        }
-        let totalLength = cumulDist[cumulDist.length - 1];
-        let step = totalLength / (this.trackPoints.length - 1);
-        for (let i = 1; i < this.trackPoints.length - 1; i++) {
-            let targetCumulDist = step * i;
-            let bestDelta = Infinity;
-            let bestIndex = -1;
-            for (let j = 0; j < cumulDist.length; j++) {
-                let delta = Math.abs(targetCumulDist - cumulDist[j]);
-                if (delta < bestDelta) {
-                    bestDelta = delta;
-                    bestIndex = j;
-                }
-            }
-            this.trackPoints[i].position.copyFrom(smoothedPath[bestIndex]);
-        }
     }
     serialize() {
         let data = { points: [] };
