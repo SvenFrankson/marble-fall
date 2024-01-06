@@ -4,24 +4,74 @@ var yDist = Math.sqrt(3) / 2 * 0.5 * baseRadius;
 
 class TrackPoint {
 
-    constructor(
-        public point: BABYLON.Vector3,
-        public up: BABYLON.Vector3 = new BABYLON.Vector3(0, 1, 0),
-        public dir: BABYLON.Vector3 = new BABYLON.Vector3(1, 0, 0),
-        public right: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, - 1)
-    ) {
+    public fixedNormal: boolean = false;
+    public fixedDir: boolean = false;
+    public fixedTangentPrev: boolean = false;
+    public fixedTangentNext: boolean = false;
 
+    constructor(
+        public track: Track,
+        public position: BABYLON.Vector3,
+        public normal?: BABYLON.Vector3,
+        public dir?: BABYLON.Vector3,
+        public trangentPrev?: number,
+        public trangentNext?: number
+    ) {
+        if (normal) {
+            this.fixedNormal = true;
+        }
+        else {
+            this.fixedNormal = false;
+            this.normal = BABYLON.Vector3.Up();
+        }
+
+        if (dir) {
+            this.fixedDir = true;
+        }
+        else {
+            this.fixedDir = false;
+            this.dir = BABYLON.Vector3.Right();
+        }
+        
+        if (trangentPrev) {
+            this.fixedTangentPrev = true;
+        }
+        else {
+            this.fixedTangentPrev = false;
+            this.trangentPrev = 1;
+        }
+        
+        if (trangentNext) {
+            this.fixedTangentNext = true;
+        }
+        else {
+            this.fixedTangentNext = false;
+            this.trangentNext = 1;
+        }
     }
 }
 
 interface ITrackPointData {
     position: { x: number, y: number, z: number};
-    up?: { x: number, y: number, z: number};
+    normal?: { x: number, y: number, z: number};
     dir?: { x: number, y: number, z: number};
 }
 
 interface ITrackData {
     points: ITrackPointData[];
+}
+
+class TrackPointHandle extends BABYLON.Mesh {
+
+    constructor(public trackPoint: TrackPoint) {
+        super("trackpoint-handle");
+        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.wireGauge });
+        data.applyToMesh(this);
+        this.material = this.trackPoint.track.game.handleMaterial;
+        this.position.copyFrom(this.trackPoint.position);
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.parent = trackPoint.track;
+    }
 }
 
 class Track extends BABYLON.Mesh {
@@ -44,38 +94,69 @@ class Track extends BABYLON.Mesh {
         ];
     }
     
-    public trackPointhandles: BABYLON.Mesh[] = [];
-    public insertTrackPointHandle: BABYLON.Mesh[] = [];
+    public editionMode: boolean = false;
+    public trackPointhandles: TrackPointHandle[] = [];
+    public insertTrackPointHandle: BABYLON.AbstractMesh[] = [];
 
-    public showHandles(): void {
+    public selectedTrackPointHandle: TrackPointHandle;
+    public setSelectedTrackPointHandle(trackpointHandle: TrackPointHandle): void {
+        console.log("setSelectedTrackPointHandle");
+        console.log(trackpointHandle);
+        if (this.selectedTrackPointHandle) {
+            this.selectedTrackPointHandle.material = this.game.handleMaterial;
+        }
+        this.selectedTrackPointHandle = trackpointHandle;
+        if (this.selectedTrackPointHandle) {
+            this.selectedTrackPointHandle.material = this.game.handleMaterialActive;
+        }
+    }
+    public tangentPrevHandle: BABYLON.Mesh;
+    //public normalHandle: BABYLON.Mesh;
+    public tangentNextHandle: BABYLON.Mesh;
+
+    public enableEditionMode(): void {
+        this.disableEditionMode();
+
+        this.editionMode = true;
+        this.rebuildHandles();
+        this.getScene().onPointerObservable.add(this.onPointerEvent);
+    }
+
+    public disableEditionMode(): void {
+        this.editionMode = false;
+        this.getScene().onPointerObservable.removeCallback(this.onPointerEvent);
+    }
+
+    public rebuildHandles(): void {
+        if (!this.editionMode) {
+            return;
+        }
+
         if (this.trackPointhandles) {
             this.trackPointhandles.forEach(h => {
                 h.dispose();
-            })
+            });
         }
         this.trackPointhandles = [];
+
         if (this.insertTrackPointHandle) {
             this.insertTrackPointHandle.forEach(h => {
                 h.dispose();
-            })
+            });
         }
         this.insertTrackPointHandle = [];
+
+        //if (this.normalHandle) {
+        //    this.normalHandle.dispose();
+        //}
+
         for (let i = 0; i < this.trackPoints.length; i++) {
-            let handle = BABYLON.MeshBuilder.CreateBox("handle-" + i, { size: 1.2 * this.wireGauge });
-            handle.material = this.game.handleMaterial;
-            handle.position.copyFrom(this.trackPoints[i].point);
-            handle.rotationQuaternion = BABYLON.Quaternion.Identity();
-            handle.parent = this;
+            let handle = new TrackPointHandle(this.trackPoints[i]);
             this.trackPointhandles.push(handle);
 
-            let handleUp = BABYLON.MeshBuilder.CreateBox("handle-up-" + i, { width: 0.001, depth: 0.001, height: 0.05 });
-            handleUp.material = this.game.handleMaterial;
-            handleUp.parent = handle;
-            handleUp.position.y = 0.6 * this.wireGauge + 0.025;
-
-            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
-            let p = this.trackPoints[i].point;
-            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].position : undefined;
+            let p = this.trackPoints[i].position;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].position : undefined;
 
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
@@ -84,25 +165,69 @@ class Track extends BABYLON.Mesh {
                 pNext = p.add(p.subtract(pPrev));
             }
 
-            Mummu.QuaternionFromYZAxisToRef(this.trackPoints[i].up, pNext.subtract(pPrev), handle.rotationQuaternion);
+            Mummu.QuaternionFromYZAxisToRef(this.trackPoints[i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
 
             if (i < this.trackPoints.length - 1) {
                 let insertHandle = BABYLON.MeshBuilder.CreateSphere("insert-handle-" + i, { diameter: 0.5 * this.wireGauge });
                 insertHandle.material = this.game.insertHandleMaterial;
-                insertHandle.position.copyFrom(this.trackPoints[i].point).addInPlace(this.trackPoints[i + 1].point).scaleInPlace(0.5);
+                insertHandle.position.copyFrom(this.trackPoints[i].position).addInPlace(this.trackPoints[i + 1].position).scaleInPlace(0.5);
                 insertHandle.parent = this;
                 this.insertTrackPointHandle.push(insertHandle);
             }
         }
-        this.getScene().onPointerObservable.add(this.onPointerEvent);
+
+        //if (this.selectedTrackPointHandle) {
+        //    this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.05, diameter: 0.005, tessellation: 8 });
+        //    this.normalHandle.position.copyFrom(this.selectedTrackPointHandle.position);
+        //    this.normalHandle.rotationQuaternion = BABYLON.Quaternion.Identity();
+        //    Mummu.QuaternionFromYZAxisToRef(this.selectedTrackPointHandle.trackPoint.normal, this.selectedTrackPointHandle.trackPoint.dir, this.normalHandle.rotationQuaternion);
+        //    this.normalHandle.position.addInPlace(this.selectedTrackPointHandle.trackPoint.normal.scale(0.025));
+        //}
+    }
+
+    public updateHandles(): void {
+        for (let i = 0; i < this.trackPointhandles.length; i++) {
+            this.trackPointhandles[i].position.copyFrom(this.trackPointhandles[i].trackPoint.position);
+
+            Mummu.QuaternionFromYZAxisToRef(this.trackPointhandles[i].trackPoint.normal, this.trackPointhandles[i].trackPoint.dir, this.trackPointhandles[i].rotationQuaternion);
+        }
     }
 
     public generateWires(): void {
+        // Update normals and tangents
+        for (let i = 1; i < this.trackPoints.length - 1; i++) {
+            let prevTrackPoint = this.trackPoints[i - 1];
+            let trackPoint = this.trackPoints[i];
+            let nextTrackPoint = this.trackPoints[i + 1];
+
+            if (!trackPoint.fixedDir) {
+                trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
+            }
+            if (!trackPoint.fixedTangentPrev) {
+                trackPoint.trangentPrev = BABYLON.Vector3.Distance(prevTrackPoint.position, trackPoint.position);
+            }
+            if (!trackPoint.fixedTangentNext) {
+                trackPoint.trangentNext = BABYLON.Vector3.Distance(nextTrackPoint.position, trackPoint.position);
+            }
+            if (!trackPoint.fixedNormal) {
+                let n = 0;
+                let nextTrackPointWithFixedNormal: TrackPoint;
+                while (!nextTrackPointWithFixedNormal) {
+                    n++;
+                    let tmpTrackPoint = this.trackPoints[i + n];
+                    if (tmpTrackPoint.fixedNormal) {
+                        nextTrackPointWithFixedNormal = tmpTrackPoint;
+                    }
+                }
+                trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
+            }
+        }
+
         this.wires[0].path = [];
         this.wires[1].path = [];
 
-        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point.clone(); });
-        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.up.clone(); });
+        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
+        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
 
         for (let n = 0; n < this.subdivisions; n++) {
             Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
@@ -167,34 +292,35 @@ class Track extends BABYLON.Mesh {
     }
 
     public pointerPlane: BABYLON.Mesh;
-    public selectedHandle: BABYLON.Mesh;
     public offset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public pointerDown: boolean = false;
 
     public onPointerEvent = (eventData: BABYLON.PointerInfo, eventState: BABYLON.EventState) => {
         if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+            this.pointerDown = true;
             let pick = this.getScene().pick(
                 this.getScene().pointerX,
                 this.getScene().pointerY,
                 (mesh) => {
-                    return mesh instanceof BABYLON.Mesh && this.trackPointhandles.indexOf(mesh) != - 1;
+                    return mesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(mesh) != - 1;
                 }
             )
 
-            this.selectedHandle = pick.pickedMesh as BABYLON.Mesh;
+            if (pick.hit && this.selectedTrackPointHandle && pick.pickedMesh === this.selectedTrackPointHandle) {
+                this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
 
-            if (this.selectedHandle) {
-                this.offset.copyFrom(this.selectedHandle.position).subtractInPlace(pick.pickedPoint);
-                this.selectedHandle.material = this.game.handleMaterialActive;
-
-                let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedHandle.position);
+                let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
                 Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
 
                 this.pointerPlane.position.copyFrom(pick.pickedPoint);
                 this.getScene().activeCamera.detachControl();
             }
+            else {
+                this.setSelectedTrackPointHandle(undefined);
+            }
         }
         else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-            if (this.selectedHandle) {
+            if (this.pointerDown && this.selectedTrackPointHandle) {
                 let pick = this.getScene().pick(
                     this.getScene().pointerX,
                     this.getScene().pointerY,
@@ -204,36 +330,45 @@ class Track extends BABYLON.Mesh {
                 )
         
                 if (pick && pick.hit) {
-                    this.selectedHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
+                    this.selectedTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
                 }
             }
         }
         else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
-            if (this.selectedHandle) {
-                let trackPoint = this.trackPoints[this.trackPointhandles.indexOf(this.selectedHandle)];
-                if (trackPoint) {
-                    trackPoint.point.copyFrom(this.selectedHandle.position);
-                    this.generateWires();
-                    this.autoTrackNormals();
-                    this.recomputeAbsolutePath();
-                    this.wires[0].instantiate();
-                    this.wires[1].instantiate();
-                    this.showHandles();
-                }
-                this.selectedHandle.material = this.game.handleMaterial;
+            this.pointerDown = false;
+            console.log("pointerup");
+            if (this.selectedTrackPointHandle) {
+                this.selectedTrackPointHandle.trackPoint.position.copyFrom(this.selectedTrackPointHandle.position);
+                this.generateWires();
+                this.autoTrackNormals();
+                this.recomputeAbsolutePath();
+                this.wires[0].instantiate();
+                this.wires[1].instantiate();
+                this.updateHandles();
             }
             else {
                 let pick = this.getScene().pick(
                     this.getScene().pointerX,
                     this.getScene().pointerY,
                     (mesh) => {
-                        return mesh instanceof BABYLON.Mesh && this.insertTrackPointHandle.indexOf(mesh) != - 1;
+                        if (mesh instanceof TrackPointHandle) {
+                            if (this.trackPointhandles.indexOf(mesh) != -1) {
+                                return true;
+                            }
+                        }
+                        else if (mesh instanceof BABYLON.Mesh) {
+                            if (this.insertTrackPointHandle.indexOf(mesh) != -1) {
+                                return true;
+                            }
+                        }
+                        return false;
                     }
                 )
     
-                let insertTrackPoint = pick.pickedMesh as BABYLON.Mesh;
-                if (insertTrackPoint) {
-                    let trackPoint = new TrackPoint(insertTrackPoint.position.clone());
+                if (this.insertTrackPointHandle.indexOf(pick.pickedMesh) != - 1) {
+                    this.setSelectedTrackPointHandle(undefined);
+                    let insertTrackPoint = pick.pickedMesh as BABYLON.Mesh;
+                    let trackPoint = new TrackPoint(this, insertTrackPoint.position.clone());
                     let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
                     this.trackPoints.splice(index, 0, trackPoint);
                     this.autoTrackNormals();
@@ -241,17 +376,31 @@ class Track extends BABYLON.Mesh {
                     this.recomputeAbsolutePath();
                     this.wires[0].instantiate();
                     this.wires[1].instantiate();
-                    this.showHandles();
+                    this.rebuildHandles();
+                }
+                else if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != - 1) {
+                    this.setSelectedTrackPointHandle(pick.pickedMesh);
+                    this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
+    
+                    let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
+                    Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
+    
+                    this.pointerPlane.position.copyFrom(pick.pickedPoint);
+                    this.getScene().activeCamera.detachControl();
+                    
+                    this.updateHandles();
+                }
+                else {
+                    this.setSelectedTrackPointHandle(undefined);
                 }
             }
-            this.selectedHandle = undefined;
             this.getScene().activeCamera.attachControl();
         }
     }
 
     public autoTrackNormals(): void {
-        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.point.clone(); });
-        let interpolatedNormals = [this.trackPoints[0].up];
+        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
+        let interpolatedNormals = [this.trackPoints[0].normal];
         let f = 1;
         for (let n = 0; n < this.subdivisions; n++) {
             Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
@@ -292,15 +441,15 @@ class Track extends BABYLON.Mesh {
             interpolatedNormals[i] = up;
            
             if (i % f === 0) {
-                this.trackPoints[i / f].up = up;
+                this.trackPoints[i / f].normal = up;
             }
         }
-        interpolatedNormals.push(this.trackPoints[0].up);
+        interpolatedNormals.push(this.trackPoints[0].normal);
 
         for (let i = 1; i < this.trackPoints.length - 1; i++) {
-            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].point : undefined;
-            let p = this.trackPoints[i].point;
-            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].point : undefined;
+            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].position : undefined;
+            let p = this.trackPoints[i].position;
+            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].position : undefined;
 
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
@@ -312,16 +461,16 @@ class Track extends BABYLON.Mesh {
             let dirPrev = p.subtract(pPrev).normalize();
             let dirNext = pNext.subtract(p).normalize();
 
-            let angleAroundY = Mummu.AngleFromToAround(dirPrev, dirNext, this.trackPoints[i].up);
+            let angleAroundY = Mummu.AngleFromToAround(dirPrev, dirNext, this.trackPoints[i].normal);
             let dir = dirPrev.add(dirNext).normalize();
             
-            let up = Mummu.Rotate(this.trackPoints[i].up, dir, - angleAroundY * 1);
-            this.trackPoints[i].up = up;
+            let up = Mummu.Rotate(this.trackPoints[i].normal, dir, - angleAroundY * 1);
+            this.trackPoints[i].normal = up;
         }
     }
 
     public remesh(): void {
-        let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.point; });
+        let smoothedPath = this.trackPoints.map(trackpoint => { return trackpoint.position; });
 
         for (let n = 0; n < 4; n++) {
             Mummu.AltCatmullRomPathInPlace(smoothedPath, this.trackPoints[0].dir, this.trackPoints[this.trackPoints.length - 1].dir);
@@ -347,7 +496,7 @@ class Track extends BABYLON.Mesh {
                     bestIndex = j;
                 }
             }
-            this.trackPoints[i].point.copyFrom(smoothedPath[bestIndex]);
+            this.trackPoints[i].position.copyFrom(smoothedPath[bestIndex]);
         }
     }
 
@@ -356,14 +505,14 @@ class Track extends BABYLON.Mesh {
 
         for (let i = 0; i < this.trackPoints.length; i++) {
             data.points.push({
-                position: { x: this.trackPoints[i].point.x, y: this.trackPoints[i].point.y, z: this.trackPoints[i].point.z }
+                position: { x: this.trackPoints[i].position.x, y: this.trackPoints[i].position.y, z: this.trackPoints[i].position.z }
             });
         }
-        data.points[0].up = { x: this.trackPoints[0].up.x, y: this.trackPoints[0].up.y, z: this.trackPoints[0].up.z }
+        data.points[0].normal = { x: this.trackPoints[0].normal.x, y: this.trackPoints[0].normal.y, z: this.trackPoints[0].normal.z }
         data.points[0].dir = { x: this.trackPoints[0].dir.x, y: this.trackPoints[0].dir.y, z: this.trackPoints[0].dir.z }
 
         let i = this.trackPoints.length - 1;
-        data.points[i].up = { x: this.trackPoints[i].up.x, y: this.trackPoints[i].up.y, z: this.trackPoints[i].up.z }
+        data.points[i].normal = { x: this.trackPoints[i].normal.x, y: this.trackPoints[i].normal.y, z: this.trackPoints[i].normal.z }
         data.points[i].dir = { x: this.trackPoints[i].dir.x, y: this.trackPoints[i].dir.y, z: this.trackPoints[i].dir.z }
 
         return data;
@@ -373,15 +522,21 @@ class Track extends BABYLON.Mesh {
         this.trackPoints = [];
         for (let i = 0; i < data.points.length; i++) {
             let pointData = data.points[i];
-            let trackPoint = new TrackPoint(
-                new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z)
-            );
-            if (pointData.up) {
-                trackPoint.up = new BABYLON.Vector3(pointData.up.x, pointData.up.y, pointData.up.z);
+            let normal: BABYLON.Vector3;
+            let direction: BABYLON.Vector3;
+            if (pointData.normal) {
+                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
             }
             if (pointData.dir) {
-                trackPoint.dir = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
+                direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
             }
+
+            let trackPoint = new TrackPoint(
+                this,
+                new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z),
+                normal,
+                direction
+            );
             this.trackPoints[i] = trackPoint;
         }
     }

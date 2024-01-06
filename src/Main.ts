@@ -20,7 +20,7 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 0.5;
+    public timeFactor: number = 0.05;
     public physicDT: number = 0.0005;
 
     public handleMaterial: BABYLON.StandardMaterial;
@@ -111,7 +111,7 @@ class Game {
                 tracks[1].recomputeAbsolutePath();
                 tracks[1].wires[0].instantiate();
                 tracks[1].wires[1].instantiate();
-                tracks[1].showHandles();
+                tracks[1].enableEditionMode();
             }
         }
         document.getElementById("load").addEventListener("click", () => {
@@ -133,7 +133,7 @@ class Game {
             tracks.forEach(track => {
                 track.recomputeAbsolutePath();
             })
-            tracks[1].showHandles();
+            tracks[1].enableEditionMode();
             debugLoad();
         })
 	}

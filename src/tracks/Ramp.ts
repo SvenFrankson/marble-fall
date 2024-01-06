@@ -7,8 +7,8 @@ class Ramp extends Track {
         let n = new BABYLON.Vector3(1, 10, 0);
         n.normalize();
         this.trackPoints = [
-            new TrackPoint(new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
-            new TrackPoint(new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
+            new TrackPoint(this, new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
         ];
 
         this.subdivisions = 3;
