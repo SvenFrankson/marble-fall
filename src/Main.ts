@@ -106,7 +106,6 @@ class Game {
             if (s) {
                 let data = JSON.parse(s);
                 tracks[1].deserialize(data);
-                tracks[1].autoTrackNormals();
                 tracks[1].generateWires();
                 tracks[1].recomputeAbsolutePath();
                 tracks[1].wires[0].instantiate();
@@ -134,7 +133,6 @@ class Game {
                 track.recomputeAbsolutePath();
             })
             tracks[1].enableEditionMode();
-            debugLoad();
         })
 	}
 

@@ -13,7 +13,6 @@ class Ramp extends Track {
 
         this.subdivisions = 3;
 
-        //this.autoTrackNormals();
         this.generateWires();
     }
 }

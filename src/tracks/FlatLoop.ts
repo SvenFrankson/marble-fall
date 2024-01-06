@@ -24,7 +24,6 @@ class FlatLoop extends Track {
             new TrackPoint(this, new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
         ];
 
-        //this.autoTrackNormals();
         this.generateWires();
     }
 }
