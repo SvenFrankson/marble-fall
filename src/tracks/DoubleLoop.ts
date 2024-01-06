@@ -22,7 +22,7 @@ class DoubleLoop extends Track {
 
         this.subdivisions = 3;
 
-        this.autoTrackNormals();
+        //this.autoTrackNormals();
         this.generateWires();
     }
 }
