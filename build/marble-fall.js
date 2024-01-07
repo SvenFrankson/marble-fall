@@ -107,6 +107,10 @@ class Game {
         this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
         this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
         this.handleMaterialActive.alpha = 0.5;
+        this.handleMaterialHover = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterialHover.diffuseColor.copyFromFloats(0.75, 1, 0.75);
+        this.handleMaterialHover.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterialHover.alpha = 0.5;
         this.insertHandleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
         this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -402,6 +406,20 @@ class Track extends BABYLON.Mesh {
                         }
                     }
                 }
+                else {
+                    let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
+                        if (mesh instanceof TrackPointHandle) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (pick.hit && pick.pickedMesh instanceof TrackPointHandle) {
+                        this.setHoveredTrackPointHandle(pick.pickedMesh);
+                    }
+                    else {
+                        this.setHoveredTrackPointHandle(undefined);
+                    }
+                }
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
                 this.pointerDown = false;
@@ -468,6 +486,26 @@ class Track extends BABYLON.Mesh {
             new Wire(this)
         ];
     }
+    get hoveredTrackPoint() {
+        if (this.hoveredTrackPointHandle) {
+            return this.hoveredTrackPointHandle.trackPoint;
+        }
+        return undefined;
+    }
+    setHoveredTrackPointHandle(trackpointHandle) {
+        if (this.hoveredTrackPointHandle) {
+            if (this.hoveredTrackPointHandle === this.selectedTrackPointHandle) {
+                this.hoveredTrackPointHandle.material = this.game.handleMaterialActive;
+            }
+            else {
+                this.hoveredTrackPointHandle.material = this.game.handleMaterial;
+            }
+        }
+        this.hoveredTrackPointHandle = trackpointHandle;
+        if (this.hoveredTrackPointHandle) {
+            this.hoveredTrackPointHandle.material = this.game.handleMaterialHover;
+        }
+    }
     get selectedTrackPoint() {
         if (this.selectedTrackPointHandle) {
             return this.selectedTrackPointHandle.trackPoint;
@@ -475,14 +513,17 @@ class Track extends BABYLON.Mesh {
         return undefined;
     }
     setSelectedTrackPointHandle(trackpointHandle) {
-        console.log("setSelectedTrackPointHandle");
-        console.log(trackpointHandle);
         if (this.selectedTrackPointHandle) {
             this.selectedTrackPointHandle.material = this.game.handleMaterial;
         }
         this.selectedTrackPointHandle = trackpointHandle;
         if (this.selectedTrackPointHandle) {
-            this.selectedTrackPointHandle.material = this.game.handleMaterialActive;
+            if (this.selectedTrackPointHandle === this.hoveredTrackPointHandle) {
+                this.selectedTrackPointHandle.material = this.game.handleMaterialHover;
+            }
+            else {
+                this.selectedTrackPointHandle.material = this.game.handleMaterialActive;
+            }
         }
     }
     enableEditionMode() {

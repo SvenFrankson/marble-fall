@@ -25,6 +25,7 @@ class Game {
 
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
+    public handleMaterialHover: BABYLON.StandardMaterial;
     public insertHandleMaterial: BABYLON.StandardMaterial;
     
     constructor(canvasElement: string) {
@@ -53,6 +54,11 @@ class Game {
         this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
         this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
         this.handleMaterialActive.alpha = 0.5;
+        
+        this.handleMaterialHover = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterialHover.diffuseColor.copyFromFloats(0.75, 1, 0.75);
+        this.handleMaterialHover.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterialHover.alpha = 0.5;
         
         this.insertHandleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);

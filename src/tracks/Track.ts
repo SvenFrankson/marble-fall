@@ -109,6 +109,28 @@ class Track extends BABYLON.Mesh {
     public trackPointhandles: TrackPointHandle[] = [];
     public insertTrackPointHandle: BABYLON.AbstractMesh[] = [];
 
+    public hoveredTrackPointHandle: TrackPointHandle;
+    public get hoveredTrackPoint(): TrackPoint {
+        if (this.hoveredTrackPointHandle) {
+            return this.hoveredTrackPointHandle.trackPoint;
+        }
+        return undefined;
+    }
+    public setHoveredTrackPointHandle(trackpointHandle: TrackPointHandle): void {
+        if (this.hoveredTrackPointHandle) {
+            if (this.hoveredTrackPointHandle === this.selectedTrackPointHandle) {
+                this.hoveredTrackPointHandle.material = this.game.handleMaterialActive;
+            }
+            else {
+                this.hoveredTrackPointHandle.material = this.game.handleMaterial;
+            }
+        }
+        this.hoveredTrackPointHandle = trackpointHandle;
+        if (this.hoveredTrackPointHandle) {
+            this.hoveredTrackPointHandle.material = this.game.handleMaterialHover;
+        }
+    }
+
     public selectedTrackPointHandle: TrackPointHandle;
     public get selectedTrackPoint(): TrackPoint {
         if (this.selectedTrackPointHandle) {
@@ -117,14 +139,17 @@ class Track extends BABYLON.Mesh {
         return undefined;
     }
     public setSelectedTrackPointHandle(trackpointHandle: TrackPointHandle): void {
-        console.log("setSelectedTrackPointHandle");
-        console.log(trackpointHandle);
         if (this.selectedTrackPointHandle) {
             this.selectedTrackPointHandle.material = this.game.handleMaterial;
         }
         this.selectedTrackPointHandle = trackpointHandle;
         if (this.selectedTrackPointHandle) {
-            this.selectedTrackPointHandle.material = this.game.handleMaterialActive;
+            if (this.selectedTrackPointHandle === this.hoveredTrackPointHandle) {
+                this.selectedTrackPointHandle.material = this.game.handleMaterialHover;
+            }
+            else {
+                this.selectedTrackPointHandle.material = this.game.handleMaterialActive;
+            }
         }
     }
     public tangentPrevHandle: BABYLON.Mesh;
@@ -393,6 +418,25 @@ class Track extends BABYLON.Mesh {
                             this.selectedTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
                         }
                     }
+                }
+            }
+            else {
+                let pick = this.getScene().pick(
+                    this.getScene().pointerX,
+                    this.getScene().pointerY,
+                    (mesh) => {
+                        if (mesh instanceof TrackPointHandle) {
+                            return true;
+                        }
+                        return false;
+                    }
+                )
+    
+                if (pick.hit && pick.pickedMesh instanceof TrackPointHandle) {
+                    this.setHoveredTrackPointHandle(pick.pickedMesh);
+                }
+                else {
+                    this.setHoveredTrackPointHandle(undefined);
                 }
             }
         }
