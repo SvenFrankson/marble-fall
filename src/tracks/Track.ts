@@ -536,16 +536,16 @@ class Track extends BABYLON.Mesh {
         let data: ITrackData = { points: []};
 
         for (let i = 0; i < this.trackPoints.length; i++) {
-            data.points.push({
+            data.points[i] = {
                 position: { x: this.trackPoints[i].position.x, y: this.trackPoints[i].position.y, z: this.trackPoints[i].position.z }
-            });
+            };
+            if (this.trackPoints[i].fixedNormal) {
+                data.points[i].normal = { x: this.trackPoints[i].normal.x, y: this.trackPoints[i].normal.y, z: this.trackPoints[i].normal.z }
+            }
+            if (this.trackPoints[i].fixedDir) {
+                data.points[i].dir = { x: this.trackPoints[i].dir.x, y: this.trackPoints[i].dir.y, z: this.trackPoints[i].dir.z }
+            }
         }
-        data.points[0].normal = { x: this.trackPoints[0].normal.x, y: this.trackPoints[0].normal.y, z: this.trackPoints[0].normal.z }
-        data.points[0].dir = { x: this.trackPoints[0].dir.x, y: this.trackPoints[0].dir.y, z: this.trackPoints[0].dir.z }
-
-        let i = this.trackPoints.length - 1;
-        data.points[i].normal = { x: this.trackPoints[i].normal.x, y: this.trackPoints[i].normal.y, z: this.trackPoints[i].normal.z }
-        data.points[i].dir = { x: this.trackPoints[i].dir.x, y: this.trackPoints[i].dir.y, z: this.trackPoints[i].dir.z }
 
         return data;
     }
