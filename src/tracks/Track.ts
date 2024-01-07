@@ -115,6 +115,22 @@ class Track extends BABYLON.Mesh {
             new Wire(this)
         ];
     }
+
+    public getBarycenter(): BABYLON.Vector3 {
+        if (this.trackPoints.length < 2) {
+            return this.position;
+        }
+        let barycenter = this.trackPoints.map(
+            trackpoint => {
+                return trackpoint.position;
+            }
+        ).reduce(
+            (pos1, pos2) => {
+                return pos1.add(pos2);
+            }
+        ).scaleInPlace(1 / this.trackPoints.length);
+        return BABYLON.Vector3.TransformCoordinates(barycenter, this.getWorldMatrix());
+    }
     
     public editionMode: boolean = false;
     public trackPointhandles: TrackPointHandle[] = [];

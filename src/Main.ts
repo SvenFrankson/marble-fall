@@ -16,7 +16,8 @@ class Game {
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
     public scene: BABYLON.Scene;
-    public camera: BABYLON.FreeCamera;
+    //public camera: BABYLON.FreeCamera;
+    public camera: BABYLON.ArcRotateCamera;
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
@@ -68,25 +69,30 @@ class Game {
         this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.insertHandleMaterial.alpha = 0.5;
 
-        this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(-9.5, -23, 13.5));
+        this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
         this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
-        (this.camera as BABYLON.FreeCamera).rotation.x = 1;
-        (this.camera as BABYLON.FreeCamera).rotation.y = 1;
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
-            this.camera.position.x = pos.x;
-            this.camera.position.y = pos.y;
-            this.camera.position.z = pos.z;
+            this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
         }
+        /*
         let savedRot = window.localStorage.getItem("saved-rot");
         if (savedRot) {
             let rot = JSON.parse(savedRot);
             (this.camera as BABYLON.FreeCamera).rotation.x = rot.x;
             (this.camera as BABYLON.FreeCamera).rotation.y = rot.y;
             (this.camera as BABYLON.FreeCamera).rotation.z = rot.z;
+        }
+        */
+        let savedTarget = window.localStorage.getItem("saved-target");
+        if (savedTarget) {
+            let target = JSON.parse(savedTarget);
+            this.camera.target.x = target.x;
+            this.camera.target.y = target.y;
+            this.camera.target.z = target.z;
         }
         this.camera.attachControl();
         this.camera.getScene();
@@ -99,27 +105,6 @@ class Game {
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
-        })
-
-        document.getElementById("save").addEventListener("click", () => {
-            let data = this.tracks[1].serialize();
-            window.localStorage.setItem("saved-track", JSON.stringify(data));
-        })
-
-        let debugLoad = () => {
-            let s = window.localStorage.getItem("saved-track");
-            if (s) {
-                let data = JSON.parse(s);
-                this.tracks[1].deserialize(data);
-                this.tracks[1].generateWires();
-                this.tracks[1].recomputeAbsolutePath();
-                this.tracks[1].wires[0].instantiate();
-                this.tracks[1].wires[1].instantiate();
-                this.tracks[1].enableEditionMode();
-            }
-        }
-        document.getElementById("load").addEventListener("click", () => {
-            debugLoad();
         })
 
         this.tracks = [];
@@ -171,8 +156,10 @@ class Game {
     public update(): void {
         let pos = this.camera.position;
         window.localStorage.setItem("saved-pos", JSON.stringify({ x: pos.x, y: pos.y, z: pos.z }));
-        let rot = (this.camera as BABYLON.FreeCamera).rotation;
-        window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
+        //let rot = (this.camera as BABYLON.FreeCamera).rotation;
+        //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
+        let target = this.camera.target;
+        window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
     }
 }
 

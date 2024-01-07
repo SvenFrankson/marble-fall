@@ -11,12 +11,47 @@
 		<link rel="stylesheet" type="text/css" href="./styles/app.css">
 	</head>
 	<body>
-        <canvas id="render-canvas" class="full-screen"></canvas>
 		<button id="reset">RESET</button>
-		<button id="remesh">REMESH</button>
-		<button id="save">SAVE</button>
-		<button id="load">LOAD</button>
-		<button id="prev">PREV</button>
-		<button id="next">NEXT</button>
+		<div id="track-editor-menu" class="menu">
+			<div class="line">
+				<span class="title t1">Track Editor</span>
+			</div>
+			<div class="line paginated-title">
+				<button id="prev" class="btn-xs">&lt;</button>
+				<span class="title t2">Track N</span>
+				<button id="next" class="btn-xs">&gt;</button>
+			</div>
+			<div class="line">
+				<button id="save" class="btn-l">SAVE</button>
+			</div>
+			<div class="line">
+				<span class="label">Camera</span>
+				<button class="btn-xs spacer">&nbsp;</button>
+				<button id="cam-top" class="btn-xs">T</button>
+				<button class="btn-xs spacer">&nbsp;</button>
+			</div>
+			<div class="line">
+				<span class="label"></span>
+				<button id="cam-left" class="btn-xs">L</button>
+				<button id="cam-left" class="btn-xs">F</button>
+				<button id="cam-right" class="btn-xs">R</button>
+			</div>
+			<div class="line">
+				<span class="label"></span>
+				<button class="btn-xs spacer">&nbsp;</button>
+				<button id="cam-left" class="btn-xs">B</button>
+				<button class="btn-xs spacer">&nbsp;</button>
+			</div>
+			<div class="line-flex">
+				<button class="btn-m">Focus Point</button>
+				<button id="btn-center-track" class="btn-m">Center Track</button>
+			</div>
+			<div class="line paginated-title">
+				<button id="prev" class="btn-xs">&lt;</button>
+				<span class="title t2">Track N</span>
+				<button id="next" class="btn-xs">&gt;</button>
+			</div>
+		</div>
+        <canvas id="render-canvas" class="full-screen"></canvas>
 	</body>
 </html>

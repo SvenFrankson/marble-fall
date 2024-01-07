@@ -40,29 +40,83 @@ body {
 #reset {
     position: fixed;
     top: 10px;
+    left: 50%;
+    z-index: 1;
 }
 
-#remesh {
-    position: fixed;
-    top: 40px;
+#track-editor-menu {
+    top: 20px;
+    left: 20px;
+    width: 250px;
 }
 
-#save {
+.menu {
     position: fixed;
-    top: 70px;
+    z-index: 1;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgba(255, 255, 255, 20%);
+    padding: 10px;
 }
 
-#load {
-    position: fixed;
-    top: 100px;
+.line {
+    height: 30px;
 }
 
-#prev {
-    position: fixed;
-    top: 130px;
+.line-flex {
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
-#next {
-    position: fixed;
-    top: 160px;
+.paginated-title {
+    display: flex;
+    flex-direction: row;
+}
+
+.label {
+    display: inline-block;
+    width: 80px;
+}
+
+.btn-l {
+    display: inline-block;
+    width: 100%;
+    height: 25px;
+}
+
+.btn-m {
+    display: inline-block;
+    width: 120px;
+    height: 25px;
+}
+
+.btn-xs {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+}
+
+.spacer {
+    visibility: hidden;
+}
+
+.title {
+    display: inline-block;
+    width: 100%;
+    font-weight: bold;
+    text-align: center;
+}
+
+.title.t1 {
+    font-size: 26px;
+}
+
+.title.t2 {
+    font-size: 22px;
+}
+
+.paginated-title .title {
+    flex: auto;
+    text-align: center;
 }

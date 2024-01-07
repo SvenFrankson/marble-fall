@@ -38,5 +38,11 @@ class TrackEditor {
                 window.localStorage.setItem("saved-track", JSON.stringify(data));
             }
         });
+
+        document.getElementById("btn-center-track").addEventListener("click", () => {
+            if (this.track) {
+                this.game.camera.target.copyFrom(this.track.getBarycenter());
+            }
+        });
     }
 }
