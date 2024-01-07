@@ -177,14 +177,11 @@ class Track extends BABYLON.Mesh {
 
     public disableEditionMode(): void {
         this.editionMode = false;
+        this.removeHandles();
         this.getScene().onPointerObservable.removeCallback(this.onPointerEvent);
     }
 
-    public rebuildHandles(): void {
-        if (!this.editionMode) {
-            return;
-        }
-
+    public removeHandles(): void {
         if (this.trackPointhandles) {
             this.trackPointhandles.forEach(h => {
                 h.dispose();
@@ -202,6 +199,14 @@ class Track extends BABYLON.Mesh {
         if (this.normalHandle) {
             this.normalHandle.dispose();
         }
+    }
+
+    public rebuildHandles(): void {
+        if (!this.editionMode) {
+            return;
+        }
+
+        this.removeHandles();
 
         for (let i = 0; i < this.trackPoints.length; i++) {
             let handle = new TrackPointHandle(this.trackPoints[i]);

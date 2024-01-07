@@ -20,8 +20,11 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 0.05;
+    public timeFactor: number = 1;
     public physicDT: number = 0.0005;
+
+    public tracks: Track[] = [];
+    public trackEditor: TrackEditor;
 
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
@@ -98,12 +101,8 @@ class Game {
             ball.velocity.copyFromFloats(0, 0, 0);
         })
 
-        document.getElementById("remesh").addEventListener("click", () => {
-            tracks[1].remesh();
-        })
-
         document.getElementById("save").addEventListener("click", () => {
-            let data = tracks[1].serialize();
+            let data = this.tracks[1].serialize();
             window.localStorage.setItem("saved-track", JSON.stringify(data));
         })
 
@@ -111,34 +110,35 @@ class Game {
             let s = window.localStorage.getItem("saved-track");
             if (s) {
                 let data = JSON.parse(s);
-                tracks[1].deserialize(data);
-                tracks[1].generateWires();
-                tracks[1].recomputeAbsolutePath();
-                tracks[1].wires[0].instantiate();
-                tracks[1].wires[1].instantiate();
-                tracks[1].enableEditionMode();
+                this.tracks[1].deserialize(data);
+                this.tracks[1].generateWires();
+                this.tracks[1].recomputeAbsolutePath();
+                this.tracks[1].wires[0].instantiate();
+                this.tracks[1].wires[1].instantiate();
+                this.tracks[1].enableEditionMode();
             }
         }
         document.getElementById("load").addEventListener("click", () => {
             debugLoad();
         })
 
-        let tracks = [];
+        this.tracks = [];
         for (let n = 0; n < 4; n++) {
             let track = new FlatLoop(this, 2 * n, 0);
             track.instantiate();
-            tracks.push(track);
+            this.tracks.push(track);
     
             let track2 = new DoubleLoop(this, 2 * n + 1, 0);
             track2.instantiate();
-            tracks.push(track2);
+            this.tracks.push(track2);
         }
 
         requestAnimationFrame(() => {
-            tracks.forEach(track => {
+            this.tracks.forEach(track => {
                 track.recomputeAbsolutePath();
             })
-            tracks[1].enableEditionMode();
+            this.trackEditor = new TrackEditor(this);
+            this.trackEditor.initialize();
         })
 	}
 

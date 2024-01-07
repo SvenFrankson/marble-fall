@@ -1,28 +1,26 @@
 /// <reference path="./Track.ts"/>
 
 class FlatLoop extends Track {
-
     constructor(game: Game, i: number, j: number) {
         super(game, i, j);
-        let dir = new BABYLON.Vector3(10, - 1, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(1, 10, 0);
-        n.normalize();
-        this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(- 0.3 * xDist, 0.8 * yDist, - 0.05 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.5 * xDist, 0.6 * yDist, - 0.3 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.8 * xDist, 0.4 * yDist, - 1 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.5 * xDist, 0.2 * yDist, - 1.6 * xDist)),
 
-            new TrackPoint(this, new BABYLON.Vector3(0, 0, -1.8 * xDist), BABYLON.Vector3.Up()),
+        this.deserialize({
+            points: [
+                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+                { position: { x: -0.016874999999999998, y: 0.02598076211353316, z: -0.0028125 }, normal: { x: 0.07005704982382506, y: 0.9285571420969265, z: -0.3645183721443548 } },
+                { position: { x: 0.028124999999999997, y: 0.019485571585149866, z: -0.016874999999999998 }, normal: { x: -0.4000079894185542, y: 0.669493049852682, z: -0.6259174582964437 } },
+                { position: { x: 0.045, y: 0.01299038105676658, z: -0.056249999999999994 }, normal: { x: -0.7896625342675992, y: 0.604083574303679, z: -0.10731317361146468 } },
+                { position: { x: 0.028124999999999997, y: 0.00649519052838329, z: -0.09 }, normal: { x: -0.6630289778795416, y: 0.5544449706535476, z: 0.5029745013507118 } },
+                { position: { x: 0, y: 0, z: -0.10124999999999999 }, normal: { x: -0.141608168132495, y: 0.6131813549305932, z: 0.7771459017994247 } },
+                { position: { x: -0.028124999999999997, y: -0.00649519052838329, z: -0.09 }, normal: { x: 0.44676958849322207, y: 0.6351060486907526, z: 0.6301089125810048 } },
+                { position: { x: -0.045, y: -0.01299038105676658, z: -0.056249999999999994 }, normal: { x: 0.9620117852555945, y: 0.26879945466047617, z: 0.04775121154038476 } },
+                { position: { x: -0.028124999999999997, y: -0.019485571585149866, z: -0.016874999999999998 }, normal: { x: 0.6111194465646702, y: 0.5434406563245013, z: -0.5755043658253918 } },
+                { position: { x: 0.016874999999999998, y: -0.02598076211353316, z: -0.0028125 } },
+                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+            ],
+        });
 
-            new TrackPoint(this, new BABYLON.Vector3(- 0.5 * xDist, - 0.2 * yDist, - 1.6 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(- 0.8 * xDist, - 0.4 * yDist, - 1 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(- 0.5 * xDist, - 0.6 * yDist, - 0.3 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.3 * xDist, - 0.8 * yDist, - 0.05 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
-        ];
+        this.subdivisions = 3;
 
         this.generateWires();
     }

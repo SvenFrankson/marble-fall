@@ -86,8 +86,9 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 0.05;
+        this.timeFactor = 1;
         this.physicDT = 0.0005;
+        this.tracks = [];
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
@@ -145,42 +146,40 @@ class Game {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
         });
-        document.getElementById("remesh").addEventListener("click", () => {
-            tracks[1].remesh();
-        });
         document.getElementById("save").addEventListener("click", () => {
-            let data = tracks[1].serialize();
+            let data = this.tracks[1].serialize();
             window.localStorage.setItem("saved-track", JSON.stringify(data));
         });
         let debugLoad = () => {
             let s = window.localStorage.getItem("saved-track");
             if (s) {
                 let data = JSON.parse(s);
-                tracks[1].deserialize(data);
-                tracks[1].generateWires();
-                tracks[1].recomputeAbsolutePath();
-                tracks[1].wires[0].instantiate();
-                tracks[1].wires[1].instantiate();
-                tracks[1].enableEditionMode();
+                this.tracks[1].deserialize(data);
+                this.tracks[1].generateWires();
+                this.tracks[1].recomputeAbsolutePath();
+                this.tracks[1].wires[0].instantiate();
+                this.tracks[1].wires[1].instantiate();
+                this.tracks[1].enableEditionMode();
             }
         };
         document.getElementById("load").addEventListener("click", () => {
             debugLoad();
         });
-        let tracks = [];
+        this.tracks = [];
         for (let n = 0; n < 4; n++) {
             let track = new FlatLoop(this, 2 * n, 0);
             track.instantiate();
-            tracks.push(track);
+            this.tracks.push(track);
             let track2 = new DoubleLoop(this, 2 * n + 1, 0);
             track2.instantiate();
-            tracks.push(track2);
+            this.tracks.push(track2);
         }
         requestAnimationFrame(() => {
-            tracks.forEach(track => {
+            this.tracks.forEach(track => {
                 track.recomputeAbsolutePath();
             });
-            tracks[1].enableEditionMode();
+            this.trackEditor = new TrackEditor(this);
+            this.trackEditor.initialize();
         });
     }
     download(filename, text) {
@@ -218,6 +217,44 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+class TrackEditor {
+    constructor(game) {
+        this.game = game;
+        this.setTrack(this.game.tracks[0]);
+    }
+    get track() {
+        return this._track;
+    }
+    setTrack(t) {
+        if (this._track) {
+            this._track.disableEditionMode();
+        }
+        this._track = t;
+        if (this._track) {
+            this._track.enableEditionMode();
+        }
+    }
+    initialize() {
+        document.getElementById("prev").addEventListener("click", () => {
+            let trackIndex = this.game.tracks.indexOf(this._track);
+            if (trackIndex > 0) {
+                this.setTrack(this.game.tracks[trackIndex - 1]);
+            }
+        });
+        document.getElementById("next").addEventListener("click", () => {
+            let trackIndex = this.game.tracks.indexOf(this._track);
+            if (trackIndex < this.game.tracks.length - 1) {
+                this.setTrack(this.game.tracks[trackIndex + 1]);
+            }
+        });
+        document.getElementById("save").addEventListener("click", () => {
+            if (this.track) {
+                let data = this.track.serialize();
+                window.localStorage.setItem("saved-track", JSON.stringify(data));
+            }
+        });
+    }
+}
 class Wire extends BABYLON.Mesh {
     constructor(track) {
         super("wire");
@@ -254,19 +291,24 @@ class Wire extends BABYLON.Mesh {
             let sina = Math.sin(a);
             shape[i] = new BABYLON.Vector3(cosa * this.radius, sina * this.radius, 0);
         }
-        //let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-        //wire.parent = this;
-        for (let i = 0; i < this.path.length - 1; i++) {
-            let dir = this.path[i].subtract(this.path[i + 1]).normalize();
-            let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
-            let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.6, height: l });
-            wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
-            wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
-            wireSection.parent = this;
-            Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
+        if (!Wire.DEBUG_DISPLAY) {
+            let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            wire.parent = this;
+        }
+        if (Wire.DEBUG_DISPLAY) {
+            for (let i = 0; i < this.path.length - 1; i++) {
+                let dir = this.path[i].subtract(this.path[i + 1]).normalize();
+                let l = BABYLON.Vector3.Distance(this.path[i + 1], this.path[i]);
+                let wireSection = BABYLON.CreateCapsule("wire-section", { radius: this.size * 0.6, height: l });
+                wireSection.position.copyFrom(this.path[i + 1]).addInPlace(this.path[i]).scaleInPlace(0.5);
+                wireSection.rotationQuaternion = BABYLON.Quaternion.Identity();
+                wireSection.parent = this;
+                Mummu.QuaternionFromYZAxisToRef(dir, BABYLON.Axis.Y, wireSection.rotationQuaternion);
+            }
         }
     }
 }
+Wire.DEBUG_DISPLAY = false;
 Wire.Instances = new Nabu.UniqueList();
 var baseRadius = 0.075;
 var xDist = 0.75 * baseRadius;
@@ -556,12 +598,10 @@ class Track extends BABYLON.Mesh {
     }
     disableEditionMode() {
         this.editionMode = false;
+        this.removeHandles();
         this.getScene().onPointerObservable.removeCallback(this.onPointerEvent);
     }
-    rebuildHandles() {
-        if (!this.editionMode) {
-            return;
-        }
+    removeHandles() {
         if (this.trackPointhandles) {
             this.trackPointhandles.forEach(h => {
                 h.dispose();
@@ -577,6 +617,12 @@ class Track extends BABYLON.Mesh {
         if (this.normalHandle) {
             this.normalHandle.dispose();
         }
+    }
+    rebuildHandles() {
+        if (!this.editionMode) {
+            return;
+        }
+        this.removeHandles();
         for (let i = 0; i < this.trackPoints.length; i++) {
             let handle = new TrackPointHandle(this.trackPoints[i]);
             this.trackPointhandles.push(handle);
@@ -745,16 +791,16 @@ class DoubleLoop extends Track {
         super(game, i, j);
         this.deserialize({
             points: [
-                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371488771274, y: 0.9950371834888285, z: 1.0846225653726727e-9 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
                 { position: { x: -0.02247276854298, y: 0.033123278840042014, z: 0.002954409933442207 } },
-                { position: { x: -0.004806679736589367, y: 0.05233107801664711, z: 0.003136151115902047 } },
-                { position: { x: -0.025953415041307312, y: 0.07023608132278716, z: -0.0057761936067418475 } },
-                { position: { x: -0.04187220593297156, y: 0.046647031744568704, z: -0.013617848089849673 } },
-                { position: { x: -0.004782729582494746, y: 0.005448401551669577, z: -0.016730026157779007 } },
-                { position: { x: 0.03392457799318907, y: 0.006222947045886634, z: -0.007715187355032786 } },
-                { position: { x: 0.02912696033523811, y: 0.02701941918436778, z: -0.004721568668964358 } },
-                { position: { x: 0.004463062684720603, y: 0.024485514735595473, z: -0.0025526625841006245 } },
-                { position: { x: 0.016665422691149664, y: -0.01818856367050191, z: 0.0029672655628109152 } },
+                { position: { x: -0.008625615166496514, y: 0.051309444999612194, z: 0.000509946869621752 }, normal: { x: -0.9276908581276804, y: -0.18715911138463862, z: -0.3230497465902744 } },
+                { position: { x: -0.02637942694159573, y: 0.06541888250286124, z: -0.004537455410782304 }, normal: { x: 0.10036590992744263, y: -0.9894286000090222, z: 0.10467917466537023 } },
+                { position: { x: -0.04092846176406709, y: 0.0466359291194191, z: -0.012692351360809513 }, normal: { x: 0.9319556221329599, y: 0.2918903400034145, z: 0.21507846890718454 } },
+                { position: { x: -0.004782729582494746, y: 0.005448401551669577, z: -0.016730026157779007 }, normal: { x: 0.4596700939184529, y: 0.8626242643707038, z: 0.21114635510920576 } },
+                { position: { x: 0.03385231243861794, y: 0.005970185209017237, z: -0.009354515268917363 }, normal: { x: -0.5759441702085372, y: 0.7914589731290805, z: 0.20464849536769414 } },
+                { position: { x: 0.02912696033523811, y: 0.02701941918436778, z: -0.004721568668964358 }, normal: { x: -0.5468582561392401, y: -0.831204226196418, z: -0.10022765110269446 } },
+                { position: { x: 0.004463062684720603, y: 0.024485514735595473, z: -0.0025526625841006245 }, normal: { x: 0.939642558345734, y: -0.2899169573543667, z: -0.18171411718375216 } },
+                { position: { x: 0.016665422691149664, y: -0.01818856367050191, z: 0.0029672655628109152 }, normal: { x: 0.7314990843982685, y: 0.6568508829776235, z: -0.18290983313100223 } },
                 { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
             ],
         });
@@ -766,23 +812,22 @@ class DoubleLoop extends Track {
 class FlatLoop extends Track {
     constructor(game, i, j) {
         super(game, i, j);
-        let dir = new BABYLON.Vector3(10, -1, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(1, 10, 0);
-        n.normalize();
-        this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-xDist, yDist, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(-0.3 * xDist, 0.8 * yDist, -0.05 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.5 * xDist, 0.6 * yDist, -0.3 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.8 * xDist, 0.4 * yDist, -1 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.5 * xDist, 0.2 * yDist, -1.6 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0, 0, -1.8 * xDist), BABYLON.Vector3.Up()),
-            new TrackPoint(this, new BABYLON.Vector3(-0.5 * xDist, -0.2 * yDist, -1.6 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(-0.8 * xDist, -0.4 * yDist, -1 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(-0.5 * xDist, -0.6 * yDist, -0.3 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(0.3 * xDist, -0.8 * yDist, -0.05 * xDist)),
-            new TrackPoint(this, new BABYLON.Vector3(xDist, -yDist, 0), n, dir)
-        ];
+        this.deserialize({
+            points: [
+                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+                { position: { x: -0.016874999999999998, y: 0.02598076211353316, z: -0.0028125 }, normal: { x: 0.07005704982382506, y: 0.9285571420969265, z: -0.3645183721443548 } },
+                { position: { x: 0.028124999999999997, y: 0.019485571585149866, z: -0.016874999999999998 }, normal: { x: -0.4000079894185542, y: 0.669493049852682, z: -0.6259174582964437 } },
+                { position: { x: 0.045, y: 0.01299038105676658, z: -0.056249999999999994 }, normal: { x: -0.7896625342675992, y: 0.604083574303679, z: -0.10731317361146468 } },
+                { position: { x: 0.028124999999999997, y: 0.00649519052838329, z: -0.09 }, normal: { x: -0.6630289778795416, y: 0.5544449706535476, z: 0.5029745013507118 } },
+                { position: { x: 0, y: 0, z: -0.10124999999999999 }, normal: { x: -0.141608168132495, y: 0.6131813549305932, z: 0.7771459017994247 } },
+                { position: { x: -0.028124999999999997, y: -0.00649519052838329, z: -0.09 }, normal: { x: 0.44676958849322207, y: 0.6351060486907526, z: 0.6301089125810048 } },
+                { position: { x: -0.045, y: -0.01299038105676658, z: -0.056249999999999994 }, normal: { x: 0.9620117852555945, y: 0.26879945466047617, z: 0.04775121154038476 } },
+                { position: { x: -0.028124999999999997, y: -0.019485571585149866, z: -0.016874999999999998 }, normal: { x: 0.6111194465646702, y: 0.5434406563245013, z: -0.5755043658253918 } },
+                { position: { x: 0.016874999999999998, y: -0.02598076211353316, z: -0.0028125 } },
+                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+            ],
+        });
+        this.subdivisions = 3;
         this.generateWires();
     }
 }

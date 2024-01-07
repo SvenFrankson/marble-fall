@@ -56,3 +56,13 @@ body {
     position: fixed;
     top: 100px;
 }
+
+#prev {
+    position: fixed;
+    top: 130px;
+}
+
+#next {
+    position: fixed;
+    top: 160px;
+}
