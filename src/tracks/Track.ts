@@ -75,8 +75,10 @@ class Track extends BABYLON.Mesh {
     public trackPoints: TrackPoint[];
     public wires: Wire[];
 
-    public wireSize: number = 0.002;
+    public wireSize: number = 0.0015;
     public wireGauge: number = 0.010;
+
+    public sleepersMesh: BABYLON.Mesh;
 
     constructor(public game: Game, public i: number, public j: number) {
         super("track", game.scene);
@@ -173,7 +175,7 @@ class Track extends BABYLON.Mesh {
             Mummu.CatmullRomPathInPlace(interpolatedNormals);
         }
 
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < 0; n++) {
             let smoothed = interpolatedPoints.map(pt => { return pt.clone(); });
             for (let i = 1; i < interpolatedPoints.length - 1; i++) {
                 smoothed[i].addInPlace(interpolatedPoints[i - 1]).addInPlace(interpolatedPoints[i + 1]).scaleInPlace(1/3);
@@ -215,7 +217,6 @@ class Track extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-
         let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
         if (data[0]) {
             let baseMesh = new BABYLON.Mesh("base-mesh");
@@ -223,8 +224,16 @@ class Track extends BABYLON.Mesh {
             baseMesh.position.z += 0.02;
             data[0].applyToMesh(baseMesh);
         }
-        await this.wires[0].instantiate();
-        await this.wires[1].instantiate();
+        this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
+        this.sleepersMesh.parent = this;
+
+        this.rebuildWireMeshes();
+    }
+
+    public rebuildWireMeshes(): void {
+        SleeperMeshBuilder.GenerateSleepersVertexData(this).applyToMesh(this.sleepersMesh);
+        this.wires[0].instantiate();
+        this.wires[1].instantiate();
     }
 
     public serialize(): ITrackData {

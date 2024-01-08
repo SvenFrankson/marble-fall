@@ -322,8 +322,7 @@ class TrackEditor {
                     this.selectedTrackPoint.fixedNormal = true;
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
                 else if (this.dragTrackPoint && this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
@@ -331,8 +330,7 @@ class TrackEditor {
                     this.hoveredTrackPoint.position.copyFrom(this.hoveredTrackPointHandle.position);
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
                 else {
@@ -357,8 +355,7 @@ class TrackEditor {
                         this.track.trackPoints.splice(index, 0, trackPoint);
                         this.track.generateWires();
                         this.track.recomputeAbsolutePath();
-                        this.track.wires[0].instantiate();
-                        this.track.wires[1].instantiate();
+                        this.track.rebuildWireMeshes();
                         this.rebuildHandles();
                     }
                     else if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != -1) {
@@ -381,8 +378,7 @@ class TrackEditor {
                         this.hoveredTrackPoint.fixedNormal = true;
                         this.track.generateWires();
                         this.track.recomputeAbsolutePath();
-                        this.track.wires[0].instantiate();
-                        this.track.wires[1].instantiate();
+                        this.track.rebuildWireMeshes();
                         this.updateHandles();
                     }
                 }
@@ -489,8 +485,7 @@ class TrackEditor {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -501,8 +496,7 @@ class TrackEditor {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -512,8 +506,7 @@ class TrackEditor {
                 this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();
-                this.track.wires[0].instantiate();
-                this.track.wires[1].instantiate();
+                this.track.rebuildWireMeshes();
                 this.rebuildHandles();
             }
         });
@@ -652,10 +645,12 @@ class Wire extends BABYLON.Mesh {
         this.path = [];
         this.normals = [];
         this.absolutePath = [];
-        this.size = 0.0015;
         this.parent = this.track;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         Wire.Instances.push(this);
+    }
+    get size() {
+        return this.track.wireSize;
     }
     get radius() {
         return this.size * 0.5;
@@ -759,7 +754,7 @@ class Track extends BABYLON.Mesh {
         this.i = i;
         this.j = j;
         this.subdivisions = 3;
-        this.wireSize = 0.002;
+        this.wireSize = 0.0015;
         this.wireGauge = 0.010;
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist;
@@ -840,7 +835,7 @@ class Track extends BABYLON.Mesh {
             Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
             Mummu.CatmullRomPathInPlace(interpolatedNormals);
         }
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < 0; n++) {
             let smoothed = interpolatedPoints.map(pt => { return pt.clone(); });
             for (let i = 1; i < interpolatedPoints.length - 1; i++) {
                 smoothed[i].addInPlace(interpolatedPoints[i - 1]).addInPlace(interpolatedPoints[i + 1]).scaleInPlace(1 / 3);
@@ -880,8 +875,14 @@ class Track extends BABYLON.Mesh {
             baseMesh.position.z += 0.02;
             data[0].applyToMesh(baseMesh);
         }
-        await this.wires[0].instantiate();
-        await this.wires[1].instantiate();
+        this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
+        this.sleepersMesh.parent = this;
+        this.rebuildWireMeshes();
+    }
+    rebuildWireMeshes() {
+        SleeperMeshBuilder.GenerateSleepersVertexData(this).applyToMesh(this.sleepersMesh);
+        this.wires[0].instantiate();
+        this.wires[1].instantiate();
     }
     serialize() {
         let data = { points: [] };
@@ -974,5 +975,43 @@ class Ramp extends Track {
         ];
         this.subdivisions = 3;
         this.generateWires();
+    }
+}
+class SleeperMeshBuilder {
+    static GenerateSleepersVertexData(track) {
+        let partialsDatas = [];
+        let radius = track.wireSize * 0.5 * 0.75;
+        let nShape = 6;
+        let shape = [];
+        for (let i = 0; i < nShape; i++) {
+            let a = i / nShape * 2 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            shape[i] = new BABYLON.Vector3(cosa * radius, sina * radius, 0);
+        }
+        let radiusPath = track.wireGauge * 0.5;
+        let nPath = 12;
+        let basePath = [];
+        for (let i = 0; i <= nPath; i++) {
+            let a = i / nPath * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            basePath[i] = new BABYLON.Vector3(cosa * radiusPath, -sina * radiusPath, 0);
+        }
+        let q = BABYLON.Quaternion.Identity();
+        for (let i = 0; i < track.trackPoints.length; i++) {
+            let trackpoint = track.trackPoints[i];
+            let path = basePath.map(v => { return v.clone(); });
+            let t = trackpoint.position;
+            Mummu.QuaternionFromYZAxisToRef(trackpoint.normal, trackpoint.dir, q);
+            let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), q, t);
+            for (let j = 0; j < path.length; j++) {
+                BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
+            }
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+            tmp.dispose();
+        }
+        return Mummu.MergeVertexDatas(...partialsDatas);
     }
 }

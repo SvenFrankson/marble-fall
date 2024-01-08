@@ -7,7 +7,9 @@ class Wire extends BABYLON.Mesh {
     public path: BABYLON.Vector3[] = [];
     public normals: BABYLON.Vector3[] = [];
     public absolutePath: BABYLON.Vector3[] = [];
-    public size: number = 0.0015;
+    public get size(): number {
+        return this.track.wireSize;
+    }
     public get radius(): number {
         return this.size * 0.5;
     }

@@ -141,8 +141,7 @@ class TrackEditor {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -154,8 +153,7 @@ class TrackEditor {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -166,8 +164,7 @@ class TrackEditor {
                 this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();
-                this.track.wires[0].instantiate();
-                this.track.wires[1].instantiate();
+                this.track.rebuildWireMeshes();
                 this.rebuildHandles();
             }
         });
@@ -419,8 +416,7 @@ class TrackEditor {
                 this.selectedTrackPoint.fixedNormal = true;
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();
-                this.track.wires[0].instantiate();
-                this.track.wires[1].instantiate();
+                this.track.rebuildWireMeshes();
                 this.updateHandles();
             }
             else if (this.dragTrackPoint && this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
@@ -428,8 +424,7 @@ class TrackEditor {
                 this.hoveredTrackPoint.position.copyFrom(this.hoveredTrackPointHandle.position);
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();
-                this.track.wires[0].instantiate();
-                this.track.wires[1].instantiate();
+                this.track.rebuildWireMeshes();
                 this.updateHandles();
             }
             else {
@@ -459,8 +454,7 @@ class TrackEditor {
                     this.track.trackPoints.splice(index, 0, trackPoint);
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.rebuildHandles();
                 }
                 else if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != - 1) {
@@ -486,8 +480,7 @@ class TrackEditor {
                     this.hoveredTrackPoint.fixedNormal = true;
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
-                    this.track.wires[0].instantiate();
-                    this.track.wires[1].instantiate();
+                    this.track.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
