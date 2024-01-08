@@ -478,11 +478,11 @@ class TrackEditor {
             this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
             this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
             let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
-            document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
+            document.getElementById("slope-prev").innerText = slopePrev.toFixed(0) + "%";
             let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
-            document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
+            document.getElementById("slope-curr").innerText = slopeCurr.toFixed(0) + "%";
             let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
-            document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
+            document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
         }
     }
 }

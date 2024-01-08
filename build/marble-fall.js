@@ -401,11 +401,11 @@ class TrackEditor {
                 this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
                 this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
                 let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
-                document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
+                document.getElementById("slope-prev").innerText = slopePrev.toFixed(0) + "%";
                 let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
-                document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
+                document.getElementById("slope-curr").innerText = slopeCurr.toFixed(0) + "%";
                 let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
-                document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
+                document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
             }
         };
         this.setTrack(this.game.tracks[0]);
@@ -736,9 +736,19 @@ class Track extends BABYLON.Mesh {
     }
     getSlopeAt(index) {
         let trackpoint = this.trackPoints[index];
+        let nextTrackPoint = this.trackPoints[index + 1];
         if (trackpoint) {
-            let a = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
-            return a;
+            let dirToNext = BABYLON.Vector3.Zero();
+            if (nextTrackPoint) {
+                dirToNext.copyFrom(nextTrackPoint.position).subtractInPlace(trackpoint.position).normalize();
+            }
+            else {
+                dirToNext.copyFrom(trackpoint.dir);
+            }
+            let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, dirToNext);
+            let angleToHorizontal = Math.PI / 2 - angleToVertical;
+            let slope = Math.tan(angleToHorizontal) * 100;
+            return slope;
         }
         return 0;
     }
