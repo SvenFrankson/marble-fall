@@ -211,7 +211,7 @@ class TrackEditor {
         this.game = game;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
         this.setTrack(this.game.tracks[0]);
-        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"]);
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
     }
     get track() {
         return this._track;

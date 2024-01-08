@@ -18,7 +18,7 @@ class TrackEditor {
 
     constructor(public game: Game) {
         this.setTrack(this.game.tracks[0]);
-        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"]);
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
     }
 
     public initialize(): void {
