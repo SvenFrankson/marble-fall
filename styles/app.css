@@ -47,7 +47,7 @@ body {
 #track-editor-menu {
     top: 20px;
     left: 20px;
-    width: 250px;
+    width: 400px;
 }
 
 .menu {
@@ -119,4 +119,10 @@ body {
 .paginated-title .title {
     flex: auto;
     text-align: center;
+}
+
+input-vec3 {
+    display: inline-block;
+    width: 300px;
+    outline: 1px solid magenta;
 }

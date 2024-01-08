@@ -37,6 +37,7 @@ class Ball extends BABYLON.Mesh {
         let gameDt = this.getScene().deltaTime / 1000;
         if (isFinite(gameDt)) {
             this._timer += gameDt * this.game.timeFactor;
+            this._timer = Math.min(this._timer, 1);
         }
 
         while (this._timer > 0) {

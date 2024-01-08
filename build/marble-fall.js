@@ -9,6 +9,7 @@ class Ball extends BABYLON.Mesh {
             let gameDt = this.getScene().deltaTime / 1000;
             if (isFinite(gameDt)) {
                 this._timer += gameDt * this.game.timeFactor;
+                this._timer = Math.min(this._timer, 1);
             }
             while (this._timer > 0) {
                 let m = this.mass;
@@ -210,6 +211,13 @@ class TrackEditor {
     constructor(game) {
         this.game = game;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+        this._update = () => {
+            if (this.track) {
+                if (this.track.selectedTrackPoint) {
+                    this.activeTrackpointPositionInput.targetXYZ = this.track.selectedTrackPoint.position;
+                }
+            }
+        };
         this.setTrack(this.game.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
     }
@@ -264,6 +272,17 @@ class TrackEditor {
                 this.game.camera.target.copyFrom(this.track.getBarycenter());
             }
         });
+        this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos");
+        this.activeTrackpointPositionInput.onInputXYZCallback = (xyz) => {
+            if (this.track) {
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.track.updateHandles();
+            }
+        };
+        this.game.scene.onBeforeRenderObservable.add(this._update);
     }
     setCameraAlphaBeta(alpha, beta, radius = 0.25) {
         this._animateCamera([alpha, beta, radius], 0.5);

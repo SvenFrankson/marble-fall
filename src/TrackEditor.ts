@@ -14,6 +14,8 @@ class TrackEditor {
         }
     }
 
+    public activeTrackpointPositionInput: Nabu.InputVector3;
+
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
 
     constructor(public game: Game) {
@@ -67,9 +69,30 @@ class TrackEditor {
                 this.game.camera.target.copyFrom(this.track.getBarycenter());
             }
         });
+
+        this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos") as Nabu.InputVector3;
+        this.activeTrackpointPositionInput.onInputXYZCallback = (xyz: Nabu.IVector3XYZValue) => {
+            if (this.track) {
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.track.updateHandles();
+            }
+        }
+
+        this.game.scene.onBeforeRenderObservable.add(this._update);
     }
 
     public setCameraAlphaBeta(alpha: number, beta: number, radius: number = 0.25): void {
         this._animateCamera([alpha, beta, radius], 0.5);
+    }
+
+    private _update = () => {
+        if (this.track) {
+            if (this.track.selectedTrackPoint) {
+                this.activeTrackpointPositionInput.targetXYZ = this.track.selectedTrackPoint.position;
+            }
+        }
     }
 }
