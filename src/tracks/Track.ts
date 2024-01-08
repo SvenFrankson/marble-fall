@@ -49,6 +49,14 @@ class TrackPoint {
             this.trangentNext = 1;
         }
     }
+
+    public isFirstOrLast(): boolean {
+        let index = this.track.trackPoints.indexOf(this);
+        if (index === 0 || index === this.track.trackPoints.length - 1) {
+            return true;
+        }
+        return false;
+    }
 }
 
 interface ITrackPointData {
@@ -101,7 +109,9 @@ class Track extends BABYLON.Mesh {
     }
 
     public deleteTrackPointAt(index: number): void {
-        this.trackPoints.splice(index, 1);
+        if (index > 0 && index < this.trackPoints.length - 1) {
+            this.trackPoints.splice(index, 1);
+        }
     }
 
     public getBarycenter(): BABYLON.Vector3 {

@@ -392,8 +392,14 @@ class TrackEditor {
         };
         this._update = () => {
             if (this.selectedTrackPoint) {
-                this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
-                this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
+                if (this.selectedTrackPoint.isFirstOrLast()) {
+                    this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position.clone();
+                    this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal.clone();
+                }
+                else {
+                    this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
+                    this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
+                }
                 let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
                 document.getElementById("slope-prev").innerText = slopePrev.toFixed(0) + "%";
                 let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
@@ -482,21 +488,25 @@ class TrackEditor {
         this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos");
         this.activeTrackpointPositionInput.onInputXYZCallback = (xyz) => {
             if (this.track) {
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.wires[0].instantiate();
-                this.track.wires[1].instantiate();
-                this.updateHandles();
+                if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.wires[0].instantiate();
+                    this.track.wires[1].instantiate();
+                    this.updateHandles();
+                }
             }
         };
         this.activeTrackpointNormalInput = document.getElementById("active-trackpoint-normal");
         this.activeTrackpointNormalInput.onInputXYZCallback = (xyz) => {
             if (this.track) {
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.wires[0].instantiate();
-                this.track.wires[1].instantiate();
-                this.updateHandles();
+                if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.wires[0].instantiate();
+                    this.track.wires[1].instantiate();
+                    this.updateHandles();
+                }
             }
         };
         document.getElementById("delete-trackpoint").addEventListener("click", () => {
@@ -736,6 +746,13 @@ class TrackPoint {
             this.trangentNext = 1;
         }
     }
+    isFirstOrLast() {
+        let index = this.track.trackPoints.indexOf(this);
+        if (index === 0 || index === this.track.trackPoints.length - 1) {
+            return true;
+        }
+        return false;
+    }
 }
 class Track extends BABYLON.Mesh {
     constructor(game, i, j) {
@@ -772,7 +789,9 @@ class Track extends BABYLON.Mesh {
         return 0;
     }
     deleteTrackPointAt(index) {
-        this.trackPoints.splice(index, 1);
+        if (index > 0 && index < this.trackPoints.length - 1) {
+            this.trackPoints.splice(index, 1);
+        }
     }
     getBarycenter() {
         if (this.trackPoints.length < 2) {
