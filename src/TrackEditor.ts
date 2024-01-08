@@ -148,6 +148,17 @@ class TrackEditor {
             }
         }
 
+        document.getElementById("delete-trackpoint").addEventListener("click", () => {
+            if (this.track) {
+                this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.rebuildHandles();
+            }
+        });
+
         this.game.scene.onBeforeRenderObservable.add(this._update);
         this.game.scene.onPointerObservable.add(this.onPointerEvent);
     }
@@ -379,9 +390,12 @@ class TrackEditor {
     
                 if (pick.hit && pick.pickedMesh instanceof TrackPointHandle) {
                     this.setHoveredTrackPointHandle(pick.pickedMesh);
+                    this.game.scene.activeCamera.detachControl();
+                    
                 }
                 else {
                     this.setHoveredTrackPointHandle(undefined);
+                    this.game.scene.activeCamera.attachControl();
                 }
             }
         }

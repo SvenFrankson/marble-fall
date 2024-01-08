@@ -68,7 +68,7 @@ class Track extends BABYLON.Mesh {
     public wires: Wire[];
 
     public wireSize: number = 0.002;
-    public wireGauge: number = 0.012;
+    public wireGauge: number = 0.010;
 
     constructor(public game: Game, public i: number, public j: number) {
         super("track", game.scene);
@@ -98,6 +98,10 @@ class Track extends BABYLON.Mesh {
             return slope;
         }
         return 0;
+    }
+
+    public deleteTrackPointAt(index: number): void {
+        this.trackPoints.splice(index, 1);
     }
 
     public getBarycenter(): BABYLON.Vector3 {

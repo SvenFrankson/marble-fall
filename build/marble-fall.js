@@ -87,7 +87,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 1;
+        this.timeFactor = 0.5;
         this.physicDT = 0.0005;
         this.tracks = [];
         Game.Instance = this;
@@ -315,9 +315,11 @@ class TrackEditor {
                     });
                     if (pick.hit && pick.pickedMesh instanceof TrackPointHandle) {
                         this.setHoveredTrackPointHandle(pick.pickedMesh);
+                        this.game.scene.activeCamera.detachControl();
                     }
                     else {
                         this.setHoveredTrackPointHandle(undefined);
+                        this.game.scene.activeCamera.attachControl();
                     }
                 }
             }
@@ -498,6 +500,16 @@ class TrackEditor {
                 this.updateHandles();
             }
         };
+        document.getElementById("delete-trackpoint").addEventListener("click", () => {
+            if (this.track) {
+                this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.rebuildHandles();
+            }
+        });
         this.game.scene.onBeforeRenderObservable.add(this._update);
         this.game.scene.onPointerObservable.add(this.onPointerEvent);
     }
@@ -625,7 +637,7 @@ class Wire extends BABYLON.Mesh {
         this.path = [];
         this.normals = [];
         this.absolutePath = [];
-        this.size = 0.002;
+        this.size = 0.0015;
         this.parent = this.track;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         Wire.Instances.push(this);
@@ -726,7 +738,7 @@ class Track extends BABYLON.Mesh {
         this.j = j;
         this.subdivisions = 3;
         this.wireSize = 0.002;
-        this.wireGauge = 0.012;
+        this.wireGauge = 0.010;
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist;
         this.wires = [
@@ -751,6 +763,9 @@ class Track extends BABYLON.Mesh {
             return slope;
         }
         return 0;
+    }
+    deleteTrackPointAt(index) {
+        this.trackPoints.splice(index, 1);
     }
     getBarycenter() {
         if (this.trackPoints.length < 2) {

@@ -21,7 +21,7 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 1;
+    public timeFactor: number = 0.5;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];
