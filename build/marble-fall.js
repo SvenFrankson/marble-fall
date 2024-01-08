@@ -207,15 +207,191 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+class TrackPointHandle extends BABYLON.Mesh {
+    constructor(trackPoint) {
+        super("trackpoint-handle");
+        this.trackPoint = trackPoint;
+        this._normal = BABYLON.Vector3.Up();
+        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.wireGauge });
+        data.applyToMesh(this);
+        this.position.copyFrom(this.trackPoint.position);
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.setNormal(trackPoint.normal);
+        this.parent = trackPoint.track;
+        let normalIndicator = BABYLON.MeshBuilder.CreateCylinder("normal", { height: this.trackPoint.track.wireGauge, diameter: 0.0005, tessellation: 8 });
+        normalIndicator.parent = this;
+        normalIndicator.position.copyFromFloats(0, 0.6 * this.trackPoint.track.wireGauge * 0.5 + this.trackPoint.track.wireGauge * 0.5, 0);
+        this.setMaterial(this.trackPoint.track.game.handleMaterial);
+    }
+    get normal() {
+        return this._normal;
+    }
+    setNormal(n) {
+        this._normal.copyFrom(n);
+        Mummu.QuaternionFromYZAxisToRef(this._normal, this.trackPoint.dir, this.rotationQuaternion);
+    }
+    setMaterial(material) {
+        this.material = material;
+        this.getChildMeshes().forEach(m => {
+            m.material = material;
+        });
+    }
+}
 class TrackEditor {
     constructor(game) {
         this.game = game;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
-        this._update = () => {
-            if (this.track) {
-                if (this.track.selectedTrackPoint) {
-                    this.activeTrackpointPositionInput.targetXYZ = this.track.selectedTrackPoint.position;
+        this.trackPointhandles = [];
+        this.insertTrackPointHandle = [];
+        this.offset = BABYLON.Vector3.Zero();
+        this.pointerDown = false;
+        this.dragNormal = false;
+        this.onPointerEvent = (eventData, eventState) => {
+            if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                this.pointerDown = true;
+                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    if (mesh === this.normalHandle) {
+                        return true;
+                    }
+                    else if (mesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(mesh) != -1) {
+                        return true;
+                    }
+                    return false;
+                });
+                if (pick.hit && this.selectedTrackPointHandle && pick.pickedMesh === this.selectedTrackPointHandle) {
+                    this.dragNormal = false;
+                    this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
+                    let d = this.game.scene.activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
+                    Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
+                    this.pointerPlane.position.copyFrom(pick.pickedPoint);
+                    this.game.scene.activeCamera.detachControl();
                 }
+                else if (pick.hit && this.selectedTrackPointHandle && pick.pickedMesh === this.normalHandle) {
+                    this.dragNormal = true;
+                    this.lastPickedPoint = undefined;
+                    this.selectedTrackPointHandle.setNormal(this.selectedTrackPoint.normal);
+                    Mummu.QuaternionFromZYAxisToRef(this.selectedTrackPointHandle.trackPoint.normal, this.selectedTrackPointHandle.trackPoint.dir, this.pointerPlane.rotationQuaternion);
+                    this.pointerPlane.position.copyFrom(this.selectedTrackPointHandle.absolutePosition);
+                    this.game.scene.activeCamera.detachControl();
+                }
+                else {
+                    this.dragNormal = false;
+                    this.setSelectedTrackPointHandle(undefined);
+                }
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                if (this.pointerDown) {
+                    let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                        return mesh === this.pointerPlane;
+                    });
+                    if (this.selectedTrackPointHandle) {
+                        if (pick.hit) {
+                            if (this.dragNormal) {
+                                if (this.lastPickedPoint) {
+                                    let prevNormal = this.lastPickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
+                                    let currNormal = pick.pickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
+                                    let a = Mummu.AngleFromToAround(prevNormal, currNormal, this.selectedTrackPoint.dir);
+                                    let n = Mummu.Rotate(this.selectedTrackPointHandle.normal, this.selectedTrackPoint.dir, a);
+                                    this.selectedTrackPointHandle.setNormal(n);
+                                }
+                                this.lastPickedPoint = pick.pickedPoint.clone();
+                            }
+                            else {
+                                this.selectedTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
+                            }
+                        }
+                    }
+                }
+                else {
+                    let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                        if (mesh instanceof TrackPointHandle) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (pick.hit && pick.pickedMesh instanceof TrackPointHandle) {
+                        this.setHoveredTrackPointHandle(pick.pickedMesh);
+                    }
+                    else {
+                        this.setHoveredTrackPointHandle(undefined);
+                    }
+                }
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
+                this.pointerDown = false;
+                if (this.selectedTrackPoint) {
+                    this.selectedTrackPoint.position.copyFrom(this.selectedTrackPointHandle.position);
+                    if (this.dragNormal) {
+                        this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
+                        this.selectedTrackPoint.fixedNormal = true;
+                        this.dragNormal = false;
+                    }
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.wires[0].instantiate();
+                    this.track.wires[1].instantiate();
+                    this.updateHandles();
+                }
+                else {
+                    let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                        if (mesh instanceof TrackPointHandle) {
+                            if (this.trackPointhandles.indexOf(mesh) != -1) {
+                                return true;
+                            }
+                        }
+                        else if (mesh instanceof BABYLON.Mesh) {
+                            if (this.insertTrackPointHandle.indexOf(mesh) != -1) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                    if (this.insertTrackPointHandle.indexOf(pick.pickedMesh) != -1) {
+                        this.setSelectedTrackPointHandle(undefined);
+                        let insertTrackPoint = pick.pickedMesh;
+                        let trackPoint = new TrackPoint(this.track, insertTrackPoint.position.clone());
+                        let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
+                        this.track.trackPoints.splice(index, 0, trackPoint);
+                        this.track.generateWires();
+                        this.track.recomputeAbsolutePath();
+                        this.track.wires[0].instantiate();
+                        this.track.wires[1].instantiate();
+                        this.rebuildHandles();
+                    }
+                    else if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != -1) {
+                        this.setSelectedTrackPointHandle(pick.pickedMesh);
+                        this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
+                        let d = this.game.scene.activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
+                        Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
+                        this.pointerPlane.position.copyFrom(pick.pickedPoint);
+                        this.game.scene.activeCamera.detachControl();
+                        this.updateHandles();
+                    }
+                    else {
+                        this.setSelectedTrackPointHandle(undefined);
+                        this.updateHandles();
+                    }
+                }
+                this.game.scene.activeCamera.attachControl();
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
+                if (this.hoveredTrackPoint) {
+                    if (eventData.event instanceof WheelEvent) {
+                        let dA = 3 * (eventData.event.deltaY / 100) / 180 * Math.PI;
+                        Mummu.RotateInPlace(this.hoveredTrackPoint.normal, this.hoveredTrackPoint.dir, dA);
+                        this.hoveredTrackPoint.fixedNormal = true;
+                        this.track.generateWires();
+                        this.track.recomputeAbsolutePath();
+                        this.track.wires[0].instantiate();
+                        this.track.wires[1].instantiate();
+                        this.updateHandles();
+                    }
+                }
+            }
+        };
+        this._update = () => {
+            if (this.selectedTrackPoint) {
+                this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
             }
         };
         this.setTrack(this.game.tracks[0]);
@@ -225,15 +401,19 @@ class TrackEditor {
         return this._track;
     }
     setTrack(t) {
-        if (this._track) {
-            this._track.disableEditionMode();
-        }
-        this._track = t;
-        if (this._track) {
-            this._track.enableEditionMode();
+        if (t != this.track) {
+            if (this._track) {
+            }
+            this._track = t;
+            if (this._track) {
+            }
+            this.rebuildHandles();
         }
     }
     initialize() {
+        this.pointerPlane = BABYLON.MeshBuilder.CreateGround("pointer-plane", { width: 10, height: 10 });
+        this.pointerPlane.visibility = 0;
+        this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         document.getElementById("prev").addEventListener("click", () => {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex > 0) {
@@ -279,10 +459,116 @@ class TrackEditor {
                 this.track.recomputeAbsolutePath();
                 this.track.wires[0].instantiate();
                 this.track.wires[1].instantiate();
-                this.track.updateHandles();
+                this.updateHandles();
             }
         };
         this.game.scene.onBeforeRenderObservable.add(this._update);
+        this.game.scene.onPointerObservable.add(this.onPointerEvent);
+    }
+    get hoveredTrackPoint() {
+        if (this.hoveredTrackPointHandle) {
+            return this.hoveredTrackPointHandle.trackPoint;
+        }
+        return undefined;
+    }
+    setHoveredTrackPointHandle(trackpointHandle) {
+        if (this.hoveredTrackPointHandle) {
+            if (this.hoveredTrackPointHandle === this.selectedTrackPointHandle) {
+                this.hoveredTrackPointHandle.setMaterial(this.game.handleMaterialActive);
+            }
+            else {
+                this.hoveredTrackPointHandle.setMaterial(this.game.handleMaterial);
+            }
+        }
+        this.hoveredTrackPointHandle = trackpointHandle;
+        if (this.hoveredTrackPointHandle) {
+            this.hoveredTrackPointHandle.setMaterial(this.game.handleMaterialHover);
+        }
+    }
+    get selectedTrackPoint() {
+        if (this.selectedTrackPointHandle) {
+            return this.selectedTrackPointHandle.trackPoint;
+        }
+        return undefined;
+    }
+    setSelectedTrackPointHandle(trackpointHandle) {
+        if (this.selectedTrackPointHandle) {
+            this.selectedTrackPointHandle.setMaterial(this.game.handleMaterial);
+        }
+        this.selectedTrackPointHandle = trackpointHandle;
+        if (this.selectedTrackPointHandle) {
+            if (this.selectedTrackPointHandle === this.hoveredTrackPointHandle) {
+                this.selectedTrackPointHandle.setMaterial(this.game.handleMaterialHover);
+            }
+            else {
+                this.selectedTrackPointHandle.setMaterial(this.game.handleMaterialActive);
+            }
+        }
+    }
+    removeHandles() {
+        if (this.trackPointhandles) {
+            this.trackPointhandles.forEach(h => {
+                h.dispose();
+            });
+        }
+        this.trackPointhandles = [];
+        if (this.insertTrackPointHandle) {
+            this.insertTrackPointHandle.forEach(h => {
+                h.dispose();
+            });
+        }
+        this.insertTrackPointHandle = [];
+        if (this.normalHandle) {
+            this.normalHandle.dispose();
+        }
+    }
+    rebuildHandles() {
+        this.removeHandles();
+        for (let i = 0; i < this.track.trackPoints.length; i++) {
+            let handle = new TrackPointHandle(this.track.trackPoints[i]);
+            this.trackPointhandles.push(handle);
+            let pPrev = this.track.trackPoints[i - 1] ? this.track.trackPoints[i - 1].position : undefined;
+            let p = this.track.trackPoints[i].position;
+            let pNext = this.track.trackPoints[i + 1] ? this.track.trackPoints[i + 1].position : undefined;
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+            Mummu.QuaternionFromYZAxisToRef(this.track.trackPoints[i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
+            if (i < this.track.trackPoints.length - 1) {
+                let insertHandle = BABYLON.MeshBuilder.CreateSphere("insert-handle-" + i, { diameter: 0.5 * this.track.wireGauge });
+                insertHandle.material = this.game.insertHandleMaterial;
+                insertHandle.position.copyFrom(this.track.trackPoints[i].position).addInPlace(this.track.trackPoints[i + 1].position).scaleInPlace(0.5);
+                insertHandle.parent = this.track;
+                this.insertTrackPointHandle.push(insertHandle);
+            }
+        }
+        this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.03, diameter: 0.0025, tessellation: 8 });
+        this.normalHandle.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.normalHandle.material = this.game.handleMaterialActive;
+        this.normalHandle.isVisible = false;
+    }
+    updateHandles() {
+        for (let i = 0; i < this.trackPointhandles.length; i++) {
+            this.trackPointhandles[i].position.copyFrom(this.trackPointhandles[i].trackPoint.position);
+            Mummu.QuaternionFromYZAxisToRef(this.trackPointhandles[i].trackPoint.normal, this.trackPointhandles[i].trackPoint.dir, this.trackPointhandles[i].rotationQuaternion);
+        }
+        if (this.selectedTrackPointHandle) {
+            this.normalHandle.isVisible = true;
+            this.normalHandle.parent = this.selectedTrackPointHandle;
+            this.normalHandle.position.copyFromFloats(0, 0.015 + 0.5 * this.track.wireGauge / 2, 0);
+            if (this.selectedTrackPointHandle.trackPoint.fixedNormal) {
+                this.normalHandle.material = this.game.handleMaterialActive;
+            }
+            else {
+                this.normalHandle.material = this.game.handleMaterial;
+            }
+        }
+        else {
+            this.normalHandle.isVisible = false;
+        }
     }
     setCameraAlphaBeta(alpha, beta, radius = 0.25) {
         this._animateCamera([alpha, beta, radius], 0.5);
@@ -388,36 +674,6 @@ class TrackPoint {
         }
     }
 }
-class TrackPointHandle extends BABYLON.Mesh {
-    constructor(trackPoint) {
-        super("trackpoint-handle");
-        this.trackPoint = trackPoint;
-        this._normal = BABYLON.Vector3.Up();
-        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.wireGauge });
-        data.applyToMesh(this);
-        this.position.copyFrom(this.trackPoint.position);
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.setNormal(trackPoint.normal);
-        this.parent = trackPoint.track;
-        let normalIndicator = BABYLON.MeshBuilder.CreateCylinder("normal", { height: this.trackPoint.track.wireGauge, diameter: 0.0005, tessellation: 8 });
-        normalIndicator.parent = this;
-        normalIndicator.position.copyFromFloats(0, 0.6 * this.trackPoint.track.wireGauge * 0.5 + this.trackPoint.track.wireGauge * 0.5, 0);
-        this.setMaterial(this.trackPoint.track.game.handleMaterial);
-    }
-    get normal() {
-        return this._normal;
-    }
-    setNormal(n) {
-        this._normal.copyFrom(n);
-        Mummu.QuaternionFromYZAxisToRef(this._normal, this.trackPoint.dir, this.rotationQuaternion);
-    }
-    setMaterial(material) {
-        this.material = material;
-        this.getChildMeshes().forEach(m => {
-            m.material = material;
-        });
-    }
-}
 class Track extends BABYLON.Mesh {
     constructor(game, i, j) {
         super("track", game.scene);
@@ -427,155 +683,6 @@ class Track extends BABYLON.Mesh {
         this.subdivisions = 3;
         this.wireSize = 0.002;
         this.wireGauge = 0.012;
-        this.editionMode = false;
-        this.trackPointhandles = [];
-        this.insertTrackPointHandle = [];
-        this.offset = BABYLON.Vector3.Zero();
-        this.pointerDown = false;
-        this.dragNormal = false;
-        this.onPointerEvent = (eventData, eventState) => {
-            if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this.pointerDown = true;
-                let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
-                    if (mesh === this.normalHandle) {
-                        return true;
-                    }
-                    else if (mesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(mesh) != -1) {
-                        return true;
-                    }
-                    return false;
-                });
-                if (pick.hit && this.selectedTrackPointHandle && pick.pickedMesh === this.selectedTrackPointHandle) {
-                    this.dragNormal = false;
-                    this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
-                    let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
-                    Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
-                    this.pointerPlane.position.copyFrom(pick.pickedPoint);
-                    this.getScene().activeCamera.detachControl();
-                }
-                else if (pick.hit && this.selectedTrackPointHandle && pick.pickedMesh === this.normalHandle) {
-                    this.dragNormal = true;
-                    this.lastPickedPoint = undefined;
-                    this.selectedTrackPointHandle.setNormal(this.selectedTrackPoint.normal);
-                    Mummu.QuaternionFromZYAxisToRef(this.selectedTrackPointHandle.trackPoint.normal, this.selectedTrackPointHandle.trackPoint.dir, this.pointerPlane.rotationQuaternion);
-                    this.pointerPlane.position.copyFrom(this.selectedTrackPointHandle.absolutePosition);
-                    this.getScene().activeCamera.detachControl();
-                }
-                else {
-                    this.dragNormal = false;
-                    this.setSelectedTrackPointHandle(undefined);
-                }
-            }
-            else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                if (this.pointerDown) {
-                    let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
-                        return mesh === this.pointerPlane;
-                    });
-                    if (this.selectedTrackPointHandle) {
-                        if (pick.hit) {
-                            if (this.dragNormal) {
-                                if (this.lastPickedPoint) {
-                                    let prevNormal = this.lastPickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
-                                    let currNormal = pick.pickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
-                                    let a = Mummu.AngleFromToAround(prevNormal, currNormal, this.selectedTrackPoint.dir);
-                                    let n = Mummu.Rotate(this.selectedTrackPointHandle.normal, this.selectedTrackPoint.dir, a);
-                                    this.selectedTrackPointHandle.setNormal(n);
-                                }
-                                this.lastPickedPoint = pick.pickedPoint.clone();
-                            }
-                            else {
-                                this.selectedTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
-                            }
-                        }
-                    }
-                }
-                else {
-                    let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
-                        if (mesh instanceof TrackPointHandle) {
-                            return true;
-                        }
-                        return false;
-                    });
-                    if (pick.hit && pick.pickedMesh instanceof TrackPointHandle) {
-                        this.setHoveredTrackPointHandle(pick.pickedMesh);
-                    }
-                    else {
-                        this.setHoveredTrackPointHandle(undefined);
-                    }
-                }
-            }
-            else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
-                this.pointerDown = false;
-                if (this.selectedTrackPoint) {
-                    this.selectedTrackPoint.position.copyFrom(this.selectedTrackPointHandle.position);
-                    if (this.dragNormal) {
-                        this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
-                        this.selectedTrackPoint.fixedNormal = true;
-                        this.dragNormal = false;
-                    }
-                    this.generateWires();
-                    this.recomputeAbsolutePath();
-                    this.wires[0].instantiate();
-                    this.wires[1].instantiate();
-                    this.updateHandles();
-                }
-                else {
-                    let pick = this.getScene().pick(this.getScene().pointerX, this.getScene().pointerY, (mesh) => {
-                        if (mesh instanceof TrackPointHandle) {
-                            if (this.trackPointhandles.indexOf(mesh) != -1) {
-                                return true;
-                            }
-                        }
-                        else if (mesh instanceof BABYLON.Mesh) {
-                            if (this.insertTrackPointHandle.indexOf(mesh) != -1) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    });
-                    if (this.insertTrackPointHandle.indexOf(pick.pickedMesh) != -1) {
-                        this.setSelectedTrackPointHandle(undefined);
-                        let insertTrackPoint = pick.pickedMesh;
-                        let trackPoint = new TrackPoint(this, insertTrackPoint.position.clone());
-                        let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
-                        this.trackPoints.splice(index, 0, trackPoint);
-                        this.generateWires();
-                        this.recomputeAbsolutePath();
-                        this.wires[0].instantiate();
-                        this.wires[1].instantiate();
-                        this.rebuildHandles();
-                    }
-                    else if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != -1) {
-                        this.setSelectedTrackPointHandle(pick.pickedMesh);
-                        this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
-                        let d = this.getScene().activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
-                        Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
-                        this.pointerPlane.position.copyFrom(pick.pickedPoint);
-                        this.getScene().activeCamera.detachControl();
-                        this.updateHandles();
-                    }
-                    else {
-                        this.setSelectedTrackPointHandle(undefined);
-                        this.updateHandles();
-                    }
-                }
-                this.getScene().activeCamera.attachControl();
-            }
-            else if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
-                if (this.hoveredTrackPoint) {
-                    if (eventData.event instanceof WheelEvent) {
-                        let dA = 3 * (eventData.event.deltaY / 100) / 180 * Math.PI;
-                        Mummu.RotateInPlace(this.hoveredTrackPoint.normal, this.hoveredTrackPoint.dir, dA);
-                        this.hoveredTrackPoint.fixedNormal = true;
-                        this.generateWires();
-                        this.recomputeAbsolutePath();
-                        this.wires[0].instantiate();
-                        this.wires[1].instantiate();
-                        this.updateHandles();
-                    }
-                }
-            }
-        };
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist;
         this.wires = [
@@ -593,125 +700,6 @@ class Track extends BABYLON.Mesh {
             return pos1.add(pos2);
         }).scaleInPlace(1 / this.trackPoints.length);
         return BABYLON.Vector3.TransformCoordinates(barycenter, this.getWorldMatrix());
-    }
-    get hoveredTrackPoint() {
-        if (this.hoveredTrackPointHandle) {
-            return this.hoveredTrackPointHandle.trackPoint;
-        }
-        return undefined;
-    }
-    setHoveredTrackPointHandle(trackpointHandle) {
-        if (this.hoveredTrackPointHandle) {
-            if (this.hoveredTrackPointHandle === this.selectedTrackPointHandle) {
-                this.hoveredTrackPointHandle.setMaterial(this.game.handleMaterialActive);
-            }
-            else {
-                this.hoveredTrackPointHandle.setMaterial(this.game.handleMaterial);
-            }
-        }
-        this.hoveredTrackPointHandle = trackpointHandle;
-        if (this.hoveredTrackPointHandle) {
-            this.hoveredTrackPointHandle.setMaterial(this.game.handleMaterialHover);
-        }
-    }
-    get selectedTrackPoint() {
-        if (this.selectedTrackPointHandle) {
-            return this.selectedTrackPointHandle.trackPoint;
-        }
-        return undefined;
-    }
-    setSelectedTrackPointHandle(trackpointHandle) {
-        if (this.selectedTrackPointHandle) {
-            this.selectedTrackPointHandle.setMaterial(this.game.handleMaterial);
-        }
-        this.selectedTrackPointHandle = trackpointHandle;
-        if (this.selectedTrackPointHandle) {
-            if (this.selectedTrackPointHandle === this.hoveredTrackPointHandle) {
-                this.selectedTrackPointHandle.setMaterial(this.game.handleMaterialHover);
-            }
-            else {
-                this.selectedTrackPointHandle.setMaterial(this.game.handleMaterialActive);
-            }
-        }
-    }
-    enableEditionMode() {
-        this.disableEditionMode();
-        this.editionMode = true;
-        this.rebuildHandles();
-        this.getScene().onPointerObservable.add(this.onPointerEvent);
-    }
-    disableEditionMode() {
-        this.editionMode = false;
-        this.removeHandles();
-        this.getScene().onPointerObservable.removeCallback(this.onPointerEvent);
-    }
-    removeHandles() {
-        if (this.trackPointhandles) {
-            this.trackPointhandles.forEach(h => {
-                h.dispose();
-            });
-        }
-        this.trackPointhandles = [];
-        if (this.insertTrackPointHandle) {
-            this.insertTrackPointHandle.forEach(h => {
-                h.dispose();
-            });
-        }
-        this.insertTrackPointHandle = [];
-        if (this.normalHandle) {
-            this.normalHandle.dispose();
-        }
-    }
-    rebuildHandles() {
-        if (!this.editionMode) {
-            return;
-        }
-        this.removeHandles();
-        for (let i = 0; i < this.trackPoints.length; i++) {
-            let handle = new TrackPointHandle(this.trackPoints[i]);
-            this.trackPointhandles.push(handle);
-            let pPrev = this.trackPoints[i - 1] ? this.trackPoints[i - 1].position : undefined;
-            let p = this.trackPoints[i].position;
-            let pNext = this.trackPoints[i + 1] ? this.trackPoints[i + 1].position : undefined;
-            if (!pPrev) {
-                pPrev = p.subtract(pNext.subtract(p));
-            }
-            if (!pNext) {
-                pNext = p.add(p.subtract(pPrev));
-            }
-            Mummu.QuaternionFromYZAxisToRef(this.trackPoints[i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
-            if (i < this.trackPoints.length - 1) {
-                let insertHandle = BABYLON.MeshBuilder.CreateSphere("insert-handle-" + i, { diameter: 0.5 * this.wireGauge });
-                insertHandle.material = this.game.insertHandleMaterial;
-                insertHandle.position.copyFrom(this.trackPoints[i].position).addInPlace(this.trackPoints[i + 1].position).scaleInPlace(0.5);
-                insertHandle.parent = this;
-                this.insertTrackPointHandle.push(insertHandle);
-            }
-        }
-        this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.03, diameter: 0.0025, tessellation: 8 });
-        this.normalHandle.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.normalHandle.material = this.game.handleMaterialActive;
-        this.normalHandle.isVisible = false;
-    }
-    updateHandles() {
-        for (let i = 0; i < this.trackPointhandles.length; i++) {
-            this.trackPointhandles[i].position.copyFrom(this.trackPointhandles[i].trackPoint.position);
-            Mummu.QuaternionFromYZAxisToRef(this.trackPointhandles[i].trackPoint.normal, this.trackPointhandles[i].trackPoint.dir, this.trackPointhandles[i].rotationQuaternion);
-        }
-        if (this.selectedTrackPointHandle) {
-            this.normalHandle.isVisible = true;
-            this.normalHandle.parent = this.selectedTrackPointHandle;
-            this.normalHandle.position.copyFromFloats(0, 0.015 + 0.5 * this.wireGauge / 2, 0);
-            if (this.selectedTrackPointHandle.trackPoint.fixedNormal) {
-                this.normalHandle.material = this.game.handleMaterialActive;
-            }
-            else {
-                this.normalHandle.material = this.game.handleMaterial;
-            }
-        }
-        else {
-            this.normalHandle.isVisible = false;
-        }
     }
     generateWires() {
         // Update normals and tangents
@@ -784,9 +772,6 @@ class Track extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        this.pointerPlane = BABYLON.MeshBuilder.CreateGround("pointer-plane", { width: 10, height: 10 });
-        this.pointerPlane.visibility = 0;
-        this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
         if (data[0]) {
             let baseMesh = new BABYLON.Mesh("base-mesh");
