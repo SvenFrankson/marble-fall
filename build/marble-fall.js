@@ -399,6 +399,7 @@ class TrackEditor {
         this._update = () => {
             if (this.selectedTrackPoint) {
                 this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
+                this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
             }
         };
         this.setTrack(this.game.tracks[0]);
@@ -473,6 +474,16 @@ class TrackEditor {
         });
         this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos");
         this.activeTrackpointPositionInput.onInputXYZCallback = (xyz) => {
+            if (this.track) {
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.updateHandles();
+            }
+        };
+        this.activeTrackpointNormalInput = document.getElementById("active-trackpoint-normal");
+        this.activeTrackpointNormalInput.onInputXYZCallback = (xyz) => {
             if (this.track) {
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();

@@ -53,6 +53,7 @@ class TrackEditor {
     }
 
     public activeTrackpointPositionInput: Nabu.InputVector3;
+    public activeTrackpointNormalInput: Nabu.InputVector3;
 
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
 
@@ -127,6 +128,17 @@ class TrackEditor {
 
         this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos") as Nabu.InputVector3;
         this.activeTrackpointPositionInput.onInputXYZCallback = (xyz: Nabu.IVector3XYZValue) => {
+            if (this.track) {
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.updateHandles();
+            }
+        }
+
+        this.activeTrackpointNormalInput = document.getElementById("active-trackpoint-normal") as Nabu.InputVector3;
+        this.activeTrackpointNormalInput.onInputXYZCallback = (xyz: Nabu.IVector3XYZValue) => {
             if (this.track) {
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();
@@ -464,6 +476,7 @@ class TrackEditor {
     private _update = () => {
         if (this.selectedTrackPoint) {
             this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
+            this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
         }
     }
 }
