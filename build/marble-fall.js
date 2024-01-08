@@ -400,6 +400,12 @@ class TrackEditor {
             if (this.selectedTrackPoint) {
                 this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
                 this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
+                let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
+                document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
+                let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
+                document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
+                let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
+                document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
             }
         };
         this.setTrack(this.game.tracks[0]);
@@ -727,6 +733,14 @@ class Track extends BABYLON.Mesh {
             new Wire(this),
             new Wire(this)
         ];
+    }
+    getSlopeAt(index) {
+        let trackpoint = this.trackPoints[index];
+        if (trackpoint) {
+            let a = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
+            return a;
+        }
+        return 0;
     }
     getBarycenter() {
         if (this.trackPoints.length < 2) {

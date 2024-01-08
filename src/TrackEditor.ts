@@ -477,6 +477,12 @@ class TrackEditor {
         if (this.selectedTrackPoint) {
             this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
             this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
+            let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
+            document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
+            let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
+            document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
+            let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
+            document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
         }
     }
 }

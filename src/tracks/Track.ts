@@ -81,6 +81,15 @@ class Track extends BABYLON.Mesh {
         ];
     }
 
+    public getSlopeAt(index: number): number {
+        let trackpoint = this.trackPoints[index];
+        if (trackpoint) {
+            let a = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
+            return a;
+        }
+        return 0;
+    }
+
     public getBarycenter(): BABYLON.Vector3 {
         if (this.trackPoints.length < 2) {
             return this.position;
