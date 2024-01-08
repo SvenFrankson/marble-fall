@@ -241,6 +241,7 @@ class TrackEditor {
     constructor(game) {
         this.game = game;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+        this._animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
         this.trackPointhandles = [];
         this.insertTrackPointHandle = [];
         this.offset = BABYLON.Vector3.Zero();
@@ -412,6 +413,7 @@ class TrackEditor {
         };
         this.setTrack(this.game.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
+        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.game.camera, this.game.camera, "target");
     }
     get track() {
         return this._track;
@@ -434,12 +436,14 @@ class TrackEditor {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex > 0) {
                 this.setTrack(this.game.tracks[trackIndex - 1]);
+                this.centerOnTrack();
             }
         });
         document.getElementById("next-track").addEventListener("click", () => {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex < this.game.tracks.length - 1) {
                 this.setTrack(this.game.tracks[trackIndex + 1]);
+                this.centerOnTrack();
             }
         });
         document.getElementById("save").addEventListener("click", () => {
@@ -463,10 +467,14 @@ class TrackEditor {
         document.getElementById("btn-cam-bottom").addEventListener("click", () => {
             this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI);
         });
-        document.getElementById("btn-center-track").addEventListener("click", () => {
-            if (this.track) {
-                this.game.camera.target.copyFrom(this.track.getBarycenter());
+        document.getElementById("btn-focus-point").addEventListener("click", () => {
+            if (this.track && this.selectedTrackPoint) {
+                let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.track.getWorldMatrix());
+                this.setCameraTarget(target);
             }
+        });
+        document.getElementById("btn-center-track").addEventListener("click", () => {
+            this.centerOnTrack();
         });
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
             if (this.track) {
@@ -626,8 +634,16 @@ class TrackEditor {
             this.normalHandle.isVisible = false;
         }
     }
+    centerOnTrack() {
+        if (this.track) {
+            this.setCameraTarget(this.track.getBarycenter());
+        }
+    }
     setCameraAlphaBeta(alpha, beta, radius = 0.25) {
         this._animateCamera([alpha, beta, radius], 0.5);
+    }
+    setCameraTarget(target) {
+        this._animateCameraTarget(target, 0.5);
     }
 }
 class Wire extends BABYLON.Mesh {

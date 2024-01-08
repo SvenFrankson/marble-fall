@@ -56,10 +56,12 @@ class TrackEditor {
     public activeTrackpointNormalInput: Nabu.InputVector3;
 
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+    private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
 
     constructor(public game: Game) {
         this.setTrack(this.game.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
+        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.game.camera, this.game.camera, "target");
     }
 
     public initialize(): void {
@@ -71,12 +73,14 @@ class TrackEditor {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex > 0) {
                 this.setTrack(this.game.tracks[trackIndex - 1]);
+                this.centerOnTrack();
             }
         });
         document.getElementById("next-track").addEventListener("click", () => {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex < this.game.tracks.length - 1) {
                 this.setTrack(this.game.tracks[trackIndex + 1]);
+                this.centerOnTrack();
             }
         });
 
@@ -107,10 +111,15 @@ class TrackEditor {
             this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI);
         });
 
-        document.getElementById("btn-center-track").addEventListener("click", () => {
-            if (this.track) {
-                this.game.camera.target.copyFrom(this.track.getBarycenter());
+        document.getElementById("btn-focus-point").addEventListener("click", () => {
+            if (this.track && this.selectedTrackPoint) {
+                let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.track.getWorldMatrix());
+                this.setCameraTarget(target);
             }
+        });
+
+        document.getElementById("btn-center-track").addEventListener("click", () => {
+            this.centerOnTrack();
         });
 
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
@@ -483,8 +492,18 @@ class TrackEditor {
         }
     }
 
+    public centerOnTrack(): void {
+        if (this.track) {
+            this.setCameraTarget(this.track.getBarycenter());
+        }
+    }
+
     public setCameraAlphaBeta(alpha: number, beta: number, radius: number = 0.25): void {
         this._animateCamera([alpha, beta, radius], 0.5);
+    }
+
+    public setCameraTarget(target: BABYLON.Vector3): void {
+        this._animateCameraTarget(target, 0.5);
     }
 
     private _update = () => {
