@@ -73,6 +73,7 @@ class Game {
         this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
+        this.camera.wheelPrecision = 1000;
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);

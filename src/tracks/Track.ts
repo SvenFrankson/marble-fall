@@ -317,8 +317,8 @@ class Track extends BABYLON.Mesh {
         let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
 
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.AltCatmullRomPathInPlace(interpolatedNormals);
+            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.CatmullRomPathInPlace(interpolatedNormals);
         }
 
         for (let n = 0; n < 3; n++) {

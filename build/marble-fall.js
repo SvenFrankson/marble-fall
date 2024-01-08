@@ -120,6 +120,7 @@ class Game {
         this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
+        this.camera.wheelPrecision = 1000;
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
@@ -208,7 +209,9 @@ window.addEventListener("DOMContentLoaded", () => {
 class TrackEditor {
     constructor(game) {
         this.game = game;
+        this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
         this.setTrack(this.game.tracks[0]);
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"]);
     }
     get track() {
         return this._track;
@@ -241,11 +244,29 @@ class TrackEditor {
                 window.localStorage.setItem("saved-track", JSON.stringify(data));
             }
         });
+        document.getElementById("btn-cam-top").addEventListener("click", () => {
+            this.setCameraAlphaBeta(-Math.PI * 0.5, 0);
+        });
+        document.getElementById("btn-cam-left").addEventListener("click", () => {
+            this.setCameraAlphaBeta(Math.PI, Math.PI * 0.5);
+        });
+        document.getElementById("btn-cam-face").addEventListener("click", () => {
+            this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5);
+        });
+        document.getElementById("btn-cam-right").addEventListener("click", () => {
+            this.setCameraAlphaBeta(0, Math.PI * 0.5);
+        });
+        document.getElementById("btn-cam-bottom").addEventListener("click", () => {
+            this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI);
+        });
         document.getElementById("btn-center-track").addEventListener("click", () => {
             if (this.track) {
                 this.game.camera.target.copyFrom(this.track.getBarycenter());
             }
         });
+    }
+    setCameraAlphaBeta(alpha, beta, radius = 0.25) {
+        this._animateCamera([alpha, beta, radius], 0.5);
     }
 }
 class Wire extends BABYLON.Mesh {
@@ -708,8 +729,8 @@ class Track extends BABYLON.Mesh {
         let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
         let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.AltCatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.AltCatmullRomPathInPlace(interpolatedNormals);
+            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.CatmullRomPathInPlace(interpolatedNormals);
         }
         for (let n = 0; n < 3; n++) {
             let smoothed = interpolatedPoints.map(pt => { return pt.clone(); });

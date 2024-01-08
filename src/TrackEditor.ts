@@ -14,8 +14,11 @@ class TrackEditor {
         }
     }
 
+    private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+
     constructor(public game: Game) {
         this.setTrack(this.game.tracks[0]);
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"]);
     }
 
     public initialize(): void {
@@ -39,10 +42,34 @@ class TrackEditor {
             }
         });
 
+        document.getElementById("btn-cam-top").addEventListener("click", () => {
+            this.setCameraAlphaBeta(- Math.PI * 0.5, 0);
+        });
+
+        document.getElementById("btn-cam-left").addEventListener("click", () => {
+            this.setCameraAlphaBeta(Math.PI, Math.PI * 0.5);
+        });
+
+        document.getElementById("btn-cam-face").addEventListener("click", () => {
+            this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5);
+        });
+
+        document.getElementById("btn-cam-right").addEventListener("click", () => {
+            this.setCameraAlphaBeta(0, Math.PI * 0.5);
+        });
+
+        document.getElementById("btn-cam-bottom").addEventListener("click", () => {
+            this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI);
+        });
+
         document.getElementById("btn-center-track").addEventListener("click", () => {
             if (this.track) {
                 this.game.camera.target.copyFrom(this.track.getBarycenter());
             }
         });
+    }
+
+    public setCameraAlphaBeta(alpha: number, beta: number, radius: number = 0.25): void {
+        this._animateCamera([alpha, beta, radius], 0.5);
     }
 }
