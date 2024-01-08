@@ -170,15 +170,6 @@ class Game {
             this.trackEditor.initialize();
         });
     }
-    download(filename, text) {
-        var e = document.createElement('a');
-        e.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        e.setAttribute('download', filename);
-        e.style.display = 'none';
-        document.body.appendChild(e);
-        e.click();
-        document.body.removeChild(e);
-    }
     animate() {
         this.engine.runRenderLoop(() => {
             this.scene.render();
@@ -449,7 +440,7 @@ class TrackEditor {
         document.getElementById("save").addEventListener("click", () => {
             if (this.track) {
                 let data = this.track.serialize();
-                window.localStorage.setItem("saved-track", JSON.stringify(data));
+                Nabu.download("track.json", JSON.stringify(data));
             }
         });
         document.getElementById("btn-cam-top").addEventListener("click", () => {

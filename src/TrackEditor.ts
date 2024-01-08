@@ -87,7 +87,7 @@ class TrackEditor {
         document.getElementById("save").addEventListener("click", () => {
             if (this.track) {
                 let data = this.track.serialize();
-                window.localStorage.setItem("saved-track", JSON.stringify(data));
+                Nabu.download("track.json", JSON.stringify(data));
             }
         });
 
