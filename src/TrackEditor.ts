@@ -66,13 +66,13 @@ class TrackEditor {
         this.pointerPlane.visibility = 0;
         this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        document.getElementById("prev").addEventListener("click", () => {
+        document.getElementById("prev-track").addEventListener("click", () => {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex > 0) {
                 this.setTrack(this.game.tracks[trackIndex - 1]);
             }
         });
-        document.getElementById("next").addEventListener("click", () => {
+        document.getElementById("next-track").addEventListener("click", () => {
             let trackIndex = this.game.tracks.indexOf(this._track);
             if (trackIndex < this.game.tracks.length - 1) {
                 this.setTrack(this.game.tracks[trackIndex + 1]);
@@ -109,6 +109,19 @@ class TrackEditor {
         document.getElementById("btn-center-track").addEventListener("click", () => {
             if (this.track) {
                 this.game.camera.target.copyFrom(this.track.getBarycenter());
+            }
+        });
+
+        document.getElementById("prev-trackpoint").addEventListener("click", () => {
+            if (this.track) {
+                let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.track.trackPoints.length) % this.track.trackPoints.length;
+                this.setSelectedTrackPointIndex(newTrackIndex);
+            }
+        });
+        document.getElementById("next-trackpoint").addEventListener("click", () => {
+            if (this.track) {
+                let newTrackIndex = (this.selectedTrackPointIndex + 1) % this.track.trackPoints.length;
+                this.setSelectedTrackPointIndex(newTrackIndex);
             }
         });
 
@@ -153,6 +166,9 @@ class TrackEditor {
     }
 
     public selectedTrackPointHandle: TrackPointHandle;
+    public get selectedTrackPointIndex(): number {
+        return this.trackPointhandles.indexOf(this.selectedTrackPointHandle);
+    }
     public get selectedTrackPoint(): TrackPoint {
         if (this.selectedTrackPointHandle) {
             return this.selectedTrackPointHandle.trackPoint;
@@ -172,6 +188,11 @@ class TrackEditor {
                 this.selectedTrackPointHandle.setMaterial(this.game.handleMaterialActive);
             }
         }
+        this.updateHandles();
+    }
+    public setSelectedTrackPointIndex(index: number): void {
+        let handle = this.trackPointhandles[index];
+        this.setSelectedTrackPointHandle(handle);
     }
     public tangentPrevHandle: BABYLON.Mesh;
     public normalHandle: BABYLON.Mesh;
@@ -257,6 +278,7 @@ class TrackEditor {
     public pointerPlane: BABYLON.Mesh;
     public offset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public pointerDown: boolean = false;
+    public dragTrackPoint: boolean = false;
     public dragNormal: boolean = false;
     public lastPickedPoint: BABYLON.Vector3;
 
@@ -277,11 +299,11 @@ class TrackEditor {
                 }
             )
 
-            if (pick.hit && this.selectedTrackPointHandle && pick.pickedMesh === this.selectedTrackPointHandle) {
+            if (pick.hit && this.hoveredTrackPointHandle && pick.pickedMesh === this.hoveredTrackPointHandle) {
                 this.dragNormal = false;
-                this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
+                this.offset.copyFrom(this.hoveredTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
 
-                let d = this.game.scene.activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
+                let d = this.game.scene.activeCamera.globalPosition.subtract(this.hoveredTrackPointHandle.position);
                 Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
 
                 this.pointerPlane.position.copyFrom(pick.pickedPoint);
@@ -297,7 +319,6 @@ class TrackEditor {
             }
             else {
                 this.dragNormal = false;
-                this.setSelectedTrackPointHandle(undefined);
             }
         }
         else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
@@ -310,9 +331,9 @@ class TrackEditor {
                     }
                 )
 
-                if (this.selectedTrackPointHandle) {
-                    if (pick.hit) {
-                        if (this.dragNormal) {
+                if (this.dragNormal) {
+                    if (this.selectedTrackPointHandle) {
+                        if (pick.hit) {
                             if (this.lastPickedPoint) {
                                 let prevNormal = this.lastPickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
                                 let currNormal = pick.pickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
@@ -322,9 +343,13 @@ class TrackEditor {
                             }
                             this.lastPickedPoint = pick.pickedPoint.clone();
                         }
-                        else {
-                            this.selectedTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
-                        }
+                    }
+                }
+                else if (this.hoveredTrackPoint) {
+                    if (pick.hit) {
+                        console.log(".");
+                        this.dragTrackPoint = true;
+                        this.hoveredTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
                     }
                 }
             }
@@ -350,13 +375,20 @@ class TrackEditor {
         }
         else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
             this.pointerDown = false;
-            if (this.selectedTrackPoint) {
-                this.selectedTrackPoint.position.copyFrom(this.selectedTrackPointHandle.position);
-                if (this.dragNormal) {
-                    this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
-                    this.selectedTrackPoint.fixedNormal = true;
-                    this.dragNormal = false;
-                }
+            if (this.dragNormal) {
+                this.dragNormal = false;
+                this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
+                this.selectedTrackPoint.fixedNormal = true;
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.wires[0].instantiate();
+                this.track.wires[1].instantiate();
+                this.updateHandles();
+            }
+            else if (this.dragTrackPoint && this.hoveredTrackPoint) {
+                console.log("!");
+                this.dragTrackPoint = false;
+                this.hoveredTrackPoint.position.copyFrom(this.hoveredTrackPointHandle.position);
                 this.track.generateWires();
                 this.track.recomputeAbsolutePath();
                 this.track.wires[0].instantiate();
@@ -404,10 +436,6 @@ class TrackEditor {
                     this.pointerPlane.position.copyFrom(pick.pickedPoint);
                     this.game.scene.activeCamera.detachControl();
                     
-                    this.updateHandles();
-                }
-                else {
-                    this.setSelectedTrackPointHandle(undefined);
                     this.updateHandles();
                 }
             }
