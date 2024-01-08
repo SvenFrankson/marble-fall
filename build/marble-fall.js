@@ -277,7 +277,7 @@ class TrackEditor {
                         return mesh === this.pointerPlane;
                     });
                     if (this.dragNormal) {
-                        if (this.selectedTrackPointHandle) {
+                        if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                             if (pick.hit) {
                                 if (this.lastPickedPoint) {
                                     let prevNormal = this.lastPickedPoint.subtract(this.selectedTrackPointHandle.absolutePosition);
@@ -290,9 +290,8 @@ class TrackEditor {
                             }
                         }
                     }
-                    else if (this.hoveredTrackPoint) {
+                    else if (this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
                         if (pick.hit) {
-                            console.log(".");
                             this.dragTrackPoint = true;
                             this.hoveredTrackPointHandle.position.copyFrom(pick.pickedPoint).addInPlace(this.offset);
                         }
@@ -317,7 +316,7 @@ class TrackEditor {
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
                 this.pointerDown = false;
-                if (this.dragNormal) {
+                if (this.dragNormal && this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.dragNormal = false;
                     this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
                     this.selectedTrackPoint.fixedNormal = true;
@@ -327,8 +326,7 @@ class TrackEditor {
                     this.track.wires[1].instantiate();
                     this.updateHandles();
                 }
-                else if (this.dragTrackPoint && this.hoveredTrackPoint) {
-                    console.log("!");
+                else if (this.dragTrackPoint && this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
                     this.dragTrackPoint = false;
                     this.hoveredTrackPoint.position.copyFrom(this.hoveredTrackPointHandle.position);
                     this.track.generateWires();
@@ -376,7 +374,7 @@ class TrackEditor {
                 this.game.scene.activeCamera.attachControl();
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
-                if (this.hoveredTrackPoint) {
+                if (this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
                     if (eventData.event instanceof WheelEvent) {
                         let dA = 3 * (eventData.event.deltaY / 100) / 180 * Math.PI;
                         Mummu.RotateInPlace(this.hoveredTrackPoint.normal, this.hoveredTrackPoint.dir, dA);
