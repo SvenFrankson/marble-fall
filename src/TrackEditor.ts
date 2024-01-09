@@ -560,5 +560,8 @@ class TrackEditor {
             this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
             this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
         }
+        if (this.track) {
+            document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
+        }
     }
 }

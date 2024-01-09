@@ -85,6 +85,9 @@ class Track extends BABYLON.Mesh {
 
     public sleepersMesh: BABYLON.Mesh;
 
+    public totalLength: number = 0
+    public globalSlope: number = 0;
+
     constructor(public game: Game, public i: number, public j: number) {
         super("track", game.scene);
         this.position.x = i * 2 * xDist;
@@ -211,6 +214,16 @@ class Track extends BABYLON.Mesh {
         this.interpolatedNormals.push(this.trackPoints[this.trackPoints.length - 1].normal);
 
         let N = this.interpolatedPoints.length;
+
+        this.totalLength = 0;
+        for (let i = 0; i < N - 1; i++) {
+            let p = this.interpolatedPoints[i];
+            let pNext = this.interpolatedPoints[i + 1];
+            this.totalLength += BABYLON.Vector3.Distance(p, pNext);
+        }
+
+        let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
+        this.globalSlope = dh / this.totalLength * 100;
 
         for (let i = 0; i < N; i++) {
             let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;

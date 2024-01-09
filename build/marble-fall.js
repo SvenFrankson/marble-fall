@@ -425,6 +425,9 @@ class TrackEditor {
                 this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
                 this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
             }
+            if (this.track) {
+                document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
+            }
         };
         this.setTrack(this.game.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
@@ -814,6 +817,8 @@ class Track extends BABYLON.Mesh {
         this.wireSize = 0.0015;
         this.wireGauge = 0.012;
         this.renderOnlyPath = false;
+        this.totalLength = 0;
+        this.globalSlope = 0;
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist - j * 4 * yDist;
         this.wires = [
@@ -921,6 +926,14 @@ class Track extends BABYLON.Mesh {
         this.interpolatedPoints.push(this.trackPoints[this.trackPoints.length - 1].position);
         this.interpolatedNormals.push(this.trackPoints[this.trackPoints.length - 1].normal);
         let N = this.interpolatedPoints.length;
+        this.totalLength = 0;
+        for (let i = 0; i < N - 1; i++) {
+            let p = this.interpolatedPoints[i];
+            let pNext = this.interpolatedPoints[i + 1];
+            this.totalLength += BABYLON.Vector3.Distance(p, pNext);
+        }
+        let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
+        this.globalSlope = dh / this.totalLength * 100;
         for (let i = 0; i < N; i++) {
             let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
             let p = this.interpolatedPoints[i];
@@ -1069,25 +1082,7 @@ class DoubleLoop extends Track {
 class FlatLoop extends Track {
     constructor(game, i, j) {
         super(game, i, j);
-        this.deserialize({
-            points: [
-                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-                { position: { x: 0, y: 0.025, z: -0.001 }, normal: { x: 0.030604327099689715, y: 0.890301484645511, z: -0.45434198749485427 } },
-                { position: { x: 0.03725842274665704, y: 0.0189466497627554, z: -0.02021251906269199 }, normal: { x: -0.4955263609755037, y: 0.7506193260482804, z: -0.4370632138961141 } },
-                { position: { x: 0.03904166772854804, y: 0.013595331972204746, z: -0.06485058013920017 }, normal: { x: -0.5673289699065104, y: 0.7883299420247174, z: 0.23806247585901438 } },
-                { position: { x: 0, y: 0.012, z: -0.086 }, normal: { x: -0.060713559923151805, y: 0.7583643811321436, z: 0.6489971718517107 } },
-                { position: { x: -0.0371755534757057, y: 0.009580057835780673, z: -0.06728876941004185 }, normal: { x: 0.5323352621492311, y: 0.7468180322443142, z: 0.39860004438941066 } },
-                { position: { x: -0.03523250173863975, y: 0.0037661534343053447, z: -0.023519605203868997 }, normal: { x: 0.7153595435419998, y: 0.6258642611795496, z: -0.3107324412441646 } },
-                { position: { x: 0, y: 0, z: -0.001 }, normal: { x: 0.11332697888237396, y: 0.8351416115556937, z: -0.5382336709139935 } },
-                { position: { x: 0.03753121959731574, y: -0.004076658112004029, z: -0.020368121881671926 }, normal: { x: -0.4121579916993402, y: 0.8379962752567665, z: -0.3576143628745246 } },
-                { position: { x: 0.0390030408454499, y: -0.0079740858823805, z: -0.06463745871422209 }, normal: { x: -0.5351566695252531, y: 0.8120595792210571, z: 0.23273714541937374 } },
-                { position: { x: 0, y: -0.01, z: -0.086 }, normal: { x: -0.08984787706200124, y: 0.7613168245119105, z: 0.6421246387599157 } },
-                { position: { x: -0.03811331598262925, y: -0.015149512440246843, z: -0.06692045472109788 }, normal: { x: 0.6443741805969168, y: 0.5943474237821704, z: 0.4811788183446454 } },
-                { position: { x: -0.036110979281952345, y: -0.021183523947665272, z: -0.023827933832627626 }, normal: { x: 0.6799932663341047, y: 0.6831482624607453, z: -0.2663036035001031 } },
-                { position: { x: 0, y: -0.027, z: 0 } },
-                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-            ],
-        });
+        this.deserialize({ "points": [{ "position": { "x": -0.056249999999999994, "y": 0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }, { "position": { "x": 0.00013117709089955666, "y": 0.02681771816142543, "z": -0.0008691451477942794 }, "normal": { "x": 0.06013055785047781, "y": 0.9772966736270935, "z": -0.20316379532290918 } }, { "position": { "x": 0.03729992082962928, "y": 0.022330082345944437, "z": -0.021117524203230674 }, "normal": { "x": -0.17230764542910132, "y": 0.9564122553470104, "z": -0.23576614080211902 } }, { "position": { "x": 0.0388, "y": 0.018, "z": -0.0649 }, "normal": { "x": -0.23459665547179567, "y": 0.9720922072636946, "z": 0.0010722959693467982 } }, { "position": { "x": 0, "y": 0.0134, "z": -0.086 }, "normal": { "x": -0.11641347731821079, "y": 0.9706017270599991, "z": 0.21066606211449826 } }, { "position": { "x": -0.03785581637015418, "y": 0.009270059536442235, "z": -0.06703833611704814 }, "normal": { "x": 0.11796601040944829, "y": 0.9716067942972144, "z": 0.2050957280480716 } }, { "position": { "x": -0.03611819539841811, "y": 0.004703114480343419, "z": -0.02402565955208746 }, "normal": { "x": 0.25504698351749366, "y": 0.9667904709563657, "z": -0.016346910001466614 } }, { "position": { "x": 0, "y": 0.0004, "z": -0.001 }, "normal": { "x": 0.12214462616353287, "y": 0.9720855980710909, "z": -0.2003254360338217 } }, { "position": { "x": 0.0375, "y": -0.0038, "z": -0.0204 }, "normal": { "x": -0.11964477766740955, "y": 0.9708483625651176, "z": -0.20769830062267303 } }, { "position": { "x": 0.039, "y": -0.0084, "z": -0.0646 }, "normal": { "x": -0.23699338453768456, "y": 0.9715109569982103, "z": -0.0007720866497006876 } }, { "position": { "x": 0, "y": -0.013, "z": -0.086 }, "normal": { "x": -0.11960413777425635, "y": 0.958032045443619, "z": 0.2605176580011282 } }, { "position": { "x": -0.0381, "y": -0.0174, "z": -0.0669 }, "normal": { "x": 0.1634069356663116, "y": 0.9599541428093687, "z": 0.2275658521819039 }, "tangentIn": 1 }, { "position": { "x": -0.0361, "y": -0.0216, "z": -0.0238 }, "normal": { "x": 0.30696027384334723, "y": 0.9501014912553933, "z": -0.055520686201587816 } }, { "position": { "x": 0, "y": -0.0258, "z": 0 }, "normal": { "x": 0.16500014231293691, "y": 0.9660542507982967, "z": -0.19878163283173855 } }, { "position": { "x": 0.056249999999999994, "y": -0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }] });
         this.subdivisions = 3;
         this.generateWires();
     }
