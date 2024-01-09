@@ -508,7 +508,9 @@ class TrackEditor {
                     this.updateHandles();
                 }
             }
-            this.game.scene.activeCamera.attachControl();
+            if (!this.hoveredTrackPointHandle) {
+                this.game.scene.activeCamera.attachControl();
+            }
         }
         else if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
             if (this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
@@ -559,6 +561,9 @@ class TrackEditor {
 
             this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
             this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
+            
+            let bankCurr = this.track.getBankAt(this.selectedTrackPointIndex);
+            document.getElementById("active-trackpoint-bank").innerText = bankCurr.toFixed(1) + "°";
         }
         if (this.track) {
             document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";

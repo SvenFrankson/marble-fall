@@ -130,6 +130,19 @@ class Track extends BABYLON.Mesh {
         return 0;
     }
 
+    public getBankAt(index: number): number {
+        let trackpoint = this.trackPoints[index];
+        if (trackpoint) {
+            let n = trackpoint.normal;
+            if (n.y < 0) {
+                n = n.scale(-1);
+            }
+            let angle = Mummu.AngleFromToAround(trackpoint.normal, BABYLON.Axis.Y, trackpoint.dir);
+            return angle / Math.PI * 180;
+        }
+        return 0;
+    }
+
     public deleteTrackPointAt(index: number): void {
         if (index > 0 && index < this.trackPoints.length - 1) {
             this.trackPoints.splice(index, 1);

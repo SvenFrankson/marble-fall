@@ -390,7 +390,9 @@ class TrackEditor {
                         this.updateHandles();
                     }
                 }
-                this.game.scene.activeCamera.attachControl();
+                if (!this.hoveredTrackPointHandle) {
+                    this.game.scene.activeCamera.attachControl();
+                }
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
                 if (this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
@@ -424,6 +426,8 @@ class TrackEditor {
                 document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
                 this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
                 this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
+                let bankCurr = this.track.getBankAt(this.selectedTrackPointIndex);
+                document.getElementById("active-trackpoint-bank").innerText = bankCurr.toFixed(1) + "°";
             }
             if (this.track) {
                 document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
@@ -852,6 +856,18 @@ class Track extends BABYLON.Mesh {
             let angleToHorizontal = Math.PI / 2 - angleToVertical;
             let slope = Math.tan(angleToHorizontal) * 100;
             return slope;
+        }
+        return 0;
+    }
+    getBankAt(index) {
+        let trackpoint = this.trackPoints[index];
+        if (trackpoint) {
+            let n = trackpoint.normal;
+            if (n.y < 0) {
+                n = n.scale(-1);
+            }
+            let angle = Mummu.AngleFromToAround(trackpoint.normal, BABYLON.Axis.Y, trackpoint.dir);
+            return angle / Math.PI * 180;
         }
         return 0;
     }
