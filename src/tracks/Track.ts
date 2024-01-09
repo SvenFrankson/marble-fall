@@ -81,6 +81,7 @@ class Track extends BABYLON.Mesh {
 
     public wireSize: number = 0.0015;
     public wireGauge: number = 0.012;
+    public renderOnlyPath: boolean = false;
 
     public sleepersMesh: BABYLON.Mesh;
 
@@ -243,6 +244,7 @@ class Track extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
+        
         let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
         if (data[0]) {
             let baseMesh = new BABYLON.Mesh("base-mesh");
@@ -251,6 +253,7 @@ class Track extends BABYLON.Mesh {
             baseMesh.position.z += 0.02;
             data[0].applyToMesh(baseMesh);
         }
+
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
@@ -259,9 +262,26 @@ class Track extends BABYLON.Mesh {
     }
 
     public rebuildWireMeshes(): void {
-        SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
-        this.wires[0].instantiate();
-        this.wires[1].instantiate();
+        if (this.renderOnlyPath) {
+            let n = 8;
+            let shape: BABYLON.Vector3[] = [];
+            for (let i = 0; i < n; i++) {
+                let a = i / n * 2 * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
+            }
+
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
+            vertexData.applyToMesh(this.sleepersMesh);
+            tmp.dispose();
+        }
+        else {
+            SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+            this.wires[0].instantiate();
+            this.wires[1].instantiate();
+        }
     }
 
     public serialize(): ITrackData {

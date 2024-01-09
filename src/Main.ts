@@ -21,6 +21,8 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
+    public cameraOrtho: boolean = true;
+
     public timeFactor: number = 0.1;
     public physicDT: number = 0.0005;
 
@@ -161,6 +163,19 @@ class Game {
         //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
         let target = this.camera.target;
         window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
+
+        if (this.cameraOrtho) {
+            let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
+            let f = this.camera.radius / 4;
+            this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+            this.camera.orthoTop = 1 * f;
+            this.camera.orthoBottom = - 1 * f;
+            this.camera.orthoLeft = - ratio * f;
+            this.camera.orthoRight = ratio * f;
+        }
+        else {
+            this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+        }
     }
 }
 

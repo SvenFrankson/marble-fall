@@ -88,6 +88,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
+        this.cameraOrtho = true;
         this.timeFactor = 0.1;
         this.physicDT = 0.0005;
         this.tracks = [];
@@ -197,6 +198,18 @@ class Game {
         //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
         let target = this.camera.target;
         window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
+        if (this.cameraOrtho) {
+            let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
+            let f = this.camera.radius / 4;
+            this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+            this.camera.orthoTop = 1 * f;
+            this.camera.orthoBottom = -1 * f;
+            this.camera.orthoLeft = -ratio * f;
+            this.camera.orthoRight = ratio * f;
+        }
+        else {
+            this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+        }
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -468,6 +481,12 @@ class TrackEditor {
         });
         document.getElementById("btn-cam-bottom").addEventListener("click", () => {
             this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI);
+        });
+        document.getElementById("btn-cam-ortho").addEventListener("click", () => {
+            this.game.cameraOrtho = true;
+        });
+        document.getElementById("btn-cam-perspective").addEventListener("click", () => {
+            this.game.cameraOrtho = false;
         });
         document.getElementById("btn-focus-point").addEventListener("click", () => {
             if (this.track && this.selectedTrackPoint) {
@@ -794,6 +813,7 @@ class Track extends BABYLON.Mesh {
         this.subdivisions = 3;
         this.wireSize = 0.0015;
         this.wireGauge = 0.012;
+        this.renderOnlyPath = false;
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist - j * 4 * yDist;
         this.wires = [
@@ -940,9 +960,25 @@ class Track extends BABYLON.Mesh {
         this.rebuildWireMeshes();
     }
     rebuildWireMeshes() {
-        SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
-        this.wires[0].instantiate();
-        this.wires[1].instantiate();
+        if (this.renderOnlyPath) {
+            let n = 8;
+            let shape = [];
+            for (let i = 0; i < n; i++) {
+                let a = i / n * 2 * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
+            }
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
+            vertexData.applyToMesh(this.sleepersMesh);
+            tmp.dispose();
+        }
+        else {
+            SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+            this.wires[0].instantiate();
+            this.wires[1].instantiate();
+        }
     }
     serialize() {
         let data = { points: [] };
@@ -1036,19 +1072,19 @@ class FlatLoop extends Track {
         this.deserialize({
             points: [
                 { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-                { position: { x: -0.016791834468926996, y: 0.026198365592521065, z: -0.0016886405336832737 }, normal: { x: 0.05106817417646556, y: 0.8870467076754224, z: -0.458846575652991 } },
-                { position: { x: 0.028995163344434437, y: 0.017955274462012293, z: -0.01858400035172607 }, normal: { x: -0.39671508889258655, y: 0.7207927002470028, z: -0.5683968873204546 } },
-                { position: { x: 0.03864826426846342, y: 0.013011541469923834, z: -0.057105710838764194 }, normal: { x: -0.6110192403642714, y: 0.7776529213108947, z: 0.14802507179968008 } },
-                { position: { x: 0.005122586616303587, y: 0.011911931545058175, z: -0.08537660719799946 }, normal: { x: -0.1717184007977634, y: 0.7486550668938698, z: 0.640334585698441 } },
-                { position: { x: -0.02799415480000628, y: 0.008898018051458876, z: -0.07016781878126818 }, normal: { x: 0.4987791404465167, y: 0.7368041849192449, z: 0.45644163059576554 } },
-                { position: { x: -0.03392098682164221, y: 0.0035152986778050153, z: -0.029157383281749327 }, normal: { x: 0.7556500353778755, y: 0.6112804738366079, z: -0.2352216111234417 } },
-                { position: { x: -0.0005524606184448512, y: -0.0006949758487576744, z: -0.006941029153996855 }, normal: { x: 0.21315423068952008, y: 0.8195482194555408, z: -0.531889076712816 } },
-                { position: { x: 0.03307173765732491, y: -0.005333129882448853, z: -0.015943972658601143 }, normal: { x: -0.3699625012525341, y: 0.8279329900941786, z: -0.42149105753346827 } },
-                { position: { x: 0.039265546693677086, y: -0.008694968144669205, z: -0.057605513585373185 }, normal: { x: -0.567305588259995, y: 0.8058132308020771, z: 0.1697922453862353 } },
-                { position: { x: 0.004954747269597796, y: -0.010580430174426248, z: -0.08498470973158817 }, normal: { x: -0.18643286380297922, y: 0.7513694131844918, z: 0.6329982560995036 } },
-                { position: { x: -0.029849995676464968, y: -0.013950639833551808, z: -0.07172317893197551 }, normal: { x: 0.6159371413496885, y: 0.5854456013789114, z: 0.5271383933390346 } },
-                { position: { x: -0.03597996630320936, y: -0.01944969811480364, z: -0.02730406125794845 }, normal: { x: 0.7270375848969728, y: 0.6626895670531697, z: -0.17960759412135058 } },
-                { position: { x: -0.0011602288600762786, y: -0.027078597075941777, z: -0.004026829366836152 } },
+                { position: { x: 0, y: 0.025, z: -0.001 }, normal: { x: 0.030604327099689715, y: 0.890301484645511, z: -0.45434198749485427 } },
+                { position: { x: 0.03725842274665704, y: 0.0189466497627554, z: -0.02021251906269199 }, normal: { x: -0.4955263609755037, y: 0.7506193260482804, z: -0.4370632138961141 } },
+                { position: { x: 0.03904166772854804, y: 0.013595331972204746, z: -0.06485058013920017 }, normal: { x: -0.5673289699065104, y: 0.7883299420247174, z: 0.23806247585901438 } },
+                { position: { x: 0, y: 0.012, z: -0.086 }, normal: { x: -0.060713559923151805, y: 0.7583643811321436, z: 0.6489971718517107 } },
+                { position: { x: -0.0371755534757057, y: 0.009580057835780673, z: -0.06728876941004185 }, normal: { x: 0.5323352621492311, y: 0.7468180322443142, z: 0.39860004438941066 } },
+                { position: { x: -0.03523250173863975, y: 0.0037661534343053447, z: -0.023519605203868997 }, normal: { x: 0.7153595435419998, y: 0.6258642611795496, z: -0.3107324412441646 } },
+                { position: { x: 0, y: 0, z: -0.001 }, normal: { x: 0.11332697888237396, y: 0.8351416115556937, z: -0.5382336709139935 } },
+                { position: { x: 0.03753121959731574, y: -0.004076658112004029, z: -0.020368121881671926 }, normal: { x: -0.4121579916993402, y: 0.8379962752567665, z: -0.3576143628745246 } },
+                { position: { x: 0.0390030408454499, y: -0.0079740858823805, z: -0.06463745871422209 }, normal: { x: -0.5351566695252531, y: 0.8120595792210571, z: 0.23273714541937374 } },
+                { position: { x: 0, y: -0.01, z: -0.086 }, normal: { x: -0.08984787706200124, y: 0.7613168245119105, z: 0.6421246387599157 } },
+                { position: { x: -0.03811331598262925, y: -0.015149512440246843, z: -0.06692045472109788 }, normal: { x: 0.6443741805969168, y: 0.5943474237821704, z: 0.4811788183446454 } },
+                { position: { x: -0.036110979281952345, y: -0.021183523947665272, z: -0.023827933832627626 }, normal: { x: 0.6799932663341047, y: 0.6831482624607453, z: -0.2663036035001031 } },
+                { position: { x: 0, y: -0.027, z: 0 } },
                 { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
             ],
         });

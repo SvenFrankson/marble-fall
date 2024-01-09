@@ -113,6 +113,14 @@ class TrackEditor {
             this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI);
         });
 
+        document.getElementById("btn-cam-ortho").addEventListener("click", () => {
+            this.game.cameraOrtho = true;
+        });
+
+        document.getElementById("btn-cam-perspective").addEventListener("click", () => {
+            this.game.cameraOrtho = false;
+        });
+
         document.getElementById("btn-focus-point").addEventListener("click", () => {
             if (this.track && this.selectedTrackPoint) {
                 let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.track.getWorldMatrix());
