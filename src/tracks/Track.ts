@@ -240,6 +240,7 @@ class Track extends BABYLON.Mesh {
             data[0].applyToMesh(baseMesh);
         }
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
+        this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
 
         this.rebuildWireMeshes();

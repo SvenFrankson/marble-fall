@@ -21,12 +21,13 @@ class Game {
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
 
-    public timeFactor: number = 0.5;
+    public timeFactor: number = 0.1;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];
     public trackEditor: TrackEditor;
 
+    public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
     public handleMaterialHover: BABYLON.StandardMaterial;
@@ -68,6 +69,12 @@ class Game {
         this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
         this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.insertHandleMaterial.alpha = 0.5;
+
+        this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
+        this.steelMaterial.metallic = 1.0; // set to 1 to only use it from the metallicRoughnessTexture
+        this.steelMaterial.roughness = 0.15; // set to 1 to only use it from the metallicRoughnessTexture
+        this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
 
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
         this.camera.speed = 0.05;

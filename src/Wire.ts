@@ -48,6 +48,7 @@ class Wire extends BABYLON.Mesh {
         if (!Wire.DEBUG_DISPLAY) {
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
+            wire.material = this.track.game.steelMaterial;
         }
         
         if (Wire.DEBUG_DISPLAY) {

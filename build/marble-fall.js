@@ -69,6 +69,7 @@ class Ball extends BABYLON.Mesh {
     async instantiate() {
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
+        this.material = this.game.steelMaterial;
         this.getScene().onBeforeRenderObservable.add(this.update);
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
@@ -87,7 +88,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.timeFactor = 0.5;
+        this.timeFactor = 0.1;
         this.physicDT = 0.0005;
         this.tracks = [];
         Game.Instance = this;
@@ -117,6 +118,11 @@ class Game {
         this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
         this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.insertHandleMaterial.alpha = 0.5;
+        this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
+        this.steelMaterial.metallic = 1.0; // set to 1 to only use it from the metallicRoughnessTexture
+        this.steelMaterial.roughness = 0.15; // set to 1 to only use it from the metallicRoughnessTexture
+        this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
         this.camera.speed = 0.05;
         this.camera.minZ = 0.01;
@@ -682,6 +688,7 @@ class Wire extends BABYLON.Mesh {
         if (!Wire.DEBUG_DISPLAY) {
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
+            wire.material = this.track.game.steelMaterial;
         }
         if (Wire.DEBUG_DISPLAY) {
             for (let i = 0; i < this.path.length - 1; i++) {
@@ -891,6 +898,7 @@ class Track extends BABYLON.Mesh {
             data[0].applyToMesh(baseMesh);
         }
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
+        this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
         this.rebuildWireMeshes();
     }
