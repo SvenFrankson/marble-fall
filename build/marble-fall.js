@@ -129,10 +129,11 @@ class Game {
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
+        this.camera.panningSensibility = 100000;
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
-            this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
+            //this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
         }
         /*
         let savedRot = window.localStorage.getItem("saved-rot");
@@ -146,9 +147,9 @@ class Game {
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
-            this.camera.target.x = target.x;
-            this.camera.target.y = target.y;
-            this.camera.target.z = target.z;
+            //this.camera.target.x = target.x;
+            //this.camera.target.y = target.y;
+            //this.camera.target.z = target.z;
         }
         this.camera.attachControl();
         this.camera.getScene();
