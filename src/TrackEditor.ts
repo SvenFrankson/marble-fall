@@ -54,6 +54,8 @@ class TrackEditor {
 
     public activeTrackpointPositionInput: Nabu.InputVector3;
     public activeTrackpointNormalInput: Nabu.InputVector3;
+    public activeTrackpointTangentIn: Nabu.InputNumber;
+    public activeTrackpointTangentOut: Nabu.InputNumber;
 
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
     private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
@@ -151,6 +153,34 @@ class TrackEditor {
         this.activeTrackpointNormalInput.onInputXYZCallback = (xyz: Nabu.IVector3XYZValue) => {
             if (this.track) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.rebuildWireMeshes();
+                    this.updateHandles();
+                }
+            }
+        }
+
+        this.activeTrackpointTangentIn = document.getElementById("active-trackpoint-tan-in") as Nabu.InputNumber;
+        this.activeTrackpointTangentIn.onInputNCallback = (n: number) => {
+            if (this.track) {
+                if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.selectedTrackPoint.tangentIn = n;
+                    this.selectedTrackPoint.fixedTangentIn = true;
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.rebuildWireMeshes();
+                    this.updateHandles();
+                }
+            }
+        }
+
+        this.activeTrackpointTangentOut = document.getElementById("active-trackpoint-tan-out") as Nabu.InputNumber;
+        this.activeTrackpointTangentOut.onInputNCallback = (n: number) => {
+            if (this.track) {
+                if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.selectedTrackPoint.tangentOut = n;
+                    this.selectedTrackPoint.fixedTangentOut = true;
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
                     this.track.rebuildWireMeshes();
@@ -518,6 +548,9 @@ class TrackEditor {
             document.getElementById("slope-curr").innerText = slopeCurr.toFixed(0) + "%";
             let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
             document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
+
+            this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
+            this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
         }
     }
 }

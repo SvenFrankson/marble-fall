@@ -99,7 +99,7 @@ class SleeperMeshBuilder {
                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
 
-                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.005 });
+                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
                     let q = BABYLON.Quaternion.Identity();
                     Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
                     Mummu.RotateVertexDataInPlace(tmpVertexData, q);

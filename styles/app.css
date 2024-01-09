@@ -143,3 +143,8 @@ input-vec3 {
     display: inline-block;
     width: 300px;
 }
+input-number {
+    display: inline-block;
+    width: 120px;
+    outline: 1px solid magenta;
+}

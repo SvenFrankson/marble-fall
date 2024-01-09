@@ -6,16 +6,16 @@ class TrackPoint {
 
     public fixedNormal: boolean = false;
     public fixedDir: boolean = false;
-    public fixedTangentPrev: boolean = false;
-    public fixedTangentNext: boolean = false;
+    public fixedTangentIn: boolean = false;
+    public fixedTangentOut: boolean = false;
 
     constructor(
         public track: Track,
         public position: BABYLON.Vector3,
         public normal?: BABYLON.Vector3,
         public dir?: BABYLON.Vector3,
-        public trangentPrev?: number,
-        public trangentNext?: number
+        public tangentIn?: number,
+        public tangentOut?: number
     ) {
         if (normal) {
             this.fixedNormal = true;
@@ -33,20 +33,20 @@ class TrackPoint {
             this.dir = BABYLON.Vector3.Right();
         }
         
-        if (trangentPrev) {
-            this.fixedTangentPrev = true;
+        if (tangentIn) {
+            this.fixedTangentIn = true;
         }
         else {
-            this.fixedTangentPrev = false;
-            this.trangentPrev = 1;
+            this.fixedTangentIn = false;
+            this.tangentIn = 1;
         }
         
-        if (trangentNext) {
-            this.fixedTangentNext = true;
+        if (tangentOut) {
+            this.fixedTangentOut = true;
         }
         else {
-            this.fixedTangentNext = false;
-            this.trangentNext = 1;
+            this.fixedTangentOut = false;
+            this.tangentOut = 1;
         }
     }
 
@@ -156,11 +156,11 @@ class Track extends BABYLON.Mesh {
             if (!trackPoint.fixedDir) {
                 trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
             }
-            if (!trackPoint.fixedTangentPrev) {
-                trackPoint.trangentPrev = BABYLON.Vector3.Distance(prevTrackPoint.position, trackPoint.position);
+            if (!trackPoint.fixedTangentIn) {
+                trackPoint.tangentIn = 1;
             }
-            if (!trackPoint.fixedTangentNext) {
-                trackPoint.trangentNext = BABYLON.Vector3.Distance(nextTrackPoint.position, trackPoint.position);
+            if (!trackPoint.fixedTangentOut) {
+                trackPoint.tangentOut = 1;
             }
             if (!trackPoint.fixedNormal) {
                 let n = 0;
@@ -181,21 +181,31 @@ class Track extends BABYLON.Mesh {
         this.wires[0].path = [];
         this.wires[1].path = [];
 
-        this.interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
-        this.interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
+        this.interpolatedPoints = [];
+        this.interpolatedNormals = [];
 
-        for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(this.interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.CatmullRomPathInPlace(this.interpolatedNormals);
-        }
-
-        for (let n = 0; n < 0; n++) {
-            let smoothed = this.interpolatedPoints.map(pt => { return pt.clone(); });
-            for (let i = 1; i < this.interpolatedPoints.length - 1; i++) {
-                smoothed[i].addInPlace(this.interpolatedPoints[i - 1]).addInPlace(this.interpolatedPoints[i + 1]).scaleInPlace(1/3);
+        for (let i = 0; i < this.trackPoints.length - 1; i++) {
+            let trackPoint = this.trackPoints[i];
+            let nextTrackPoint = this.trackPoints[i + 1];
+            let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanIn = this.trackPoints[i].dir.scale(dist * trackPoint.tangentOut);
+            let tanOut = this.trackPoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
+            let count = Math.round(dist / 0.003);
+            count = Math.max(0, count);
+            this.interpolatedPoints.push(trackPoint.position);
+            this.interpolatedNormals.push(trackPoint.normal);
+            for (let j = 1; j < count; j++) {
+                let amount = j / count;
+                let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
+                let normal = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, amount);
+                this.interpolatedPoints.push(point);
+                this.interpolatedNormals.push(normal);
             }
-            this.interpolatedPoints = smoothed;
+
         }
+
+        this.interpolatedPoints.push(this.trackPoints[this.trackPoints.length - 1].position);
+        this.interpolatedNormals.push(this.trackPoints[this.trackPoints.length - 1].normal);
 
         let N = this.interpolatedPoints.length;
 

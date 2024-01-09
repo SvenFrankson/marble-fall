@@ -164,7 +164,7 @@ class Game {
             let track = new FlatLoop(this, 2 * n, 0);
             track.instantiate();
             this.tracks.push(track);
-            let track2 = new DefaultLLTrack(this, 2 * n + 1, 0);
+            let track2 = new DoubleLoop(this, 2 * n + 1, 0);
             track2.instantiate();
             this.tracks.push(track2);
         }
@@ -409,6 +409,8 @@ class TrackEditor {
                 document.getElementById("slope-curr").innerText = slopeCurr.toFixed(0) + "%";
                 let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
                 document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
+                this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
+                this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
             }
         };
         this.setTrack(this.game.tracks[0]);
@@ -503,6 +505,32 @@ class TrackEditor {
         this.activeTrackpointNormalInput.onInputXYZCallback = (xyz) => {
             if (this.track) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.rebuildWireMeshes();
+                    this.updateHandles();
+                }
+            }
+        };
+        this.activeTrackpointTangentIn = document.getElementById("active-trackpoint-tan-in");
+        this.activeTrackpointTangentIn.onInputNCallback = (n) => {
+            if (this.track) {
+                if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.selectedTrackPoint.tangentIn = n;
+                    this.selectedTrackPoint.fixedTangentIn = true;
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.rebuildWireMeshes();
+                    this.updateHandles();
+                }
+            }
+        };
+        this.activeTrackpointTangentOut = document.getElementById("active-trackpoint-tan-out");
+        this.activeTrackpointTangentOut.onInputNCallback = (n) => {
+            if (this.track) {
+                if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
+                    this.selectedTrackPoint.tangentOut = n;
+                    this.selectedTrackPoint.fixedTangentOut = true;
                     this.track.generateWires();
                     this.track.recomputeAbsolutePath();
                     this.track.rebuildWireMeshes();
@@ -709,17 +737,17 @@ var baseRadius = 0.075;
 var xDist = 0.75 * baseRadius;
 var yDist = Math.sqrt(3) / 2 * 0.5 * baseRadius;
 class TrackPoint {
-    constructor(track, position, normal, dir, trangentPrev, trangentNext) {
+    constructor(track, position, normal, dir, tangentIn, tangentOut) {
         this.track = track;
         this.position = position;
         this.normal = normal;
         this.dir = dir;
-        this.trangentPrev = trangentPrev;
-        this.trangentNext = trangentNext;
+        this.tangentIn = tangentIn;
+        this.tangentOut = tangentOut;
         this.fixedNormal = false;
         this.fixedDir = false;
-        this.fixedTangentPrev = false;
-        this.fixedTangentNext = false;
+        this.fixedTangentIn = false;
+        this.fixedTangentOut = false;
         if (normal) {
             this.fixedNormal = true;
         }
@@ -734,19 +762,19 @@ class TrackPoint {
             this.fixedDir = false;
             this.dir = BABYLON.Vector3.Right();
         }
-        if (trangentPrev) {
-            this.fixedTangentPrev = true;
+        if (tangentIn) {
+            this.fixedTangentIn = true;
         }
         else {
-            this.fixedTangentPrev = false;
-            this.trangentPrev = 1;
+            this.fixedTangentIn = false;
+            this.tangentIn = 1;
         }
-        if (trangentNext) {
-            this.fixedTangentNext = true;
+        if (tangentOut) {
+            this.fixedTangentOut = true;
         }
         else {
-            this.fixedTangentNext = false;
-            this.trangentNext = 1;
+            this.fixedTangentOut = false;
+            this.tangentOut = 1;
         }
     }
     isFirstOrLast() {
@@ -827,11 +855,11 @@ class Track extends BABYLON.Mesh {
             if (!trackPoint.fixedDir) {
                 trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
             }
-            if (!trackPoint.fixedTangentPrev) {
-                trackPoint.trangentPrev = BABYLON.Vector3.Distance(prevTrackPoint.position, trackPoint.position);
+            if (!trackPoint.fixedTangentIn) {
+                trackPoint.tangentIn = 1;
             }
-            if (!trackPoint.fixedTangentNext) {
-                trackPoint.trangentNext = BABYLON.Vector3.Distance(nextTrackPoint.position, trackPoint.position);
+            if (!trackPoint.fixedTangentOut) {
+                trackPoint.tangentOut = 1;
             }
             if (!trackPoint.fixedNormal) {
                 let n = 0;
@@ -850,19 +878,28 @@ class Track extends BABYLON.Mesh {
         }
         this.wires[0].path = [];
         this.wires[1].path = [];
-        this.interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
-        this.interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
-        for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(this.interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.CatmullRomPathInPlace(this.interpolatedNormals);
-        }
-        for (let n = 0; n < 0; n++) {
-            let smoothed = this.interpolatedPoints.map(pt => { return pt.clone(); });
-            for (let i = 1; i < this.interpolatedPoints.length - 1; i++) {
-                smoothed[i].addInPlace(this.interpolatedPoints[i - 1]).addInPlace(this.interpolatedPoints[i + 1]).scaleInPlace(1 / 3);
+        this.interpolatedPoints = [];
+        this.interpolatedNormals = [];
+        for (let i = 0; i < this.trackPoints.length - 1; i++) {
+            let trackPoint = this.trackPoints[i];
+            let nextTrackPoint = this.trackPoints[i + 1];
+            let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanIn = this.trackPoints[i].dir.scale(dist * trackPoint.tangentOut);
+            let tanOut = this.trackPoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
+            let count = Math.round(dist / 0.003);
+            count = Math.max(0, count);
+            this.interpolatedPoints.push(trackPoint.position);
+            this.interpolatedNormals.push(trackPoint.normal);
+            for (let j = 1; j < count; j++) {
+                let amount = j / count;
+                let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
+                let normal = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, amount);
+                this.interpolatedPoints.push(point);
+                this.interpolatedNormals.push(normal);
             }
-            this.interpolatedPoints = smoothed;
         }
+        this.interpolatedPoints.push(this.trackPoints[this.trackPoints.length - 1].position);
+        this.interpolatedNormals.push(this.trackPoints[this.trackPoints.length - 1].normal);
         let N = this.interpolatedPoints.length;
         for (let i = 0; i < N; i++) {
             let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
@@ -1112,7 +1149,7 @@ class SleeperMeshBuilder {
                     let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
-                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.005 });
+                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
                     let q = BABYLON.Quaternion.Identity();
                     Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
                     Mummu.RotateVertexDataInPlace(tmpVertexData, q);
