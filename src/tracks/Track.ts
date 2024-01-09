@@ -74,6 +74,8 @@ class Track extends BABYLON.Mesh {
     public subdivisions: number = 3;
     public trackPoints: TrackPoint[];
     public wires: Wire[];
+    public interpolatedPoints: BABYLON.Vector3[];
+    public interpolatedNormals: BABYLON.Vector3[];
 
     public wireSize: number = 0.0015;
     public wireGauge: number = 0.010;
@@ -167,28 +169,28 @@ class Track extends BABYLON.Mesh {
         this.wires[0].path = [];
         this.wires[1].path = [];
 
-        let interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
-        let interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
+        this.interpolatedPoints = this.trackPoints.map(trackpoint => { return trackpoint.position.clone(); });
+        this.interpolatedNormals = this.trackPoints.map(trackpoint => { return trackpoint.normal.clone(); });
 
         for (let n = 0; n < this.subdivisions; n++) {
-            Mummu.CatmullRomPathInPlace(interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
-            Mummu.CatmullRomPathInPlace(interpolatedNormals);
+            Mummu.CatmullRomPathInPlace(this.interpolatedPoints, this.trackPoints[0].dir.scale(2), this.trackPoints[this.trackPoints.length - 1].dir.scale(2));
+            Mummu.CatmullRomPathInPlace(this.interpolatedNormals);
         }
 
         for (let n = 0; n < 0; n++) {
-            let smoothed = interpolatedPoints.map(pt => { return pt.clone(); });
-            for (let i = 1; i < interpolatedPoints.length - 1; i++) {
-                smoothed[i].addInPlace(interpolatedPoints[i - 1]).addInPlace(interpolatedPoints[i + 1]).scaleInPlace(1/3);
+            let smoothed = this.interpolatedPoints.map(pt => { return pt.clone(); });
+            for (let i = 1; i < this.interpolatedPoints.length - 1; i++) {
+                smoothed[i].addInPlace(this.interpolatedPoints[i - 1]).addInPlace(this.interpolatedPoints[i + 1]).scaleInPlace(1/3);
             }
-            interpolatedPoints = smoothed;
+            this.interpolatedPoints = smoothed;
         }
 
-        let N = interpolatedPoints.length;
+        let N = this.interpolatedPoints.length;
 
         for (let i = 0; i < N; i++) {
-            let pPrev = interpolatedPoints[i - 1] ? interpolatedPoints[i - 1] : undefined;
-            let p = interpolatedPoints[i];
-            let pNext = interpolatedPoints[i + 1] ? interpolatedPoints[i + 1] : undefined;
+            let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
+            let p = this.interpolatedPoints[i];
+            let pNext = this.interpolatedPoints[i + 1] ? this.interpolatedPoints[i + 1] : undefined;
 
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
@@ -198,7 +200,7 @@ class Track extends BABYLON.Mesh {
             }
 
             let dir = pNext.subtract(pPrev).normalize();
-            let up = interpolatedNormals[i];
+            let up = this.interpolatedNormals[i];
 
             let rotation = BABYLON.Quaternion.Identity();
             Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
@@ -231,7 +233,7 @@ class Track extends BABYLON.Mesh {
     }
 
     public rebuildWireMeshes(): void {
-        SleeperMeshBuilder.GenerateSleepersVertexData(this).applyToMesh(this.sleepersMesh);
+        SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
         this.wires[0].instantiate();
         this.wires[1].instantiate();
     }
