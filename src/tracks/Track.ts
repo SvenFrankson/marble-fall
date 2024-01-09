@@ -63,6 +63,8 @@ interface ITrackPointData {
     position: { x: number, y: number, z: number};
     normal?: { x: number, y: number, z: number};
     dir?: { x: number, y: number, z: number};
+    tangentIn?: number;
+    tangentOut?: number;
 }
 
 interface ITrackData {
@@ -275,6 +277,12 @@ class Track extends BABYLON.Mesh {
             if (this.trackPoints[i].fixedDir) {
                 data.points[i].dir = { x: this.trackPoints[i].dir.x, y: this.trackPoints[i].dir.y, z: this.trackPoints[i].dir.z }
             }
+            if (this.trackPoints[i].fixedTangentIn) {
+                data.points[i].tangentIn = this.trackPoints[i].tangentIn;
+            }
+            if (this.trackPoints[i].fixedTangentOut) {
+                data.points[i].tangentOut = this.trackPoints[i].tangentOut;
+            }
         }
 
         return data;
@@ -297,7 +305,9 @@ class Track extends BABYLON.Mesh {
                 this,
                 new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z),
                 normal,
-                direction
+                direction,
+                pointData.tangentIn,
+                pointData.tangentOut
             );
             this.trackPoints[i] = trackPoint;
         }

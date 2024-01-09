@@ -121,7 +121,7 @@ class Game {
             track.instantiate();
             this.tracks.push(track);
     
-            let track2 = new DoubleLoop(this, 2 * n + 1, 0);
+            let track2 = new Ramp(this, 2 * n + 1, 0);
             track2.instantiate();
             this.tracks.push(track2);
         }
