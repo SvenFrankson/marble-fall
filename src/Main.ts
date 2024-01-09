@@ -114,10 +114,14 @@ class Game {
             track.instantiate();
             this.tracks.push(track);
     
-            let track2 = new DoubleLoop(this, 2 * n + 1, 0);
+            let track2 = new DefaultLLTrack(this, 2 * n + 1, 0);
             track2.instantiate();
             this.tracks.push(track2);
         }
+    
+        let track3 = new DefaultLLTrack(this, 0, 1, true);
+        track3.instantiate();
+        this.tracks.push(track3);
 
         requestAnimationFrame(() => {
             this.tracks.forEach(track => {
