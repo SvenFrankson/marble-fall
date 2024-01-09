@@ -79,13 +79,34 @@ class SleeperMeshBuilder {
                 tmp.dispose();
 
                 if (n === 0.5 || n === count - 0.5) {
-                    let anchor = path[nPath - 4];
-                    let anchorWall = anchor.clone();
-                    anchorWall.z = 0.015;
-                    let fixationPath = [anchor, anchorWall];
-                    let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                    let anchor = path[nPath / 2 - 1];
+                    let anchorCenter = anchor.clone();
+                    anchorCenter.z = 0.015;
+                    let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
+                    let anchorWall = anchorCenter.clone();
+                    anchorWall.y -= radiusFixation * 0.5;
+                    let nFixation = 10;
+                    let fixationPath: BABYLON.Vector3[] = [];
+                    for (let i = 0; i <= nFixation; i++) {
+                        let a = i / nFixation * 0.5 * Math.PI;
+                        let cosa = Math.cos(a);
+                        let sina = Math.sin(a);
+                        fixationPath[i] = new BABYLON.Vector3(0, - sina * radiusFixation * 0.5, - cosa * radiusFixation);
+                        fixationPath[i].addInPlace(anchorCenter);  
+                    }
+                    
+                    let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
+
+                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.005 });
+                    let q = BABYLON.Quaternion.Identity();
+                    Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+                    Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+                    Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
+                    partialsDatas.push(tmpVertexData);
+                    tmp.dispose();
+
                 }
                 n++;
             }

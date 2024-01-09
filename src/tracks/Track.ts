@@ -235,6 +235,7 @@ class Track extends BABYLON.Mesh {
         if (data[0]) {
             let baseMesh = new BABYLON.Mesh("base-mesh");
             baseMesh.parent = this;
+            baseMesh.position.y -= 0.015;
             baseMesh.position.z += 0.02;
             data[0].applyToMesh(baseMesh);
         }
