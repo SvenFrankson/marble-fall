@@ -78,19 +78,31 @@ class Track extends BABYLON.Mesh {
     public interpolatedNormals: BABYLON.Vector3[];
 
     public wireSize: number = 0.0015;
-    public wireGauge: number = 0.010;
+    public wireGauge: number = 0.012;
 
     public sleepersMesh: BABYLON.Mesh;
 
     constructor(public game: Game, public i: number, public j: number) {
         super("track", game.scene);
         this.position.x = i * 2 * xDist;
-        this.position.y = - i * 2 * yDist;
+        this.position.y = - i * 2 * yDist - j * 4 * yDist;
 
         this.wires = [
             new Wire(this),
             new Wire(this)
         ];
+    }
+
+    protected mirrorTrackPointsInPlace(): void {
+        for (let i = 0; i < this.trackPoints.length; i++) {
+            this.trackPoints[i].position.x *= - 1;
+            if (this.trackPoints[i].normal) {
+                this.trackPoints[i].normal.x *= - 1;
+            }
+            if (this.trackPoints[i].dir) {
+                this.trackPoints[i].dir.x *= - 1;
+            }
+        }
     }
 
     public getSlopeAt(index: number): number {
