@@ -77,6 +77,78 @@ class Ball extends BABYLON.Mesh {
         this.getScene().onBeforeRenderObservable.removeCallback(this.update);
     }
 }
+class HelperShape {
+    constructor() {
+        this.show = true;
+        this.showCircle = true;
+        this.showGrid = true;
+        this.circleRadius = 350;
+        this.gridSize = 100;
+    }
+    setShow(b) {
+        this.show = b;
+        this.update();
+    }
+    setShowCircle(b) {
+        this.showCircle = b;
+        this.update();
+    }
+    setCircleRadius(r) {
+        this.circleRadius = r;
+        this.update();
+    }
+    setShowGrid(b) {
+        this.showGrid = b;
+        this.update();
+    }
+    setGridSize(s) {
+        this.gridSize = s;
+        this.update();
+    }
+    update() {
+        if (!this.svg) {
+            this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            this.svg.setAttribute("width", "1000");
+            this.svg.setAttribute("height", "1000");
+            this.svg.setAttribute("viewBox", "0 0 1000 1000");
+            this.svg.style.position = "fixed";
+            this.svg.style.width = "min(100vw, 100vh)";
+            this.svg.style.height = "min(100vw, 100vh)";
+            this.svg.style.left = "calc((100vw - min(100vw, 100vh)) * 0.5)";
+            this.svg.style.top = "calc((100vh - min(100vw, 100vh)) * 0.5)";
+            this.svg.style.zIndex = "1";
+            this.svg.style.pointerEvents = "none";
+            document.body.appendChild(this.svg);
+        }
+        this.svg.innerHTML = "";
+        if (this.show && this.showCircle) {
+            let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("fill", "none");
+            circle.setAttribute("stroke", "black");
+            circle.setAttribute("stroke-width", "1");
+            circle.setAttribute("cx", "500");
+            circle.setAttribute("cy", "500");
+            circle.setAttribute("r", this.circleRadius.toFixed(1));
+            this.svg.appendChild(circle);
+            let centerLineH = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            centerLineH.setAttribute("stroke", "black");
+            centerLineH.setAttribute("stroke-width", "1");
+            centerLineH.setAttribute("x1", "0");
+            centerLineH.setAttribute("y1", "500");
+            centerLineH.setAttribute("x2", "1000");
+            centerLineH.setAttribute("y2", "500");
+            this.svg.appendChild(centerLineH);
+            let centerLineV = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            centerLineV.setAttribute("stroke", "black");
+            centerLineV.setAttribute("stroke-width", "1");
+            centerLineV.setAttribute("x1", "500");
+            centerLineV.setAttribute("y1", "0");
+            centerLineV.setAttribute("x2", "500");
+            centerLineV.setAttribute("y2", "1000");
+            this.svg.appendChild(centerLineV);
+        }
+    }
+}
 /// <reference path="../lib/babylon.d.ts"/>
 /// <reference path="../../nabu/nabu.d.ts"/>
 /// <reference path="../../mummu/mummu.d.ts"/>
@@ -433,10 +505,12 @@ class TrackEditor {
             if (this.track) {
                 document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
             }
+            this.helperCircleRadius.setValue(this.helperShape.circleRadius);
         };
         this.setTrack(this.game.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.game.camera, this.game.camera, "target");
+        this.helperShape = new HelperShape();
     }
     get track() {
         return this._track;
@@ -492,9 +566,11 @@ class TrackEditor {
         });
         document.getElementById("btn-cam-ortho").addEventListener("click", () => {
             this.game.cameraOrtho = true;
+            this.helperShape.setShow(true);
         });
         document.getElementById("btn-cam-perspective").addEventListener("click", () => {
             this.game.cameraOrtho = false;
+            this.helperShape.setShow(false);
         });
         document.getElementById("btn-focus-point").addEventListener("click", () => {
             if (this.track && this.selectedTrackPoint) {
@@ -518,6 +594,16 @@ class TrackEditor {
                 this.track.rebuildWireMeshes();
                 this.updateHandles();
             }
+        });
+        document.getElementById("btn-show-helper-circle").addEventListener("click", () => {
+            this.helperShape.setShowCircle(!this.helperShape.showCircle);
+        });
+        this.helperCircleRadius = document.getElementById("helper-circle-radius");
+        this.helperCircleRadius.onInputNCallback = (n) => {
+            this.helperShape.setCircleRadius(n);
+        };
+        document.getElementById("btn-show-helper-grid").addEventListener("click", () => {
+            this.helperShape.setShowGrid(!this.helperShape.showGrid);
         });
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
             if (this.track) {

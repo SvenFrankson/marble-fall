@@ -44,16 +44,6 @@ body {
     z-index: 1;
 }
 
-#circle-helper {
-    position: fixed;
-    width: min(100vw, 100vh);
-    height: min(100vw, 100vh);
-    left: calc((100vw - min(100vw, 100vh)) * 0.5);
-    top: calc((100vh - min(100vw, 100vh)) * 0.5);
-    z-index: 1;
-    pointer-events: none;
-}
-
 #track-editor-menu {
     top: 20px;
     left: 20px;
@@ -94,7 +84,7 @@ body {
 .label {
     display: inline-block;
     width: 85px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .label-s {
@@ -124,6 +114,12 @@ body {
 .btn-m {
     display: inline-block;
     width: 120px;
+    height: 25px;
+}
+
+.btn-s {
+    display: inline-block;
+    width: 80px;
     height: 25px;
 }
 
@@ -163,5 +159,5 @@ input-vec3 {
 }
 input-number {
     display: inline-block;
-    width: 120px;
+    width: 100px;
 }

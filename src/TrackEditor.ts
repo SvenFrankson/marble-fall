@@ -52,6 +52,8 @@ class TrackEditor {
         }
     }
 
+    public helperCircleRadius: Nabu.InputNumber;
+    public helperGridSize: Nabu.InputNumber;
     public activeTrackpointPositionInput: Nabu.InputVector3;
     public activeTrackpointNormalInput: Nabu.InputVector3;
     public activeTrackpointTangentIn: Nabu.InputNumber;
@@ -60,10 +62,13 @@ class TrackEditor {
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
     private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
 
+    public helperShape: HelperShape;
+
     constructor(public game: Game) {
         this.setTrack(this.game.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.game.camera, this.game.camera, "target");
+        this.helperShape = new HelperShape();
     }
 
     public initialize(): void {
@@ -115,10 +120,12 @@ class TrackEditor {
 
         document.getElementById("btn-cam-ortho").addEventListener("click", () => {
             this.game.cameraOrtho = true;
+            this.helperShape.setShow(true);
         });
 
         document.getElementById("btn-cam-perspective").addEventListener("click", () => {
             this.game.cameraOrtho = false;
+            this.helperShape.setShow(false);
         });
 
         document.getElementById("btn-focus-point").addEventListener("click", () => {
@@ -146,6 +153,19 @@ class TrackEditor {
                 this.track.rebuildWireMeshes();
                 this.updateHandles();
             }
+        });
+
+        document.getElementById("btn-show-helper-circle").addEventListener("click", () => {
+            this.helperShape.setShowCircle(!this.helperShape.showCircle);
+        });
+
+        this.helperCircleRadius = document.getElementById("helper-circle-radius") as Nabu.InputNumber;
+        this.helperCircleRadius.onInputNCallback = (n: number) => {
+            this.helperShape.setCircleRadius(n);
+        }
+
+        document.getElementById("btn-show-helper-grid").addEventListener("click", () => {
+            this.helperShape.setShowGrid(!this.helperShape.showGrid);
         });
 
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
@@ -584,5 +604,6 @@ class TrackEditor {
         if (this.track) {
             document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
         }
+        this.helperCircleRadius.setValue(this.helperShape.circleRadius);
     }
 }
