@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = true;
 
-    public timeFactor: number = 0.1;
+    public timeFactor: number = 0.6;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];
@@ -87,7 +87,7 @@ class Game {
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
-            //this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
+            this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
         }
         /*
         let savedRot = window.localStorage.getItem("saved-rot");
@@ -101,9 +101,9 @@ class Game {
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
-            //this.camera.target.x = target.x;
-            //this.camera.target.y = target.y;
-            //this.camera.target.z = target.z;
+            this.camera.target.x = target.x;
+            this.camera.target.y = target.y;
+            this.camera.target.z = target.z;
         }
         this.camera.attachControl();
         this.camera.getScene();
@@ -124,7 +124,7 @@ class Game {
             track.instantiate();
             this.tracks.push(track);
     
-            let track2 = new Ramp(this, 2 * n + 1, 0);
+            let track2 = new FlatLoop(this, 2 * n + 1, 0);
             track2.instantiate();
             this.tracks.push(track2);
         }

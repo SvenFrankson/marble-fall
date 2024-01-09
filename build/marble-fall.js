@@ -44,7 +44,7 @@ class Ball extends BABYLON.Mesh {
                 }
                 this.velocity.subtractInPlace(canceledSpeed);
                 this.position.addInPlace(forcedDisplacement);
-                let friction = this.velocity.scale(-1).scaleInPlace(0.002);
+                let friction = this.velocity.scale(-1).scaleInPlace(0.005);
                 let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
                 this.velocity.addInPlace(acceleration.scale(dt));
                 this.position.addInPlace(this.velocity.scale(dt));
@@ -89,7 +89,7 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = true;
-        this.timeFactor = 0.1;
+        this.timeFactor = 0.6;
         this.physicDT = 0.0005;
         this.tracks = [];
         Game.Instance = this;
@@ -133,7 +133,7 @@ class Game {
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
-            //this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
+            this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
         }
         /*
         let savedRot = window.localStorage.getItem("saved-rot");
@@ -147,9 +147,9 @@ class Game {
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
-            //this.camera.target.x = target.x;
-            //this.camera.target.y = target.y;
-            //this.camera.target.z = target.z;
+            this.camera.target.x = target.x;
+            this.camera.target.y = target.y;
+            this.camera.target.z = target.z;
         }
         this.camera.attachControl();
         this.camera.getScene();
@@ -166,7 +166,7 @@ class Game {
             let track = new FlatLoop(this, 2 * n, 0);
             track.instantiate();
             this.tracks.push(track);
-            let track2 = new Ramp(this, 2 * n + 1, 0);
+            let track2 = new FlatLoop(this, 2 * n + 1, 0);
             track2.instantiate();
             this.tracks.push(track2);
         }
@@ -1129,7 +1129,7 @@ class DoubleLoop extends Track {
 class FlatLoop extends Track {
     constructor(game, i, j) {
         super(game, i, j);
-        this.deserialize({ "points": [{ "position": { "x": -0.056249999999999994, "y": 0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }, { "position": { "x": 0.00013117709089955666, "y": 0.02681771816142543, "z": -0.0008691451477942794 }, "normal": { "x": 0.06013055785047781, "y": 0.9772966736270935, "z": -0.20316379532290918 } }, { "position": { "x": 0.03729992082962928, "y": 0.022330082345944437, "z": -0.021117524203230674 }, "normal": { "x": -0.17230764542910132, "y": 0.9564122553470104, "z": -0.23576614080211902 } }, { "position": { "x": 0.0388, "y": 0.018, "z": -0.0649 }, "normal": { "x": -0.23459665547179567, "y": 0.9720922072636946, "z": 0.0010722959693467982 } }, { "position": { "x": 0, "y": 0.0134, "z": -0.086 }, "normal": { "x": -0.11641347731821079, "y": 0.9706017270599991, "z": 0.21066606211449826 } }, { "position": { "x": -0.03785581637015418, "y": 0.009270059536442235, "z": -0.06703833611704814 }, "normal": { "x": 0.11796601040944829, "y": 0.9716067942972144, "z": 0.2050957280480716 } }, { "position": { "x": -0.03611819539841811, "y": 0.004703114480343419, "z": -0.02402565955208746 }, "normal": { "x": 0.25504698351749366, "y": 0.9667904709563657, "z": -0.016346910001466614 } }, { "position": { "x": 0, "y": 0.0004, "z": -0.001 }, "normal": { "x": 0.12214462616353287, "y": 0.9720855980710909, "z": -0.2003254360338217 } }, { "position": { "x": 0.0375, "y": -0.0038, "z": -0.0204 }, "normal": { "x": -0.11964477766740955, "y": 0.9708483625651176, "z": -0.20769830062267303 } }, { "position": { "x": 0.039, "y": -0.0084, "z": -0.0646 }, "normal": { "x": -0.23699338453768456, "y": 0.9715109569982103, "z": -0.0007720866497006876 } }, { "position": { "x": 0, "y": -0.013, "z": -0.086 }, "normal": { "x": -0.11960413777425635, "y": 0.958032045443619, "z": 0.2605176580011282 } }, { "position": { "x": -0.0381, "y": -0.0174, "z": -0.0669 }, "normal": { "x": 0.1634069356663116, "y": 0.9599541428093687, "z": 0.2275658521819039 }, "tangentIn": 1 }, { "position": { "x": -0.0361, "y": -0.0216, "z": -0.0238 }, "normal": { "x": 0.30696027384334723, "y": 0.9501014912553933, "z": -0.055520686201587816 } }, { "position": { "x": 0, "y": -0.0258, "z": 0 }, "normal": { "x": 0.16500014231293691, "y": 0.9660542507982967, "z": -0.19878163283173855 } }, { "position": { "x": 0.056249999999999994, "y": -0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }] });
+        this.deserialize({ "points": [{ "position": { "x": -0.056249999999999994, "y": 0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }, { "position": { "x": 0.0077, "y": 0.027, "z": -0.0018 }, "normal": { "x": 0.020308847463524703, "y": 0.9693679298971513, "z": -0.24477207193962117 } }, { "position": { "x": 0.0445, "y": 0.0238, "z": -0.026 }, "normal": { "x": -0.2898943297748169, "y": 0.9302211376956936, "z": -0.2250553544098417 }, "tangentIn": 1 }, { "position": { "x": 0.0441, "y": 0.0194, "z": -0.0801 }, "normal": { "x": -0.35303151362793267, "y": 0.9302915189148406, "z": 0.09963152222409175 } }, { "position": { "x": -0.00009478784670657317, "y": 0.015405315570312567, "z": -0.10563204362861973 }, "normal": { "x": -0.06386946843258931, "y": 0.9124686189901356, "z": 0.4041308084771235 } }, { "position": { "x": -0.0468, "y": 0.011, "z": -0.0755 }, "normal": { "x": 0.26609554554753945, "y": 0.9323702470193153, "z": 0.24470162057677206 } }, { "position": { "x": -0.044, "y": 0.0068, "z": -0.0251 }, "normal": { "x": 0.36226245668661844, "y": 0.9234703487950713, "z": -0.12636624300692606 } }, { "position": { "x": 0.0003, "y": 0.0028, "z": -0.0004 }, "normal": { "x": 0.07990653571985763, "y": 0.9338862470159178, "z": -0.3485275070690625 } }, { "position": { "x": 0.0447, "y": -0.0012, "z": -0.0262 }, "normal": { "x": -0.27110691891752925, "y": 0.9307421077094009, "z": -0.24539797768463095 } }, { "position": { "x": 0.0442, "y": -0.0054, "z": -0.08 }, "normal": { "x": -0.35212393761842287, "y": 0.9302484728109441, "z": 0.10318193344284286 } }, { "position": { "x": -0.0002, "y": -0.0094, "z": -0.1055 }, "normal": { "x": -0.07108066705375218, "y": 0.9326560368572769, "z": 0.3536951451248255 } }, { "position": { "x": -0.04678172451684687, "y": -0.014002588861738838, "z": -0.07560012404016887 }, "normal": { "x": 0.26512996379502995, "y": 0.9326608931259286, "z": 0.2446421074377658 }, "tangentIn": 1 }, { "position": { "x": -0.0438, "y": -0.0182, "z": -0.0247 }, "normal": { "x": 0.339030961704119, "y": 0.9356589606299541, "z": -0.09798120431416601 } }, { "position": { "x": -0.0017, "y": -0.0224, "z": 0.0002 }, "normal": { "x": 0.18530367475046217, "y": 0.9633854473886513, "z": -0.19378087594946833 } }, { "position": { "x": 0.056249999999999994, "y": -0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }] });
         this.subdivisions = 3;
         this.generateWires();
     }

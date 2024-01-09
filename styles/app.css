@@ -44,6 +44,16 @@ body {
     z-index: 1;
 }
 
+#circle-helper {
+    position: fixed;
+    width: min(100vw, 100vh);
+    height: min(100vw, 100vh);
+    left: calc((100vw - min(100vw, 100vh)) * 0.5);
+    top: calc((100vh - min(100vw, 100vh)) * 0.5);
+    z-index: 1;
+    pointer-events: none;
+}
+
 #track-editor-menu {
     top: 20px;
     left: 20px;
