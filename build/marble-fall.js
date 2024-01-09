@@ -998,6 +998,13 @@ class SleeperMeshBuilder {
             let sina = Math.sin(a);
             shape[i] = new BABYLON.Vector3(cosa * radius, sina * radius, 0);
         }
+        let shapeSmall = [];
+        for (let i = 0; i < nShape; i++) {
+            let a = i / nShape * 2 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            shapeSmall[i] = new BABYLON.Vector3(cosa * radius * 0.75, sina * radius * 0.75, 0);
+        }
         let radiusPath = track.wireGauge * 0.5;
         let nPath = 12;
         let basePath = [];
@@ -1039,6 +1046,15 @@ class SleeperMeshBuilder {
                 let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
                 partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                 tmp.dispose();
+                if (n === 0.5 || n === count - 0.5) {
+                    let anchor = path[nPath - 4];
+                    let anchorWall = anchor.clone();
+                    anchorWall.z = 0.015;
+                    let fixationPath = [anchor, anchorWall];
+                    let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                    tmp.dispose();
+                }
                 n++;
             }
         }
