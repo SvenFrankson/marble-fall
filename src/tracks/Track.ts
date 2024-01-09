@@ -302,8 +302,14 @@ class Track extends BABYLON.Mesh {
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
+            
+            this.wires[0].hide();
+            this.wires[1].hide();
         }
         else {
+            this.wires[0].show();
+            this.wires[1].show();
+            
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
             this.wires[0].instantiate();
             this.wires[1].instantiate();

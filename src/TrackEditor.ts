@@ -132,6 +132,22 @@ class TrackEditor {
             this.centerOnTrack();
         });
 
+        document.getElementById("btn-display-wire").addEventListener("click", () => {
+            if (this.track) {
+                this.track.renderOnlyPath = false;
+                this.track.rebuildWireMeshes();
+                this.updateHandles();
+            }
+        });
+
+        document.getElementById("btn-display-path").addEventListener("click", () => {
+            if (this.track) {
+                this.track.renderOnlyPath = true;
+                this.track.rebuildWireMeshes();
+                this.updateHandles();
+            }
+        });
+
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
             if (this.track) {
                 let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.track.trackPoints.length) % this.track.trackPoints.length;

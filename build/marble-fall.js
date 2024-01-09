@@ -504,6 +504,20 @@ class TrackEditor {
         document.getElementById("btn-center-track").addEventListener("click", () => {
             this.centerOnTrack();
         });
+        document.getElementById("btn-display-wire").addEventListener("click", () => {
+            if (this.track) {
+                this.track.renderOnlyPath = false;
+                this.track.rebuildWireMeshes();
+                this.updateHandles();
+            }
+        });
+        document.getElementById("btn-display-path").addEventListener("click", () => {
+            if (this.track) {
+                this.track.renderOnlyPath = true;
+                this.track.rebuildWireMeshes();
+                this.updateHandles();
+            }
+        });
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
             if (this.track) {
                 let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.track.trackPoints.length) % this.track.trackPoints.length;
@@ -717,6 +731,18 @@ class Wire extends BABYLON.Mesh {
     }
     get radius() {
         return this.size * 0.5;
+    }
+    show() {
+        this.isVisible = true;
+        this.getChildMeshes().forEach(child => {
+            child.isVisible = true;
+        });
+    }
+    hide() {
+        this.isVisible = false;
+        this.getChildMeshes().forEach(child => {
+            child.isVisible = false;
+        });
     }
     recomputeAbsolutePath() {
         this.absolutePath.splice(this.path.length);
@@ -1002,8 +1028,12 @@ class Track extends BABYLON.Mesh {
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
+            this.wires[0].hide();
+            this.wires[1].hide();
         }
         else {
+            this.wires[0].show();
+            this.wires[1].show();
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
             this.wires[0].instantiate();
             this.wires[1].instantiate();

@@ -21,6 +21,20 @@ class Wire extends BABYLON.Mesh {
         Wire.Instances.push(this);
     }
 
+    public show(): void {
+        this.isVisible = true;
+        this.getChildMeshes().forEach(child => {
+            child.isVisible = true;
+        })
+    }
+
+    public hide(): void {
+        this.isVisible = false;
+        this.getChildMeshes().forEach(child => {
+            child.isVisible = false;
+        })
+    }
+
     public recomputeAbsolutePath(): void {
         this.absolutePath.splice(this.path.length);
         for (let i = 0; i < this.path.length; i++) {
