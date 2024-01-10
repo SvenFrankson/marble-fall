@@ -319,6 +319,9 @@ class Track extends BABYLON.Mesh {
             this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
             this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
         }
+        Mummu.DecimatePathInPlace(this.wires[0].path, 2 / 180 * Math.PI);
+        Mummu.DecimatePathInPlace(this.wires[1].path, 2 / 180 * Math.PI);
+
         this.AABBMin.x -= this.wireSize * 0.5;
         this.AABBMin.y -= this.wireSize * 0.5;
         this.AABBMin.z -= this.wireSize * 0.5;

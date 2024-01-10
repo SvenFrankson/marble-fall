@@ -1,6 +1,6 @@
 class Wire extends BABYLON.Mesh {
 
-    public static DEBUG_DISPLAY: boolean = true;
+    public static DEBUG_DISPLAY: boolean = false;
 
     public static Instances: Nabu.UniqueList<Wire> = new Nabu.UniqueList<Wire>();
 
