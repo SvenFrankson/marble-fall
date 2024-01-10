@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 1;
+    public timeFactor: number = 0.5;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];
@@ -142,7 +142,7 @@ class Game {
             track.instantiate();
             this.tracks.push(track);
     
-            let track2 = new FlatLoop(this, 2 * n + 1, 0);
+            let track2 = new Loop(this, 2 * n + 1, 0);
             track2.instantiate();
             this.tracks.push(track2);
         }

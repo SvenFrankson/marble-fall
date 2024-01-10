@@ -146,6 +146,20 @@ class Track extends BABYLON.Mesh {
     }
 
     public splitTrackPointAt(index: number): void {
+        if (index === 0) {
+            let trackPoint = this.trackPoints[0];
+            let nextTrackPoint = this.trackPoints[0 + 1];
+
+            let distA = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanInA = trackPoint.dir.scale(distA * trackPoint.tangentOut);
+            let tanOutA = nextTrackPoint.dir.scale(distA * nextTrackPoint.tangentIn);
+            let pointA = BABYLON.Vector3.Hermite(trackPoint.position, tanInA, nextTrackPoint.position, tanOutA, 0.5);
+            let normalA = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 0.5);
+
+            let trackPointA = new TrackPoint(this, pointA, normalA);
+
+            this.trackPoints.splice(1, 0, trackPointA);
+        }
         if (index > 0 && index < this.trackPoints.length - 1) {
             let prevTrackPoint = this.trackPoints[index - 1];
             let trackPoint = this.trackPoints[index];
