@@ -343,7 +343,6 @@ class TrackEditor {
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
         this._animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
         this.trackPointhandles = [];
-        this.insertTrackPointHandle = [];
         this.offset = BABYLON.Vector3.Zero();
         this.pointerDown = false;
         this.dragTrackPoint = false;
@@ -449,25 +448,9 @@ class TrackEditor {
                                 return true;
                             }
                         }
-                        else if (mesh instanceof BABYLON.Mesh) {
-                            if (this.insertTrackPointHandle.indexOf(mesh) != -1) {
-                                return true;
-                            }
-                        }
                         return false;
                     });
-                    if (this.insertTrackPointHandle.indexOf(pick.pickedMesh) != -1) {
-                        this.setSelectedTrackPointHandle(undefined);
-                        let insertTrackPoint = pick.pickedMesh;
-                        let trackPoint = new TrackPoint(this.track, insertTrackPoint.position.clone());
-                        let index = this.insertTrackPointHandle.indexOf(insertTrackPoint) + 1;
-                        this.track.trackPoints.splice(index, 0, trackPoint);
-                        this.track.generateWires();
-                        this.track.recomputeAbsolutePath();
-                        this.track.rebuildWireMeshes();
-                        this.rebuildHandles();
-                    }
-                    else if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != -1) {
+                    if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != -1) {
                         this.setSelectedTrackPointHandle(pick.pickedMesh);
                         this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
                         let d = this.game.scene.activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
@@ -679,7 +662,16 @@ class TrackEditor {
                 }
             }
         };
-        document.getElementById("delete-trackpoint").addEventListener("click", () => {
+        document.getElementById("active-trackpoint-split").addEventListener("click", () => {
+            if (this.track) {
+                this.track.splitTrackPointAt(this.selectedTrackPointIndex);
+                this.track.generateWires();
+                this.track.recomputeAbsolutePath();
+                this.track.rebuildWireMeshes();
+                this.rebuildHandles();
+            }
+        });
+        document.getElementById("active-trackpoint-delete").addEventListener("click", () => {
             if (this.track) {
                 this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
                 this.track.generateWires();
@@ -746,12 +738,6 @@ class TrackEditor {
             });
         }
         this.trackPointhandles = [];
-        if (this.insertTrackPointHandle) {
-            this.insertTrackPointHandle.forEach(h => {
-                h.dispose();
-            });
-        }
-        this.insertTrackPointHandle = [];
         if (this.normalHandle) {
             this.normalHandle.dispose();
         }
@@ -771,13 +757,6 @@ class TrackEditor {
                 pNext = p.add(p.subtract(pPrev));
             }
             Mummu.QuaternionFromYZAxisToRef(this.track.trackPoints[i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
-            if (i < this.track.trackPoints.length - 1) {
-                let insertHandle = BABYLON.MeshBuilder.CreateSphere("insert-handle-" + i, { diameter: 0.5 * this.track.wireGauge });
-                insertHandle.material = this.game.insertHandleMaterial;
-                insertHandle.position.copyFrom(this.track.trackPoints[i].position).addInPlace(this.track.trackPoints[i + 1].position).scaleInPlace(0.5);
-                insertHandle.parent = this.track;
-                this.insertTrackPointHandle.push(insertHandle);
-            }
         }
         this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.03, diameter: 0.0025, tessellation: 8 });
         this.normalHandle.rotationQuaternion = BABYLON.Quaternion.Identity();
@@ -999,6 +978,26 @@ class Track extends BABYLON.Mesh {
             return angle / Math.PI * 180;
         }
         return 0;
+    }
+    splitTrackPointAt(index) {
+        if (index > 0 && index < this.trackPoints.length - 1) {
+            let prevTrackPoint = this.trackPoints[index - 1];
+            let trackPoint = this.trackPoints[index];
+            let nextTrackPoint = this.trackPoints[index + 1];
+            let distA = BABYLON.Vector3.Distance(trackPoint.position, prevTrackPoint.position);
+            let tanInA = prevTrackPoint.dir.scale(distA * prevTrackPoint.tangentOut);
+            let tanOutA = trackPoint.dir.scale(distA * trackPoint.tangentIn);
+            let pointA = BABYLON.Vector3.Hermite(prevTrackPoint.position, tanInA, trackPoint.position, tanOutA, 2 / 3);
+            let normalA = BABYLON.Vector3.Lerp(prevTrackPoint.normal, trackPoint.normal, 2 / 3);
+            let distB = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanInB = trackPoint.dir.scale(distB * trackPoint.tangentOut);
+            let tanOutB = nextTrackPoint.dir.scale(distB * nextTrackPoint.tangentIn);
+            let pointB = BABYLON.Vector3.Hermite(trackPoint.position, tanInB, nextTrackPoint.position, tanOutB, 1 / 3);
+            let normalB = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 1 / 3);
+            let trackPointA = new TrackPoint(this, pointA, normalA);
+            let trackPointB = new TrackPoint(this, pointB, normalB);
+            this.trackPoints.splice(index, 1, trackPointA, trackPointB);
+        }
     }
     deleteTrackPointAt(index) {
         if (index > 0 && index < this.trackPoints.length - 1) {

@@ -145,6 +145,31 @@ class Track extends BABYLON.Mesh {
         return 0;
     }
 
+    public splitTrackPointAt(index: number): void {
+        if (index > 0 && index < this.trackPoints.length - 1) {
+            let prevTrackPoint = this.trackPoints[index - 1];
+            let trackPoint = this.trackPoints[index];
+            let nextTrackPoint = this.trackPoints[index + 1];
+
+            let distA = BABYLON.Vector3.Distance(trackPoint.position, prevTrackPoint.position);
+            let tanInA = prevTrackPoint.dir.scale(distA * prevTrackPoint.tangentOut);
+            let tanOutA = trackPoint.dir.scale(distA * trackPoint.tangentIn);
+            let pointA = BABYLON.Vector3.Hermite(prevTrackPoint.position, tanInA, trackPoint.position, tanOutA, 2 / 3);
+            let normalA = BABYLON.Vector3.Lerp(prevTrackPoint.normal, trackPoint.normal, 2 / 3);
+
+            let distB = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanInB = trackPoint.dir.scale(distB * trackPoint.tangentOut);
+            let tanOutB = nextTrackPoint.dir.scale(distB * nextTrackPoint.tangentIn);
+            let pointB = BABYLON.Vector3.Hermite(trackPoint.position, tanInB, nextTrackPoint.position, tanOutB, 1 / 3);
+            let normalB = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 1 / 3);
+
+            let trackPointA = new TrackPoint(this, pointA, normalA);
+            let trackPointB = new TrackPoint(this, pointB, normalB);
+
+            this.trackPoints.splice(index, 1, trackPointA, trackPointB);
+        }
+    }
+
     public deleteTrackPointAt(index: number): void {
         if (index > 0 && index < this.trackPoints.length - 1) {
             this.trackPoints.splice(index, 1);
