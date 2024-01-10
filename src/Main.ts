@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 1;
+    public timeFactor: number = 0.2;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];
@@ -136,11 +136,30 @@ class Game {
             ball.velocity.copyFromFloats(0, 0, 0);
         })
 
+        /*
         this.tracks = [
-            new Ramp(this, 0, 0),
+            new Ramp(this, 0, 0, 2, 1),
             new UTurn(this, 2, 1),
-            new Ramp(this, 0, 1),
-            new Ramp(this, -2, 0),
+            new Flat(this, 0, 2, 2),
+            new UTurn(this, -1, 2, true),
+            new Flat(this, 0, 3, 2),
+            new UTurn(this, 2, 3),
+            new Flat(this, 0, 4, 2),
+            new UTurn(this, -1, 4, true),
+            new Flat(this, 0, 5, 2),
+            new UTurn(this, 2, 5),
+            new Flat(this, 0, 6, 2),
+            new UTurn(this, -1, 6, true),
+            new Flat(this, 0, 7, 2),
+            new UTurn(this, 2, 7),
+            new Flat(this, 0, 8, 2),
+            new UTurn(this, -1, 8, true),
+            new Flat(this, 0, 9, 2)
+        ];
+        */
+        this.tracks = [
+            new Ramp(this, 0, 0, 2, 1),
+            new Loop(this, 2, 1),
         ];
 
         this.tracks.forEach(track => {

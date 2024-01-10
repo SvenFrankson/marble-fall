@@ -1,7 +1,7 @@
 /// <reference path="./Track.ts"/>
 
 class FlatLoop extends Track {
-    constructor(game: Game, i: number, j: number) {
+    constructor(game: Game, i: number, j: number, mirror?: boolean) {
         super(game, i, j);
 
         this.deserialize({
@@ -21,6 +21,10 @@ class FlatLoop extends Track {
         });
 
         this.deltaJ = 1;
+
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
         
         this.generateWires();
     }

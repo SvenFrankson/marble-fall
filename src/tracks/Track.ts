@@ -328,7 +328,7 @@ class Track extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-        
+        /*
         let w = (1 + Math.abs(this.deltaI)) * tileWidth;
         let h = (1 + Math.abs(this.deltaJ)) * tileHeight;
 
@@ -337,6 +337,7 @@ class Track extends BABYLON.Mesh {
         baseMesh.position.x += this.deltaI * 0.5 * tileWidth;
         baseMesh.position.y += - this.deltaJ * 0.5 * tileHeight - 0.013;
         baseMesh.position.z += 0.02;
+        */
 
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
