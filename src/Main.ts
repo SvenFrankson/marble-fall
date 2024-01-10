@@ -160,6 +160,8 @@ class Game {
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Loop(this, 2, 1),
+            new UTurn(this, 4, 4),
+            new Ramp(this, 2, 5, 2, 1, true),
         ];
 
         this.tracks.forEach(track => {
