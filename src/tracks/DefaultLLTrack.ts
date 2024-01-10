@@ -22,8 +22,6 @@ class DefaultLLTrack extends Track {
             this.mirrorTrackPointsInPlace();
         }
 
-        this.subdivisions = 3;
-
         this.generateWires();
     }
 }

@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 0.5;
+    public timeFactor: number = 0.2;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];
@@ -127,7 +127,7 @@ class Game {
         this.camera.getScene();
 
         let ball = new Ball(this);
-        ball.position.x = - 0.05;
+        ball.position.x = - tileWidth * 0.5 * 0.9;
         ball.position.y = 0.1;
         ball.instantiate();
 
@@ -136,20 +136,15 @@ class Game {
             ball.velocity.copyFromFloats(0, 0, 0);
         })
 
-        this.tracks = [];
-        for (let n = 0; n < 4; n++) {
-            let track = new FlatLoop(this, 2 * n, 0);
+        this.tracks = [
+            new Ramp(this, 0, 0),
+            new Flat(this, 1, 1),
+            new RampFast(this, 2, 1)
+        ];
+
+        this.tracks.forEach(track => {
             track.instantiate();
-            this.tracks.push(track);
-    
-            let track2 = new Loop(this, 2 * n + 1, 0);
-            track2.instantiate();
-            this.tracks.push(track2);
-        }
-    
-        let track3 = new DefaultLLTrack(this, 0, 1, true);
-        track3.instantiate();
-        this.tracks.push(track3);
+        })
 
         requestAnimationFrame(() => {
             this.tracks.forEach(track => {

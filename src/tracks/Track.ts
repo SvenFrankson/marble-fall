@@ -1,6 +1,6 @@
 var baseRadius = 0.075;
-var xDist = 0.75 * baseRadius;
-var yDist = Math.sqrt(3) / 2 * 0.5 * baseRadius;
+var tileWidth = 0.3;
+var tileHeight = 0.3 * 0.1;
 
 class TrackPoint {
 
@@ -73,7 +73,9 @@ interface ITrackData {
 
 class Track extends BABYLON.Mesh {
 
-    public subdivisions: number = 3;
+    public deltaI: number = 0;
+    public deltaJ: number = 0;
+
     public trackPoints: TrackPoint[];
     public wires: Wire[];
     public interpolatedPoints: BABYLON.Vector3[];
@@ -92,8 +94,8 @@ class Track extends BABYLON.Mesh {
 
     constructor(public game: Game, public i: number, public j: number) {
         super("track", game.scene);
-        this.position.x = i * 2 * xDist;
-        this.position.y = - i * 2 * yDist - j * 4 * yDist;
+        this.position.x = i * tileWidth;
+        this.position.y = - j * tileHeight;
 
         this.wires = [
             new Wire(this),
@@ -327,14 +329,13 @@ class Track extends BABYLON.Mesh {
 
     public async instantiate(): Promise<void> {
         
-        let data = await this.game.vertexDataLoader.get("./meshes/base-plate.babylon", this.getScene());
-        if (data[0]) {
-            let baseMesh = new BABYLON.Mesh("base-mesh");
-            baseMesh.parent = this;
-            baseMesh.position.y -= 0.015;
-            baseMesh.position.z += 0.02;
-            data[0].applyToMesh(baseMesh);
-        }
+        let w = (1 + Math.abs(this.deltaI)) * tileWidth;
+        let h = (1 + Math.abs(this.deltaJ)) * tileHeight;
+
+        let baseMesh = BABYLON.MeshBuilder.CreateBox("base", { width: w - 0.006, height: h - 0.006, depth: 0.003 });
+        baseMesh.parent = this;
+        baseMesh.position.y += - this.deltaJ * 0.5 * tileHeight - 0.013;
+        baseMesh.position.z += 0.02;
 
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;

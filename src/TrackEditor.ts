@@ -409,8 +409,7 @@ class TrackEditor {
                 this.dragNormal = false;
                 this.offset.copyFrom(this.hoveredTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
 
-                let d = this.game.scene.activeCamera.globalPosition.subtract(this.hoveredTrackPointHandle.position);
-                Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
+                Mummu.QuaternionFromYZAxisToRef(this.game.scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(-1), pick.getNormal(), this.pointerPlane.rotationQuaternion);
 
                 this.pointerPlane.position.copyFrom(pick.pickedPoint);
                 this.game.scene.activeCamera.detachControl();
@@ -515,15 +514,7 @@ class TrackEditor {
                 )
     
                 if (pick.pickedMesh instanceof TrackPointHandle && this.trackPointhandles.indexOf(pick.pickedMesh) != - 1) {
-                    this.setSelectedTrackPointHandle(pick.pickedMesh);
-                    this.offset.copyFrom(this.selectedTrackPointHandle.position).subtractInPlace(pick.pickedPoint);
-    
-                    let d = this.game.scene.activeCamera.globalPosition.subtract(this.selectedTrackPointHandle.position);
-                    Mummu.QuaternionFromYZAxisToRef(d, pick.getNormal(), this.pointerPlane.rotationQuaternion);
-    
-                    this.pointerPlane.position.copyFrom(pick.pickedPoint);
-                    this.game.scene.activeCamera.detachControl();
-                    
+                    this.setSelectedTrackPointHandle(pick.pickedMesh);                    
                     this.updateHandles();
                 }
             }
