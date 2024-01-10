@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 0.3;
+    public timeFactor: number = 0.6;
     public physicDT: number = 0.001;
 
     public tracks: Track[] = [];
@@ -131,6 +131,16 @@ class Game {
         ball.position.y = 0.1;
         ball.instantiate();
 
+        let ball2 = new Ball(this);
+        ball2.position.x = - tileWidth * 0.5 * 0.5;
+        ball2.position.y = 0.1;
+        ball2.instantiate();
+
+        let ball3 = new Ball(this);
+        ball3.position.x = - tileWidth * 0.5 * 0.1;
+        ball3.position.y = 0.1;
+        ball3.instantiate();
+
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
@@ -169,6 +179,9 @@ class Game {
             new Ramp(this, 0, 0, 2, 1),
             new Spiral(this, 2, 1),
             new UTurn(this, 3, 4),
+            new Spiral(this, 2, 5, true),
+            new Loop(this, 0, 8, true),
+            new UTurn(this, -2, 11, true),
         ];
 
         this.tracks.forEach(track => {

@@ -108,6 +108,7 @@ class Track extends BABYLON.Mesh {
     protected mirrorTrackPointsInPlace(): void {
         for (let i = 0; i < this.trackPoints.length; i++) {
             this.trackPoints[i].position.x *= - 1;
+            this.trackPoints[i].position.x += this.deltaI * tileWidth;
             if (this.trackPoints[i].normal) {
                 this.trackPoints[i].normal.x *= - 1;
             }

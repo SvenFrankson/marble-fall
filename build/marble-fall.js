@@ -206,7 +206,7 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.timeFactor = 0.3;
+        this.timeFactor = 0.6;
         this.physicDT = 0.001;
         this.tracks = [];
         Game.Instance = this;
@@ -288,6 +288,14 @@ class Game {
         ball.position.x = -tileWidth * 0.5 * 0.9;
         ball.position.y = 0.1;
         ball.instantiate();
+        let ball2 = new Ball(this);
+        ball2.position.x = -tileWidth * 0.5 * 0.5;
+        ball2.position.y = 0.1;
+        ball2.instantiate();
+        let ball3 = new Ball(this);
+        ball3.position.x = -tileWidth * 0.5 * 0.1;
+        ball3.position.y = 0.1;
+        ball3.instantiate();
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
@@ -325,6 +333,9 @@ class Game {
             new Ramp(this, 0, 0, 2, 1),
             new Spiral(this, 2, 1),
             new UTurn(this, 3, 4),
+            new Spiral(this, 2, 5, true),
+            new Loop(this, 0, 8, true),
+            new UTurn(this, -2, 11, true),
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -948,7 +959,7 @@ class Wire extends BABYLON.Mesh {
         }
     }
 }
-Wire.DEBUG_DISPLAY = false;
+Wire.DEBUG_DISPLAY = true;
 Wire.Instances = new Nabu.UniqueList();
 var baseRadius = 0.075;
 var tileWidth = 0.15;
@@ -1029,6 +1040,7 @@ class Track extends BABYLON.Mesh {
     mirrorTrackPointsInPlace() {
         for (let i = 0; i < this.trackPoints.length; i++) {
             this.trackPoints[i].position.x *= -1;
+            this.trackPoints[i].position.x += this.deltaI * tileWidth;
             if (this.trackPoints[i].normal) {
                 this.trackPoints[i].normal.x *= -1;
             }
@@ -1423,10 +1435,10 @@ class FlatLoop extends Track {
 }
 /// <reference path="./Track.ts"/>
 class Loop extends Track {
-    constructor(game, i, j) {
+    constructor(game, i, j, mirror) {
         super(game, i, j);
         this.deltaI = 1;
-        this.deltaJ = 5;
+        this.deltaJ = 3;
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -1446,6 +1458,9 @@ class Loop extends Track {
                 { position: { x: 0.225, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
             ],
         });
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
         this.generateWires();
     }
 }
@@ -1580,7 +1595,7 @@ class SleeperMeshBuilder {
 }
 /// <reference path="./Track.ts"/>
 class Spiral extends Track {
-    constructor(game, i, j) {
+    constructor(game, i, j, mirror) {
         super(game, i, j);
         this.deltaJ = 2;
         this.deserialize({
@@ -1614,6 +1629,9 @@ class Spiral extends Track {
                 { position: { x: 0.075, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
             ],
         });
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
         this.generateWires();
     }
 }

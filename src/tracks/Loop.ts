@@ -1,11 +1,11 @@
 /// <reference path="./Track.ts"/>
 
 class Loop extends Track {
-    constructor(game: Game, i: number, j: number) {
+    constructor(game: Game, i: number, j: number, mirror?: boolean) {
         super(game, i, j);
 
         this.deltaI = 1;
-        this.deltaJ = 5;
+        this.deltaJ = 3;
 
         this.deserialize({
             points: [
@@ -26,6 +26,10 @@ class Loop extends Track {
                 { position: { x: 0.225, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
             ],
         });
+
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
         
         this.generateWires();
     }

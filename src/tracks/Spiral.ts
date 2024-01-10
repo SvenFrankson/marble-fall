@@ -1,7 +1,7 @@
 /// <reference path="./Track.ts"/>
 
 class Spiral extends Track {
-    constructor(game: Game, i: number, j: number) {
+    constructor(game: Game, i: number, j: number, mirror?: boolean) {
         super(game, i, j);
 
         this.deltaJ = 2;
@@ -37,6 +37,10 @@ class Spiral extends Track {
                 { position: { x: 0.075, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
             ],
         });
+
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
 
         this.generateWires();
     }
