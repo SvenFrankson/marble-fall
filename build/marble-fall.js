@@ -206,8 +206,8 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.timeFactor = 0.2;
-        this.physicDT = 0.0005;
+        this.timeFactor = 1;
+        this.physicDT = 0.001;
         this.tracks = [];
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
@@ -257,6 +257,13 @@ class Game {
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 100000;
+        let savedTarget = window.localStorage.getItem("saved-target");
+        if (savedTarget) {
+            let target = JSON.parse(savedTarget);
+            this.camera.target.x = target.x;
+            this.camera.target.y = target.y;
+            this.camera.target.z = target.z;
+        }
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
@@ -271,13 +278,6 @@ class Game {
             (this.camera as BABYLON.FreeCamera).rotation.z = rot.z;
         }
         */
-        let savedTarget = window.localStorage.getItem("saved-target");
-        if (savedTarget) {
-            let target = JSON.parse(savedTarget);
-            this.camera.target.x = target.x;
-            this.camera.target.y = target.y;
-            this.camera.target.z = target.z;
-        }
         let savedCameraOrtho = window.localStorage.getItem("saved-cam-ortho");
         if (savedCameraOrtho === "true") {
             this.cameraOrtho = true;
@@ -342,7 +342,7 @@ class Game {
     async initialize() {
     }
     update() {
-        let pos = this.camera.position;
+        let pos = this.camera.globalPosition;
         window.localStorage.setItem("saved-pos", JSON.stringify({ x: pos.x, y: pos.y, z: pos.z }));
         //let rot = (this.camera as BABYLON.FreeCamera).rotation;
         //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
@@ -547,18 +547,18 @@ class TrackEditor {
                     this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
                 }
                 let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
-                document.getElementById("slope-prev").innerText = slopePrev.toFixed(0) + "%";
+                document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
                 let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
-                document.getElementById("slope-curr").innerText = slopeCurr.toFixed(0) + "%";
+                document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
                 let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
-                document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
+                document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
                 this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
                 this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
                 let bankCurr = this.track.getBankAt(this.selectedTrackPointIndex);
                 document.getElementById("active-trackpoint-bank").innerText = bankCurr.toFixed(1) + "°";
             }
             if (this.track) {
-                document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
+                document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(1) + "%";
             }
             this.helperCircleRadius.setValue(this.helperShape.circleRadius);
             this.helperGridSize.setValue(this.helperShape.gridSize);
@@ -943,6 +943,7 @@ class TrackPoint {
         this.fixedDir = false;
         this.fixedTangentIn = false;
         this.fixedTangentOut = false;
+        this.summedLength = 0;
         if (normal) {
             this.fixedNormal = true;
         }
@@ -991,6 +992,7 @@ class Track extends BABYLON.Mesh {
         this.wireSize = 0.0015;
         this.wireGauge = 0.011;
         this.renderOnlyPath = false;
+        this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
         this.AABBMin = BABYLON.Vector3.Zero();
@@ -1017,17 +1019,16 @@ class Track extends BABYLON.Mesh {
         let trackpoint = this.trackPoints[index];
         let nextTrackPoint = this.trackPoints[index + 1];
         if (trackpoint) {
-            let dirToNext = BABYLON.Vector3.Zero();
             if (nextTrackPoint) {
-                dirToNext.copyFrom(nextTrackPoint.position).subtractInPlace(trackpoint.position).normalize();
+                let dy = nextTrackPoint.position.y - trackpoint.position.y;
+                let dLength = nextTrackPoint.summedLength - trackpoint.summedLength;
+                return dy / dLength * 100;
             }
             else {
-                dirToNext.copyFrom(trackpoint.dir);
+                let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
+                let angleToHorizontal = Math.PI / 2 - angleToVertical;
+                return Math.tan(angleToHorizontal) * 100;
             }
-            let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, dirToNext);
-            let angleToHorizontal = Math.PI / 2 - angleToVertical;
-            let slope = Math.tan(angleToHorizontal) * 100;
-            return slope;
         }
         return 0;
     }
@@ -1124,6 +1125,7 @@ class Track extends BABYLON.Mesh {
         this.wires[1].path = [];
         this.interpolatedPoints = [];
         this.interpolatedNormals = [];
+        this.trackPoints[0].summedLength = 0;
         for (let i = 0; i < this.trackPoints.length - 1; i++) {
             let trackPoint = this.trackPoints[i];
             let nextTrackPoint = this.trackPoints[i + 1];
@@ -1134,23 +1136,29 @@ class Track extends BABYLON.Mesh {
             count = Math.max(0, count);
             this.interpolatedPoints.push(trackPoint.position);
             this.interpolatedNormals.push(trackPoint.normal);
+            nextTrackPoint.summedLength = trackPoint.summedLength;
             for (let j = 1; j < count; j++) {
                 let amount = j / count;
                 let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
                 let normal = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, amount);
                 this.interpolatedPoints.push(point);
                 this.interpolatedNormals.push(normal);
+                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(this.interpolatedPoints[this.interpolatedPoints.length - 2], this.interpolatedPoints[this.interpolatedPoints.length - 1]);
             }
+            nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, this.interpolatedPoints[this.interpolatedPoints.length - 1]);
         }
         this.interpolatedPoints.push(this.trackPoints[this.trackPoints.length - 1].position);
         this.interpolatedNormals.push(this.trackPoints[this.trackPoints.length - 1].normal);
         let N = this.interpolatedPoints.length;
+        this.summedLength = [0];
         this.totalLength = 0;
         for (let i = 0; i < N - 1; i++) {
             let p = this.interpolatedPoints[i];
             let pNext = this.interpolatedPoints[i + 1];
-            this.totalLength += BABYLON.Vector3.Distance(p, pNext);
+            let d = BABYLON.Vector3.Distance(p, pNext);
+            this.summedLength[i + 1] = this.summedLength[i] + d;
         }
+        this.totalLength = this.summedLength[N - 1];
         let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
         this.globalSlope = dh / this.totalLength * 100;
         // Compute wire path and Update AABB values.
@@ -1551,7 +1559,7 @@ class SleeperMeshBuilder {
 class UTurn extends Track {
     constructor(game, i, j, mirror) {
         super(game, i, j);
-        this.deserialize({ "points": [{ "position": { "x": -0.075, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }, { "position": { "x": 0.13394933569683048, "y": -0.008441899296066684, "z": 0.00026137674993623877 }, "normal": { "x": 0.03151000339299093, "y": 0.9833515877850678, "z": -0.1789602595180283 } }, { "position": { "x": 0.1712, "y": -0.0098, "z": -0.0105 }, "normal": { "x": -0.11586997558335084, "y": 0.9569983827964743, "z": -0.26594782210660556 } }, { "position": { "x": 0.1955, "y": -0.0114, "z": -0.0372 }, "normal": { "x": -0.20660692237230618, "y": 0.9643844622970822, "z": -0.16515504384611376 } }, { "position": { "x": 0.2038, "y": -0.0128, "z": -0.0688 }, "normal": { "x": -0.2584807255894088, "y": 0.9647307798325265, "z": -0.049822052772825615 } }, { "position": { "x": 0.197, "y": -0.0142, "z": -0.0992 }, "normal": { "x": -0.2735315504763236, "y": 0.9573647470589467, "z": 0.09291518704053496 } }, { "position": { "x": 0.1744, "y": -0.0156, "z": -0.1265 }, "normal": { "x": -0.18584003052138867, "y": 0.9564513494762142, "z": 0.22508731448248692 } }, { "position": { "x": 0.1339, "y": -0.0174, "z": -0.1377 }, "normal": { "x": -0.04924921466776351, "y": 0.9551292901881844, "z": 0.2920660094554378 } }, { "position": { "x": 0.0987, "y": -0.0188, "z": -0.1288 }, "normal": { "x": 0.11770654739244775, "y": 0.9546762254234606, "z": 0.27338338155813985 } }, { "position": { "x": 0.0723, "y": -0.0202, "z": -0.1014 }, "normal": { "x": 0.2555432715330688, "y": 0.9537906702315593, "z": 0.1580537685517464 } }, { "position": { "x": 0.055, "y": -0.023, "z": -0.0328 }, "normal": { "x": -0.29264326820502157, "y": 0.9519405540166624, "z": -0.09038306917080002 } }, { "position": { "x": 0.0301, "y": -0.0244, "z": -0.009 }, "normal": { "x": -0.16525704741230515, "y": 0.9629301313210451, "z": -0.21320335474518773 } }, { "position": { "x": -0.0057, "y": -0.026, "z": 0.0007 }, "normal": { "x": -0.0654665559162324, "y": 0.986403052366886, "z": -0.1507419926157186 } }, { "position": { "x": -0.075, "y": -0.03, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": -1, "y": 0, "z": 0 } }] });
+        this.deserialize({ "points": [{ "position": { "x": -0.075, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }, { "position": { "x": 0.13394933569683048, "y": -0.008441899296066684, "z": 0.00026137674993623877 }, "normal": { "x": 0.032306075793350764, "y": 0.9833195664766373, "z": -0.17899426708984922 } }, { "position": { "x": 0.1712, "y": -0.01, "z": -0.0105 }, "normal": { "x": -0.11360563098237532, "y": 0.9568855505453798, "z": -0.2673271474552511 } }, { "position": { "x": 0.1955, "y": -0.0116, "z": -0.0372 }, "normal": { "x": -0.20660883087432497, "y": 0.9643838758298143, "z": -0.16515608085750325 } }, { "position": { "x": 0.2038, "y": -0.013, "z": -0.0688 }, "normal": { "x": -0.25848323253959904, "y": 0.9647301065787487, "z": -0.049822083019837024 } }, { "position": { "x": 0.197, "y": -0.0144, "z": -0.0992 }, "normal": { "x": -0.274874420263502, "y": 0.9572314992222168, "z": 0.09028792821629655 } }, { "position": { "x": 0.1744, "y": -0.016, "z": -0.1265 }, "normal": { "x": -0.18804611436208896, "y": 0.956335180137496, "z": 0.22374468061767094 } }, { "position": { "x": 0.1339, "y": -0.0178, "z": -0.1377 }, "normal": { "x": -0.051765501746220265, "y": 0.9550181735779958, "z": 0.29199421392334324 } }, { "position": { "x": 0.0987, "y": -0.0194, "z": -0.1288 }, "normal": { "x": 0.11311928184404368, "y": 0.954449314514888, "z": 0.2760987759790836 } }, { "position": { "x": 0.0723, "y": -0.021, "z": -0.1014 }, "normal": { "x": 0.2540510175431706, "y": 0.9536388488664376, "z": 0.16134133511898094 } }, { "position": { "x": 0.055, "y": -0.024, "z": -0.0328 }, "normal": { "x": -0.2934267273272182, "y": 0.9518591565545972, "z": -0.08868428143255824 } }, { "position": { "x": 0.0301, "y": -0.0254, "z": -0.009 }, "normal": { "x": -0.16527157396712613, "y": 0.9629216416134613, "z": -0.2132304362675873 } }, { "position": { "x": -0.0057, "y": -0.027, "z": 0.0007 }, "normal": { "x": -0.056169210068177, "y": 0.9868539889112726, "z": -0.1515395143526165 } }, { "position": { "x": -0.075, "y": -0.03, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": -1, "y": 0, "z": 0 } }] });
         this.deltaI = 1;
         this.deltaJ = 1;
         if (mirror) {

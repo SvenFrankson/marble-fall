@@ -563,11 +563,11 @@ class TrackEditor {
             }
 
             let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
-            document.getElementById("slope-prev").innerText = slopePrev.toFixed(0) + "%";
+            document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
             let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
-            document.getElementById("slope-curr").innerText = slopeCurr.toFixed(0) + "%";
+            document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
             let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
-            document.getElementById("slope-next").innerText = slopeNext.toFixed(0) + "%";
+            document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
 
             this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
             this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
@@ -576,7 +576,7 @@ class TrackEditor {
             document.getElementById("active-trackpoint-bank").innerText = bankCurr.toFixed(1) + "°";
         }
         if (this.track) {
-            document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
+            document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(1) + "%";
         }
         this.helperCircleRadius.setValue(this.helperShape.circleRadius);
         this.helperGridSize.setValue(this.helperShape.gridSize);

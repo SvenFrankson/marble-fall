@@ -23,8 +23,8 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 0.2;
-    public physicDT: number = 0.0005;
+    public timeFactor: number = 1;
+    public physicDT: number = 0.001;
 
     public tracks: Track[] = [];
     public trackEditor: TrackEditor;
@@ -98,6 +98,13 @@ class Game {
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 100000;
+        let savedTarget = window.localStorage.getItem("saved-target");
+        if (savedTarget) {
+            let target = JSON.parse(savedTarget);
+            this.camera.target.x = target.x;
+            this.camera.target.y = target.y;
+            this.camera.target.z = target.z;
+        }
         let savedPos = window.localStorage.getItem("saved-pos");
         if (savedPos) {
             let pos = JSON.parse(savedPos);
@@ -112,13 +119,6 @@ class Game {
             (this.camera as BABYLON.FreeCamera).rotation.z = rot.z;
         }
         */
-        let savedTarget = window.localStorage.getItem("saved-target");
-        if (savedTarget) {
-            let target = JSON.parse(savedTarget);
-            this.camera.target.x = target.x;
-            this.camera.target.y = target.y;
-            this.camera.target.z = target.z;
-        }
         let savedCameraOrtho = window.localStorage.getItem("saved-cam-ortho");
         if (savedCameraOrtho === "true") {
             this.cameraOrtho = true;
@@ -193,7 +193,7 @@ class Game {
     }
 
     public update(): void {
-        let pos = this.camera.position;
+        let pos = this.camera.globalPosition;
         window.localStorage.setItem("saved-pos", JSON.stringify({ x: pos.x, y: pos.y, z: pos.z }));
         //let rot = (this.camera as BABYLON.FreeCamera).rotation;
         //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
