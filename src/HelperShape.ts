@@ -3,8 +3,8 @@ class HelperShape {
     public svg: SVGElement;
 
     public show: boolean = true;
-    public showCircle: boolean = true;
-    public showGrid: boolean = true;
+    public showCircle: boolean = false;
+    public showGrid: boolean = false;
 
     public circleRadius: number = 350;
     public gridSize: number = 100;
@@ -24,7 +24,7 @@ class HelperShape {
     }
 
     public setCircleRadius(r: number) {
-        this.circleRadius = r;
+        this.circleRadius = Math.max(Math.min(r, 500), 50);
         this.update();
     }
 
@@ -34,6 +34,7 @@ class HelperShape {
     }
 
     public setGridSize(s: number) {
+        this.gridSize = Math.max(Math.min(s, 500), 50);
         this.gridSize = s;
         this.update();
     }
@@ -66,7 +67,52 @@ class HelperShape {
             circle.setAttribute("cy", "500");
             circle.setAttribute("r", this.circleRadius.toFixed(1));
             this.svg.appendChild(circle);
-    
+        }
+
+        if (this.show && this.showGrid) {
+            let count = Math.round(500 / this.gridSize);
+            for (let i = 1; i < count; i++ ) {
+                let d = i * this.gridSize;
+
+                let lineTop = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineTop.setAttribute("stroke", "black");
+                lineTop.setAttribute("stroke-width", "1");
+                lineTop.setAttribute("x1", "0");
+                lineTop.setAttribute("y1", (500 - d).toFixed(1));
+                lineTop.setAttribute("x2", "1000");
+                lineTop.setAttribute("y2", (500 - d).toFixed(1));
+                this.svg.appendChild(lineTop);
+                
+                let lineBottom = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineBottom.setAttribute("stroke", "black");
+                lineBottom.setAttribute("stroke-width", "1");
+                lineBottom.setAttribute("x1", "0");
+                lineBottom.setAttribute("y1", (500 + d).toFixed(1));
+                lineBottom.setAttribute("x2", "1000");
+                lineBottom.setAttribute("y2", (500 + d).toFixed(1));
+                this.svg.appendChild(lineBottom);
+
+                let lineLeft = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineLeft.setAttribute("stroke", "black");
+                lineLeft.setAttribute("stroke-width", "1");
+                lineLeft.setAttribute("x1", (500 - d).toFixed(1));
+                lineLeft.setAttribute("y1", "0");
+                lineLeft.setAttribute("x2", (500 - d).toFixed(1));
+                lineLeft.setAttribute("y2", "1000");
+                this.svg.appendChild(lineLeft);
+
+                let lineRight = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineRight.setAttribute("stroke", "black");
+                lineRight.setAttribute("stroke-width", "1");
+                lineRight.setAttribute("x1", (500 + d).toFixed(1));
+                lineRight.setAttribute("y1", "0");
+                lineRight.setAttribute("x2", (500 + d).toFixed(1));
+                lineRight.setAttribute("y2", "1000");
+                this.svg.appendChild(lineRight);
+            }
+        }
+
+        if (this.show && (this.showCircle || this.showGrid)) {
             let centerLineH = document.createElementNS("http://www.w3.org/2000/svg", "line");
             centerLineH.setAttribute("stroke", "black");
             centerLineH.setAttribute("stroke-width", "1");

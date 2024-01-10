@@ -168,6 +168,11 @@ class TrackEditor {
             this.helperShape.setShowGrid(!this.helperShape.showGrid);
         });
 
+        this.helperGridSize = document.getElementById("helper-grid-size") as Nabu.InputNumber;
+        this.helperGridSize.onInputNCallback = (n: number) => {
+            this.helperShape.setGridSize(n);
+        }
+
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
             if (this.track) {
                 let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.track.trackPoints.length) % this.track.trackPoints.length;
@@ -583,5 +588,6 @@ class TrackEditor {
             document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(0) + "%";
         }
         this.helperCircleRadius.setValue(this.helperShape.circleRadius);
+        this.helperGridSize.setValue(this.helperShape.gridSize);
     }
 }
