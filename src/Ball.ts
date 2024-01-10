@@ -1,6 +1,6 @@
 class Ball extends BABYLON.Mesh {
 
-    public size: number = 0.014;
+    public size: number = 0.016;
     public get radius(): number {
         return this.size * 0.5;
     }

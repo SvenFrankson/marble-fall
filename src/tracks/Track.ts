@@ -83,7 +83,7 @@ class Track extends BABYLON.Mesh {
     public interpolatedNormals: BABYLON.Vector3[];
 
     public wireSize: number = 0.0015;
-    public wireGauge: number = 0.011;
+    public wireGauge: number = 0.013;
     public renderOnlyPath: boolean = false;
 
     public sleepersMesh: BABYLON.Mesh;
@@ -195,7 +195,7 @@ class Track extends BABYLON.Mesh {
 
     public getBarycenter(): BABYLON.Vector3 {
         if (this.trackPoints.length < 2) {
-            return this.position;
+            return this.position.clone();
         }
         let barycenter = this.trackPoints.map(
             trackpoint => {

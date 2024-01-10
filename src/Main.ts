@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 1;
+    public timeFactor: number = 0.3;
     public physicDT: number = 0.001;
 
     public tracks: Track[] = [];
@@ -157,11 +157,18 @@ class Game {
             new Flat(this, 0, 9, 2)
         ];
         */
+        /*
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Loop(this, 2, 1),
             new UTurn(this, 4, 4),
             new Ramp(this, 2, 5, 2, 1, true),
+        ];
+        */
+        this.tracks = [
+            new Ramp(this, 0, 0, 2, 1),
+            new Spiral(this, 2, 1),
+            new UTurn(this, 3, 4),
         ];
 
         this.tracks.forEach(track => {

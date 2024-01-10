@@ -2,7 +2,7 @@ class Ball extends BABYLON.Mesh {
     constructor(game) {
         super("ball");
         this.game = game;
-        this.size = 0.014;
+        this.size = 0.016;
         this.velocity = BABYLON.Vector3.Zero();
         this._timer = 0;
         this.update = () => {
@@ -206,7 +206,7 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.timeFactor = 1;
+        this.timeFactor = 0.3;
         this.physicDT = 0.001;
         this.tracks = [];
         Game.Instance = this;
@@ -313,11 +313,18 @@ class Game {
             new Flat(this, 0, 9, 2)
         ];
         */
+        /*
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Loop(this, 2, 1),
             new UTurn(this, 4, 4),
             new Ramp(this, 2, 5, 2, 1, true),
+        ];
+        */
+        this.tracks = [
+            new Ramp(this, 0, 0, 2, 1),
+            new Spiral(this, 2, 1),
+            new UTurn(this, 3, 4),
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -599,9 +606,22 @@ class TrackEditor {
                 this.centerOnTrack();
             }
         });
+        document.getElementById("load").addEventListener("click", () => {
+            if (this.track) {
+                let s = window.localStorage.getItem("last-saved-track");
+                if (s) {
+                    let data = JSON.parse(s);
+                    this.track.deserialize(data);
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.rebuildWireMeshes();
+                }
+            }
+        });
         document.getElementById("save").addEventListener("click", () => {
             if (this.track) {
                 let data = this.track.serialize();
+                window.localStorage.setItem("last-saved-track", JSON.stringify(data));
                 Nabu.download("track.json", JSON.stringify(data));
             }
         });
@@ -848,7 +868,9 @@ class TrackEditor {
     }
     centerOnTrack() {
         if (this.track) {
-            this.setCameraTarget(this.track.getBarycenter());
+            let center = this.track.getBarycenter();
+            center.x = this.track.position.x;
+            this.setCameraTarget(center);
         }
     }
     setCameraAlphaBeta(alpha, beta, radius = 0.25) {
@@ -990,7 +1012,7 @@ class Track extends BABYLON.Mesh {
         this.deltaI = 0;
         this.deltaJ = 0;
         this.wireSize = 0.0015;
-        this.wireGauge = 0.011;
+        this.wireGauge = 0.013;
         this.renderOnlyPath = false;
         this.summedLength = [0];
         this.totalLength = 0;
@@ -1082,7 +1104,7 @@ class Track extends BABYLON.Mesh {
     }
     getBarycenter() {
         if (this.trackPoints.length < 2) {
-            return this.position;
+            return this.position.clone();
         }
         let barycenter = this.trackPoints.map(trackpoint => {
             return trackpoint.position;
@@ -1554,6 +1576,45 @@ class SleeperMeshBuilder {
             }
         }
         return Mummu.MergeVertexDatas(...partialsDatas);
+    }
+}
+/// <reference path="./Track.ts"/>
+class Spiral extends Track {
+    constructor(game, i, j) {
+        super(game, i, j);
+        this.deltaJ = 2;
+        this.deserialize({
+            points: [
+                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+                { position: { x: 0.016, y: -0.0046, z: -0.003 }, normal: { x: 0.007953340519698392, y: 0.9796755302544724, z: -0.2004310350100407 } },
+                { position: { x: 0.0539, y: -0.007, z: -0.0291 }, normal: { x: -0.14154991603542078, y: 0.9816209396236566, z: -0.12799981313554717 } },
+                { position: { x: 0.0587, y: -0.0104, z: -0.0947 }, normal: { x: -0.21648321693435818, y: 0.9751103913883138, z: 0.04790345908471771 } },
+                { position: { x: -0.0004, y: -0.014, z: -0.132 }, normal: { x: -0.05876261459368094, y: 0.9766033820741439, z: 0.2068641806777057 } },
+                { position: { x: -0.0592, y: -0.0176, z: -0.0942 }, normal: { x: 0.13648755317177852, y: 0.9809640749898498, z: 0.13813265873242733 } },
+                { position: { x: -0.05457944698749076, y: -0.02093380924123054, z: -0.029224609659455173 }, normal: { x: 0.1978258887547828, y: 0.9786554422343114, z: -0.05566366070916182 } },
+                { position: { x: -0.0001, y: -0.0242, z: -0.0002 }, normal: { x: 0.05831823493670933, y: 0.9741660318385753, z: -0.21817315574045995 } },
+                { position: { x: 0.0539, y: -0.0274, z: -0.0291 }, normal: { x: -0.11811378019582665, y: 0.9828966281852525, z: -0.14129173093254066 } },
+                { position: { x: 0.0585, y: -0.0308, z: -0.0951 }, normal: { x: -0.1866759309661536, y: 0.981907599746408, z: 0.03177361103444291 } },
+                { position: { x: -0.0004, y: -0.0344, z: -0.1318 }, normal: { x: -0.05765110973031337, y: 0.9752714798000515, z: 0.21335859541035881 } },
+                { position: { x: -0.0596, y: -0.038, z: -0.0941 }, normal: { x: 0.16187115466936314, y: 0.9751225140754163, z: 0.15143913572536888 } },
+                { position: { x: -0.0545, y: -0.0414, z: -0.0289 }, normal: { x: 0.21433532945533781, y: 0.9744372363962318, z: -0.06732339022766207 } },
+                { position: { x: -0.0001, y: -0.0446, z: -0.0002 }, normal: { x: 0.057907181113875265, y: 0.9789932807064532, z: -0.19549658489871502 } },
+                { position: { x: 0.0537, y: -0.0478, z: -0.0289 }, normal: { x: -0.1368199112704451, y: 0.9783883565825175, z: -0.1550372070946463 } },
+                { position: { x: 0.0582, y: -0.0512, z: -0.0933 }, normal: { x: -0.1883372993900389, y: 0.981573881635258, z: 0.03227656347815464 } },
+                { position: { x: -0.0004, y: -0.0548, z: -0.1317 }, normal: { x: -0.06083975282756499, y: 0.9808776461693529, z: 0.18487176020460871 } },
+                { position: { x: -0.0594, y: -0.0584, z: -0.0938 }, normal: { x: 0.14282140746906183, y: 0.9794893882764371, z: 0.14213579360037204 } },
+                { position: { x: -0.0546, y: -0.0618, z: -0.029 }, normal: { x: 0.18481557891708297, y: 0.9815946948814231, z: -0.048115036840777864 } },
+                { position: { x: 0.0001, y: -0.065, z: 0.0001 }, normal: { x: 0.05815687117952442, y: 0.9789124067160975, z: -0.1958271643871352 } },
+                { position: { x: 0.0538, y: -0.0682, z: -0.0288 }, normal: { x: -0.1354085732036273, y: 0.9789214878581536, z: -0.15289617036583067 } },
+                { position: { x: 0.0583, y: -0.0716, z: -0.0937 }, normal: { x: -0.2251833372197503, y: 0.9729438520965845, z: 0.05169840719051138 } },
+                { position: { x: 0, y: -0.0752, z: -0.1314 }, normal: { x: -0.059327984652719934, y: 0.9735095098349605, z: 0.22081536291196216 } },
+                { position: { x: -0.0591, y: -0.0788, z: -0.0935 }, normal: { x: 0.1663822572342967, y: 0.9738075068684916, z: 0.154970590900962 } },
+                { position: { x: -0.0545, y: -0.0822, z: -0.0289 }, normal: { x: 0.2127588057833227, y: 0.976429428847729, z: -0.036321633247311046 } },
+                { position: { x: -0.0171, y: -0.0846, z: -0.0034 }, normal: { x: 0.10073825288107621, y: 0.9770460729407987, z: -0.18770395775644078 } },
+                { position: { x: 0.075, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+            ],
+        });
+        this.generateWires();
     }
 }
 class UTurn extends Track {

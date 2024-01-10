@@ -91,9 +91,23 @@ class TrackEditor {
             }
         });
 
+        document.getElementById("load").addEventListener("click", () => {
+            if (this.track) {
+                let s = window.localStorage.getItem("last-saved-track");
+                if (s) {
+                    let data = JSON.parse(s);
+                    this.track.deserialize(data);
+                    this.track.generateWires();
+                    this.track.recomputeAbsolutePath();
+                    this.track.rebuildWireMeshes();
+                }
+            }
+        });
+
         document.getElementById("save").addEventListener("click", () => {
             if (this.track) {
                 let data = this.track.serialize();
+                window.localStorage.setItem("last-saved-track", JSON.stringify(data));
                 Nabu.download("track.json", JSON.stringify(data));
             }
         });
@@ -539,7 +553,9 @@ class TrackEditor {
 
     public centerOnTrack(): void {
         if (this.track) {
-            this.setCameraTarget(this.track.getBarycenter());
+            let center = this.track.getBarycenter();
+            center.x = this.track.position.x;
+            this.setCameraTarget(center);
         }
     }
 
