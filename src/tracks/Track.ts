@@ -1,6 +1,6 @@
 var baseRadius = 0.075;
-var tileWidth = 0.3;
-var tileHeight = 0.3 * 0.1;
+var tileWidth = 0.15;
+var tileHeight = 0.03;
 
 class TrackPoint {
 
@@ -334,6 +334,7 @@ class Track extends BABYLON.Mesh {
 
         let baseMesh = BABYLON.MeshBuilder.CreateBox("base", { width: w - 0.006, height: h - 0.006, depth: 0.003 });
         baseMesh.parent = this;
+        baseMesh.position.x += this.deltaI * 0.5 * tileWidth;
         baseMesh.position.y += - this.deltaJ * 0.5 * tileHeight - 0.013;
         baseMesh.position.z += 0.02;
 

@@ -294,8 +294,8 @@ class Game {
         });
         this.tracks = [
             new Ramp(this, 0, 0),
-            new Flat(this, 1, 1),
-            new RampFast(this, 2, 1)
+            new FlatLoop(this, 2, 1),
+            new RampFast(this, 3, 2)
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -907,8 +907,8 @@ class Wire extends BABYLON.Mesh {
 Wire.DEBUG_DISPLAY = false;
 Wire.Instances = new Nabu.UniqueList();
 var baseRadius = 0.075;
-var tileWidth = 0.3;
-var tileHeight = 0.3 * 0.1;
+var tileWidth = 0.15;
+var tileHeight = 0.03;
 class TrackPoint {
     constructor(track, position, normal, dir, tangentIn, tangentOut) {
         this.track = track;
@@ -1175,6 +1175,7 @@ class Track extends BABYLON.Mesh {
         let h = (1 + Math.abs(this.deltaJ)) * tileHeight;
         let baseMesh = BABYLON.MeshBuilder.CreateBox("base", { width: w - 0.006, height: h - 0.006, depth: 0.003 });
         baseMesh.parent = this;
+        baseMesh.position.x += this.deltaI * 0.5 * tileWidth;
         baseMesh.position.y += -this.deltaJ * 0.5 * tileHeight - 0.013;
         baseMesh.position.z += 0.02;
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
@@ -1246,6 +1247,37 @@ class Track extends BABYLON.Mesh {
     }
 }
 /// <reference path="./Track.ts"/>
+class DefaultTrack1 extends Track {
+    constructor(game, i, j) {
+        super(game, i, j);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * 1, 0), n, dir)
+        ];
+        this.deltaJ = 1;
+        this.generateWires();
+    }
+}
+class DefaultTrack2 extends Track {
+    constructor(game, i, j) {
+        super(game, i, j);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * 2, 0), n, dir)
+        ];
+        this.deltaJ = 2;
+        this.generateWires();
+    }
+}
+/// <reference path="./Track.ts"/>
 class DefaultLLTrack extends Track {
     constructor(game, i, j, mirror) {
         super(game, i, j);
@@ -1294,7 +1326,22 @@ class Flat extends Track {
 class FlatLoop extends Track {
     constructor(game, i, j) {
         super(game, i, j);
-        this.deserialize({ "points": [{ "position": { "x": -0.056249999999999994, "y": 0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }, { "position": { "x": 0.007831128515433633, "y": 0.02686866956826861, "z": -0.001512586438867734 }, "normal": { "x": -0.02088401000702746, "y": 0.9212766316260701, "z": -0.38834678593461935 } }, { "position": { "x": 0.0445, "y": 0.0238, "z": -0.026 }, "normal": { "x": -0.4220582199178856, "y": 0.863269455131674, "z": -0.27682613105776016 }, "tangentIn": 1 }, { "position": { "x": 0.0441, "y": 0.0194, "z": -0.0801 }, "normal": { "x": -0.5105506548736694, "y": 0.8362861901986887, "z": 0.19990857132957118 } }, { "position": { "x": -0.00022584437025674475, "y": 0.015373584470800367, "z": -0.10497567416976264 }, "normal": { "x": -0.062210177432127416, "y": 0.8376674210294907, "z": 0.5426261932211393 } }, { "position": { "x": -0.04682594399162551, "y": 0.00993486974904878, "z": -0.07591274887481546 }, "normal": { "x": 0.4338049924054248, "y": 0.8392539115358117, "z": 0.3278202259409408 } }, { "position": { "x": -0.044, "y": 0.0068, "z": -0.0251 }, "normal": { "x": 0.47274782333094034, "y": 0.8547500410127304, "z": -0.21427053676274183 } }, { "position": { "x": 0.0003, "y": 0.0028, "z": -0.0004 }, "normal": { "x": 0.06925374833311816, "y": 0.8415192755510988, "z": -0.5357697520556448 } }, { "position": { "x": 0.0447, "y": -0.0012, "z": -0.0262 }, "normal": { "x": -0.4385316126958126, "y": 0.8367050678252934, "z": -0.32804672554665304 } }, { "position": { "x": 0.0442, "y": -0.0054, "z": -0.08 }, "normal": { "x": -0.5105423049408571, "y": 0.8358650802407707, "z": 0.2016832231489942 } }, { "position": { "x": -0.00019998794117725982, "y": -0.009649497176356298, "z": -0.10484166117713693 }, "normal": { "x": -0.05328804359581278, "y": 0.839859833513831, "z": 0.5401813070255678 } }, { "position": { "x": -0.04678172451684687, "y": -0.014002588861738838, "z": -0.07560012404016887 }, "normal": { "x": 0.4340370522882042, "y": 0.8399407589318226, "z": 0.3257473848337093 }, "tangentIn": 1 }, { "position": { "x": -0.0438, "y": -0.0182, "z": -0.0247 }, "normal": { "x": 0.49613685449256684, "y": 0.8445355495674358, "z": -0.20151408668143006 } }, { "position": { "x": -0.0017, "y": -0.0224, "z": 0.0002 }, "normal": { "x": 0.21464241308702953, "y": 0.9154904403092122, "z": -0.3403026420799902 } }, { "position": { "x": 0.056249999999999994, "y": -0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }] });
+        this.deserialize({
+            points: [
+                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+                { position: { x: 0.0002, y: -0.004, z: -0.0004 }, normal: { x: 0.019861618966497012, y: 0.9751749757297097, z: -0.22054315405967592 } },
+                { position: { x: 0.0438, y: -0.0064, z: -0.0176 }, normal: { x: -0.22558304612591473, y: 0.9269655818421536, z: -0.29974505730802486 } },
+                { position: { x: 0.0656, y: -0.0092, z: -0.0657 }, normal: { x: -0.36624766795617253, y: 0.9272115297672086, z: -0.07836724305102492 } },
+                { position: { x: 0.05, y: -0.0116, z: -0.1081 }, normal: { x: -0.28899453151103105, y: 0.9331762009279609, z: 0.21369215890710064 } },
+                { position: { x: 0.0001, y: -0.0146, z: -0.1307 }, normal: { x: -0.06591259754365662, y: 0.9234801060022608, z: 0.3779418252894237 } },
+                { position: { x: -0.0463, y: -0.017, z: -0.1117 }, normal: { x: 0.21142849593782587, y: 0.9373586814752951, z: 0.27686945185116646 } },
+                { position: { x: -0.064, y: -0.0194, z: -0.0655 }, normal: { x: 0.3862942302916957, y: 0.9210759814896877, z: 0.0489469505296813 } },
+                { position: { x: -0.0462, y: -0.022, z: -0.0184 }, normal: { x: 0.2824107521306146, y: 0.937604682593982, z: -0.20283398694217641 } },
+                { position: { x: -0.0005, y: -0.0244, z: -0.0002 }, normal: { x: 0.09320082689165142, y: 0.9775672574755118, z: -0.18888055214478572 } },
+                { position: { x: 0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+            ],
+        });
+        this.deltaJ = 1;
         this.generateWires();
     }
 }
@@ -1315,8 +1362,9 @@ class Ramp extends Track {
         n.normalize();
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 0.5, -tileHeight, 0), n, dir)
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 1.5, -tileHeight, 0), n, dir)
         ];
+        this.deltaI = 1;
         this.deltaJ = 1;
         this.generateWires();
     }
@@ -1330,8 +1378,9 @@ class RampFast extends Track {
         n.normalize();
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * 2, 0), n, dir)
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 1.5, -tileHeight * 2, 0), n, dir)
         ];
+        this.deltaI = 1;
         this.deltaJ = 2;
         this.generateWires();
     }

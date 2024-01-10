@@ -138,8 +138,8 @@ class Game {
 
         this.tracks = [
             new Ramp(this, 0, 0),
-            new Flat(this, 1, 1),
-            new RampFast(this, 2, 1)
+            new FlatLoop(this, 2, 1),
+            new RampFast(this, 3, 2)
         ];
 
         this.tracks.forEach(track => {
