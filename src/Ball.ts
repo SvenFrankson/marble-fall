@@ -81,7 +81,7 @@ class Ball extends BABYLON.Mesh {
                                 canceledSpeed.addInPlace(colDig.scale(depthSpeed));
                             }
                             // Add ground reaction
-                            let reaction = col.normal.scale(- BABYLON.Vector3.Dot(weight, col.normal));
+                            let reaction = col.normal.scale(- col.depth);
                             reactions.addInPlace(reaction);
                             reactionsCount++;
                         }

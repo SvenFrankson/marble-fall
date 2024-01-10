@@ -80,7 +80,7 @@ class Track extends BABYLON.Mesh {
     public interpolatedNormals: BABYLON.Vector3[];
 
     public wireSize: number = 0.0015;
-    public wireGauge: number = 0.012;
+    public wireGauge: number = 0.010;
     public renderOnlyPath: boolean = false;
 
     public sleepersMesh: BABYLON.Mesh;
