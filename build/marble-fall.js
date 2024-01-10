@@ -205,7 +205,7 @@ function addLine(text) {
 }
 class Game {
     constructor(canvasElement) {
-        this.cameraOrtho = true;
+        this.cameraOrtho = false;
         this.timeFactor = 1;
         this.physicDT = 0.0005;
         this.tracks = [];
@@ -278,6 +278,10 @@ class Game {
             this.camera.target.y = target.y;
             this.camera.target.z = target.z;
         }
+        let savedCameraOrtho = window.localStorage.getItem("saved-cam-ortho");
+        if (savedCameraOrtho === "true") {
+            this.cameraOrtho = true;
+        }
         this.camera.attachControl();
         this.camera.getScene();
         let ball = new Ball(this);
@@ -326,6 +330,7 @@ class Game {
         //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
         let target = this.camera.target;
         window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
+        window.localStorage.setItem("saved-cam-ortho", this.cameraOrtho ? "true" : "false");
         if (this.cameraOrtho) {
             let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             let f = this.camera.radius / 4;
