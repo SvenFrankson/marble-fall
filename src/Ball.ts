@@ -54,21 +54,38 @@ class Ball extends BABYLON.Mesh {
             let forcedDisplacement = BABYLON.Vector3.Zero();
             let canceledSpeed = BABYLON.Vector3.Zero();
     
-            Wire.Instances.forEach(wire => {
-                let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
-                if (col.hit) {
-                    let colDig = col.normal.scale(-1);
-                    // Move away from collision
-                    forcedDisplacement.addInPlace(col.normal.scale(col.depth));
-                    // Cancel depth component of speed
-                    let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
-                    if (depthSpeed > 0) {
-                        canceledSpeed.addInPlace(colDig.scale(depthSpeed));
-                    }
-                    // Add ground reaction
-                    let reaction = col.normal.scale(- BABYLON.Vector3.Dot(weight, col.normal));
-                    reactions.addInPlace(reaction);
-                    reactionsCount++;
+            this.game.tracks.forEach(track => {
+                if (Mummu.AABBAABBIntersect(
+                    this.position.x - this.radius,
+                    this.position.x + this.radius,
+                    this.position.y - this.radius,
+                    this.position.y + this.radius,
+                    this.position.z - this.radius,
+                    this.position.z + this.radius,
+                    track.AABBMin.x - this.radius,
+                    track.AABBMax.x + this.radius,
+                    track.AABBMin.y - this.radius,
+                    track.AABBMax.y + this.radius,
+                    track.AABBMin.z - this.radius,
+                    track.AABBMax.z + this.radius
+                )) {
+                    track.wires.forEach(wire => {
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
+                        if (col.hit) {
+                            let colDig = col.normal.scale(-1);
+                            // Move away from collision
+                            forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                            // Cancel depth component of speed
+                            let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
+                            if (depthSpeed > 0) {
+                                canceledSpeed.addInPlace(colDig.scale(depthSpeed));
+                            }
+                            // Add ground reaction
+                            let reaction = col.normal.scale(- BABYLON.Vector3.Dot(weight, col.normal));
+                            reactions.addInPlace(reaction);
+                            reactionsCount++;
+                        }
+                    });
                 }
             });
             if (reactionsCount > 0) {

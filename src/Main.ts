@@ -23,7 +23,7 @@ class Game {
 
     public cameraOrtho: boolean = true;
 
-    public timeFactor: number = 0.6;
+    public timeFactor: number = 1;
     public physicDT: number = 0.0005;
 
     public tracks: Track[] = [];

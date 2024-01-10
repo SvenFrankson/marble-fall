@@ -87,6 +87,8 @@ class Track extends BABYLON.Mesh {
 
     public totalLength: number = 0
     public globalSlope: number = 0;
+    public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     constructor(public game: Game, public i: number, public j: number) {
         super("track", game.scene);
@@ -238,6 +240,9 @@ class Track extends BABYLON.Mesh {
         let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
         this.globalSlope = dh / this.totalLength * 100;
 
+        // Compute wire path and Update AABB values.
+        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
+        this.AABBMax.copyFromFloats(- Infinity, - Infinity, - Infinity);
         for (let i = 0; i < N; i++) {
             let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
             let p = this.interpolatedPoints[i];
@@ -260,7 +265,19 @@ class Track extends BABYLON.Mesh {
 
             this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(- this.wireGauge * 0.5, 0, 0), matrix);
             this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
+            this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
+            this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
+            this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
+            this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
         }
+        this.AABBMin.x -= this.wireSize * 0.5;
+        this.AABBMin.y -= this.wireSize * 0.5;
+        this.AABBMin.z -= this.wireSize * 0.5;
+        this.AABBMax.x += this.wireSize * 0.5;
+        this.AABBMax.y += this.wireSize * 0.5;
+        this.AABBMax.z += this.wireSize * 0.5;
+        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.getWorldMatrix(), this.AABBMin);
+        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.getWorldMatrix(), this.AABBMax);
     }
 
     public recomputeAbsolutePath(): void {

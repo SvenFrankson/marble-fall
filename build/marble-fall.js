@@ -20,21 +20,25 @@ class Ball extends BABYLON.Mesh {
                 let reactionsCount = 0;
                 let forcedDisplacement = BABYLON.Vector3.Zero();
                 let canceledSpeed = BABYLON.Vector3.Zero();
-                Wire.Instances.forEach(wire => {
-                    let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
-                    if (col.hit) {
-                        let colDig = col.normal.scale(-1);
-                        // Move away from collision
-                        forcedDisplacement.addInPlace(col.normal.scale(col.depth));
-                        // Cancel depth component of speed
-                        let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
-                        if (depthSpeed > 0) {
-                            canceledSpeed.addInPlace(colDig.scale(depthSpeed));
-                        }
-                        // Add ground reaction
-                        let reaction = col.normal.scale(-BABYLON.Vector3.Dot(weight, col.normal));
-                        reactions.addInPlace(reaction);
-                        reactionsCount++;
+                this.game.tracks.forEach(track => {
+                    if (Mummu.AABBAABBIntersect(this.position.x - this.radius, this.position.x + this.radius, this.position.y - this.radius, this.position.y + this.radius, this.position.z - this.radius, this.position.z + this.radius, track.AABBMin.x - this.radius, track.AABBMax.x + this.radius, track.AABBMin.y - this.radius, track.AABBMax.y + this.radius, track.AABBMin.z - this.radius, track.AABBMax.z + this.radius)) {
+                        track.wires.forEach(wire => {
+                            let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
+                            if (col.hit) {
+                                let colDig = col.normal.scale(-1);
+                                // Move away from collision
+                                forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                                // Cancel depth component of speed
+                                let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
+                                if (depthSpeed > 0) {
+                                    canceledSpeed.addInPlace(colDig.scale(depthSpeed));
+                                }
+                                // Add ground reaction
+                                let reaction = col.normal.scale(-BABYLON.Vector3.Dot(weight, col.normal));
+                                reactions.addInPlace(reaction);
+                                reactionsCount++;
+                            }
+                        });
                     }
                 });
                 if (reactionsCount > 0) {
@@ -161,7 +165,7 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = true;
-        this.timeFactor = 0.6;
+        this.timeFactor = 1;
         this.physicDT = 0.0005;
         this.tracks = [];
         Game.Instance = this;
@@ -946,6 +950,8 @@ class Track extends BABYLON.Mesh {
         this.renderOnlyPath = false;
         this.totalLength = 0;
         this.globalSlope = 0;
+        this.AABBMin = BABYLON.Vector3.Zero();
+        this.AABBMax = BABYLON.Vector3.Zero();
         this.position.x = i * 2 * xDist;
         this.position.y = -i * 2 * yDist - j * 4 * yDist;
         this.wires = [
@@ -1073,6 +1079,9 @@ class Track extends BABYLON.Mesh {
         }
         let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
         this.globalSlope = dh / this.totalLength * 100;
+        // Compute wire path and Update AABB values.
+        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
+        this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
         for (let i = 0; i < N; i++) {
             let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
             let p = this.interpolatedPoints[i];
@@ -1090,7 +1099,19 @@ class Track extends BABYLON.Mesh {
             let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
             this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.wireGauge * 0.5, 0, 0), matrix);
             this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
+            this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
+            this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
+            this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
+            this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
         }
+        this.AABBMin.x -= this.wireSize * 0.5;
+        this.AABBMin.y -= this.wireSize * 0.5;
+        this.AABBMin.z -= this.wireSize * 0.5;
+        this.AABBMax.x += this.wireSize * 0.5;
+        this.AABBMax.y += this.wireSize * 0.5;
+        this.AABBMax.z += this.wireSize * 0.5;
+        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.getWorldMatrix(), this.AABBMin);
+        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.getWorldMatrix(), this.AABBMax);
     }
     recomputeAbsolutePath() {
         this.wires.forEach(wire => {
