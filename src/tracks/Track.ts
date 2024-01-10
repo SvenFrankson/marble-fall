@@ -8,6 +8,7 @@ class TrackPoint {
     public fixedDir: boolean = false;
     public fixedTangentIn: boolean = false;
     public fixedTangentOut: boolean = false;
+    public summedLength: number = 0;
 
     constructor(
         public track: Track,
@@ -87,6 +88,7 @@ class Track extends BABYLON.Mesh {
 
     public sleepersMesh: BABYLON.Mesh;
 
+    public summedLength: number[] = [0];
     public totalLength: number = 0
     public globalSlope: number = 0;
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -119,17 +121,16 @@ class Track extends BABYLON.Mesh {
         let trackpoint = this.trackPoints[index];
         let nextTrackPoint = this.trackPoints[index + 1];
         if (trackpoint) {
-            let dirToNext: BABYLON.Vector3 = BABYLON.Vector3.Zero();
             if (nextTrackPoint) {
-                dirToNext.copyFrom(nextTrackPoint.position).subtractInPlace(trackpoint.position).normalize();
+                let dy = nextTrackPoint.position.y - trackpoint.position.y;
+                let dLength = nextTrackPoint.summedLength - trackpoint.summedLength;
+                return dy / dLength * 100;
             }
             else {
-                dirToNext.copyFrom(trackpoint.dir);
+                let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
+                let angleToHorizontal = Math.PI / 2 - angleToVertical;
+                return Math.tan(angleToHorizontal) * 100;
             }
-            let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, dirToNext);
-            let angleToHorizontal = Math.PI / 2 - angleToVertical;
-            let slope = Math.tan(angleToHorizontal) * 100;
-            return slope;
         }
         return 0;
     }
@@ -246,6 +247,7 @@ class Track extends BABYLON.Mesh {
         this.interpolatedPoints = [];
         this.interpolatedNormals = [];
 
+        this.trackPoints[0].summedLength = 0;
         for (let i = 0; i < this.trackPoints.length - 1; i++) {
             let trackPoint = this.trackPoints[i];
             let nextTrackPoint = this.trackPoints[i + 1];
@@ -256,14 +258,16 @@ class Track extends BABYLON.Mesh {
             count = Math.max(0, count);
             this.interpolatedPoints.push(trackPoint.position);
             this.interpolatedNormals.push(trackPoint.normal);
+            nextTrackPoint.summedLength = trackPoint.summedLength;
             for (let j = 1; j < count; j++) {
                 let amount = j / count;
                 let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
                 let normal = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, amount);
                 this.interpolatedPoints.push(point);
                 this.interpolatedNormals.push(normal);
+                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(this.interpolatedPoints[this.interpolatedPoints.length - 2], this.interpolatedPoints[this.interpolatedPoints.length - 1]);
             }
-
+            nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, this.interpolatedPoints[this.interpolatedPoints.length - 1]);
         }
 
         this.interpolatedPoints.push(this.trackPoints[this.trackPoints.length - 1].position);
@@ -271,12 +275,15 @@ class Track extends BABYLON.Mesh {
 
         let N = this.interpolatedPoints.length;
 
+        this.summedLength = [0];
         this.totalLength = 0;
         for (let i = 0; i < N - 1; i++) {
             let p = this.interpolatedPoints[i];
             let pNext = this.interpolatedPoints[i + 1];
-            this.totalLength += BABYLON.Vector3.Distance(p, pNext);
+            let d = BABYLON.Vector3.Distance(p, pNext);
+            this.summedLength[i + 1] = this.summedLength[i] + d;
         }
+        this.totalLength = this.summedLength[N - 1];
 
         let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
         this.globalSlope = dh / this.totalLength * 100;
