@@ -9,7 +9,7 @@ class SleeperMeshBuilder {
             summedLength[i] = summedLength[i - 1] + dist;
         }
 
-        let count = Math.round(summedLength[summedLength.length - 1] / spacing);
+        let count = Math.round(summedLength[summedLength.length - 1] / spacing / 3) * 3;
         let correctedSpacing = summedLength[summedLength.length - 1] / count;
 
         let partialsDatas: BABYLON.VertexData[] = [];
@@ -78,7 +78,15 @@ class SleeperMeshBuilder {
                 partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                 tmp.dispose();
 
-                if (n === 0.5 || n === count - 0.5) {
+                let addAnchor = false;
+                if ((n - 1.5) % 3 === 0) {
+                    let anchor = path[nPath / 2 - 1];
+                    if (anchor.z > - 0.01) {
+                        addAnchor = true;
+                    }
+                }
+
+                if (addAnchor) {
                     let anchor = path[nPath / 2 - 1];
                     let anchorCenter = anchor.clone();
                     anchorCenter.z = 0.015;

@@ -319,12 +319,27 @@ class Game {
             new Loop(this, 0, 8, true),
             new UTurn(this, -1, 11, true),
             new Ramp(this, 0, 12, 2, 1),
-            new Ramp(this, 2, 12, 2, 1),
             new CrossingRamp(this, 2, 12, 2, 1, true),
             new Snake(this, 4, 12),
             new CrossingFlat(this, 6, 12, 2),
             new UTurnLarge(this, 8, 13),
-            new Ramp(this, 4, 13, 4, 1)
+            new Ramp(this, 6, 14, 2, 1, true),
+            new UTurn(this, 5, 15, true),
+            new UTurn(this, 6, 16),
+            new UTurn(this, 5, 17, true),
+            new UTurn(this, 6, 18),
+            new UTurn(this, 5, 19, true),
+            new UTurn(this, 6, 20),
+            new UTurn(this, 5, 21, true),
+            new UTurn(this, 6, 22),
+            new UTurn(this, 5, 23, true),
+            new UTurn(this, 6, 24),
+            new UTurn(this, 5, 25, true),
+            new UTurn(this, 6, 26),
+            new UTurn(this, 5, 27, true),
+            new UTurn(this, 6, 28),
+            new UTurn(this, 5, 29, true),
+            new UTurn(this, 6, 30),
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -1529,7 +1544,7 @@ class SleeperMeshBuilder {
             let dist = BABYLON.Vector3.Distance(prev, trackpoint);
             summedLength[i] = summedLength[i - 1] + dist;
         }
-        let count = Math.round(summedLength[summedLength.length - 1] / spacing);
+        let count = Math.round(summedLength[summedLength.length - 1] / spacing / 3) * 3;
         let correctedSpacing = summedLength[summedLength.length - 1] / count;
         let partialsDatas = [];
         let radius = track.wireSize * 0.5 * 0.75;
@@ -1589,7 +1604,14 @@ class SleeperMeshBuilder {
                 let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
                 partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                 tmp.dispose();
-                if (n === 0.5 || n === count - 0.5) {
+                let addAnchor = false;
+                if ((n - 1.5) % 3 === 0) {
+                    let anchor = path[nPath / 2 - 1];
+                    if (anchor.z > -0.01) {
+                        addAnchor = true;
+                    }
+                }
+                if (addAnchor) {
                     let anchor = path[nPath / 2 - 1];
                     let anchorCenter = anchor.clone();
                     anchorCenter.z = 0.015;
