@@ -230,7 +230,7 @@ class Game {
         this.scene = new BABYLON.Scene(this.engine);
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.scene.clearColor = BABYLON.Color4.FromHexString("#66b0ff");
-        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(-1, 3, 2)).normalize(), this.scene);
+        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, -2)).normalize(), this.scene);
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -350,6 +350,26 @@ class Game {
             });
             this.trackEditor = new TrackEditor(this);
             this.trackEditor.initialize();
+            let wall = BABYLON.MeshBuilder.CreatePlane("wall", { width: 2, height: 2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, 4, 4) });
+            wall.position.x += 0.6;
+            wall.position.y -= 0.8;
+            wall.position.z += 0.016;
+            wall.rotation.z = Math.PI / 2;
+            let wallMaterial = new BABYLON.StandardMaterial("wood-material");
+            wallMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
+            wallMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
+            wallMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
+            wallMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
+            wallMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
+            wallMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+            wall.material = wallMaterial;
+            let minX = Infinity;
+            let maxX = -Infinity;
+            let minY = Infinity;
+            let maxY = -Infinity;
+            for (let i = 0; i < this.tracks.length; i++) {
+                let track = this.tracks[i];
+            }
         });
     }
     animate() {
