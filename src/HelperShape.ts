@@ -67,6 +67,18 @@ class HelperShape {
             circle.setAttribute("cy", "500");
             circle.setAttribute("r", this.circleRadius.toFixed(1));
             this.svg.appendChild(circle);
+
+            for (let i = 0; i < 32; i++) {
+                let graduation = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                graduation.setAttribute("stroke", "black");
+                graduation.setAttribute("stroke-width", "1");
+                graduation.setAttribute("x1", (500 + this.circleRadius - 20).toFixed(1));
+                graduation.setAttribute("y1", "500");
+                graduation.setAttribute("x2", (500 + this.circleRadius + 20).toFixed(1));
+                graduation.setAttribute("y2", "500");
+                graduation.setAttribute("transform", "rotate(" + (i * 360 / 32).toFixed(1) + " 500 500)")
+                this.svg.appendChild(graduation);
+            }
         }
 
         if (this.show && this.showGrid) {
