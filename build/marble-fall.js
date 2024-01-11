@@ -135,6 +135,17 @@ class HelperShape {
             circle.setAttribute("cy", "500");
             circle.setAttribute("r", this.circleRadius.toFixed(1));
             this.svg.appendChild(circle);
+            for (let i = 0; i < 32; i++) {
+                let graduation = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                graduation.setAttribute("stroke", "black");
+                graduation.setAttribute("stroke-width", "1");
+                graduation.setAttribute("x1", (500 + this.circleRadius - 20).toFixed(1));
+                graduation.setAttribute("y1", "500");
+                graduation.setAttribute("x2", (500 + this.circleRadius + 20).toFixed(1));
+                graduation.setAttribute("y2", "500");
+                graduation.setAttribute("transform", "rotate(" + (i * 360 / 32).toFixed(1) + " 500 500)");
+                this.svg.appendChild(graduation);
+            }
         }
         if (this.show && this.showGrid) {
             let count = Math.round(500 / this.gridSize);
@@ -300,35 +311,6 @@ class Game {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
         });
-        /*
-        this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new UTurn(this, 2, 1),
-            new Flat(this, 0, 2, 2),
-            new UTurn(this, -1, 2, true),
-            new Flat(this, 0, 3, 2),
-            new UTurn(this, 2, 3),
-            new Flat(this, 0, 4, 2),
-            new UTurn(this, -1, 4, true),
-            new Flat(this, 0, 5, 2),
-            new UTurn(this, 2, 5),
-            new Flat(this, 0, 6, 2),
-            new UTurn(this, -1, 6, true),
-            new Flat(this, 0, 7, 2),
-            new UTurn(this, 2, 7),
-            new Flat(this, 0, 8, 2),
-            new UTurn(this, -1, 8, true),
-            new Flat(this, 0, 9, 2)
-        ];
-        */
-        /*
-        this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new Loop(this, 2, 1),
-            new UTurn(this, 4, 4),
-            new Ramp(this, 2, 5, 2, 1, true),
-        ];
-        */
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Spiral(this, 2, 1),
@@ -336,6 +318,9 @@ class Game {
             new Spiral(this, 2, 5, true),
             new Loop(this, 0, 8, true),
             new UTurn(this, -2, 11, true),
+            new Ramp(this, 0, 12, 2, 1),
+            new Ramp(this, 2, 12, 1, 1, true),
+            new Snake(this, 3, 12)
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -1593,6 +1578,15 @@ class SleeperMeshBuilder {
             }
         }
         return Mummu.MergeVertexDatas(...partialsDatas);
+    }
+}
+/// <reference path="./Track.ts"/>
+class Snake extends Track {
+    constructor(game, i, j, mirror) {
+        super(game, i, j);
+        this.deltaJ = 1;
+        this.deserialize({ "points": [{ "position": { "x": -0.075, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }, { "position": { "x": 0.015, "y": -0.0006, "z": -0.02 }, "normal": { "x": 0, "y": 0.983976396926608, "z": 0.17829876693721267 } }, { "position": { "x": 0.075, "y": 0, "z": 0 }, "normal": { "x": -0.0008909764600687716, "y": 0.9800741060756494, "z": -0.1986301909603991 } }, { "position": { "x": 0.125, "y": -0.0005, "z": -0.02 }, "normal": { "x": 0, "y": 0.9797898655773956, "z": 0.20002954609714332 } }, { "position": { "x": 0.225, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }] });
+        this.generateWires();
     }
 }
 /// <reference path="./Track.ts"/>

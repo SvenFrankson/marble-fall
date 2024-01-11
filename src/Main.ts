@@ -145,36 +145,7 @@ class Game {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
         })
-
-        /*
-        this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new UTurn(this, 2, 1),
-            new Flat(this, 0, 2, 2),
-            new UTurn(this, -1, 2, true),
-            new Flat(this, 0, 3, 2),
-            new UTurn(this, 2, 3),
-            new Flat(this, 0, 4, 2),
-            new UTurn(this, -1, 4, true),
-            new Flat(this, 0, 5, 2),
-            new UTurn(this, 2, 5),
-            new Flat(this, 0, 6, 2),
-            new UTurn(this, -1, 6, true),
-            new Flat(this, 0, 7, 2),
-            new UTurn(this, 2, 7),
-            new Flat(this, 0, 8, 2),
-            new UTurn(this, -1, 8, true),
-            new Flat(this, 0, 9, 2)
-        ];
-        */
-        /*
-        this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new Loop(this, 2, 1),
-            new UTurn(this, 4, 4),
-            new Ramp(this, 2, 5, 2, 1, true),
-        ];
-        */
+        
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Spiral(this, 2, 1),
@@ -182,6 +153,9 @@ class Game {
             new Spiral(this, 2, 5, true),
             new Loop(this, 0, 8, true),
             new UTurn(this, -2, 11, true),
+            new Ramp(this, 0, 12, 2, 1),
+            new Ramp(this, 2, 12, 1, 1, true),
+            new Snake(this, 3, 12)
         ];
 
         this.tracks.forEach(track => {
