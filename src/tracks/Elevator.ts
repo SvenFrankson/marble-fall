@@ -1,6 +1,6 @@
 class ElevatorDown extends Track {
 
-    public boxesCount: number = 3;
+    public boxesCount: number = 5;
     public boxX: number[] = [];
     public boxes: BABYLON.Mesh[] = [];
     public wheels: BABYLON.Mesh[] = [];
@@ -17,11 +17,6 @@ class ElevatorDown extends Track {
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(
                 - tileWidth * 0.5,
-                - tileHeight * (this.deltaJ + 1),
-                0
-            ), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(
-                - tileWidth * 0.25,
                 - tileHeight * (this.deltaJ + 1),
                 0
             ), n, dir),
@@ -59,7 +54,7 @@ class ElevatorDown extends Track {
     
             let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.024, 0.0005, rRamp)];
+            rampWire0.path = [new BABYLON.Vector3(-0.024, 0.001, rRamp)];
             let nRamp = 12;
             for (let i = 0; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
@@ -67,7 +62,7 @@ class ElevatorDown extends Track {
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3(sina * rRamp - rRamp - 0.001, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.024, 0.0005, - rRamp));
+            rampWire0.path.push(new BABYLON.Vector3(-0.024, 0.001, - rRamp));
             rampWire0.parent = box;
     
             this.boxes.push(box);

@@ -41,6 +41,19 @@ class Ball extends BABYLON.Mesh {
                         });
                     }
                 });
+                this.game.balls.forEach(ball => {
+                    if (ball != this) {
+                        let dist = BABYLON.Vector3.Distance(this.position, ball.position);
+                        if (dist < this.size) {
+                            let depth = this.size - dist;
+                            //this.velocity.scaleInPlace(0.3);
+                            ball.velocity.addInPlace(this.velocity.scale(0.5));
+                            this.velocity.scaleInPlace(-0.6);
+                            let dir = this.position.subtract(ball.position).normalize();
+                            this.position.addInPlace(dir.scale(depth));
+                        }
+                    }
+                });
                 if (reactionsCount > 0) {
                     reactions.scaleInPlace(1 / reactionsCount);
                     canceledSpeed.scaleInPlace(1 / reactionsCount);
@@ -219,6 +232,7 @@ class Game {
         this.cameraOrtho = false;
         this.timeFactor = 0.6;
         this.physicDT = 0.001;
+        this.balls = [];
         this.tracks = [];
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
@@ -299,17 +313,15 @@ class Game {
         ball.position.x = -tileWidth * 0.5 * 0.9;
         ball.position.y = 0.008;
         ball.instantiate();
-        /*
         let ball2 = new Ball(this);
-        ball2.position.x = - tileWidth * 0.5 * 0.5;
-        ball2.position.y = 0.1;
+        ball2.position.x = -tileWidth * 0.5 * 0.5;
+        ball2.position.y = 0.008;
         ball2.instantiate();
-
         let ball3 = new Ball(this);
-        ball3.position.x = - tileWidth * 0.5 * 0.1;
-        ball3.position.y = 0.1;
+        ball3.position.x = -tileWidth * 0.5 * 0.1;
+        ball3.position.y = 0.008;
         ball3.instantiate();
-        */
+        this.balls = [ball, ball2, ball3];
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
@@ -347,10 +359,10 @@ class Game {
         ];
         */
         this.tracks = [
-            new Ramp(this, 0, 0, 2, 2),
-            new ElevatorDown(this, 2, -2, 4),
-            new ElevatorUp(this, 2, -2),
-            new CrossingFlat(this, 0, -1, 2),
+            new Ramp(this, 0, 0, 2, 1),
+            new ElevatorDown(this, 2, -4, 5),
+            new ElevatorUp(this, 2, -4),
+            new Ramp(this, 0, -3, 2, 2, true),
             new UTurnLarge(this, -2, -1, true)
         ];
         this.tracks.forEach(track => {
@@ -1473,7 +1485,7 @@ class DoubleLoop extends Track {
 class ElevatorDown extends Track {
     constructor(game, i, j, h = 1, mirror) {
         super(game, i, j);
-        this.boxesCount = 3;
+        this.boxesCount = 5;
         this.boxX = [];
         this.boxes = [];
         this.wheels = [];
@@ -1487,7 +1499,6 @@ class ElevatorDown extends Track {
         this.deltaJ = h - 1;
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * (this.deltaJ + 1), 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.25, -tileHeight * (this.deltaJ + 1), 0), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.deltaJ + 1.25), 0), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.deltaJ + 1.25) + 0.01, 0), dir.scale(-1), n),
             new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0, 0), dir.scale(-1), n),
@@ -1500,7 +1511,7 @@ class ElevatorDown extends Track {
             box.parent = this;
             let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.024, 0.0005, rRamp)];
+            rampWire0.path = [new BABYLON.Vector3(-0.024, 0.001, rRamp)];
             let nRamp = 12;
             for (let i = 0; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
@@ -1508,7 +1519,7 @@ class ElevatorDown extends Track {
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3(sina * rRamp - rRamp - 0.001, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.024, 0.0005, -rRamp));
+            rampWire0.path.push(new BABYLON.Vector3(-0.024, 0.001, -rRamp));
             rampWire0.parent = box;
             this.boxes.push(box);
             this.wires.push(rampWire0);
@@ -1692,8 +1703,8 @@ class Ramp extends Track {
         this.deltaI = w - 1;
         this.deltaJ = h - 1;
         this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n, dir)
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone()),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n.clone(), dir.clone())
         ];
         if (mirror) {
             this.mirrorTrackPointsInPlace();
@@ -1712,9 +1723,9 @@ class CrossingRamp extends Track {
         this.deltaI = w - 1;
         this.deltaJ = h - 1;
         this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * (this.deltaJ + 1) * 0.5, -0.03), nBank, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n, dir, 1.4, 1.4)
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * (this.deltaJ + 1) * 0.5, -0.03), nBank, dir.clone(), 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n.clone(), dir.clone(), 1.4, 1.4)
         ];
         if (mirror) {
             this.mirrorTrackPointsInPlace();

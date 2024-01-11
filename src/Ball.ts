@@ -88,6 +88,21 @@ class Ball extends BABYLON.Mesh {
                     });
                 }
             });
+
+            this.game.balls.forEach(ball => {
+                if (ball != this) {
+                    let dist = BABYLON.Vector3.Distance(this.position, ball.position);
+                    if (dist < this.size) {
+                        let depth = this.size - dist;
+                        //this.velocity.scaleInPlace(0.3);
+                        ball.velocity.addInPlace(this.velocity.scale(0.5));
+                        this.velocity.scaleInPlace(-0.6);
+                        let dir = this.position.subtract(ball.position).normalize();
+                        this.position.addInPlace(dir.scale(depth));
+                    }
+                }
+            });
+
             if (reactionsCount > 0) {
                 reactions.scaleInPlace(1 / reactionsCount);
                 canceledSpeed.scaleInPlace(1 / reactionsCount);

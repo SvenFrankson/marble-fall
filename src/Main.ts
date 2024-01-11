@@ -26,6 +26,7 @@ class Game {
     public timeFactor: number = 0.6;
     public physicDT: number = 0.001;
 
+    public balls: Ball[] = [];
     public tracks: Track[] = [];
     public trackEditor: TrackEditor;
 
@@ -131,17 +132,17 @@ class Game {
         ball.position.y = 0.008;
         ball.instantiate();
 
-        /*
         let ball2 = new Ball(this);
         ball2.position.x = - tileWidth * 0.5 * 0.5;
-        ball2.position.y = 0.1;
+        ball2.position.y = 0.008;
         ball2.instantiate();
 
         let ball3 = new Ball(this);
         ball3.position.x = - tileWidth * 0.5 * 0.1;
-        ball3.position.y = 0.1;
+        ball3.position.y = 0.008;
         ball3.instantiate();
-        */
+
+        this.balls = [ball, ball2, ball3];
 
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
@@ -182,10 +183,10 @@ class Game {
         */
        
         this.tracks = [
-            new Ramp(this, 0, 0, 2, 2),
-            new ElevatorDown(this, 2, -2, 4),
-            new ElevatorUp(this, 2, -2),
-            new CrossingFlat(this, 0, -1, 2),
+            new Ramp(this, 0, 0, 2, 1),
+            new ElevatorDown(this, 2, -4, 5),
+            new ElevatorUp(this, 2, -4),
+            new Ramp(this, 0, -3, 2, 2, true),
             new UTurnLarge(this, -2, -1, true)
         ];
 

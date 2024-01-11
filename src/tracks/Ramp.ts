@@ -11,8 +11,8 @@ class Ramp extends Track {
         this.deltaJ = h - 1;
 
         this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ + 1), 0), n, dir)
+            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n.clone(), dir.clone()),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ + 1), 0), n.clone(), dir.clone())
         ];
 
         if (mirror) {
@@ -37,9 +37,9 @@ class CrossingRamp extends Track {
         this.deltaJ = h - 1;
 
         this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5)- tileWidth * 0.5) * 0.5, - tileHeight * (this.deltaJ + 1) * 0.5, - 0.03), nBank, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ + 1), 0), n, dir, 1.4, 1.4)
+            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5)- tileWidth * 0.5) * 0.5, - tileHeight * (this.deltaJ + 1) * 0.5, - 0.03), nBank, dir.clone(), 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ + 1), 0), n.clone(), dir.clone(), 1.4, 1.4)
         ];
 
         if (mirror) {
