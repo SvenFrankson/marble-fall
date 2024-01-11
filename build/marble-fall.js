@@ -319,8 +319,12 @@ class Game {
             new Loop(this, 0, 8, true),
             new UTurn(this, -2, 11, true),
             new Ramp(this, 0, 12, 2, 1),
-            new Ramp(this, 2, 12, 1, 1, true),
-            new Snake(this, 3, 12)
+            new Ramp(this, 2, 12, 2, 1),
+            new CrossingRamp(this, 2, 12, 2, 1, true),
+            new Snake(this, 4, 12),
+            new CrossingFlat(this, 6, 12, 2),
+            new UTurn(this, 8, 13),
+            new Ramp(this, 4, 13, 4, 1)
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -1394,6 +1398,23 @@ class Flat extends Track {
         this.generateWires();
     }
 }
+class CrossingFlat extends Track {
+    constructor(game, i, j, w = 1) {
+        super(game, i, j);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let nBank = new BABYLON.Vector3(0, Math.cos(10 / 180 * Math.PI), Math.sin(10 / 180 * Math.PI));
+        this.deltaI = w - 1;
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * 0.5, -0.03), nBank, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight, 0), n, dir, 1.4, 1.4)
+        ];
+        this.generateWires();
+    }
+}
 /// <reference path="./Track.ts"/>
 class FlatLoop extends Track {
     constructor(game, i, j, mirror) {
@@ -1474,6 +1495,27 @@ class Ramp extends Track {
                 new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
                 new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n, dir)
             ];
+        }
+        this.generateWires();
+    }
+}
+class CrossingRamp extends Track {
+    constructor(game, i, j, w = 1, h = 1, mirror) {
+        super(game, i, j);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let nBank = new BABYLON.Vector3(0, Math.cos(10 / 180 * Math.PI), Math.sin(10 / 180 * Math.PI));
+        this.deltaI = w - 1;
+        this.deltaJ = h - 1;
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * (this.deltaJ + 1) * 0.5, -0.03), nBank, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n, dir, 1.4, 1.4)
+        ];
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
         }
         this.generateWires();
     }
