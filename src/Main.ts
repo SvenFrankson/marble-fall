@@ -148,7 +148,8 @@ class Game {
         
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
-            new Spiral(this, 2, 1),
+            //new Spiral(this, 2, 1),
+            new Ramp(this, 2, 1, 2, 1),
             new UTurn(this, 3, 4),
             new Spiral(this, 2, 5, true),
             new Loop(this, 0, 8, true),
