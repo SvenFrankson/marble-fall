@@ -148,18 +148,17 @@ class Game {
         
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
-            //new Spiral(this, 2, 1),
-            new Ramp(this, 2, 1, 2, 1),
+            new Spiral(this, 2, 1),
             new UTurn(this, 3, 4),
             new Spiral(this, 2, 5, true),
             new Loop(this, 0, 8, true),
-            new UTurn(this, -2, 11, true),
+            new UTurn(this, -1, 11, true),
             new Ramp(this, 0, 12, 2, 1),
             new Ramp(this, 2, 12, 2, 1),
             new CrossingRamp(this, 2, 12, 2, 1, true),
             new Snake(this, 4, 12),
             new CrossingFlat(this, 6, 12, 2),
-            new UTurn(this, 8, 13),
+            new UTurnLarge(this, 8, 13),
             new Ramp(this, 4, 13, 4, 1)
         ];
 
