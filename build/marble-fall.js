@@ -368,6 +368,17 @@ class Game {
         this.tracks.forEach(track => {
             track.instantiate();
         });
+        let tile = new MenuTile("test", 0.05, 0.075, this);
+        tile.instantiate();
+        tile.position.x = -0.06;
+        tile.position.z = -0.03;
+        let tile2 = new MenuTile("test", 0.05, 0.075, this);
+        tile2.instantiate();
+        tile2.position.z = -0.03;
+        let tile3 = new MenuTile("test", 0.05, 0.075, this);
+        tile3.instantiate();
+        tile3.position.x = 0.06;
+        tile3.position.z = -0.03;
         requestAnimationFrame(() => {
             this.tracks.forEach(track => {
                 track.recomputeAbsolutePath();
@@ -473,6 +484,46 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+class MenuTile extends BABYLON.Mesh {
+    constructor(name, w, h, game) {
+        super(name);
+        this.w = w;
+        this.h = h;
+        this.game = game;
+    }
+    async instantiate() {
+        BABYLON.CreatePlaneVertexData({ width: this.w, height: this.h }).applyToMesh(this);
+        let material = new BABYLON.StandardMaterial("test");
+        material.diffuseColor.copyFromFloats(0.02, 0.04, 0.03);
+        material.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.material = material;
+        let frame = new BABYLON.Mesh(this.name + "-frame");
+        frame.material = this.game.steelMaterial;
+        frame.parent = this;
+        this.game.vertexDataLoader.get("./meshes/menu-tile-frame.babylon").then(vertexData => {
+            let positions = [...vertexData[0].positions];
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let y = positions[3 * i + 1];
+                let z = positions[3 * i + 2];
+                if (x > 0) {
+                    positions[3 * i] += this.w * 0.5 - 0.001;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= this.w * 0.5 - 0.001;
+                }
+                if (y > 0) {
+                    positions[3 * i + 1] += this.h * 0.5 - 0.001;
+                }
+                else if (y < 0) {
+                    positions[3 * i + 1] -= this.h * 0.5 - 0.001;
+                }
+            }
+            vertexData[0].positions = positions;
+            vertexData[0].applyToMesh(frame);
+        });
+    }
+}
 class TrackPointHandle extends BABYLON.Mesh {
     constructor(trackPoint) {
         super("trackpoint-handle");

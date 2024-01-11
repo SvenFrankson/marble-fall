@@ -194,6 +194,20 @@ class Game {
             track.instantiate();
         })
 
+        let tile = new MenuTile("test", 0.05, 0.075, this);
+        tile.instantiate();
+        tile.position.x = - 0.06;
+        tile.position.z = -0.03;
+
+        let tile2 = new MenuTile("test", 0.05, 0.075, this);
+        tile2.instantiate();
+        tile2.position.z = -0.03;
+        
+        let tile3 = new MenuTile("test", 0.05, 0.075, this);
+        tile3.instantiate();
+        tile3.position.x = 0.06;
+        tile3.position.z = -0.03;
+
         requestAnimationFrame(() => {
             this.tracks.forEach(track => {
                 track.recomputeAbsolutePath();
