@@ -128,9 +128,10 @@ class Game {
 
         let ball = new Ball(this);
         ball.position.x = - tileWidth * 0.5 * 0.9;
-        ball.position.y = 0.1;
+        ball.position.y = 0.008;
         ball.instantiate();
 
+        /*
         let ball2 = new Ball(this);
         ball2.position.x = - tileWidth * 0.5 * 0.5;
         ball2.position.y = 0.1;
@@ -140,12 +141,14 @@ class Game {
         ball3.position.x = - tileWidth * 0.5 * 0.1;
         ball3.position.y = 0.1;
         ball3.instantiate();
+        */
 
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
         })
         
+        /*
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Spiral(this, 2, 1),
@@ -175,6 +178,15 @@ class Game {
             new UTurn(this, 6, 28),
             new UTurn(this, 5, 29, true),
             new UTurn(this, 6, 30),
+        ];
+        */
+       
+        this.tracks = [
+            new Ramp(this, 0, 0, 2, 2),
+            new ElevatorDown(this, 2, -2, 4),
+            new ElevatorUp(this, 2, -2),
+            new CrossingFlat(this, 0, -1, 2),
+            new UTurnLarge(this, -2, -1, true)
         ];
 
         this.tracks.forEach(track => {
@@ -285,6 +297,10 @@ class Game {
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
+
+        this.tracks.forEach(track => {
+            track.update();
+        })
     }
 }
 

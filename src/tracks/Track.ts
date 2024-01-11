@@ -357,6 +357,8 @@ class Track extends BABYLON.Mesh {
         this.rebuildWireMeshes();
     }
 
+    public update(): void {}
+
     public rebuildWireMeshes(): void {
         if (this.renderOnlyPath) {
             let n = 8;
@@ -373,16 +375,20 @@ class Track extends BABYLON.Mesh {
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
             
-            this.wires[0].hide();
-            this.wires[1].hide();
+            this.wires.forEach(wire => {
+                wire.hide();
+            })
         }
         else {
-            this.wires[0].show();
-            this.wires[1].show();
+            
+            this.wires.forEach(wire => {
+                wire.show();
+            })
             
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
-            this.wires[0].instantiate();
-            this.wires[1].instantiate();
+            this.wires.forEach(wire => {
+                wire.instantiate();
+            })
         }
     }
 

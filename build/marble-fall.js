@@ -297,20 +297,24 @@ class Game {
         this.camera.getScene();
         let ball = new Ball(this);
         ball.position.x = -tileWidth * 0.5 * 0.9;
-        ball.position.y = 0.1;
+        ball.position.y = 0.008;
         ball.instantiate();
+        /*
         let ball2 = new Ball(this);
-        ball2.position.x = -tileWidth * 0.5 * 0.5;
+        ball2.position.x = - tileWidth * 0.5 * 0.5;
         ball2.position.y = 0.1;
         ball2.instantiate();
+
         let ball3 = new Ball(this);
-        ball3.position.x = -tileWidth * 0.5 * 0.1;
+        ball3.position.x = - tileWidth * 0.5 * 0.1;
         ball3.position.y = 0.1;
         ball3.instantiate();
+        */
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
         });
+        /*
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
             new Spiral(this, 2, 1),
@@ -340,6 +344,14 @@ class Game {
             new UTurn(this, 6, 28),
             new UTurn(this, 5, 29, true),
             new UTurn(this, 6, 30),
+        ];
+        */
+        this.tracks = [
+            new Ramp(this, 0, 0, 2, 2),
+            new ElevatorDown(this, 2, -2, 4),
+            new ElevatorUp(this, 2, -2),
+            new CrossingFlat(this, 0, -1, 2),
+            new UTurnLarge(this, -2, -1, true)
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -436,6 +448,9 @@ class Game {
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
+        this.tracks.forEach(track => {
+            track.update();
+        });
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -1309,6 +1324,7 @@ class Track extends BABYLON.Mesh {
         this.sleepersMesh.parent = this;
         this.rebuildWireMeshes();
     }
+    update() { }
     rebuildWireMeshes() {
         if (this.renderOnlyPath) {
             let n = 8;
@@ -1323,15 +1339,18 @@ class Track extends BABYLON.Mesh {
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
-            this.wires[0].hide();
-            this.wires[1].hide();
+            this.wires.forEach(wire => {
+                wire.hide();
+            });
         }
         else {
-            this.wires[0].show();
-            this.wires[1].show();
+            this.wires.forEach(wire => {
+                wire.show();
+            });
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
-            this.wires[0].instantiate();
-            this.wires[1].instantiate();
+            this.wires.forEach(wire => {
+                wire.instantiate();
+            });
         }
     }
     serialize() {
@@ -1451,6 +1470,66 @@ class DoubleLoop extends Track {
         this.generateWires();
     }
 }
+class ElevatorDown extends Track {
+    constructor(game, i, j, h = 1, mirror) {
+        super(game, i, j);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        this.deltaJ = h - 1;
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * (this.deltaJ + 1), 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.deltaJ + 2), 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.deltaJ + 2) + 0.01, 0), dir.scale(-1), n),
+            new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0, 0), dir.scale(-1), n),
+            new TrackPoint(this, new BABYLON.Vector3(-0.02, 0.04, 0), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this, new BABYLON.Vector3(-0.03, 0.04, 0), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-1, 0, 0)),
+        ];
+        this.box = new BABYLON.Mesh("box");
+        this.box.position.x = 0.007;
+        this.box.parent = this;
+        let rampWire0 = new Wire(this);
+        let rRamp = this.wireGauge * 0.35;
+        rampWire0.path = [new BABYLON.Vector3(-0.014, 0.0005, rRamp)];
+        let nRamp = 12;
+        for (let i = 0; i <= nRamp; i++) {
+            let a = i / nRamp * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            rampWire0.path.push(new BABYLON.Vector3(sina * rRamp + 0.003, 0, cosa * rRamp));
+        }
+        rampWire0.path.push(new BABYLON.Vector3(-0.014, 0.0005, -rRamp));
+        rampWire0.parent = this.box;
+        this.wires.push(rampWire0);
+        this.generateWires();
+    }
+    update() {
+        this.box.position.y += 0.0005;
+        if (this.box.position.y > tileHeight) {
+            this.box.position.y = -tileHeight * (this.deltaJ + 3);
+        }
+        this.wires[2].recomputeAbsolutePath();
+    }
+}
+class ElevatorUp extends Track {
+    constructor(game, i, j, mirror) {
+        super(game, i, j);
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(-1, 1, 0);
+        nRight.normalize();
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), nLeft, dirLeft),
+            new TrackPoint(this, new BABYLON.Vector3(-0.01, -tileHeight * 0.5, 0), nRight, dirRight)
+        ];
+        this.generateWires();
+    }
+}
 class Flat extends Track {
     constructor(game, i, j, w = 1) {
         super(game, i, j);
@@ -1477,8 +1556,8 @@ class CrossingFlat extends Track {
         this.deltaI = w - 1;
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * 0.5, -0.03), nBank, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight, 0), n, dir, 1.4, 1.4)
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, 0, -0.03), nBank, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir, 1.4, 1.4)
         ];
         this.generateWires();
     }
@@ -1545,24 +1624,16 @@ class Ramp extends Track {
         super(game, i, j);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
-        if (mirror) {
-            dir.scaleInPlace(-1);
-        }
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         this.deltaI = w - 1;
         this.deltaJ = h - 1;
+        this.trackPoints = [
+            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n, dir)
+        ];
         if (mirror) {
-            this.trackPoints = [
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * (this.deltaJ + 1), 0), n, dir)
-            ];
-        }
-        else {
-            this.trackPoints = [
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ + 1), 0), n, dir)
-            ];
+            this.mirrorTrackPointsInPlace();
         }
         this.generateWires();
     }
