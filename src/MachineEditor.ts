@@ -2,7 +2,35 @@ class MachineEditor {
 
     public container: HTMLDivElement;
     public itemContainer: HTMLDivElement;
-    public currentItem: string;
+    public items: Map<string, HTMLDivElement> = new Map<string, HTMLDivElement>();
+
+    private _selectedItem: string = "";
+    public get selectedItem(): string {
+        return this._selectedItem;
+    }
+    public setSelectedItem(s: string): void {
+        if (s != this._selectedItem) {
+            let e = this.getCurrentItemElement();
+            if (e) {
+                e.classList.remove("selected");
+            }
+            this._selectedItem = s;
+            e = this.getCurrentItemElement();
+            if (e) {
+                e.classList.add("selected");
+            }
+        }
+    }
+
+    private _selectedTrack: Track;
+    public get selectedTrack(): Track {
+        return this._selectedTrack;
+    }
+    public setSelectedTrack(s: Track): void {
+        if (s != this._selectedTrack) {
+            this._selectedTrack = s;
+        }
+    }
 
     constructor(public game: Game) {
         this.container = document.getElementById("machine-editor-menu") as HTMLDivElement;
@@ -17,12 +45,29 @@ class MachineEditor {
             item.classList.add("machine-editor-item");
             item.innerText = trackname;
             this.itemContainer.appendChild(item);
+            this.items.set(trackname, item);
+
             item.addEventListener("pointerdown", () => {
-                this.currentItem = trackname;
+                if (this.selectedItem === trackname) {
+                    if (this.selectedTrack) {
+                        this.selectedTrack.dispose();
+                        this.setSelectedTrack(undefined);
+                    } 
+                    this.setSelectedItem("");
+                }
+                else {
+                    this.setSelectedItem(trackname);
+                    let track = this.game.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10);
+                    track.instantiate().then(() => {
+                        track.setIsVisible(false);
+                    });
+                    this.setSelectedTrack(track);
+                }
             });
         }
 
-        this.game.canvas.addEventListener("pointerup", this.pointerUp)
+        this.game.canvas.addEventListener("pointermove", this.pointerMove);
+        this.game.canvas.addEventListener("pointerup", this.pointerUp);
 
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
@@ -32,7 +77,9 @@ class MachineEditor {
     public dispose(): void {
         this.container.style.display = "none";
         this.itemContainer.innerHTML = "";
-        this.game.canvas.removeEventListener("pointerup", this.pointerUp)
+        this.items = new Map<string, HTMLDivElement>();
+        this.game.canvas.removeEventListener("pointermove", this.pointerMove);
+        this.game.canvas.removeEventListener("pointerup", this.pointerUp);
     }
 
     public update(): void {
@@ -47,25 +94,56 @@ class MachineEditor {
         }
     }
 
-    public pointerUp = (event: PointerEvent) => {
-        let pick = this.game.scene.pick(
-            this.game.scene.pointerX,
-            this.game.scene.pointerY,
-            (mesh) => {
-                return mesh === this.game.machine.baseWall;
-            }
-        )
-
-        if (pick.hit) {
-            if (this.currentItem) {
+    public pointerMove = (event: PointerEvent) => {
+        if (this.selectedTrack) {
+            let pick = this.game.scene.pick(
+                this.game.scene.pointerX,
+                this.game.scene.pointerY,
+                (mesh) => {
+                    return mesh === this.game.machine.baseWall;
+                }
+            )
+    
+            if (pick.hit) {
                 let i = Math.round(pick.pickedPoint.x / tileWidth);
                 let j = Math.floor(- pick.pickedPoint.y / tileHeight);
-                let track = this.game.machine.trackFactory.createTrack(this.currentItem, i, j);
-                this.game.machine.tracks.push(track);
-                track.instantiate().then(() => {
-                    track.recomputeAbsolutePath();
-                });
+                this.selectedTrack.setI(i);
+                this.selectedTrack.setJ(j);
+                this.selectedTrack.setIsVisible(true);
+            }
+            else {
+                this.selectedTrack.setIsVisible(false);
             }
         }
+    }
+
+    public pointerUp = (event: PointerEvent) => {
+        if (this.selectedTrack) {
+            let pick = this.game.scene.pick(
+                this.game.scene.pointerX,
+                this.game.scene.pointerY,
+                (mesh) => {
+                    return mesh === this.game.machine.baseWall;
+                }
+            )
+
+            if (pick.hit) {
+                let i = Math.round(pick.pickedPoint.x / tileWidth);
+                let j = Math.floor(- pick.pickedPoint.y / tileHeight);
+                this.selectedTrack.setI(i);
+                this.selectedTrack.setJ(j);
+                this.game.machine.tracks.push(this.selectedTrack);
+                this.selectedTrack.setIsVisible(true);
+                this.selectedTrack.instantiate().then(() => {
+                    this.selectedTrack.recomputeAbsolutePath();
+                    this.setSelectedTrack(undefined);
+                });
+                this.setSelectedItem("");
+            }
+        }
+    }
+
+    public getCurrentItemElement(): HTMLDivElement {
+        return this.items.get(this._selectedItem);
     }
 }

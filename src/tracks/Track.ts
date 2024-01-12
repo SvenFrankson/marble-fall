@@ -93,6 +93,7 @@ class Track extends BABYLON.Mesh {
     public renderOnlyPath: boolean = false;
 
     public sleepersMesh: BABYLON.Mesh;
+    public selectedMesh: BABYLON.Mesh;
 
     public summedLength: number[] = [0];
     public totalLength: number = 0
@@ -100,15 +101,38 @@ class Track extends BABYLON.Mesh {
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
-    constructor(public machine: Machine, public i: number, public j: number, public mirror?: boolean) {
+    constructor(public machine: Machine, private _i: number, private _j: number, public mirror?: boolean) {
         super("track", machine.game.scene);
-        this.position.x = i * tileWidth;
-        this.position.y = - j * tileHeight;
+        this.position.x = this._i * tileWidth;
+        this.position.y = - this._j * tileHeight;
 
         this.wires = [
             new Wire(this),
             new Wire(this)
         ];
+    }
+
+    public get i(): number {
+        return this._i;
+    }
+    public setI(v: number) {
+        this._i = v;
+        this.position.x = this._i * tileWidth;
+    }
+
+    public get j(): number {
+        return this._j;
+    }
+    public setJ(v: number) {
+        this._j = v;
+        this.position.y = - this._j * tileHeight;
+    }
+
+    public setIsVisible(isVisible: boolean): void {
+        this.isVisible = isVisible;
+        this.getChildMeshes().forEach(m => {
+            m.isVisible = isVisible;
+        })
     }
 
     protected mirrorTrackPointsInPlace(): void {

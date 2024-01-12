@@ -312,6 +312,12 @@ class Game {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
 
+        if (this.mode === GameMode.MainMenu) {
+            this.camera.target.x = 0;
+            this.camera.target.y = 0;
+        }
+        this.camera.target.z = 0;
+
         this.machineEditor.update();
         this.machine.update();
 

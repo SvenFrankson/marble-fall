@@ -88,6 +88,10 @@
     background-color: rgba(0, 0, 0, 50%);
 }
 
+.machine-editor-item.selected {
+    background-color: rgba(127, 255, 127, 50%);
+}
+
 .machine-editor-item-container {
     width: 100%;
     height: 100%;

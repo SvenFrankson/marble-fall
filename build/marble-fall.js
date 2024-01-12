@@ -372,24 +372,71 @@ class Machine {
 class MachineEditor {
     constructor(game) {
         this.game = game;
-        this.pointerUp = (event) => {
-            let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                return mesh === this.game.machine.baseWall;
-            });
-            if (pick.hit) {
-                if (this.currentItem) {
+        this.items = new Map();
+        this._selectedItem = "";
+        this.pointerMove = (event) => {
+            if (this.selectedTrack) {
+                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    return mesh === this.game.machine.baseWall;
+                });
+                if (pick.hit) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor(-pick.pickedPoint.y / tileHeight);
-                    let track = this.game.machine.trackFactory.createTrack(this.currentItem, i, j);
-                    this.game.machine.tracks.push(track);
-                    track.instantiate().then(() => {
-                        track.recomputeAbsolutePath();
+                    this.selectedTrack.setI(i);
+                    this.selectedTrack.setJ(j);
+                    this.selectedTrack.setIsVisible(true);
+                }
+                else {
+                    this.selectedTrack.setIsVisible(false);
+                }
+            }
+        };
+        this.pointerUp = (event) => {
+            if (this.selectedTrack) {
+                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    return mesh === this.game.machine.baseWall;
+                });
+                if (pick.hit) {
+                    let i = Math.round(pick.pickedPoint.x / tileWidth);
+                    let j = Math.floor(-pick.pickedPoint.y / tileHeight);
+                    this.selectedTrack.setI(i);
+                    this.selectedTrack.setJ(j);
+                    this.game.machine.tracks.push(this.selectedTrack);
+                    this.selectedTrack.setIsVisible(true);
+                    this.selectedTrack.instantiate().then(() => {
+                        this.selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedTrack(undefined);
                     });
+                    this.setSelectedItem("");
                 }
             }
         };
         this.container = document.getElementById("machine-editor-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
+    }
+    get selectedItem() {
+        return this._selectedItem;
+    }
+    setSelectedItem(s) {
+        if (s != this._selectedItem) {
+            let e = this.getCurrentItemElement();
+            if (e) {
+                e.classList.remove("selected");
+            }
+            this._selectedItem = s;
+            e = this.getCurrentItemElement();
+            if (e) {
+                e.classList.add("selected");
+            }
+        }
+    }
+    get selectedTrack() {
+        return this._selectedTrack;
+    }
+    setSelectedTrack(s) {
+        if (s != this._selectedTrack) {
+            this._selectedTrack = s;
+        }
     }
     instantiate() {
         this.container.style.display = "block";
@@ -399,10 +446,26 @@ class MachineEditor {
             item.classList.add("machine-editor-item");
             item.innerText = trackname;
             this.itemContainer.appendChild(item);
+            this.items.set(trackname, item);
             item.addEventListener("pointerdown", () => {
-                this.currentItem = trackname;
+                if (this.selectedItem === trackname) {
+                    if (this.selectedTrack) {
+                        this.selectedTrack.dispose();
+                        this.setSelectedTrack(undefined);
+                    }
+                    this.setSelectedItem("");
+                }
+                else {
+                    this.setSelectedItem(trackname);
+                    let track = this.game.machine.trackFactory.createTrack(this._selectedItem, -10, -10);
+                    track.instantiate().then(() => {
+                        track.setIsVisible(false);
+                    });
+                    this.setSelectedTrack(track);
+                }
             });
         }
+        this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
@@ -411,6 +474,8 @@ class MachineEditor {
     dispose() {
         this.container.style.display = "none";
         this.itemContainer.innerHTML = "";
+        this.items = new Map();
+        this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
     }
     update() {
@@ -423,6 +488,9 @@ class MachineEditor {
             this.container.classList.add("bottom");
             this.container.classList.remove("left");
         }
+    }
+    getCurrentItemElement() {
+        return this.items.get(this._selectedItem);
     }
 }
 /// <reference path="../lib/babylon.d.ts"/>
@@ -690,6 +758,11 @@ class Game {
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
+        if (this.mode === GameMode.MainMenu) {
+            this.camera.target.x = 0;
+            this.camera.target.y = 0;
+        }
+        this.camera.target.z = 0;
         this.machineEditor.update();
         this.machine.update();
         let dt = this.scene.deltaTime / 1000;
@@ -1441,11 +1514,11 @@ class TrackPoint {
     }
 }
 class Track extends BABYLON.Mesh {
-    constructor(machine, i, j, mirror) {
+    constructor(machine, _i, _j, mirror) {
         super("track", machine.game.scene);
         this.machine = machine;
-        this.i = i;
-        this.j = j;
+        this._i = _i;
+        this._j = _j;
         this.mirror = mirror;
         this.trackName = "track";
         this.deltaI = 0;
@@ -1458,8 +1531,8 @@ class Track extends BABYLON.Mesh {
         this.globalSlope = 0;
         this.AABBMin = BABYLON.Vector3.Zero();
         this.AABBMax = BABYLON.Vector3.Zero();
-        this.position.x = i * tileWidth;
-        this.position.y = -j * tileHeight;
+        this.position.x = this._i * tileWidth;
+        this.position.y = -this._j * tileHeight;
         this.wires = [
             new Wire(this),
             new Wire(this)
@@ -1467,6 +1540,26 @@ class Track extends BABYLON.Mesh {
     }
     get game() {
         return this.machine.game;
+    }
+    get i() {
+        return this._i;
+    }
+    setI(v) {
+        this._i = v;
+        this.position.x = this._i * tileWidth;
+    }
+    get j() {
+        return this._j;
+    }
+    setJ(v) {
+        this._j = v;
+        this.position.y = -this._j * tileHeight;
+    }
+    setIsVisible(isVisible) {
+        this.isVisible = isVisible;
+        this.getChildMeshes().forEach(m => {
+            m.isVisible = isVisible;
+        });
     }
     mirrorTrackPointsInPlace() {
         for (let i = 0; i < this.trackPoints.length; i++) {
