@@ -9,6 +9,12 @@ function addLine(text: string): void {
     document.body.appendChild(e);
 }
 
+enum GameMode {
+    MainMenu,
+    CreateMode,
+    DemoMode
+}
+
 class Game {
     
     public static Instance: Game;
@@ -29,6 +35,16 @@ class Game {
 
     public machine: Machine;
     public trackEditor: TrackEditor;
+    public machineEditor: MachineEditor;
+
+    public tileMenuContainer: BABYLON.Mesh;
+    public tileDemo1: MenuTile;
+    public tileDemo2: MenuTile;
+    public tileDemo3: MenuTile;
+    public tileCreate: MenuTile;
+    public tileLoad: MenuTile;
+    public tileCredit: MenuTile;
+    public tiles: MenuTile[];
 
     public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
@@ -36,8 +52,11 @@ class Game {
     public handleMaterialHover: BABYLON.StandardMaterial;
     public insertHandleMaterial: BABYLON.StandardMaterial;
 
-    public machineEditorContainer: HTMLDivElement;
-    
+    private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+    private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
+
+    public helperShape: HelperShape;
+
     constructor(canvasElement: string) {
         Game.Instance = this;
         
@@ -129,7 +148,8 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
-        this.machineEditorContainer = document.getElementById("machine-editor-menu") as HTMLDivElement;
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
+        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target");
 
         this.machine = new Machine(this);
 
@@ -182,53 +202,54 @@ class Game {
             new UTurn(this.machine, -2, -1, true)
         ];
 
-        let menu = new BABYLON.Mesh("menu");
-        menu.position.y += 0.1;
-        menu.position.z = -0.02;
+        this.tileMenuContainer = new BABYLON.Mesh("menu");
+        this.tileMenuContainer.position.z = -0.02;
 
-        let tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
-        tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
-        tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
-        tileDemo1.instantiate();
-        tileDemo1.position.x = - 0.09;
-        tileDemo1.position.y = 0.01;
-        tileDemo1.parent = menu;
+        this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
+        this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
+        this.tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
+        this.tileDemo1.instantiate();
+        this.tileDemo1.position.x = - 0.09;
+        this.tileDemo1.position.y = 0.055;
+        this.tileDemo1.parent = this.tileMenuContainer;
 
-        let tileDemo2 = new MenuTile("tile-demo-2", 0.05, 0.075, this);
-        tileDemo2.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
-        tileDemo2.texture.drawText("II", 107, 270, "128px 'Serif'", "white", null);
-        tileDemo2.instantiate();
-        tileDemo2.position.y = 0.03;
-        tileDemo2.parent = menu;
+        this.tileDemo2 = new MenuTile("tile-demo-2", 0.05, 0.075, this);
+        this.tileDemo2.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
+        this.tileDemo2.texture.drawText("II", 107, 270, "128px 'Serif'", "white", null);
+        this.tileDemo2.instantiate();
+        this.tileDemo2.position.y = 0.075;
+        this.tileDemo2.parent = this.tileMenuContainer;
         
-        let tileDemo3 = new MenuTile("tile-demo-3", 0.05, 0.075, this);
-        tileDemo3.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
-        tileDemo3.texture.drawText("III", 86, 270, "128px 'Serif'", "white", null);
-        tileDemo3.instantiate();
-        tileDemo3.position.x = 0.09;
-        tileDemo3.position.y = 0.01;
-        tileDemo3.parent = menu;
+        this.tileDemo3 = new MenuTile("tile-demo-3", 0.05, 0.075, this);
+        this.tileDemo3.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
+        this.tileDemo3.texture.drawText("III", 86, 270, "128px 'Serif'", "white", null);
+        this.tileDemo3.instantiate();
+        this.tileDemo3.position.x = 0.09;
+        this.tileDemo3.position.y = 0.055;
+        this.tileDemo3.parent = this.tileMenuContainer;
         
-        let tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
-        tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", "black");
-        tileCreate.instantiate();
-        tileCreate.position.x = - 0.07;
-        tileCreate.position.y = - 0.075;
-        tileCreate.parent = menu;
+        this.tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
+        this.tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", "black");
+        this.tileCreate.instantiate();
+        this.tileCreate.position.x = - 0.07;
+        this.tileCreate.position.y = - 0.03;
+        this.tileCreate.parent = this.tileMenuContainer;
         
-        let tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
-        tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", "black");
-        tileLoad.instantiate();
-        tileLoad.position.x = 0.07;
-        tileLoad.position.y = - 0.075;
-        tileLoad.parent = menu;
+        this.tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
+        this.tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", "black");
+        this.tileLoad.instantiate();
+        this.tileLoad.position.x = 0.07;
+        this.tileLoad.position.y = - 0.03;
+        this.tileLoad.parent = this.tileMenuContainer;
         
-        let tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
-        tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", "black");
-        tileCredit.instantiate();
-        tileCredit.position.x = 0.07;
-        tileCredit.position.y = - 0.14;
-        tileCredit.parent = menu;
+        this.tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
+        this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", "black");
+        this.tileCredit.instantiate();
+        this.tileCredit.position.x = 0.07;
+        this.tileCredit.position.y = -0.09;
+        this.tileCredit.parent = this.tileMenuContainer;
+
+        this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileLoad, this.tileCredit];
 
         this.machine.instantiate();
         this.machine.generateBaseMesh();
@@ -237,6 +258,7 @@ class Game {
         //this.trackEditor = new TrackEditor(this);
         //this.trackEditor.initialize();
 
+        /*
         setTimeout(() => {
             let data = this.machine.serialize();
             this.machine.dispose();
@@ -246,6 +268,11 @@ class Game {
                 
             }, 5000);
         }, 5000);
+        */
+
+        this.machineEditor = new MachineEditor(this);
+
+        this.setContext(GameMode.MainMenu);
 	}
 
 	public animate(): void {
@@ -285,15 +312,7 @@ class Game {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
 
-        if (ratio > 1) {
-            this.machineEditorContainer.classList.add("left");
-            this.machineEditorContainer.classList.remove("bottom");
-        }
-        else {
-            this.machineEditorContainer.classList.add("bottom");
-            this.machineEditorContainer.classList.remove("left");
-        }
-
+        this.machineEditor.update();
         this.machine.update();
 
         let dt = this.scene.deltaTime / 1000;
@@ -304,6 +323,94 @@ class Game {
         else {
             this.timeFactor = this.timeFactor * 0.5 + this.targetTimeFactor * 0.5;
         }
+    }
+
+    public mode: GameMode;
+    public setContext(mode: GameMode): void {
+        if (this.mode != mode) {
+            if (this.mode === GameMode.MainMenu) {
+                this.tileMenuContainer.position.z = - 1;
+                this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
+            }
+            else if (this.mode === GameMode.CreateMode) {
+                this.machineEditor.dispose();
+            }
+
+            this.mode = mode;
+            
+            if (this.mode === GameMode.MainMenu) {
+                this.tileMenuContainer.position.z = - 0.02;
+                this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35);
+                this.setCameraTarget(BABYLON.Vector3.Zero());
+                this.scene.onPointerObservable.add(this.onPointerEvent);
+            }
+            else if (this.mode === GameMode.CreateMode) {
+                this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
+                this.setCameraTarget(BABYLON.Vector3.Zero());
+                this.machineEditor.instantiate();
+            }
+            else if (this.mode === GameMode.DemoMode) {
+                this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
+                this.setCameraTarget(BABYLON.Vector3.Zero());
+            }
+        }
+    }
+
+    public setCameraAlphaBeta(alpha: number, beta: number, radius?: number): void {
+        if (!radius) {
+            radius = this.camera.radius;
+        }
+        this._animateCamera([alpha, beta, radius], 0.8);
+    }
+
+    public setCameraTarget(target: BABYLON.Vector3): void {
+        this._animateCameraTarget(target, 0.8);
+    }
+
+    public onPointerEvent = (eventData: BABYLON.PointerInfo, eventState: BABYLON.EventState) => {
+        if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+            let pick = this.scene.pick(
+                this.scene.pointerX,
+                this.scene.pointerY,
+                (mesh) => {
+                    if (mesh instanceof MenuTile && this.tiles.indexOf(mesh) != - 1) {
+                        return true;
+                    }
+                    else if (mesh.parent && mesh.parent instanceof MenuTile && this.tiles.indexOf(mesh.parent) != - 1) {
+                        return true;
+                    }
+                    return false;
+                }
+            )
+
+            if (pick.hit) {
+                let tile: MenuTile;
+                if (pick.pickedMesh instanceof MenuTile) {
+                    tile = pick.pickedMesh;
+                }
+                else if (pick.pickedMesh.parent instanceof MenuTile) {
+                    tile = pick.pickedMesh.parent;
+                }
+
+                if (tile === this.tileCreate) {
+                    this.pressTile(tile).then(() => {
+                        this.setContext(GameMode.CreateMode);
+                    });
+                }
+            }
+        }
+    }
+
+    public async pressTile(tile: MenuTile): Promise<void> {
+        let axis = "x";
+        if (tile === this.tileCreate || tile === this.tileLoad || tile === this.tileCredit) {
+            axis = "y";
+        }
+        let anim = Mummu.AnimationFactory.CreateNumber(tile, tile.rotation, axis);
+        let wait = Mummu.AnimationFactory.CreateWait(tile);
+        await anim(- Math.PI / 16, 0.2);
+        await anim(0, 0.6);
+        await wait(0.4);
     }
 }
 
