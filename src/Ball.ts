@@ -95,8 +95,14 @@ class Ball extends BABYLON.Mesh {
                     if (dist < this.size) {
                         let depth = this.size - dist;
                         //this.velocity.scaleInPlace(0.3);
-                        ball.velocity.addInPlace(this.velocity.scale(0.5));
-                        this.velocity.scaleInPlace(-0.6);
+                        let otherSpeed = ball.velocity.clone();
+                        let mySpeed = this.velocity.clone();
+                        
+                        this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
+                        ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
+                        //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
+                        //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
+                        
                         let dir = this.position.subtract(ball.position).normalize();
                         this.position.addInPlace(dir.scale(depth));
                     }
