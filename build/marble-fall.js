@@ -40,12 +40,9 @@ class Ball extends BABYLON.Mesh {
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
     }
-    update() {
-        let gameDt = this.getScene().deltaTime / 1000;
-        if (isFinite(gameDt)) {
-            this._timer += gameDt * this.game.timeFactor;
-            this._timer = Math.min(this._timer, 1);
-        }
+    update(dt) {
+        this._timer += dt * this.game.timeFactor;
+        this._timer = Math.min(this._timer, 1);
         while (this._timer > 0) {
             let m = this.mass;
             let dt = this.game.physicDT;
@@ -272,11 +269,14 @@ class Machine {
         if (!this.instantiated) {
             return;
         }
-        for (let i = 0; i < this.balls.length; i++) {
-            this.balls[i].update();
-        }
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].update();
+        let dt = this.game.scene.deltaTime / 1000;
+        if (isFinite(dt)) {
+            for (let i = 0; i < this.balls.length; i++) {
+                this.balls[i].update(dt);
+            }
+            for (let i = 0; i < this.tracks.length; i++) {
+                this.tracks[i].update(dt);
+            }
         }
     }
     generateBaseMesh() {
@@ -381,7 +381,8 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.timeFactor = 1;
+        this.targetTimeFactor = 1;
+        this.timeFactor = 0.1;
         this.physicDT = 0.001;
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
@@ -461,7 +462,7 @@ class Game {
         this.machineEditorContainer = document.getElementById("machine-editor-menu");
         this.machine = new Machine(this);
         this.machine.balls = [];
-        for (let n = 0; n < 6; n++) {
+        for (let n = 0; n < 10; n++) {
             let ball = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
             ball.instantiate();
             this.machine.balls.push(ball);
@@ -601,6 +602,14 @@ class Game {
             this.machineEditorContainer.classList.remove("left");
         }
         this.machine.update();
+        let dt = this.scene.deltaTime / 1000;
+        let fps = 1 / dt;
+        if (fps < 55) {
+            this.timeFactor *= 0.5;
+        }
+        else {
+            this.timeFactor = this.timeFactor * 0.5 + this.targetTimeFactor * 0.5;
+        }
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -1534,7 +1543,7 @@ class Track extends BABYLON.Mesh {
             this.machine.tracks.splice(index, 1);
         }
     }
-    update() { }
+    update(dt) { }
     rebuildWireMeshes() {
         if (this.renderOnlyPath) {
             let n = 8;
@@ -1630,13 +1639,14 @@ class DoubleLoop extends Track {
 class ElevatorBottom extends Track {
     constructor(machine, i, j, h = 1, mirror) {
         super(machine, i, j, mirror);
-        this.boxesCount = 7;
+        this.boxesCount = 10;
         this.boxX = [];
         this.boxes = [];
         this.wheels = [];
         this.l = 0;
         this.p = 0;
         this.chainLength = 0;
+        this.speed = 0.03; // in m/s
         this.trackName = "elevator-bottom-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -1657,7 +1667,7 @@ class ElevatorBottom extends Track {
             box.parent = this;
             let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.022, 0.001, rRamp)];
+            rampWire0.path = [new BABYLON.Vector3(-0.02, 0.001, rRamp)];
             let nRamp = 12;
             for (let i = 0; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
@@ -1665,7 +1675,7 @@ class ElevatorBottom extends Track {
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3(sina * rRamp - rRamp - 0.001, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.022, 0.001, -rRamp));
+            rampWire0.path.push(new BABYLON.Vector3(-0.02, 0.001, -rRamp));
             rampWire0.parent = box;
             this.boxes.push(box);
             this.wires.push(rampWire0);
@@ -1695,9 +1705,10 @@ class ElevatorBottom extends Track {
         }
         this.generateWires();
     }
-    update() {
+    update(dt) {
+        let dx = this.speed * dt * this.game.timeFactor;
         for (let i = 0; i < this.boxesCount; i++) {
-            this.boxX[i] += 0.0006;
+            this.boxX[i] += dx;
             while (this.boxX[i] > this.chainLength) {
                 this.boxX[i] -= this.chainLength;
             }
@@ -1727,8 +1738,9 @@ class ElevatorBottom extends Track {
             }
             this.wires[2 + i].recomputeAbsolutePath();
         }
-        this.wheels[0].rotation.z -= 0.01;
-        this.wheels[1].rotation.z -= 0.01;
+        let deltaAngle = dx / this.p * 2 * Math.PI;
+        this.wheels[0].rotation.z -= deltaAngle;
+        this.wheels[1].rotation.z -= deltaAngle;
         this.wires[2].recomputeAbsolutePath();
     }
 }
@@ -1746,7 +1758,7 @@ class ElevatorTop extends Track {
         nRight.normalize();
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), nLeft, dirLeft),
-            new TrackPoint(this, new BABYLON.Vector3(-0.01, -tileHeight * 0.5, 0), nRight, dirRight)
+            new TrackPoint(this, new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), nRight, dirRight)
         ];
         this.generateWires();
     }

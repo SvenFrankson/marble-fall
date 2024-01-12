@@ -1,6 +1,6 @@
 class ElevatorBottom extends Track {
 
-    public boxesCount: number = 7;
+    public boxesCount: number = 10;
     public boxX: number[] = [];
     public boxes: BABYLON.Mesh[] = [];
     public wheels: BABYLON.Mesh[] = [];
@@ -55,7 +55,7 @@ class ElevatorBottom extends Track {
     
             let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.022, 0.001, rRamp)];
+            rampWire0.path = [new BABYLON.Vector3(-0.02, 0.001, rRamp)];
             let nRamp = 12;
             for (let i = 0; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
@@ -63,7 +63,7 @@ class ElevatorBottom extends Track {
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3(sina * rRamp - rRamp - 0.001, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.022, 0.001, - rRamp));
+            rampWire0.path.push(new BABYLON.Vector3(-0.02, 0.001, - rRamp));
             rampWire0.parent = box;
     
             this.boxes.push(box);
@@ -104,10 +104,12 @@ class ElevatorBottom extends Track {
     public l: number = 0;
     public p: number = 0;
     public chainLength: number = 0;
+    public speed: number = 0.03; // in m/s
 
-    public update(): void {
+    public update(dt: number): void {
+        let dx = this.speed * dt * this.game.timeFactor;
         for (let i = 0; i < this.boxesCount; i++) {
-            this.boxX[i] += 0.0006;
+            this.boxX[i] += dx;
             while (this.boxX[i] > this.chainLength) {
                 this.boxX[i] -= this.chainLength;
             }
@@ -139,8 +141,9 @@ class ElevatorBottom extends Track {
             this.wires[2 + i].recomputeAbsolutePath();
         }
         
-        this.wheels[0].rotation.z -= 0.01;
-        this.wheels[1].rotation.z -= 0.01;
+        let deltaAngle = dx / this.p * 2 * Math.PI;
+        this.wheels[0].rotation.z -= deltaAngle;
+        this.wheels[1].rotation.z -= deltaAngle;
         this.wires[2].recomputeAbsolutePath();
     }
 }
@@ -162,7 +165,7 @@ class ElevatorTop extends Track {
         
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), nLeft, dirLeft),
-            new TrackPoint(this, new BABYLON.Vector3(- 0.01, - tileHeight * 0.5, 0), nRight, dirRight)
+            new TrackPoint(this, new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), nRight, dirRight)
         ];
 
         this.generateWires();

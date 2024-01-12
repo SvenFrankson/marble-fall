@@ -63,11 +63,14 @@ class Machine {
         if (!this.instantiated) {
             return;
         }
-        for (let i = 0; i < this.balls.length; i++) {
-            this.balls[i].update();
-        }
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].update();
+        let dt = this.game.scene.deltaTime / 1000;
+        if (isFinite(dt)) {
+            for (let i = 0; i < this.balls.length; i++) {
+                this.balls[i].update(dt);
+            }
+            for (let i = 0; i < this.tracks.length; i++) {
+                this.tracks[i].update(dt);
+            }
         }
     }
 

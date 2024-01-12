@@ -23,7 +23,8 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public timeFactor: number = 1;
+    public targetTimeFactor: number = 1;
+    public timeFactor: number = 0.1;
     public physicDT: number = 0.001;
 
     public machine: Machine;
@@ -133,7 +134,7 @@ class Game {
         this.machine = new Machine(this);
 
         this.machine.balls = [];
-        for (let n = 0; n < 6; n++) {
+        for (let n = 0; n < 10; n++) {
             let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
             ball.instantiate();
             this.machine.balls.push(ball);
@@ -294,6 +295,15 @@ class Game {
         }
 
         this.machine.update();
+
+        let dt = this.scene.deltaTime / 1000;
+        let fps = 1 / dt;
+        if (fps < 55) {
+            this.timeFactor *= 0.5;
+        }
+        else {
+            this.timeFactor = this.timeFactor * 0.5 + this.targetTimeFactor * 0.5;
+        }
     }
 }
 

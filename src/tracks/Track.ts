@@ -360,7 +360,7 @@ class Track extends BABYLON.Mesh {
         }
     }
 
-    public update(): void {}
+    public update(dt: number): void {}
 
     public rebuildWireMeshes(): void {
         if (this.renderOnlyPath) {
