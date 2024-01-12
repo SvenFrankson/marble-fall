@@ -1,6 +1,6 @@
 class UTurnLarge extends Track {
-    constructor(game: Game, i: number, j: number, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
+        super(machine, i, j);
 
         this.deserialize({
             points: [
@@ -33,8 +33,8 @@ class UTurnLarge extends Track {
 }
 
 class UTurn extends Track {
-    constructor(game: Game, i: number, j: number, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
+        super(machine, i, j);
 
         this.deserialize({
             points: [

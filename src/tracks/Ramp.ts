@@ -1,7 +1,7 @@
 class Ramp extends Track {
 
-    constructor(game: Game, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
+        super(machine, i, j, mirror);
         this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -26,8 +26,8 @@ class Ramp extends Track {
 
 class CrossingRamp extends Track {
 
-    constructor(game: Game, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
+        super(machine, i, j, mirror);
         this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

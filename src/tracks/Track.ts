@@ -75,6 +75,10 @@ interface ITrackData {
 class Track extends BABYLON.Mesh {
 
     public trackName: string = "track";
+
+    public get game(): Game {
+        return this.machine.game;
+    }
     
     public deltaI: number = 0;
     public deltaJ: number = 0;
@@ -96,8 +100,8 @@ class Track extends BABYLON.Mesh {
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
-    constructor(public game: Game, public i: number, public j: number) {
-        super("track", game.scene);
+    constructor(public machine: Machine, public i: number, public j: number, public mirror?: boolean) {
+        super("track", machine.game.scene);
         this.position.x = i * tileWidth;
         this.position.y = - j * tileHeight;
 
@@ -341,22 +345,15 @@ class Track extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-        /*
-        let w = (1 + Math.abs(this.deltaI)) * tileWidth;
-        let h = (1 + Math.abs(this.deltaJ)) * tileHeight;
-
-        let baseMesh = BABYLON.MeshBuilder.CreateBox("base", { width: w - 0.006, height: h - 0.006, depth: 0.003 });
-        baseMesh.parent = this;
-        baseMesh.position.x += this.deltaI * 0.5 * tileWidth;
-        baseMesh.position.y += - this.deltaJ * 0.5 * tileHeight - 0.013;
-        baseMesh.position.z += 0.02;
-        */
-
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
 
         this.rebuildWireMeshes();
+    }
+    
+    public dispose(): void {
+        this.dispose();
     }
 
     public update(): void {}

@@ -1,7 +1,7 @@
 class Flat extends Track {
 
-    constructor(game: Game, i: number, j: number, w: number = 1) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, w: number = 1) {
+        super(machine, i, j);
         this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -21,8 +21,8 @@ class Flat extends Track {
 
 class CrossingFlat extends Track {
 
-    constructor(game: Game, i: number, j: number, w: number = 1) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, w: number = 1) {
+        super(machine, i, j);
         this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

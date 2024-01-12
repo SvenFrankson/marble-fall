@@ -1,8 +1,8 @@
 /// <reference path="./Track.ts"/>
 
 class Loop extends Track {
-    constructor(game: Game, i: number, j: number, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
+        super(machine, i, j, mirror);
 
         this.deltaI = 1;
         this.deltaJ = 3;

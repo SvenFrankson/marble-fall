@@ -1,5 +1,9 @@
 class Ball extends BABYLON.Mesh {
 
+    public get game(): Game {
+        return this.machine.game;
+    }
+
     public size: number = 0.016;
     public get radius(): number {
         return this.size * 0.5;
@@ -15,7 +19,7 @@ class Ball extends BABYLON.Mesh {
     }
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
-    constructor(public game: Game) {
+    constructor(public machine: Machine) {
         super("ball");
     }
 
@@ -54,7 +58,7 @@ class Ball extends BABYLON.Mesh {
             let forcedDisplacement = BABYLON.Vector3.Zero();
             let canceledSpeed = BABYLON.Vector3.Zero();
     
-            this.game.tracks.forEach(track => {
+            this.machine.tracks.forEach(track => {
                 if (Mummu.AABBAABBIntersect(
                     this.position.x - this.radius,
                     this.position.x + this.radius,

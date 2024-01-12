@@ -1,7 +1,7 @@
 class Ball extends BABYLON.Mesh {
-    constructor(game) {
+    constructor(machine) {
         super("ball");
-        this.game = game;
+        this.machine = machine;
         this.size = 0.016;
         this.velocity = BABYLON.Vector3.Zero();
         this._timer = 0;
@@ -20,7 +20,7 @@ class Ball extends BABYLON.Mesh {
                 let reactionsCount = 0;
                 let forcedDisplacement = BABYLON.Vector3.Zero();
                 let canceledSpeed = BABYLON.Vector3.Zero();
-                this.game.tracks.forEach(track => {
+                this.machine.tracks.forEach(track => {
                     if (Mummu.AABBAABBIntersect(this.position.x - this.radius, this.position.x + this.radius, this.position.y - this.radius, this.position.y + this.radius, this.position.z - this.radius, this.position.z + this.radius, track.AABBMin.x - this.radius, track.AABBMax.x + this.radius, track.AABBMin.y - this.radius, track.AABBMax.y + this.radius, track.AABBMin.z - this.radius, track.AABBMax.z + this.radius)) {
                         track.wires.forEach(wire => {
                             let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
@@ -74,6 +74,9 @@ class Ball extends BABYLON.Mesh {
                 this.dispose();
             }
         };
+    }
+    get game() {
+        return this.machine.game;
     }
     get radius() {
         return this.size * 0.5;
@@ -223,17 +226,102 @@ class HelperShape {
     }
 }
 class Machine {
-    constructor() {
+    constructor(game) {
+        this.game = game;
         this.tracks = [];
         this.balls = [];
     }
     async instantiate() {
+        for (let i = 0; i < this.tracks.length; i++) {
+            await this.tracks[i].instantiate();
+        }
+        this.generateBaseMesh();
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                for (let i = 0; i < this.tracks.length; i++) {
+                    this.tracks[i].recomputeAbsolutePath();
+                }
+                resolve();
+            });
+        });
     }
     dispose() {
     }
-    serialize() {
+    update() {
+        for (let i = 0; i < this.tracks.length; i++) {
+            this.tracks[i].update();
+        }
     }
-    deserialize() {
+    generateBaseMesh() {
+        let wallMaterial = new BABYLON.StandardMaterial("wood-material");
+        wallMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
+        wallMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
+        wallMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
+        wallMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
+        wallMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
+        wallMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i < this.tracks.length; i++) {
+            let track = this.tracks[i];
+            minX = Math.min(minX, track.position.x - tileWidth * 0.5);
+            maxX = Math.max(maxX, track.position.x + tileWidth * (track.deltaI + 0.5));
+            minY = Math.min(minY, track.position.y - tileHeight * (track.deltaJ + 1));
+            maxY = Math.max(maxY, track.position.y);
+        }
+        let w = maxX - minX;
+        let h = maxY - minY;
+        let u = w * 4;
+        let v = h * 4;
+        let wall = BABYLON.MeshBuilder.CreatePlane("wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+        wall.position.x = (maxX + minX) * 0.5;
+        wall.position.y = (maxY + minY) * 0.5;
+        wall.position.z += 0.016;
+        wall.rotation.z = Math.PI / 2;
+        wall.material = wallMaterial;
+        let baseFrame = new BABYLON.Mesh("base-frame");
+        baseFrame.position.copyFrom(wall.position);
+        baseFrame.material = this.game.steelMaterial;
+        this.game.vertexDataLoader.get("./meshes/base-frame.babylon").then(vertexData => {
+            let positions = [...vertexData[0].positions];
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let y = positions[3 * i + 1];
+                let z = positions[3 * i + 2];
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.01 + 0.1;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
+                }
+                if (y > 0) {
+                    positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
+                }
+                else if (y < 0) {
+                    positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
+                }
+            }
+            vertexData[0].positions = positions;
+            vertexData[0].applyToMesh(baseFrame);
+        });
+    }
+    serialize() {
+        let data = {
+            parts: []
+        };
+        for (let i = 0; i < this.tracks.length; i++) {
+            data.parts.push({
+                name: this.tracks[i].trackName,
+                i: this.tracks[i].i,
+                j: this.tracks[i].j,
+                mirror: this.tracks[i].mirror
+            });
+        }
+        return data;
+    }
+    deserialize(data) {
     }
 }
 /// <reference path="../lib/babylon.d.ts"/>
@@ -248,10 +336,9 @@ function addLine(text) {
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.timeFactor = 0.6;
+        this.timeFactor = 1;
         this.physicDT = 0.001;
         this.balls = [];
-        this.tracks = [];
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
@@ -327,31 +414,32 @@ class Game {
         }
         this.camera.attachControl();
         this.camera.getScene();
-        let ball = new Ball(this);
+        this.machine = new Machine(this);
+        let ball = new Ball(this.machine);
         ball.position.x = -tileWidth * 0.5 * 0.9;
         ball.position.y = 0.008;
         ball.instantiate();
-        let ball2 = new Ball(this);
+        let ball2 = new Ball(this.machine);
         ball2.position.x = -tileWidth * 0.5 * 0.5;
         ball2.position.y = 0.007;
         ball2.instantiate();
-        let ball3 = new Ball(this);
+        let ball3 = new Ball(this.machine);
         ball3.position.x = -tileWidth * 0.5 * 0.1;
         ball3.position.y = 0.006;
         ball3.instantiate();
-        let ball4 = new Ball(this);
+        let ball4 = new Ball(this.machine);
         ball4.position.x = tileWidth * 0.5 * 0.3;
         ball4.position.y = 0.005;
         ball4.instantiate();
-        let ball5 = new Ball(this);
+        let ball5 = new Ball(this.machine);
         ball5.position.x = tileWidth * 0.5 * 0.7;
         ball5.position.y = 0.004;
         ball5.instantiate();
-        let ball6 = new Ball(this);
+        let ball6 = new Ball(this.machine);
         ball6.position.x = tileWidth * 0.5 * 1.1;
         ball6.position.y = 0.003;
         ball6.instantiate();
-        let ball7 = new Ball(this);
+        let ball7 = new Ball(this.machine);
         ball7.position.x = tileWidth * 0.5 * 1.5;
         ball7.position.y = 0.002;
         ball7.instantiate();
@@ -392,17 +480,14 @@ class Game {
             new UTurn(this, 6, 30),
         ];
         */
-        this.tracks = [
-            new Ramp(this, -1, 0, 3, 1),
-            new ElevatorDown(this, 2, -5, 6),
-            new ElevatorUp(this, 2, -5),
-            new Spiral(this, 1, -4, true),
-            new Flat(this, -1, -1, 2),
-            new UTurn(this, -2, -1, true)
+        this.machine.tracks = [
+            new Ramp(this.machine, -1, 0, 3, 1),
+            new ElevatorDown(this.machine, 2, -5, 6),
+            new ElevatorUp(this.machine, 2, -5),
+            new Spiral(this.machine, 1, -4, true),
+            new Flat(this.machine, -1, -1, 2),
+            new UTurn(this.machine, -2, -1, true)
         ];
-        this.tracks.forEach(track => {
-            track.instantiate();
-        });
         let menu = new BABYLON.Mesh("menu");
         menu.position.y += 0.1;
         menu.position.z = -0.02;
@@ -444,66 +529,9 @@ class Game {
         tileCredit.position.x = 0.07;
         tileCredit.position.y = -0.14;
         tileCredit.parent = menu;
-        requestAnimationFrame(() => {
-            this.tracks.forEach(track => {
-                track.recomputeAbsolutePath();
-            });
-            this.trackEditor = new TrackEditor(this);
-            this.trackEditor.initialize();
-            let wallMaterial = new BABYLON.StandardMaterial("wood-material");
-            wallMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
-            wallMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-            wallMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-            wallMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
-            wallMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-            wallMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
-            let minX = Infinity;
-            let maxX = -Infinity;
-            let minY = Infinity;
-            let maxY = -Infinity;
-            for (let i = 0; i < this.tracks.length; i++) {
-                let track = this.tracks[i];
-                minX = Math.min(minX, track.position.x - tileWidth * 0.5);
-                maxX = Math.max(maxX, track.position.x + tileWidth * (track.deltaI + 0.5));
-                minY = Math.min(minY, track.position.y - tileHeight * (track.deltaJ + 1));
-                maxY = Math.max(maxY, track.position.y);
-            }
-            let w = maxX - minX;
-            let h = maxY - minY;
-            let u = w * 4;
-            let v = h * 4;
-            let wall = BABYLON.MeshBuilder.CreatePlane("wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-            wall.position.x = (maxX + minX) * 0.5;
-            wall.position.y = (maxY + minY) * 0.5;
-            wall.position.z += 0.016;
-            wall.rotation.z = Math.PI / 2;
-            wall.material = wallMaterial;
-            let baseFrame = new BABYLON.Mesh("base-frame");
-            baseFrame.position.copyFrom(wall.position);
-            baseFrame.material = this.steelMaterial;
-            this.vertexDataLoader.get("./meshes/base-frame.babylon").then(vertexData => {
-                let positions = [...vertexData[0].positions];
-                for (let i = 0; i < positions.length / 3; i++) {
-                    let x = positions[3 * i];
-                    let y = positions[3 * i + 1];
-                    let z = positions[3 * i + 2];
-                    if (x > 0) {
-                        positions[3 * i] += w * 0.5 - 0.01 + 0.1;
-                    }
-                    else if (x < 0) {
-                        positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
-                    }
-                    if (y > 0) {
-                        positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
-                    }
-                    else if (y < 0) {
-                        positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
-                    }
-                }
-                vertexData[0].positions = positions;
-                vertexData[0].applyToMesh(baseFrame);
-            });
-        });
+        this.machine.instantiate();
+        this.trackEditor = new TrackEditor(this);
+        this.trackEditor.initialize();
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -536,9 +564,7 @@ class Game {
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
-        this.tracks.forEach(track => {
-            track.update();
-        });
+        this.machine.update();
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -799,7 +825,7 @@ class TrackEditor {
             this.helperCircleRadius.setValue(this.helperShape.circleRadius);
             this.helperGridSize.setValue(this.helperShape.gridSize);
         };
-        this.setTrack(this.game.tracks[0]);
+        this.setTrack(this.game.machine.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.game.camera, this.game.camera, "target");
         this.helperShape = new HelperShape();
@@ -822,16 +848,16 @@ class TrackEditor {
         this.pointerPlane.visibility = 0;
         this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         document.getElementById("prev-track").addEventListener("click", () => {
-            let trackIndex = this.game.tracks.indexOf(this._track);
+            let trackIndex = this.game.machine.tracks.indexOf(this._track);
             if (trackIndex > 0) {
-                this.setTrack(this.game.tracks[trackIndex - 1]);
+                this.setTrack(this.game.machine.tracks[trackIndex - 1]);
                 this.centerOnTrack();
             }
         });
         document.getElementById("next-track").addEventListener("click", () => {
-            let trackIndex = this.game.tracks.indexOf(this._track);
-            if (trackIndex < this.game.tracks.length - 1) {
-                this.setTrack(this.game.tracks[trackIndex + 1]);
+            let trackIndex = this.game.machine.tracks.indexOf(this._track);
+            if (trackIndex < this.game.machine.tracks.length - 1) {
+                this.setTrack(this.game.machine.tracks[trackIndex + 1]);
                 this.centerOnTrack();
             }
         });
@@ -1233,11 +1259,12 @@ class TrackPoint {
     }
 }
 class Track extends BABYLON.Mesh {
-    constructor(game, i, j) {
-        super("track", game.scene);
-        this.game = game;
+    constructor(machine, i, j, mirror) {
+        super("track", machine.game.scene);
+        this.machine = machine;
         this.i = i;
         this.j = j;
+        this.mirror = mirror;
         this.trackName = "track";
         this.deltaI = 0;
         this.deltaJ = 0;
@@ -1255,6 +1282,9 @@ class Track extends BABYLON.Mesh {
             new Wire(this),
             new Wire(this)
         ];
+    }
+    get game() {
+        return this.machine.game;
     }
     mirrorTrackPointsInPlace() {
         for (let i = 0; i < this.trackPoints.length; i++) {
@@ -1456,20 +1486,13 @@ class Track extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        /*
-        let w = (1 + Math.abs(this.deltaI)) * tileWidth;
-        let h = (1 + Math.abs(this.deltaJ)) * tileHeight;
-
-        let baseMesh = BABYLON.MeshBuilder.CreateBox("base", { width: w - 0.006, height: h - 0.006, depth: 0.003 });
-        baseMesh.parent = this;
-        baseMesh.position.x += this.deltaI * 0.5 * tileWidth;
-        baseMesh.position.y += - this.deltaJ * 0.5 * tileHeight - 0.013;
-        baseMesh.position.z += 0.02;
-        */
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
         this.rebuildWireMeshes();
+    }
+    dispose() {
+        this.dispose();
     }
     update() { }
     rebuildWireMeshes() {
@@ -1539,87 +1562,34 @@ class Track extends BABYLON.Mesh {
     }
 }
 /// <reference path="./Track.ts"/>
-class DefaultTrack1 extends Track {
-    constructor(game, i, j) {
-        super(game, i, j);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * 1, 0), n, dir)
-        ];
-        this.deltaJ = 1;
-        this.generateWires();
-    }
-}
-class DefaultTrack2 extends Track {
-    constructor(game, i, j) {
-        super(game, i, j);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * 2, 0), n, dir)
-        ];
-        this.deltaJ = 2;
-        this.generateWires();
-    }
-}
-class DefaultTrack3 extends Track {
-    constructor(game, i, j) {
-        super(game, i, j);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * 1.5, -tileHeight * 0.5, 0)),
-            new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), n, dir.scale(-1))
-        ];
-        this.deltaI = 1;
-        this.deltaJ = 1;
-        this.generateWires();
-    }
-}
-/// <reference path="./Track.ts"/>
-class DefaultLLTrack extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+class DoubleLoop extends Track {
+    constructor(machine, i, j) {
+        super(machine, i, j);
         this.deserialize({
             points: [
                 { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-                { position: { x: -0.010506693854306803, y: 0.024586694031686902, z: -0.0011302327810539378 }, normal: { x: 0.12182789095857596, y: 0.8264314830616825, z: -0.5496989801600997 } },
-                { position: { x: 0.03197059018683249, y: 0.01741728765991577, z: -0.0030875560146152708 }, normal: { x: 0.02018170070075878, y: 0.20181700700758784, z: -0.9792152953458827 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-                { position: { x: 0.05050550403372285, y: 0.005119832724208587, z: -0.023324046122163745 }, normal: { x: -0.8375359521368244, y: 0.463390016047518, z: -0.2894878614134691 } },
-                { position: { x: 0.033434763340491724, y: -0.009870373080515402, z: -0.05100364872061987 }, normal: { x: -0.5377432504789265, y: 0.753846001823966, z: 0.3775558264659407 } },
-                { position: { x: 0.00898415932224321, y: -0.016033027115578413, z: -0.04022704060585921 }, normal: { x: 0.12878253194657152, y: 0.9176838962061582, z: 0.37586078022229924 } },
-                { position: { x: -0.005660293369047137, y: -0.021648307068113964, z: -0.00885192240515461 }, normal: { x: -0.6231431135054996, y: 0.6624596691675566, z: -0.41574011932586397 } },
-                { position: { x: -0.02906531091925879, y: -0.028254364753327404, z: -0.002669630725487286 }, normal: { x: -0.2632409047009031, y: 0.8352289697044248, z: -0.48280098825368506 } },
-                { position: { x: -0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: -0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: -0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+                { position: { x: 0.007831128515433633, y: 0.02686866956826861, z: -0.001512586438867734 }, normal: { x: -0.02088401000702746, y: 0.9212766316260701, z: -0.38834678593461935 } },
+                { position: { x: 0.0445, y: 0.0238, z: -0.026 }, normal: { x: -0.4220582199178856, y: 0.863269455131674, z: -0.27682613105776016 }, tangentIn: 1 },
+                { position: { x: 0.0441, y: 0.0194, z: -0.0801 }, normal: { x: -0.5105506548736694, y: 0.8362861901986887, z: 0.19990857132957118 } },
+                { position: { x: -0.00022584437025674475, y: 0.015373584470800367, z: -0.10497567416976264 }, normal: { x: -0.062210177432127416, y: 0.8376674210294907, z: 0.5426261932211393 } },
+                { position: { x: -0.04682594399162551, y: 0.00993486974904878, z: -0.07591274887481546 }, normal: { x: 0.4338049924054248, y: 0.8392539115358117, z: 0.3278202259409408 } },
+                { position: { x: -0.044, y: 0.0068, z: -0.0251 }, normal: { x: 0.47274782333094034, y: 0.8547500410127304, z: -0.21427053676274183 } },
+                { position: { x: 0.0003, y: 0.0028, z: -0.0004 }, normal: { x: 0.06925374833311816, y: 0.8415192755510988, z: -0.5357697520556448 } },
+                { position: { x: 0.0447, y: -0.0012, z: -0.0262 }, normal: { x: -0.4385316126958126, y: 0.8367050678252934, z: -0.32804672554665304 } },
+                { position: { x: 0.0442, y: -0.0054, z: -0.08 }, normal: { x: -0.5105423049408571, y: 0.8358650802407707, z: 0.2016832231489942 } },
+                { position: { x: -0.00019998794117725982, y: -0.009649497176356298, z: -0.10484166117713693 }, normal: { x: -0.05328804359581278, y: 0.839859833513831, z: 0.5401813070255678 } },
+                { position: { x: -0.04678172451684687, y: -0.014002588861738838, z: -0.07560012404016887 }, normal: { x: 0.4340370522882042, y: 0.8399407589318226, z: 0.3257473848337093 }, tangentIn: 1 },
+                { position: { x: -0.0438, y: -0.0182, z: -0.0247 }, normal: { x: 0.49613685449256684, y: 0.8445355495674358, z: -0.20151408668143006 } },
+                { position: { x: -0.0017, y: -0.0224, z: 0.0002 }, normal: { x: 0.21464241308702953, y: 0.9154904403092122, z: -0.3403026420799902 } },
+                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
             ],
         });
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-/// <reference path="./Track.ts"/>
-class DoubleLoop extends Track {
-    constructor(game, i, j) {
-        super(game, i, j);
-        this.deserialize({ "points": [{ "position": { "x": -0.056249999999999994, "y": 0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }, { "position": { "x": 0.007831128515433633, "y": 0.02686866956826861, "z": -0.001512586438867734 }, "normal": { "x": -0.02088401000702746, "y": 0.9212766316260701, "z": -0.38834678593461935 } }, { "position": { "x": 0.0445, "y": 0.0238, "z": -0.026 }, "normal": { "x": -0.4220582199178856, "y": 0.863269455131674, "z": -0.27682613105776016 }, "tangentIn": 1 }, { "position": { "x": 0.0441, "y": 0.0194, "z": -0.0801 }, "normal": { "x": -0.5105506548736694, "y": 0.8362861901986887, "z": 0.19990857132957118 } }, { "position": { "x": -0.00022584437025674475, "y": 0.015373584470800367, "z": -0.10497567416976264 }, "normal": { "x": -0.062210177432127416, "y": 0.8376674210294907, "z": 0.5426261932211393 } }, { "position": { "x": -0.04682594399162551, "y": 0.00993486974904878, "z": -0.07591274887481546 }, "normal": { "x": 0.4338049924054248, "y": 0.8392539115358117, "z": 0.3278202259409408 } }, { "position": { "x": -0.044, "y": 0.0068, "z": -0.0251 }, "normal": { "x": 0.47274782333094034, "y": 0.8547500410127304, "z": -0.21427053676274183 } }, { "position": { "x": 0.0003, "y": 0.0028, "z": -0.0004 }, "normal": { "x": 0.06925374833311816, "y": 0.8415192755510988, "z": -0.5357697520556448 } }, { "position": { "x": 0.0447, "y": -0.0012, "z": -0.0262 }, "normal": { "x": -0.4385316126958126, "y": 0.8367050678252934, "z": -0.32804672554665304 } }, { "position": { "x": 0.0442, "y": -0.0054, "z": -0.08 }, "normal": { "x": -0.5105423049408571, "y": 0.8358650802407707, "z": 0.2016832231489942 } }, { "position": { "x": -0.00019998794117725982, "y": -0.009649497176356298, "z": -0.10484166117713693 }, "normal": { "x": -0.05328804359581278, "y": 0.839859833513831, "z": 0.5401813070255678 } }, { "position": { "x": -0.04678172451684687, "y": -0.014002588861738838, "z": -0.07560012404016887 }, "normal": { "x": 0.4340370522882042, "y": 0.8399407589318226, "z": 0.3257473848337093 }, "tangentIn": 1 }, { "position": { "x": -0.0438, "y": -0.0182, "z": -0.0247 }, "normal": { "x": 0.49613685449256684, "y": 0.8445355495674358, "z": -0.20151408668143006 } }, { "position": { "x": -0.0017, "y": -0.0224, "z": 0.0002 }, "normal": { "x": 0.21464241308702953, "y": 0.9154904403092122, "z": -0.3403026420799902 } }, { "position": { "x": 0.056249999999999994, "y": -0.032475952641916446, "z": 0 }, "normal": { "x": 0.09950371902099892, "y": 0.9950371902099892, "z": 0 }, "dir": { "x": 0.9950371902099892, "y": -0.09950371902099892, "z": 0 } }] });
         this.generateWires();
     }
 }
 class ElevatorDown extends Track {
-    constructor(game, i, j, h = 1, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, h = 1, mirror) {
+        super(machine, i, j, mirror);
         this.boxesCount = 7;
         this.boxX = [];
         this.boxes = [];
@@ -1722,8 +1692,8 @@ class ElevatorDown extends Track {
     }
 }
 class ElevatorUp extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j, mirror);
         let dirLeft = new BABYLON.Vector3(1, 0, 0);
         dirLeft.normalize();
         let nLeft = new BABYLON.Vector3(0, 1, 0);
@@ -1740,8 +1710,8 @@ class ElevatorUp extends Track {
     }
 }
 class Flat extends Track {
-    constructor(game, i, j, w = 1) {
-        super(game, i, j);
+    constructor(machine, i, j, w = 1) {
+        super(machine, i, j);
         this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -1756,8 +1726,8 @@ class Flat extends Track {
     }
 }
 class CrossingFlat extends Track {
-    constructor(game, i, j, w = 1) {
-        super(game, i, j);
+    constructor(machine, i, j, w = 1) {
+        super(machine, i, j);
         this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -1775,8 +1745,8 @@ class CrossingFlat extends Track {
 }
 /// <reference path="./Track.ts"/>
 class FlatLoop extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -1801,8 +1771,8 @@ class FlatLoop extends Track {
 }
 /// <reference path="./Track.ts"/>
 class Loop extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j, mirror);
         this.deltaI = 1;
         this.deltaJ = 3;
         this.deserialize({
@@ -1831,8 +1801,8 @@ class Loop extends Track {
     }
 }
 class Ramp extends Track {
-    constructor(game, i, j, w = 1, h = 1, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, w = 1, h = 1, mirror) {
+        super(machine, i, j, mirror);
         this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -1851,8 +1821,8 @@ class Ramp extends Track {
     }
 }
 class CrossingRamp extends Track {
-    constructor(game, i, j, w = 1, h = 1, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, w = 1, h = 1, mirror) {
+        super(machine, i, j, mirror);
         this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -1983,8 +1953,8 @@ class SleeperMeshBuilder {
 }
 /// <reference path="./Track.ts"/>
 class Snake extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
         this.deltaJ = 1;
         this.deserialize({ "points": [{ "position": { "x": -0.075, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }, { "position": { "x": 0.015, "y": -0.0006, "z": -0.02 }, "normal": { "x": 0, "y": 0.983976396926608, "z": 0.17829876693721267 } }, { "position": { "x": 0.075, "y": 0, "z": 0 }, "normal": { "x": -0.0008909764600687716, "y": 0.9800741060756494, "z": -0.1986301909603991 } }, { "position": { "x": 0.125, "y": -0.0005, "z": -0.02 }, "normal": { "x": 0, "y": 0.9797898655773956, "z": 0.20002954609714332 } }, { "position": { "x": 0.225, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }] });
         this.generateWires();
@@ -1992,8 +1962,8 @@ class Snake extends Track {
 }
 /// <reference path="./Track.ts"/>
 class Spiral extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
         this.deltaJ = 2;
         this.deserialize({
             points: [
@@ -2058,57 +2028,57 @@ var TrackNames = [
     "snake"
 ];
 class TrackFactory {
-    constructor(game) {
-        this.game = game;
+    constructor(machine) {
+        this.machine = machine;
     }
     createTrack(trackname, i, j, mirror) {
         for (let n = 1; n <= 3; n++) {
             if (trackname === "flat-" + n.toFixed(0)) {
-                return new Flat(this.game, i, j, n);
+                return new Flat(this.machine, i, j, n);
             }
         }
         for (let n = 1; n <= 3; n++) {
             if (trackname === "flatX-" + n.toFixed(0)) {
-                return new CrossingFlat(this.game, i, j, n);
+                return new CrossingFlat(this.machine, i, j, n);
             }
         }
         for (let n = 1; n <= 3; n++) {
             for (let m = 1; m <= 2; m++) {
                 if (trackname === "ramp-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new Ramp(this.game, i, j, n, m, mirror);
+                    return new Ramp(this.machine, i, j, n, m, mirror);
                 }
             }
         }
         for (let n = 1; n <= 3; n++) {
             for (let m = 1; m <= 2; m++) {
                 if (trackname === "rampX-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new CrossingRamp(this.game, i, j, n, m, mirror);
+                    return new CrossingRamp(this.machine, i, j, n, m, mirror);
                 }
             }
         }
         if (trackname === "uturn-s") {
-            return new UTurn(this.game, i, j, mirror);
+            return new UTurn(this.machine, i, j, mirror);
         }
         if (trackname === "uturn-l") {
-            return new UTurn(this.game, i, j, mirror);
+            return new UTurn(this.machine, i, j, mirror);
         }
         if (trackname === "loop") {
-            return new Loop(this.game, i, j, mirror);
+            return new Loop(this.machine, i, j, mirror);
         }
         if (trackname === "wave") {
-            return new Wave(this.game, i, j, mirror);
+            return new Wave(this.machine, i, j, mirror);
         }
         if (trackname === "snake") {
-            return new Snake(this.game, i, j, mirror);
+            return new Snake(this.machine, i, j, mirror);
         }
         if (trackname === "spiral") {
-            return new Spiral(this.game, i, j, mirror);
+            return new Spiral(this.machine, i, j, mirror);
         }
     }
 }
 class UTurnLarge extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -2136,8 +2106,8 @@ class UTurnLarge extends Track {
     }
 }
 class UTurn extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -2160,8 +2130,8 @@ class UTurn extends Track {
 }
 /// <reference path="./Track.ts"/>
 class Wave extends Track {
-    constructor(game, i, j, mirror) {
-        super(game, i, j);
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
         this.deltaJ = 1;
         this.deserialize({
             points: [

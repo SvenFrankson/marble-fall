@@ -5,8 +5,8 @@ class ElevatorDown extends Track {
     public boxes: BABYLON.Mesh[] = [];
     public wheels: BABYLON.Mesh[] = [];
 
-    constructor(game: Game, i: number, j: number, h: number = 1, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, h: number = 1, mirror?: boolean) {
+        super(machine, i, j, mirror);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -146,8 +146,8 @@ class ElevatorDown extends Track {
 
 class ElevatorUp extends Track {
 
-    constructor(game: Game, i: number, j: number, mirror?: boolean) {
-        super(game, i, j);
+    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
+        super(machine, i, j, mirror);
         let dirLeft = new BABYLON.Vector3(1, 0, 0);
         dirLeft.normalize();
         let nLeft = new BABYLON.Vector3(0, 1, 0);

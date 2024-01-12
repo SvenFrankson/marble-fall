@@ -26,52 +26,52 @@ var TrackNames = [
 
 class TrackFactory {
 
-    constructor(public game: Game) {
+    constructor(public machine: Machine) {
 
     }
 
     public createTrack(trackname: string, i: number, j: number, mirror?: boolean): Track {
         for (let n = 1; n <= 3; n++) {
             if (trackname === "flat-" + n.toFixed(0)) {
-                return new Flat(this.game, i, j, n);
+                return new Flat(this.machine, i, j, n);
             }
         }
         for (let n = 1; n <= 3; n++) {
             if (trackname === "flatX-" + n.toFixed(0)) {
-                return new CrossingFlat(this.game, i, j, n);
+                return new CrossingFlat(this.machine, i, j, n);
             }
         }
         for (let n = 1; n <= 3; n++) {
             for (let m = 1; m <= 2; m++) {
                 if (trackname === "ramp-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new Ramp(this.game, i, j, n, m, mirror);
+                    return new Ramp(this.machine, i, j, n, m, mirror);
                 }
             }
         }
         for (let n = 1; n <= 3; n++) {
             for (let m = 1; m <= 2; m++) {
                 if (trackname === "rampX-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new CrossingRamp(this.game, i, j, n, m, mirror);
+                    return new CrossingRamp(this.machine, i, j, n, m, mirror);
                 }
             }
         }
         if (trackname === "uturn-s") {
-            return new UTurn(this.game, i, j, mirror);
+            return new UTurn(this.machine, i, j, mirror);
         }
         if (trackname === "uturn-l") {
-            return new UTurn(this.game, i, j, mirror);
+            return new UTurn(this.machine, i, j, mirror);
         }
         if (trackname === "loop") {
-            return new Loop(this.game, i, j, mirror);
+            return new Loop(this.machine, i, j, mirror);
         }
         if (trackname === "wave") {
-            return new Wave(this.game, i, j, mirror);
+            return new Wave(this.machine, i, j, mirror);
         }
         if (trackname === "snake") {
-            return new Snake(this.game, i, j, mirror);
+            return new Snake(this.machine, i, j, mirror);
         }
         if (trackname === "spiral") {
-            return new Spiral(this.game, i, j, mirror);
+            return new Spiral(this.machine, i, j, mirror);
         }
     }
 }

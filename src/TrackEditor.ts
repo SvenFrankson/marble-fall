@@ -65,7 +65,7 @@ class TrackEditor {
     public helperShape: HelperShape;
 
     constructor(public game: Game) {
-        this.setTrack(this.game.tracks[0]);
+        this.setTrack(this.game.machine.tracks[0]);
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.game.camera, this.game.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.game.camera, this.game.camera, "target");
         this.helperShape = new HelperShape();
@@ -77,16 +77,16 @@ class TrackEditor {
         this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         document.getElementById("prev-track").addEventListener("click", () => {
-            let trackIndex = this.game.tracks.indexOf(this._track);
+            let trackIndex = this.game.machine.tracks.indexOf(this._track);
             if (trackIndex > 0) {
-                this.setTrack(this.game.tracks[trackIndex - 1]);
+                this.setTrack(this.game.machine.tracks[trackIndex - 1]);
                 this.centerOnTrack();
             }
         });
         document.getElementById("next-track").addEventListener("click", () => {
-            let trackIndex = this.game.tracks.indexOf(this._track);
-            if (trackIndex < this.game.tracks.length - 1) {
-                this.setTrack(this.game.tracks[trackIndex + 1]);
+            let trackIndex = this.game.machine.tracks.indexOf(this._track);
+            if (trackIndex < this.game.machine.tracks.length - 1) {
+                this.setTrack(this.game.machine.tracks[trackIndex + 1]);
                 this.centerOnTrack();
             }
         });
