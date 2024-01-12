@@ -360,25 +360,55 @@ class Game {
         */
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
-            new ElevatorDown(this, 2, -4, 5),
-            new ElevatorUp(this, 2, -4),
+            new ElevatorDown(this, 2, -6, 7),
+            new ElevatorUp(this, 2, -6),
             new Ramp(this, 0, -3, 2, 2, true),
-            new UTurnLarge(this, -2, -1, true)
+            new UTurn(this, -1, -1, true)
         ];
         this.tracks.forEach(track => {
             track.instantiate();
         });
-        let tile = new MenuTile("test", 0.05, 0.075, this);
-        tile.instantiate();
-        tile.position.x = -0.06;
-        tile.position.z = -0.03;
-        let tile2 = new MenuTile("test", 0.05, 0.075, this);
-        tile2.instantiate();
-        tile2.position.z = -0.03;
-        let tile3 = new MenuTile("test", 0.05, 0.075, this);
-        tile3.instantiate();
-        tile3.position.x = 0.06;
-        tile3.position.z = -0.03;
+        let menu = new BABYLON.Mesh("menu");
+        menu.position.y += 0.1;
+        menu.position.z = -0.02;
+        let tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
+        tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
+        tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
+        tileDemo1.instantiate();
+        tileDemo1.position.x = -0.09;
+        tileDemo1.position.y = 0.01;
+        tileDemo1.parent = menu;
+        let tileDemo2 = new MenuTile("tile-demo-2", 0.05, 0.075, this);
+        tileDemo2.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
+        tileDemo2.texture.drawText("II", 107, 270, "128px 'Serif'", "white", null);
+        tileDemo2.instantiate();
+        tileDemo2.position.y = 0.03;
+        tileDemo2.parent = menu;
+        let tileDemo3 = new MenuTile("tile-demo-3", 0.05, 0.075, this);
+        tileDemo3.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
+        tileDemo3.texture.drawText("III", 86, 270, "128px 'Serif'", "white", null);
+        tileDemo3.instantiate();
+        tileDemo3.position.x = 0.09;
+        tileDemo3.position.y = 0.01;
+        tileDemo3.parent = menu;
+        let tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
+        tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", "black");
+        tileCreate.instantiate();
+        tileCreate.position.x = -0.07;
+        tileCreate.position.y = -0.075;
+        tileCreate.parent = menu;
+        let tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
+        tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", "black");
+        tileLoad.instantiate();
+        tileLoad.position.x = 0.07;
+        tileLoad.position.y = -0.075;
+        tileLoad.parent = menu;
+        let tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
+        tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", "black");
+        tileCredit.instantiate();
+        tileCredit.position.x = 0.07;
+        tileCredit.position.y = -0.14;
+        tileCredit.parent = menu;
         requestAnimationFrame(() => {
             this.tracks.forEach(track => {
                 track.recomputeAbsolutePath();
@@ -490,11 +520,28 @@ class MenuTile extends BABYLON.Mesh {
         this.w = w;
         this.h = h;
         this.game = game;
+        this.texture = new BABYLON.DynamicTexture(this.name + "-texture", { width: this.w * this.ppm, height: this.h * this.ppm });
+    }
+    get ppm() {
+        return MenuTile.ppc * 100;
     }
     async instantiate() {
+        let button = BABYLON.MeshBuilder.CreateSphere("center", { diameter: 0.001 });
+        this.game.vertexDataLoader.get("./meshes/button.babylon").then(vertexData => {
+            vertexData[0].applyToMesh(button);
+        });
+        button.material = this.game.steelMaterial;
+        button.parent = this;
+        if (this.h >= this.w) {
+            button.position.y = -this.h * 0.5 + 0.01;
+        }
+        else {
+            button.position.x = this.w * 0.5 - 0.01;
+        }
+        button.rotation.x = -Math.PI * 0.5;
         BABYLON.CreatePlaneVertexData({ width: this.w, height: this.h }).applyToMesh(this);
         let material = new BABYLON.StandardMaterial("test");
-        material.diffuseColor.copyFromFloats(0.02, 0.04, 0.03);
+        material.diffuseTexture = this.texture;
         material.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.material = material;
         let frame = new BABYLON.Mesh(this.name + "-frame");
@@ -524,6 +571,7 @@ class MenuTile extends BABYLON.Mesh {
         });
     }
 }
+MenuTile.ppc = 60;
 class TrackPointHandle extends BABYLON.Mesh {
     constructor(trackPoint) {
         super("trackpoint-handle");
