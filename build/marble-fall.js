@@ -381,7 +381,7 @@ class MachineEditor {
                 });
                 if (pick.hit) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
-                    let j = Math.floor(-pick.pickedPoint.y / tileHeight);
+                    let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                     this.selectedTrack.setI(i);
                     this.selectedTrack.setJ(j);
                     this.selectedTrack.setIsVisible(true);
@@ -398,7 +398,7 @@ class MachineEditor {
                 });
                 if (pick.hit) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
-                    let j = Math.floor(-pick.pickedPoint.y / tileHeight);
+                    let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                     this.selectedTrack.setI(i);
                     this.selectedTrack.setJ(j);
                     this.game.machine.tracks.push(this.selectedTrack);
