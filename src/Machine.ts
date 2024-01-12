@@ -22,7 +22,7 @@ class Machine {
     public tracks: Track[] = [];
     public balls: Ball[] = [];
 
-    private trackFactory: TrackFactory;
+    public trackFactory: TrackFactory;
 
     public instantiated: boolean = false;
 
@@ -83,10 +83,10 @@ class Machine {
         woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
         woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
 
-        let minX = Infinity;
-        let maxX = - Infinity;
-        let minY = Infinity;
-        let maxY = - Infinity;
+        let minX = - 0.15;
+        let maxX = 0.15;
+        let minY = - 0.15;
+        let maxY = 0.15;
         for (let i = 0; i < this.tracks.length; i++) {
             let track = this.tracks[i];
             minX = Math.min(minX, track.position.x - tileWidth * 0.5);

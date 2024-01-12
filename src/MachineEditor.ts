@@ -2,6 +2,7 @@ class MachineEditor {
 
     public container: HTMLDivElement;
     public itemContainer: HTMLDivElement;
+    public currentItem: string;
 
     constructor(public game: Game) {
         this.container = document.getElementById("machine-editor-menu") as HTMLDivElement;
@@ -16,7 +17,12 @@ class MachineEditor {
             item.classList.add("machine-editor-item");
             item.innerText = trackname;
             this.itemContainer.appendChild(item);
+            item.addEventListener("pointerdown", () => {
+                this.currentItem = trackname;
+            });
         }
+
+        this.game.canvas.addEventListener("pointerup", this.pointerUp)
 
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
@@ -26,6 +32,7 @@ class MachineEditor {
     public dispose(): void {
         this.container.style.display = "none";
         this.itemContainer.innerHTML = "";
+        this.game.canvas.removeEventListener("pointerup", this.pointerUp)
     }
 
     public update(): void {
@@ -37,6 +44,28 @@ class MachineEditor {
         else {
             this.container.classList.add("bottom");
             this.container.classList.remove("left");
+        }
+    }
+
+    public pointerUp = (event: PointerEvent) => {
+        let pick = this.game.scene.pick(
+            this.game.scene.pointerX,
+            this.game.scene.pointerY,
+            (mesh) => {
+                return mesh === this.game.machine.baseWall;
+            }
+        )
+
+        if (pick.hit) {
+            if (this.currentItem) {
+                let i = Math.round(pick.pickedPoint.x / tileWidth);
+                let j = Math.floor(- pick.pickedPoint.y / tileHeight);
+                let track = this.game.machine.trackFactory.createTrack(this.currentItem, i, j);
+                this.game.machine.tracks.push(track);
+                track.instantiate().then(() => {
+                    track.recomputeAbsolutePath();
+                });
+            }
         }
     }
 }

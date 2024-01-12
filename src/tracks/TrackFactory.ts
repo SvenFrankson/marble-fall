@@ -63,7 +63,7 @@ class TrackFactory {
             return new UTurn(this.machine, i, j, mirror);
         }
         if (trackname === "uturn-l") {
-            return new UTurn(this.machine, i, j, mirror);
+            return new UTurnLarge(this.machine, i, j, mirror);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, mirror);

@@ -115,7 +115,7 @@ class Game {
         skybox.material = skyboxMaterial;
 
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
-        this.camera.speed = 0.05;
+        this.camera.speed = 0.02;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
@@ -422,10 +422,8 @@ class Game {
             axis = "y";
         }
         let anim = Mummu.AnimationFactory.CreateNumber(tile, tile.rotation, axis);
-        let wait = Mummu.AnimationFactory.CreateWait(tile);
         await anim(- Math.PI / 16, 0.2);
         await anim(0, 0.6);
-        await wait(0.4);
     }
 }
 

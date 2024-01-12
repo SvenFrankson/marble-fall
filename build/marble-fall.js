@@ -287,10 +287,10 @@ class Machine {
         woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
         woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
         woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
-        let minX = Infinity;
-        let maxX = -Infinity;
-        let minY = Infinity;
-        let maxY = -Infinity;
+        let minX = -0.15;
+        let maxX = 0.15;
+        let minY = -0.15;
+        let maxY = 0.15;
         for (let i = 0; i < this.tracks.length; i++) {
             let track = this.tracks[i];
             minX = Math.min(minX, track.position.x - tileWidth * 0.5);
@@ -372,6 +372,22 @@ class Machine {
 class MachineEditor {
     constructor(game) {
         this.game = game;
+        this.pointerUp = (event) => {
+            let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                return mesh === this.game.machine.baseWall;
+            });
+            if (pick.hit) {
+                if (this.currentItem) {
+                    let i = Math.round(pick.pickedPoint.x / tileWidth);
+                    let j = Math.floor(-pick.pickedPoint.y / tileHeight);
+                    let track = this.game.machine.trackFactory.createTrack(this.currentItem, i, j);
+                    this.game.machine.tracks.push(track);
+                    track.instantiate().then(() => {
+                        track.recomputeAbsolutePath();
+                    });
+                }
+            }
+        };
         this.container = document.getElementById("machine-editor-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
     }
@@ -383,7 +399,11 @@ class MachineEditor {
             item.classList.add("machine-editor-item");
             item.innerText = trackname;
             this.itemContainer.appendChild(item);
+            item.addEventListener("pointerdown", () => {
+                this.currentItem = trackname;
+            });
         }
+        this.game.canvas.addEventListener("pointerup", this.pointerUp);
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         };
@@ -391,6 +411,7 @@ class MachineEditor {
     dispose() {
         this.container.style.display = "none";
         this.itemContainer.innerHTML = "";
+        this.game.canvas.removeEventListener("pointerup", this.pointerUp);
     }
     update() {
         let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
@@ -497,7 +518,7 @@ class Game {
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         skybox.material = skyboxMaterial;
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
-        this.camera.speed = 0.05;
+        this.camera.speed = 0.02;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
@@ -734,10 +755,8 @@ class Game {
             axis = "y";
         }
         let anim = Mummu.AnimationFactory.CreateNumber(tile, tile.rotation, axis);
-        let wait = Mummu.AnimationFactory.CreateWait(tile);
         await anim(-Math.PI / 16, 0.2);
         await anim(0, 0.6);
-        await wait(0.4);
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -2239,7 +2258,7 @@ class TrackFactory {
             return new UTurn(this.machine, i, j, mirror);
         }
         if (trackname === "uturn-l") {
-            return new UTurn(this.machine, i, j, mirror);
+            return new UTurnLarge(this.machine, i, j, mirror);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, mirror);
