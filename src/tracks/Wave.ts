@@ -5,6 +5,7 @@ class Wave extends Track {
         super(machine, i, j);
         this.trackName = "wave";
 
+        this.deltaI = 1;
         this.deltaJ = 1;
 
         this.deserialize({

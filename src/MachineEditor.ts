@@ -48,11 +48,11 @@ class MachineEditor {
             this.items.set(trackname, item);
 
             item.addEventListener("pointerdown", () => {
+                if (this.selectedTrack) {
+                    this.selectedTrack.dispose();
+                    this.setSelectedTrack(undefined);
+                } 
                 if (this.selectedItem === trackname) {
-                    if (this.selectedTrack) {
-                        this.selectedTrack.dispose();
-                        this.setSelectedTrack(undefined);
-                    } 
                     this.setSelectedItem("");
                 }
                 else {
@@ -134,6 +134,7 @@ class MachineEditor {
                 this.selectedTrack.setJ(j);
                 this.game.machine.tracks.push(this.selectedTrack);
                 this.selectedTrack.setIsVisible(true);
+                this.selectedTrack.generateWires();
                 this.selectedTrack.instantiate().then(() => {
                     this.selectedTrack.recomputeAbsolutePath();
                     this.setSelectedTrack(undefined);

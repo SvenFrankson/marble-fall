@@ -373,6 +373,21 @@ class Track extends BABYLON.Mesh {
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
 
+        let xLeft = - tileWidth * 0.5;
+        let xRight = tileWidth * (this.deltaI + 0.5);
+        let yTop = tileHeight * 0.25;
+        let yBottom = - tileHeight * (this.deltaJ + 0.75);
+        this.selectedMesh = BABYLON.MeshBuilder.CreateLines("select-mesh", {
+            points: [
+                new BABYLON.Vector3(xLeft, yTop, 0),
+                new BABYLON.Vector3(xRight, yTop, 0),
+                new BABYLON.Vector3(xRight, yBottom, 0),
+                new BABYLON.Vector3(xLeft, yBottom, 0),
+                new BABYLON.Vector3(xLeft, yTop, 0)
+            ]
+        });
+        this.selectedMesh.parent = this;
+
         this.rebuildWireMeshes();
     }
     

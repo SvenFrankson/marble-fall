@@ -13,22 +13,22 @@ class ElevatorBottom extends Track {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         
-        this.deltaJ = h - 1;
+        this.deltaJ = h;
 
         this.trackPoints = [
             new TrackPoint(this, new BABYLON.Vector3(
                 - tileWidth * 0.5,
-                - tileHeight * (this.deltaJ + 1),
+                - tileHeight * this.deltaJ,
                 0
             ), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(
                 0,
-                - tileHeight * (this.deltaJ + 1.25),
+                - tileHeight * (this.deltaJ + 0.25),
                 0
             ), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(
                 0 + 0.01,
-                - tileHeight * (this.deltaJ + 1.25) + 0.01,
+                - tileHeight * (this.deltaJ + 0.25) + 0.01,
                 0
             ), dir.scale(-1), n),
             new TrackPoint(this, new BABYLON.Vector3(
@@ -74,7 +74,7 @@ class ElevatorBottom extends Track {
             new BABYLON.Mesh("wheel-0"),
             new BABYLON.Mesh("wheel-1")
         ]
-        this.wheels[0].position.copyFromFloats(0.030, - tileHeight * (this.deltaJ + 1.25), 0);
+        this.wheels[0].position.copyFromFloats(0.030, - tileHeight * (this.deltaJ + 0.25), 0);
         this.wheels[0].parent = this;
         this.wheels[0].material = this.game.steelMaterial;
 
