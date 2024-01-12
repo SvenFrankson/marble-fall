@@ -102,7 +102,7 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        if (this.position.y < -10000) {
+        if (this.position.y < -10) {
             this.dispose();
         }
     }
@@ -280,13 +280,6 @@ class Machine {
         }
     }
     generateBaseMesh() {
-        let woodMaterial = new BABYLON.StandardMaterial("wood-material");
-        woodMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
-        woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-        woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-        woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
-        woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
         let minX = -0.15;
         let maxX = 0.15;
         let minY = -0.15;
@@ -302,17 +295,24 @@ class Machine {
         let h = maxY - minY;
         let u = w * 4;
         let v = h * 4;
+        if (this.baseWall) {
+            this.baseWall.dispose();
+        }
         this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
         this.baseWall.position.x = (maxX + minX) * 0.5;
         this.baseWall.position.y = (maxY + minY) * 0.5;
         this.baseWall.position.z += 0.016;
         this.baseWall.rotation.z = Math.PI / 2;
-        this.baseWall.material = woodMaterial;
+        this.baseWall.material = this.game.woodMaterial;
+        if (this.baseFrame) {
+            this.baseFrame.dispose();
+        }
         this.baseFrame = new BABYLON.Mesh("base-frame");
         this.baseFrame.position.copyFrom(this.baseWall.position);
         this.baseFrame.material = this.game.steelMaterial;
         this.game.vertexDataLoader.get("./meshes/base-frame.babylon").then(vertexData => {
-            let positions = [...vertexData[0].positions];
+            let data = Mummu.CloneVertexData(vertexData[0]);
+            let positions = [...data.positions];
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
@@ -329,8 +329,8 @@ class Machine {
                     positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
                 }
             }
-            vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(this.baseFrame);
+            data.positions = positions;
+            data.applyToMesh(this.baseFrame);
         });
     }
     serialize() {
@@ -374,7 +374,8 @@ class MachineEditor {
         this.game = game;
         this.items = new Map();
         this._selectedItem = "";
-        this.pointerMove = (event) => {
+        this._dragOffset = BABYLON.Vector3.Zero();
+        this.pointerDown = (event) => {
             if (this.selectedTrack) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                     return mesh === this.game.machine.baseWall;
@@ -382,33 +383,78 @@ class MachineEditor {
                 if (pick.hit) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    this.selectedTrack.setI(i);
-                    this.selectedTrack.setJ(j);
-                    this.selectedTrack.setIsVisible(true);
+                    let pickedTrack = this.game.machine.tracks.find(track => {
+                        if (track.i <= i) {
+                            if ((track.i + track.deltaI) >= i) {
+                                if (track.j <= j) {
+                                    if ((track.j + track.deltaJ) >= j) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    if (pickedTrack === this.selectedTrack) {
+                        this.setDraggedTrack(this.selectedTrack);
+                    }
+                }
+            }
+        };
+        this.pointerMove = (event) => {
+            if (this.draggedTrack) {
+                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    return mesh === this.game.machine.baseWall;
+                });
+                if (pick.hit) {
+                    let i = Math.round(pick.pickedPoint.x / tileWidth);
+                    let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
+                    this.draggedTrack.setI(i);
+                    this.draggedTrack.setJ(j);
+                    this.draggedTrack.setIsVisible(true);
                 }
                 else {
-                    this.selectedTrack.setIsVisible(false);
+                    this.draggedTrack.setIsVisible(false);
                 }
             }
         };
         this.pointerUp = (event) => {
-            if (this.selectedTrack) {
-                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    return mesh === this.game.machine.baseWall;
-                });
-                if (pick.hit) {
+            let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                return mesh === this.game.machine.baseWall;
+            });
+            if (pick.hit) {
+                if (this.draggedTrack) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    this.selectedTrack.setI(i);
-                    this.selectedTrack.setJ(j);
-                    this.game.machine.tracks.push(this.selectedTrack);
-                    this.selectedTrack.setIsVisible(true);
-                    this.selectedTrack.generateWires();
-                    this.selectedTrack.instantiate().then(() => {
-                        this.selectedTrack.recomputeAbsolutePath();
-                        this.setSelectedTrack(undefined);
+                    this.draggedTrack.setI(i);
+                    this.draggedTrack.setJ(j);
+                    if (this.game.machine.tracks.indexOf(this.draggedTrack) === -1) {
+                        this.game.machine.tracks.push(this.draggedTrack);
+                    }
+                    this.draggedTrack.setIsVisible(true);
+                    this.draggedTrack.generateWires();
+                    this.draggedTrack.instantiate().then(() => {
+                        this.draggedTrack.recomputeAbsolutePath();
+                        this.setSelectedTrack(this.draggedTrack);
+                        this.setDraggedTrack(undefined);
+                        this.setSelectedItem("");
+                        this.game.machine.generateBaseMesh();
                     });
-                    this.setSelectedItem("");
+                }
+                else {
+                    let i = Math.round(pick.pickedPoint.x / tileWidth);
+                    let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
+                    let pickedTrack = this.game.machine.tracks.find(track => {
+                        if (track.i <= i) {
+                            if ((track.i + track.deltaI) >= i) {
+                                if (track.j <= j) {
+                                    if ((track.j + track.deltaJ) >= j) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    this.setSelectedTrack(pickedTrack);
                 }
             }
         };
@@ -431,12 +477,32 @@ class MachineEditor {
             }
         }
     }
+    get draggedTrack() {
+        return this._draggedTrack;
+    }
+    setDraggedTrack(s) {
+        if (s != this._draggedTrack) {
+            this._draggedTrack = s;
+            if (this._draggedTrack) {
+                this.game.camera.detachControl();
+            }
+            else {
+                this.game.camera.attachControl();
+            }
+        }
+    }
     get selectedTrack() {
         return this._selectedTrack;
     }
     setSelectedTrack(s) {
+        if (this._selectedTrack) {
+            this._selectedTrack.unselect();
+        }
         if (s != this._selectedTrack) {
             this._selectedTrack = s;
+        }
+        if (this._selectedTrack) {
+            this._selectedTrack.select();
         }
     }
     instantiate() {
@@ -449,9 +515,9 @@ class MachineEditor {
             this.itemContainer.appendChild(item);
             this.items.set(trackname, item);
             item.addEventListener("pointerdown", () => {
-                if (this.selectedTrack) {
-                    this.selectedTrack.dispose();
-                    this.setSelectedTrack(undefined);
+                if (this.draggedTrack) {
+                    this.draggedTrack.dispose();
+                    this.setDraggedTrack(undefined);
                 }
                 if (this.selectedItem === trackname) {
                     this.setSelectedItem("");
@@ -462,10 +528,32 @@ class MachineEditor {
                     track.instantiate().then(() => {
                         track.setIsVisible(false);
                     });
-                    this.setSelectedTrack(track);
+                    this.setDraggedTrack(track);
                 }
             });
         }
+        document.addEventListener("keyup", (event) => {
+            if (event.key === "x") {
+                if (this.selectedTrack) {
+                    this.selectedTrack.dispose();
+                    this.setSelectedTrack(undefined);
+                    this.setDraggedTrack(undefined);
+                }
+            }
+            else if (event.key === "m") {
+                if (this.draggedTrack) {
+                    this.mirrorTrackInPlace(this.draggedTrack).then(track => {
+                        this.setDraggedTrack(track);
+                    });
+                }
+                else if (this.selectedTrack) {
+                    this.mirrorTrackInPlace(this.selectedTrack).then(track => {
+                        this.setSelectedTrack(track);
+                    });
+                }
+            }
+        });
+        this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
         document.getElementById("machine-editor-main-menu").onclick = () => {
@@ -476,6 +564,7 @@ class MachineEditor {
         this.container.style.display = "none";
         this.itemContainer.innerHTML = "";
         this.items = new Map();
+        this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
     }
@@ -489,6 +578,16 @@ class MachineEditor {
             this.container.classList.add("bottom");
             this.container.classList.remove("left");
         }
+    }
+    async mirrorTrackInPlace(track) {
+        let mirroredTrack = this.game.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
+        track.dispose();
+        this.game.machine.tracks.push(mirroredTrack);
+        mirroredTrack.setIsVisible(true);
+        mirroredTrack.generateWires();
+        await mirroredTrack.instantiate();
+        mirroredTrack.recomputeAbsolutePath();
+        return mirroredTrack;
     }
     getCurrentItemElement() {
         return this.items.get(this._selectedItem);
@@ -576,6 +675,13 @@ class Game {
         this.steelMaterial.metallic = 1.0; // set to 1 to only use it from the metallicRoughnessTexture
         this.steelMaterial.roughness = 0.15; // set to 1 to only use it from the metallicRoughnessTexture
         this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
+        this.woodMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
+        this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
+        this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
+        this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
+        this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
+        this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
         let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 10 / Math.sqrt(3) }, this.scene);
         skybox.rotation.y = Math.PI / 2;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
@@ -623,11 +729,14 @@ class Game {
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target");
         this.machine = new Machine(this);
         this.machine.balls = [];
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < 9; n++) {
             let ball = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
             ball.instantiate();
             this.machine.balls.push(ball);
         }
+        setInterval(() => {
+            console.log(this.machine.tracks.length + " tracks");
+        }, 1000);
         /*
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),
@@ -1562,6 +1671,12 @@ class Track extends BABYLON.Mesh {
             m.isVisible = isVisible;
         });
     }
+    select() {
+        this.selectedMesh.isVisible = true;
+    }
+    unselect() {
+        this.selectedMesh.isVisible = false;
+    }
     mirrorTrackPointsInPlace() {
         for (let i = 0; i < this.trackPoints.length; i++) {
             this.trackPoints[i].position.x *= -1;
@@ -1765,6 +1880,9 @@ class Track extends BABYLON.Mesh {
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
+        if (this.selectedMesh) {
+            this.selectedMesh.dispose();
+        }
         let xLeft = -tileWidth * 0.5;
         let xRight = tileWidth * (this.deltaI + 0.5);
         let yTop = tileHeight * 0.25;
@@ -1779,6 +1897,7 @@ class Track extends BABYLON.Mesh {
             ]
         });
         this.selectedMesh.parent = this;
+        this.selectedMesh.isVisible = false;
         this.rebuildWireMeshes();
     }
     dispose() {
@@ -1902,9 +2021,8 @@ class ElevatorBottom extends Track {
             new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.deltaJ, 0), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.deltaJ + 0.25), 0), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.deltaJ + 0.25) + 0.01, 0), dir.scale(-1), n),
-            new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0, 0), dir.scale(-1), n),
-            new TrackPoint(this, new BABYLON.Vector3(-0.02, 0.04, 0), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-1, 0, 0)),
-            new TrackPoint(this, new BABYLON.Vector3(-0.03, 0.04, 0), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
+            new TrackPoint(this, new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
         ];
         for (let i = 0; i < this.boxesCount; i++) {
             let box = new BABYLON.Mesh("box");
@@ -1932,7 +2050,7 @@ class ElevatorBottom extends Track {
         this.wheels[0].position.copyFromFloats(0.030, -tileHeight * (this.deltaJ + 0.25), 0);
         this.wheels[0].parent = this;
         this.wheels[0].material = this.game.steelMaterial;
-        this.wheels[1].position.copyFromFloats(0.030, 0.04, 0);
+        this.wheels[1].position.copyFromFloats(0.030, 0.035 - tileHeight, 0);
         this.wheels[1].parent = this;
         this.wheels[1].material = this.game.steelMaterial;
         this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
@@ -2275,7 +2393,7 @@ class Spiral extends Track {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
         this.trackName = "spiral";
-        this.deltaJ = 2;
+        this.deltaJ = 3;
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },

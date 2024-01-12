@@ -135,6 +135,14 @@ class Track extends BABYLON.Mesh {
         })
     }
 
+    public select(): void {
+        this.selectedMesh.isVisible = true;
+    }
+
+    public unselect(): void {
+        this.selectedMesh.isVisible = false;
+    }
+
     protected mirrorTrackPointsInPlace(): void {
         for (let i = 0; i < this.trackPoints.length; i++) {
             this.trackPoints[i].position.x *= - 1;
@@ -373,6 +381,9 @@ class Track extends BABYLON.Mesh {
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
 
+        if (this.selectedMesh) {
+            this.selectedMesh.dispose();
+        }
         let xLeft = - tileWidth * 0.5;
         let xRight = tileWidth * (this.deltaI + 0.5);
         let yTop = tileHeight * 0.25;
@@ -387,6 +398,7 @@ class Track extends BABYLON.Mesh {
             ]
         });
         this.selectedMesh.parent = this;
+        this.selectedMesh.isVisible = false;
 
         this.rebuildWireMeshes();
     }

@@ -135,7 +135,7 @@ class Ball extends BABYLON.Mesh {
             this.position.addInPlace(this.velocity.scale(dt));
         }
 
-        if (this.position.y < - 10000) {
+        if (this.position.y < - 10) {
             this.dispose();
         }
     }

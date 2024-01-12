@@ -33,19 +33,14 @@ class ElevatorBottom extends Track {
             ), dir.scale(-1), n),
             new TrackPoint(this, new BABYLON.Vector3(
                 0 + 0.01,
-                0,
+                0 - tileHeight,
                 0
             ), dir.scale(-1), n),
             new TrackPoint(this, new BABYLON.Vector3(
-                -0.02,
-                0.04,
+                -0.005,
+                0.035 - tileHeight,
                 0
-            ), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-1, 0, 0)),
-            new TrackPoint(this, new BABYLON.Vector3(
-                -0.03,
-                0.04,
-                0
-            ), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-1, 0, 0)),
+            ), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
         ];
 
         for (let i = 0; i < this.boxesCount; i++) {
@@ -78,7 +73,7 @@ class ElevatorBottom extends Track {
         this.wheels[0].parent = this;
         this.wheels[0].material = this.game.steelMaterial;
 
-        this.wheels[1].position.copyFromFloats(0.030, 0.04, 0);
+        this.wheels[1].position.copyFromFloats(0.030, 0.035 - tileHeight, 0);
         this.wheels[1].parent = this;
         this.wheels[1].material = this.game.steelMaterial;
 

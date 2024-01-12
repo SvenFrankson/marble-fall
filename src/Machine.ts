@@ -75,13 +75,6 @@ class Machine {
     }
 
     public generateBaseMesh(): void {
-        let woodMaterial = new BABYLON.StandardMaterial("wood-material");
-        woodMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
-        woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-        woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-        woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
-        woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
 
         let minX = - 0.15;
         let maxX = 0.15;
@@ -100,19 +93,26 @@ class Machine {
         let u = w * 4;
         let v = h * 4;
 
+        if (this.baseWall) {
+            this.baseWall.dispose();
+        }
         this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation:BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
         this.baseWall.position.x = (maxX + minX) * 0.5;
         this.baseWall.position.y = (maxY + minY) * 0.5;
         this.baseWall.position.z += 0.016;
         this.baseWall.rotation.z = Math.PI / 2;
-        this.baseWall.material = woodMaterial;
+        this.baseWall.material = this.game.woodMaterial;
 
+        if (this.baseFrame) {
+            this.baseFrame.dispose();
+        }
         this.baseFrame = new BABYLON.Mesh("base-frame");
         this.baseFrame.position.copyFrom(this.baseWall.position);
         this.baseFrame.material = this.game.steelMaterial;
 
         this.game.vertexDataLoader.get("./meshes/base-frame.babylon").then(vertexData => {
-            let positions = [...vertexData[0].positions]
+            let data = Mummu.CloneVertexData(vertexData[0]);
+            let positions = [...data.positions]
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
@@ -130,8 +130,8 @@ class Machine {
                     positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
                 }
             }
-            vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(this.baseFrame);
+            data.positions = positions;
+            data.applyToMesh(this.baseFrame);
         })
     }
 

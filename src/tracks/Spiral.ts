@@ -5,7 +5,7 @@ class Spiral extends Track {
         super(machine, i, j, mirror);
         this.trackName = "spiral";
 
-        this.deltaJ = 2;
+        this.deltaJ = 3;
 
         this.deserialize({
             points: [
