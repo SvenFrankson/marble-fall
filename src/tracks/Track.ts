@@ -74,6 +74,8 @@ interface ITrackData {
 
 class Track extends BABYLON.Mesh {
 
+    public trackName: string = "track";
+    
     public deltaI: number = 0;
     public deltaJ: number = 0;
 

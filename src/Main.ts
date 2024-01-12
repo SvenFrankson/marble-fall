@@ -134,15 +134,35 @@ class Game {
 
         let ball2 = new Ball(this);
         ball2.position.x = - tileWidth * 0.5 * 0.5;
-        ball2.position.y = 0.008;
+        ball2.position.y = 0.007;
         ball2.instantiate();
 
         let ball3 = new Ball(this);
         ball3.position.x = - tileWidth * 0.5 * 0.1;
-        ball3.position.y = 0.008;
+        ball3.position.y = 0.006;
         ball3.instantiate();
 
-        this.balls = [ball, ball2, ball3];
+        let ball4 = new Ball(this);
+        ball4.position.x = tileWidth * 0.5 * 0.3;
+        ball4.position.y = 0.005;
+        ball4.instantiate();
+
+        let ball5 = new Ball(this);
+        ball5.position.x = tileWidth * 0.5 * 0.7;
+        ball5.position.y = 0.004;
+        ball5.instantiate();
+
+        let ball6 = new Ball(this);
+        ball6.position.x = tileWidth * 0.5 * 1.1;
+        ball6.position.y = 0.003;
+        ball6.instantiate();
+
+        let ball7 = new Ball(this);
+        ball7.position.x = tileWidth * 0.5 * 1.5;
+        ball7.position.y = 0.002;
+        ball7.instantiate();
+
+        this.balls = [ball, ball2, ball3, ball4, ball5, ball6, ball7];
 
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
@@ -183,11 +203,12 @@ class Game {
         */
        
         this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new ElevatorDown(this, 2, -6, 7),
-            new ElevatorUp(this, 2, -6),
-            new Ramp(this, 0, -3, 2, 2, true),
-            new UTurn(this, -1, -1, true)
+            new Ramp(this, -1, 0, 3, 1),
+            new ElevatorDown(this, 2, -5, 6),
+            new ElevatorUp(this, 2, -5),
+            new Spiral(this, 1, -4, true),
+            new Flat(this, -1, -1, 2),
+            new UTurn(this, -2, -1, true)
         ];
 
         this.tracks.forEach(track => {

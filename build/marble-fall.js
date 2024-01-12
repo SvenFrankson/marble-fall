@@ -47,8 +47,12 @@ class Ball extends BABYLON.Mesh {
                         if (dist < this.size) {
                             let depth = this.size - dist;
                             //this.velocity.scaleInPlace(0.3);
-                            ball.velocity.addInPlace(this.velocity.scale(0.5));
-                            this.velocity.scaleInPlace(-0.6);
+                            let otherSpeed = ball.velocity.clone();
+                            let mySpeed = this.velocity.clone();
+                            this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
+                            ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
+                            //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
+                            //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                             let dir = this.position.subtract(ball.position).normalize();
                             this.position.addInPlace(dir.scale(depth));
                         }
@@ -218,6 +222,20 @@ class HelperShape {
         }
     }
 }
+class Machine {
+    constructor() {
+        this.tracks = [];
+        this.balls = [];
+    }
+    async instantiate() {
+    }
+    dispose() {
+    }
+    serialize() {
+    }
+    deserialize() {
+    }
+}
 /// <reference path="../lib/babylon.d.ts"/>
 /// <reference path="../../nabu/nabu.d.ts"/>
 /// <reference path="../../mummu/mummu.d.ts"/>
@@ -315,13 +333,29 @@ class Game {
         ball.instantiate();
         let ball2 = new Ball(this);
         ball2.position.x = -tileWidth * 0.5 * 0.5;
-        ball2.position.y = 0.008;
+        ball2.position.y = 0.007;
         ball2.instantiate();
         let ball3 = new Ball(this);
         ball3.position.x = -tileWidth * 0.5 * 0.1;
-        ball3.position.y = 0.008;
+        ball3.position.y = 0.006;
         ball3.instantiate();
-        this.balls = [ball, ball2, ball3];
+        let ball4 = new Ball(this);
+        ball4.position.x = tileWidth * 0.5 * 0.3;
+        ball4.position.y = 0.005;
+        ball4.instantiate();
+        let ball5 = new Ball(this);
+        ball5.position.x = tileWidth * 0.5 * 0.7;
+        ball5.position.y = 0.004;
+        ball5.instantiate();
+        let ball6 = new Ball(this);
+        ball6.position.x = tileWidth * 0.5 * 1.1;
+        ball6.position.y = 0.003;
+        ball6.instantiate();
+        let ball7 = new Ball(this);
+        ball7.position.x = tileWidth * 0.5 * 1.5;
+        ball7.position.y = 0.002;
+        ball7.instantiate();
+        this.balls = [ball, ball2, ball3, ball4, ball5, ball6, ball7];
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
@@ -359,11 +393,12 @@ class Game {
         ];
         */
         this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new ElevatorDown(this, 2, -6, 7),
-            new ElevatorUp(this, 2, -6),
-            new Ramp(this, 0, -3, 2, 2, true),
-            new UTurn(this, -1, -1, true)
+            new Ramp(this, -1, 0, 3, 1),
+            new ElevatorDown(this, 2, -5, 6),
+            new ElevatorUp(this, 2, -5),
+            new Spiral(this, 1, -4, true),
+            new Flat(this, -1, -1, 2),
+            new UTurn(this, -2, -1, true)
         ];
         this.tracks.forEach(track => {
             track.instantiate();
@@ -1203,6 +1238,7 @@ class Track extends BABYLON.Mesh {
         this.game = game;
         this.i = i;
         this.j = j;
+        this.trackName = "track";
         this.deltaI = 0;
         this.deltaJ = 0;
         this.wireSize = 0.0015;
@@ -1584,7 +1620,7 @@ class DoubleLoop extends Track {
 class ElevatorDown extends Track {
     constructor(game, i, j, h = 1, mirror) {
         super(game, i, j);
-        this.boxesCount = 5;
+        this.boxesCount = 7;
         this.boxX = [];
         this.boxes = [];
         this.wheels = [];
@@ -1610,7 +1646,7 @@ class ElevatorDown extends Track {
             box.parent = this;
             let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.024, 0.001, rRamp)];
+            rampWire0.path = [new BABYLON.Vector3(-0.022, 0.001, rRamp)];
             let nRamp = 12;
             for (let i = 0; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
@@ -1618,7 +1654,7 @@ class ElevatorDown extends Track {
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3(sina * rRamp - rRamp - 0.001, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.024, 0.001, -rRamp));
+            rampWire0.path.push(new BABYLON.Vector3(-0.022, 0.001, -rRamp));
             rampWire0.parent = box;
             this.boxes.push(box);
             this.wires.push(rampWire0);
@@ -1650,7 +1686,7 @@ class ElevatorDown extends Track {
     }
     update() {
         for (let i = 0; i < this.boxesCount; i++) {
-            this.boxX[i] += 0.0005;
+            this.boxX[i] += 0.0006;
             while (this.boxX[i] > this.chainLength) {
                 this.boxX[i] -= this.chainLength;
             }
@@ -1706,6 +1742,7 @@ class ElevatorUp extends Track {
 class Flat extends Track {
     constructor(game, i, j, w = 1) {
         super(game, i, j);
+        this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -1721,6 +1758,7 @@ class Flat extends Track {
 class CrossingFlat extends Track {
     constructor(game, i, j, w = 1) {
         super(game, i, j);
+        this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -1795,6 +1833,7 @@ class Loop extends Track {
 class Ramp extends Track {
     constructor(game, i, j, w = 1, h = 1, mirror) {
         super(game, i, j);
+        this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -1814,6 +1853,7 @@ class Ramp extends Track {
 class CrossingRamp extends Track {
     constructor(game, i, j, w = 1, h = 1, mirror) {
         super(game, i, j);
+        this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -1990,6 +2030,80 @@ class Spiral extends Track {
             this.mirrorTrackPointsInPlace();
         }
         this.generateWires();
+    }
+}
+var TrackNames = [
+    "flat-1",
+    "flat-2",
+    "flat-3",
+    "flatX-1",
+    "flatX-2",
+    "flatX-3",
+    "ramp-1.1",
+    "ramp-2.1",
+    "ramp-3.1",
+    "ramp-1.2",
+    "ramp-2.2",
+    "ramp-3.2",
+    "rampX-1.1",
+    "rampX-2.1",
+    "rampX-3.1",
+    "rampX-1.2",
+    "rampX-2.2",
+    "rampX-3.2",
+    "uturn-s",
+    "uturn-l",
+    "loop",
+    "wave",
+    "snake"
+];
+class TrackFactory {
+    constructor(game) {
+        this.game = game;
+    }
+    createTrack(trackname, i, j, mirror) {
+        for (let n = 1; n <= 3; n++) {
+            if (trackname === "flat-" + n.toFixed(0)) {
+                return new Flat(this.game, i, j, n);
+            }
+        }
+        for (let n = 1; n <= 3; n++) {
+            if (trackname === "flatX-" + n.toFixed(0)) {
+                return new CrossingFlat(this.game, i, j, n);
+            }
+        }
+        for (let n = 1; n <= 3; n++) {
+            for (let m = 1; m <= 2; m++) {
+                if (trackname === "ramp-" + n.toFixed(0) + "." + m.toFixed(0)) {
+                    return new Ramp(this.game, i, j, n, m, mirror);
+                }
+            }
+        }
+        for (let n = 1; n <= 3; n++) {
+            for (let m = 1; m <= 2; m++) {
+                if (trackname === "rampX-" + n.toFixed(0) + "." + m.toFixed(0)) {
+                    return new CrossingRamp(this.game, i, j, n, m, mirror);
+                }
+            }
+        }
+        if (trackname === "uturn-s") {
+            return new UTurn(this.game, i, j, mirror);
+        }
+        if (trackname === "uturn-l") {
+            return new UTurn(this.game, i, j, mirror);
+        }
+        if (trackname === "loop") {
+            return new Loop(this.game, i, j, mirror);
+        }
+        if (trackname === "wave") {
+            return new Wave(this.game, i, j, mirror);
+        }
+        if (trackname === "snake") {
+            return new Snake(this.game, i, j, mirror);
+        }
+        if (trackname === "spiral") {
+            return new Spiral(this.game, i, j, mirror);
+        }
     }
 }
 class UTurnLarge extends Track {
