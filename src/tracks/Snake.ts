@@ -3,6 +3,7 @@
 class Snake extends Track {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
         super(machine, i, j);
+        this.trackName = "snake";
 
         this.deltaJ = 1;
 

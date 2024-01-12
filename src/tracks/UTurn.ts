@@ -1,6 +1,7 @@
 class UTurnLarge extends Track {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
+        this.trackName = "uturn-l";
 
         this.deserialize({
             points: [
@@ -34,7 +35,8 @@ class UTurnLarge extends Track {
 
 class UTurn extends Track {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
+        this.trackName = "uturn-s";
 
         this.deserialize({
             points: [

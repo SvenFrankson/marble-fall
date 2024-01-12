@@ -19,7 +19,7 @@ class Ball extends BABYLON.Mesh {
     }
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
-    constructor(public machine: Machine) {
+    constructor(public positionZero: BABYLON.Vector3, public machine: Machine) {
         super("ball");
     }
 
@@ -29,17 +29,26 @@ class Ball extends BABYLON.Mesh {
 
         this.material = this.game.steelMaterial;
 
-        this.getScene().onBeforeRenderObservable.add(this.update);
+        this.reset();
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
-        this.getScene().onBeforeRenderObservable.removeCallback(this.update);
+        let index = this.machine.balls.indexOf(this);
+        if (index > - 1) {
+            this.machine.balls.splice(index, 1);
+        }
+    }
+
+    public reset(): void {
+        this.position.copyFrom(this.positionZero);
+        this.velocity.copyFromFloats(0, 0, 0);
+        this._timer = 0;
     }
 
     private _timer: number = 0;
-    public update = () => {
+    public update(): void {
         let gameDt = this.getScene().deltaTime / 1000;
         if (isFinite(gameDt)) {
             this._timer += gameDt * this.game.timeFactor;
@@ -93,7 +102,7 @@ class Ball extends BABYLON.Mesh {
                 }
             });
 
-            this.game.balls.forEach(ball => {
+            this.machine.balls.forEach(ball => {
                 if (ball != this) {
                     let dist = BABYLON.Vector3.Distance(this.position, ball.position);
                     if (dist < this.size) {

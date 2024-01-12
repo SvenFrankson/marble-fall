@@ -1,4 +1,4 @@
-class ElevatorDown extends Track {
+class ElevatorBottom extends Track {
 
     public boxesCount: number = 7;
     public boxX: number[] = [];
@@ -7,6 +7,7 @@ class ElevatorDown extends Track {
 
     constructor(machine: Machine, i: number, j: number, h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.trackName = "elevator-bottom-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -144,10 +145,11 @@ class ElevatorDown extends Track {
     }
 }
 
-class ElevatorUp extends Track {
+class ElevatorTop extends Track {
 
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.trackName = "elevator-top";
         let dirLeft = new BABYLON.Vector3(1, 0, 0);
         dirLeft.normalize();
         let nLeft = new BABYLON.Vector3(0, 1, 0);

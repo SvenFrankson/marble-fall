@@ -3,6 +3,7 @@
 class Loop extends Track {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.trackName = "loop";
 
         this.deltaI = 1;
         this.deltaJ = 3;

@@ -21,7 +21,11 @@ var TrackNames = [
     "uturn-l",
     "loop",
     "wave",
-    "snake"
+    "snake",
+    "elevator-bottom-6",
+    "elevator-bottom-10",
+    "elevator-bottom-14",
+    "elevator-top",
 ];
 
 class TrackFactory {
@@ -72,6 +76,14 @@ class TrackFactory {
         }
         if (trackname === "spiral") {
             return new Spiral(this.machine, i, j, mirror);
+        }
+        for (let n = 6; n <= 14; n += 4) {
+            if (trackname === "elevator-bottom-" + n.toFixed(0)) {
+                return new ElevatorBottom(this.machine, i, j, n);
+            }
+        }
+        if (trackname === "elevator-top") {
+            return new ElevatorTop(this.machine, i, j, mirror);
         }
     }
 }

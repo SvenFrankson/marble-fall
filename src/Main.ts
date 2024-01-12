@@ -27,7 +27,6 @@ class Game {
     public physicDT: number = 0.001;
 
     public machine: Machine;
-    public balls: Ball[] = [];
     public trackEditor: TrackEditor;
 
     public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
@@ -129,42 +128,13 @@ class Game {
 
         this.machine = new Machine(this);
 
-        let ball = new Ball(this.machine);
-        ball.position.x = - tileWidth * 0.5 * 0.9;
-        ball.position.y = 0.008;
+        let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9, 0.008, 0), this.machine);
         ball.instantiate();
 
-        let ball2 = new Ball(this.machine);
-        ball2.position.x = - tileWidth * 0.5 * 0.5;
-        ball2.position.y = 0.007;
+        let ball2 = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.5, 0.007, 0), this.machine);
         ball2.instantiate();
 
-        let ball3 = new Ball(this.machine);
-        ball3.position.x = - tileWidth * 0.5 * 0.1;
-        ball3.position.y = 0.006;
-        ball3.instantiate();
-
-        let ball4 = new Ball(this.machine);
-        ball4.position.x = tileWidth * 0.5 * 0.3;
-        ball4.position.y = 0.005;
-        ball4.instantiate();
-
-        let ball5 = new Ball(this.machine);
-        ball5.position.x = tileWidth * 0.5 * 0.7;
-        ball5.position.y = 0.004;
-        ball5.instantiate();
-
-        let ball6 = new Ball(this.machine);
-        ball6.position.x = tileWidth * 0.5 * 1.1;
-        ball6.position.y = 0.003;
-        ball6.instantiate();
-
-        let ball7 = new Ball(this.machine);
-        ball7.position.x = tileWidth * 0.5 * 1.5;
-        ball7.position.y = 0.002;
-        ball7.instantiate();
-
-        this.balls = [ball, ball2, ball3, ball4, ball5, ball6, ball7];
+        this.machine.balls = [ball, ball2];
 
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
@@ -206,8 +176,8 @@ class Game {
        
         this.machine.tracks = [
             new Ramp(this.machine, -1, 0, 3, 1),
-            new ElevatorDown(this.machine, 2, -5, 6),
-            new ElevatorUp(this.machine, 2, -5),
+            new ElevatorBottom(this.machine, 2, -5, 6),
+            new ElevatorTop(this.machine, 2, -5),
             new Spiral(this.machine, 1, -4, true),
             new Flat(this.machine, -1, -1, 2),
             new UTurn(this.machine, -2, -1, true)
@@ -262,9 +232,20 @@ class Game {
         tileCredit.parent = menu;
 
         this.machine.instantiate();
+        this.machine.generateBaseMesh();
 
         this.trackEditor = new TrackEditor(this);
         this.trackEditor.initialize();
+
+        setTimeout(() => {
+            let data = this.machine.serialize();
+            this.machine.dispose();
+            setTimeout(() => {
+                this.machine.deserialize(data);
+                this.machine.instantiate();
+                
+            }, 5000);
+        }, 5000);
 	}
 
 	public animate(): void {

@@ -353,7 +353,11 @@ class Track extends BABYLON.Mesh {
     }
     
     public dispose(): void {
-        this.dispose();
+        super.dispose();
+        let index = this.machine.tracks.indexOf(this);
+        if (index > - 1) {
+            this.machine.tracks.splice(index, 1);
+        }
     }
 
     public update(): void {}

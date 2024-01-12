@@ -1,79 +1,11 @@
 class Ball extends BABYLON.Mesh {
-    constructor(machine) {
+    constructor(positionZero, machine) {
         super("ball");
+        this.positionZero = positionZero;
         this.machine = machine;
         this.size = 0.016;
         this.velocity = BABYLON.Vector3.Zero();
         this._timer = 0;
-        this.update = () => {
-            let gameDt = this.getScene().deltaTime / 1000;
-            if (isFinite(gameDt)) {
-                this._timer += gameDt * this.game.timeFactor;
-                this._timer = Math.min(this._timer, 1);
-            }
-            while (this._timer > 0) {
-                let m = this.mass;
-                let dt = this.game.physicDT;
-                this._timer -= dt;
-                let weight = new BABYLON.Vector3(0, -9 * m, 0);
-                let reactions = BABYLON.Vector3.Zero();
-                let reactionsCount = 0;
-                let forcedDisplacement = BABYLON.Vector3.Zero();
-                let canceledSpeed = BABYLON.Vector3.Zero();
-                this.machine.tracks.forEach(track => {
-                    if (Mummu.AABBAABBIntersect(this.position.x - this.radius, this.position.x + this.radius, this.position.y - this.radius, this.position.y + this.radius, this.position.z - this.radius, this.position.z + this.radius, track.AABBMin.x - this.radius, track.AABBMax.x + this.radius, track.AABBMin.y - this.radius, track.AABBMax.y + this.radius, track.AABBMin.z - this.radius, track.AABBMax.z + this.radius)) {
-                        track.wires.forEach(wire => {
-                            let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
-                            if (col.hit) {
-                                let colDig = col.normal.scale(-1);
-                                // Move away from collision
-                                forcedDisplacement.addInPlace(col.normal.scale(col.depth));
-                                // Cancel depth component of speed
-                                let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
-                                if (depthSpeed > 0) {
-                                    canceledSpeed.addInPlace(colDig.scale(depthSpeed));
-                                }
-                                // Add ground reaction
-                                let reaction = col.normal.scale(-BABYLON.Vector3.Dot(weight, col.normal));
-                                reactions.addInPlace(reaction);
-                                reactionsCount++;
-                            }
-                        });
-                    }
-                });
-                this.game.balls.forEach(ball => {
-                    if (ball != this) {
-                        let dist = BABYLON.Vector3.Distance(this.position, ball.position);
-                        if (dist < this.size) {
-                            let depth = this.size - dist;
-                            //this.velocity.scaleInPlace(0.3);
-                            let otherSpeed = ball.velocity.clone();
-                            let mySpeed = this.velocity.clone();
-                            this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
-                            ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
-                            //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
-                            //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
-                            let dir = this.position.subtract(ball.position).normalize();
-                            this.position.addInPlace(dir.scale(depth));
-                        }
-                    }
-                });
-                if (reactionsCount > 0) {
-                    reactions.scaleInPlace(1 / reactionsCount);
-                    canceledSpeed.scaleInPlace(1 / reactionsCount);
-                    forcedDisplacement.scaleInPlace(1 / reactionsCount);
-                }
-                this.velocity.subtractInPlace(canceledSpeed);
-                this.position.addInPlace(forcedDisplacement);
-                let friction = this.velocity.scale(-1).scaleInPlace(0.005);
-                let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
-                this.velocity.addInPlace(acceleration.scale(dt));
-                this.position.addInPlace(this.velocity.scale(dt));
-            }
-            if (this.position.y < -10000) {
-                this.dispose();
-            }
-        };
     }
     get game() {
         return this.machine.game;
@@ -94,11 +26,88 @@ class Ball extends BABYLON.Mesh {
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
         this.material = this.game.steelMaterial;
-        this.getScene().onBeforeRenderObservable.add(this.update);
+        this.reset();
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-        this.getScene().onBeforeRenderObservable.removeCallback(this.update);
+        let index = this.machine.balls.indexOf(this);
+        if (index > -1) {
+            this.machine.balls.splice(index, 1);
+        }
+    }
+    reset() {
+        this.position.copyFrom(this.positionZero);
+        this.velocity.copyFromFloats(0, 0, 0);
+        this._timer = 0;
+    }
+    update() {
+        let gameDt = this.getScene().deltaTime / 1000;
+        if (isFinite(gameDt)) {
+            this._timer += gameDt * this.game.timeFactor;
+            this._timer = Math.min(this._timer, 1);
+        }
+        while (this._timer > 0) {
+            let m = this.mass;
+            let dt = this.game.physicDT;
+            this._timer -= dt;
+            let weight = new BABYLON.Vector3(0, -9 * m, 0);
+            let reactions = BABYLON.Vector3.Zero();
+            let reactionsCount = 0;
+            let forcedDisplacement = BABYLON.Vector3.Zero();
+            let canceledSpeed = BABYLON.Vector3.Zero();
+            this.machine.tracks.forEach(track => {
+                if (Mummu.AABBAABBIntersect(this.position.x - this.radius, this.position.x + this.radius, this.position.y - this.radius, this.position.y + this.radius, this.position.z - this.radius, this.position.z + this.radius, track.AABBMin.x - this.radius, track.AABBMax.x + this.radius, track.AABBMin.y - this.radius, track.AABBMax.y + this.radius, track.AABBMin.z - this.radius, track.AABBMax.z + this.radius)) {
+                    track.wires.forEach(wire => {
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
+                        if (col.hit) {
+                            let colDig = col.normal.scale(-1);
+                            // Move away from collision
+                            forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                            // Cancel depth component of speed
+                            let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
+                            if (depthSpeed > 0) {
+                                canceledSpeed.addInPlace(colDig.scale(depthSpeed));
+                            }
+                            // Add ground reaction
+                            let reaction = col.normal.scale(-BABYLON.Vector3.Dot(weight, col.normal));
+                            reactions.addInPlace(reaction);
+                            reactionsCount++;
+                        }
+                    });
+                }
+            });
+            this.machine.balls.forEach(ball => {
+                if (ball != this) {
+                    let dist = BABYLON.Vector3.Distance(this.position, ball.position);
+                    if (dist < this.size) {
+                        let depth = this.size - dist;
+                        //this.velocity.scaleInPlace(0.3);
+                        let otherSpeed = ball.velocity.clone();
+                        let mySpeed = this.velocity.clone();
+                        this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
+                        ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
+                        //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
+                        //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
+                        let dir = this.position.subtract(ball.position).normalize();
+                        this.position.addInPlace(dir.scale(depth));
+                    }
+                }
+            });
+            if (reactionsCount > 0) {
+                reactions.scaleInPlace(1 / reactionsCount);
+                canceledSpeed.scaleInPlace(1 / reactionsCount);
+                forcedDisplacement.scaleInPlace(1 / reactionsCount);
+            }
+            this.velocity.subtractInPlace(canceledSpeed);
+            this.position.addInPlace(forcedDisplacement);
+            let friction = this.velocity.scale(-1).scaleInPlace(0.005);
+            let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
+            this.velocity.addInPlace(acceleration.scale(dt));
+            this.position.addInPlace(this.velocity.scale(dt));
+        }
+        if (this.position.y < -10000) {
+            this.dispose();
+        }
     }
 }
 class HelperShape {
@@ -230,36 +239,54 @@ class Machine {
         this.game = game;
         this.tracks = [];
         this.balls = [];
+        this.instantiated = false;
+        this.trackFactory = new TrackFactory(this);
     }
     async instantiate() {
+        for (let i = 0; i < this.balls.length; i++) {
+            await this.balls[i].instantiate();
+        }
         for (let i = 0; i < this.tracks.length; i++) {
             await this.tracks[i].instantiate();
         }
-        this.generateBaseMesh();
         return new Promise(resolve => {
             requestAnimationFrame(() => {
                 for (let i = 0; i < this.tracks.length; i++) {
                     this.tracks[i].recomputeAbsolutePath();
                 }
+                this.instantiated = true;
                 resolve();
             });
         });
     }
     dispose() {
+        while (this.balls.length > 0) {
+            this.balls[0].dispose();
+        }
+        while (this.tracks.length > 0) {
+            this.tracks[0].dispose();
+        }
+        this.instantiated = false;
     }
     update() {
+        if (!this.instantiated) {
+            return;
+        }
+        for (let i = 0; i < this.balls.length; i++) {
+            this.balls[i].update();
+        }
         for (let i = 0; i < this.tracks.length; i++) {
             this.tracks[i].update();
         }
     }
     generateBaseMesh() {
-        let wallMaterial = new BABYLON.StandardMaterial("wood-material");
-        wallMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
-        wallMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-        wallMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-        wallMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
-        wallMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        wallMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+        let woodMaterial = new BABYLON.StandardMaterial("wood-material");
+        woodMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
+        woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
+        woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
+        woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
+        woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
+        woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
         let minX = Infinity;
         let maxX = -Infinity;
         let minY = Infinity;
@@ -275,21 +302,20 @@ class Machine {
         let h = maxY - minY;
         let u = w * 4;
         let v = h * 4;
-        let wall = BABYLON.MeshBuilder.CreatePlane("wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-        wall.position.x = (maxX + minX) * 0.5;
-        wall.position.y = (maxY + minY) * 0.5;
-        wall.position.z += 0.016;
-        wall.rotation.z = Math.PI / 2;
-        wall.material = wallMaterial;
-        let baseFrame = new BABYLON.Mesh("base-frame");
-        baseFrame.position.copyFrom(wall.position);
-        baseFrame.material = this.game.steelMaterial;
+        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+        this.baseWall.position.x = (maxX + minX) * 0.5;
+        this.baseWall.position.y = (maxY + minY) * 0.5;
+        this.baseWall.position.z += 0.016;
+        this.baseWall.rotation.z = Math.PI / 2;
+        this.baseWall.material = woodMaterial;
+        this.baseFrame = new BABYLON.Mesh("base-frame");
+        this.baseFrame.position.copyFrom(this.baseWall.position);
+        this.baseFrame.material = this.game.steelMaterial;
         this.game.vertexDataLoader.get("./meshes/base-frame.babylon").then(vertexData => {
             let positions = [...vertexData[0].positions];
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
-                let z = positions[3 * i + 2];
                 if (x > 0) {
                     positions[3 * i] += w * 0.5 - 0.01 + 0.1;
                 }
@@ -304,13 +330,20 @@ class Machine {
                 }
             }
             vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(baseFrame);
+            vertexData[0].applyToMesh(this.baseFrame);
         });
     }
     serialize() {
         let data = {
+            balls: [],
             parts: []
         };
+        for (let i = 0; i < this.balls.length; i++) {
+            data.balls.push({
+                x: this.balls[i].positionZero.x,
+                y: this.balls[i].positionZero.y,
+            });
+        }
         for (let i = 0; i < this.tracks.length; i++) {
             data.parts.push({
                 name: this.tracks[i].trackName,
@@ -322,6 +355,18 @@ class Machine {
         return data;
     }
     deserialize(data) {
+        this.balls = [];
+        this.tracks = [];
+        for (let i = 0; i < data.balls.length; i++) {
+            let ballData = data.balls[i];
+            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, 0), this);
+            this.balls.push(ball);
+        }
+        for (let i = 0; i < data.parts.length; i++) {
+            let part = data.parts[i];
+            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.mirror);
+            this.tracks.push(track);
+        }
     }
 }
 /// <reference path="../lib/babylon.d.ts"/>
@@ -338,7 +383,6 @@ class Game {
         this.cameraOrtho = false;
         this.timeFactor = 1;
         this.physicDT = 0.001;
-        this.balls = [];
         Game.Instance = this;
         this.canvas = document.getElementById(canvasElement);
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
@@ -415,35 +459,11 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
         this.machine = new Machine(this);
-        let ball = new Ball(this.machine);
-        ball.position.x = -tileWidth * 0.5 * 0.9;
-        ball.position.y = 0.008;
+        let ball = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.9, 0.008, 0), this.machine);
         ball.instantiate();
-        let ball2 = new Ball(this.machine);
-        ball2.position.x = -tileWidth * 0.5 * 0.5;
-        ball2.position.y = 0.007;
+        let ball2 = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.5, 0.007, 0), this.machine);
         ball2.instantiate();
-        let ball3 = new Ball(this.machine);
-        ball3.position.x = -tileWidth * 0.5 * 0.1;
-        ball3.position.y = 0.006;
-        ball3.instantiate();
-        let ball4 = new Ball(this.machine);
-        ball4.position.x = tileWidth * 0.5 * 0.3;
-        ball4.position.y = 0.005;
-        ball4.instantiate();
-        let ball5 = new Ball(this.machine);
-        ball5.position.x = tileWidth * 0.5 * 0.7;
-        ball5.position.y = 0.004;
-        ball5.instantiate();
-        let ball6 = new Ball(this.machine);
-        ball6.position.x = tileWidth * 0.5 * 1.1;
-        ball6.position.y = 0.003;
-        ball6.instantiate();
-        let ball7 = new Ball(this.machine);
-        ball7.position.x = tileWidth * 0.5 * 1.5;
-        ball7.position.y = 0.002;
-        ball7.instantiate();
-        this.balls = [ball, ball2, ball3, ball4, ball5, ball6, ball7];
+        this.machine.balls = [ball, ball2];
         document.getElementById("reset").addEventListener("click", () => {
             ball.position.copyFromFloats(-0.05, 0.1, 0);
             ball.velocity.copyFromFloats(0, 0, 0);
@@ -482,8 +502,8 @@ class Game {
         */
         this.machine.tracks = [
             new Ramp(this.machine, -1, 0, 3, 1),
-            new ElevatorDown(this.machine, 2, -5, 6),
-            new ElevatorUp(this.machine, 2, -5),
+            new ElevatorBottom(this.machine, 2, -5, 6),
+            new ElevatorTop(this.machine, 2, -5),
             new Spiral(this.machine, 1, -4, true),
             new Flat(this.machine, -1, -1, 2),
             new UTurn(this.machine, -2, -1, true)
@@ -530,8 +550,17 @@ class Game {
         tileCredit.position.y = -0.14;
         tileCredit.parent = menu;
         this.machine.instantiate();
+        this.machine.generateBaseMesh();
         this.trackEditor = new TrackEditor(this);
         this.trackEditor.initialize();
+        setTimeout(() => {
+            let data = this.machine.serialize();
+            this.machine.dispose();
+            setTimeout(() => {
+                this.machine.deserialize(data);
+                this.machine.instantiate();
+            }, 5000);
+        }, 5000);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -1492,7 +1521,11 @@ class Track extends BABYLON.Mesh {
         this.rebuildWireMeshes();
     }
     dispose() {
-        this.dispose();
+        super.dispose();
+        let index = this.machine.tracks.indexOf(this);
+        if (index > -1) {
+            this.machine.tracks.splice(index, 1);
+        }
     }
     update() { }
     rebuildWireMeshes() {
@@ -1587,7 +1620,7 @@ class DoubleLoop extends Track {
         this.generateWires();
     }
 }
-class ElevatorDown extends Track {
+class ElevatorBottom extends Track {
     constructor(machine, i, j, h = 1, mirror) {
         super(machine, i, j, mirror);
         this.boxesCount = 7;
@@ -1597,6 +1630,7 @@ class ElevatorDown extends Track {
         this.l = 0;
         this.p = 0;
         this.chainLength = 0;
+        this.trackName = "elevator-bottom-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -1691,9 +1725,10 @@ class ElevatorDown extends Track {
         this.wires[2].recomputeAbsolutePath();
     }
 }
-class ElevatorUp extends Track {
+class ElevatorTop extends Track {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
+        this.trackName = "elevator-top";
         let dirLeft = new BABYLON.Vector3(1, 0, 0);
         dirLeft.normalize();
         let nLeft = new BABYLON.Vector3(0, 1, 0);
@@ -1773,6 +1808,7 @@ class FlatLoop extends Track {
 class Loop extends Track {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
+        this.trackName = "loop";
         this.deltaI = 1;
         this.deltaJ = 3;
         this.deserialize({
@@ -1955,6 +1991,7 @@ class SleeperMeshBuilder {
 class Snake extends Track {
     constructor(machine, i, j, mirror) {
         super(machine, i, j);
+        this.trackName = "snake";
         this.deltaJ = 1;
         this.deserialize({ "points": [{ "position": { "x": -0.075, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }, { "position": { "x": 0.015, "y": -0.0006, "z": -0.02 }, "normal": { "x": 0, "y": 0.983976396926608, "z": 0.17829876693721267 } }, { "position": { "x": 0.075, "y": 0, "z": 0 }, "normal": { "x": -0.0008909764600687716, "y": 0.9800741060756494, "z": -0.1986301909603991 } }, { "position": { "x": 0.125, "y": -0.0005, "z": -0.02 }, "normal": { "x": 0, "y": 0.9797898655773956, "z": 0.20002954609714332 } }, { "position": { "x": 0.225, "y": 0, "z": 0 }, "normal": { "x": 0, "y": 1, "z": 0 }, "dir": { "x": 1, "y": 0, "z": 0 } }] });
         this.generateWires();
@@ -1963,7 +2000,8 @@ class Snake extends Track {
 /// <reference path="./Track.ts"/>
 class Spiral extends Track {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
+        this.trackName = "spiral";
         this.deltaJ = 2;
         this.deserialize({
             points: [
@@ -2025,7 +2063,11 @@ var TrackNames = [
     "uturn-l",
     "loop",
     "wave",
-    "snake"
+    "snake",
+    "elevator-bottom-6",
+    "elevator-bottom-10",
+    "elevator-bottom-14",
+    "elevator-top",
 ];
 class TrackFactory {
     constructor(machine) {
@@ -2074,11 +2116,20 @@ class TrackFactory {
         if (trackname === "spiral") {
             return new Spiral(this.machine, i, j, mirror);
         }
+        for (let n = 6; n <= 14; n += 4) {
+            if (trackname === "elevator-bottom-" + n.toFixed(0)) {
+                return new ElevatorBottom(this.machine, i, j, n);
+            }
+        }
+        if (trackname === "elevator-top") {
+            return new ElevatorTop(this.machine, i, j, mirror);
+        }
     }
 }
 class UTurnLarge extends Track {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
+        this.trackName = "uturn-l";
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -2107,7 +2158,8 @@ class UTurnLarge extends Track {
 }
 class UTurn extends Track {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
+        this.trackName = "uturn-s";
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -2132,6 +2184,7 @@ class UTurn extends Track {
 class Wave extends Track {
     constructor(machine, i, j, mirror) {
         super(machine, i, j);
+        this.trackName = "wave";
         this.deltaJ = 1;
         this.deserialize({
             points: [
