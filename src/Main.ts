@@ -34,6 +34,8 @@ class Game {
     public handleMaterialActive: BABYLON.StandardMaterial;
     public handleMaterialHover: BABYLON.StandardMaterial;
     public insertHandleMaterial: BABYLON.StandardMaterial;
+
+    public machineEditorContainer: HTMLDivElement;
     
     constructor(canvasElement: string) {
         Game.Instance = this;
@@ -126,20 +128,16 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
+        this.machineEditorContainer = document.getElementById("machine-editor-menu") as HTMLDivElement;
+
         this.machine = new Machine(this);
 
-        let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9, 0.008, 0), this.machine);
-        ball.instantiate();
-
-        let ball2 = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.5, 0.007, 0), this.machine);
-        ball2.instantiate();
-
-        this.machine.balls = [ball, ball2];
-
-        document.getElementById("reset").addEventListener("click", () => {
-            ball.position.copyFromFloats(-0.05, 0.1, 0);
-            ball.velocity.copyFromFloats(0, 0, 0);
-        })
+        this.machine.balls = [];
+        for (let n = 0; n < 6; n++) {
+            let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
+            ball.instantiate();
+            this.machine.balls.push(ball);
+        }
         
         /*
         this.tracks = [
@@ -234,8 +232,9 @@ class Game {
         this.machine.instantiate();
         this.machine.generateBaseMesh();
 
-        this.trackEditor = new TrackEditor(this);
-        this.trackEditor.initialize();
+        document.getElementById("track-editor-menu").style.display = "none";
+        //this.trackEditor = new TrackEditor(this);
+        //this.trackEditor.initialize();
 
         setTimeout(() => {
             let data = this.machine.serialize();
@@ -272,8 +271,8 @@ class Game {
         window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
         window.localStorage.setItem("saved-cam-ortho", this.cameraOrtho ? "true" : "false");
 
+        let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         if (this.cameraOrtho) {
-            let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             let f = this.camera.radius / 4;
             this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
             this.camera.orthoTop = 1 * f;
@@ -283,6 +282,15 @@ class Game {
         }
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+        }
+
+        if (ratio > 1) {
+            this.machineEditorContainer.classList.add("left");
+            this.machineEditorContainer.classList.remove("bottom");
+        }
+        else {
+            this.machineEditorContainer.classList.add("bottom");
+            this.machineEditorContainer.classList.remove("left");
         }
 
         this.machine.update();

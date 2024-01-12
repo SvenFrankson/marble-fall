@@ -9,6 +9,7 @@
 		<script src="../mummu/mummu.js"></script>
 		<script src="./build/marble-fall.js"></script>
 		<link rel="stylesheet" type="text/css" href="./styles/app.css">
+		<link rel="stylesheet" type="text/css" href="./styles/machine-editor.css">
 	</head>
 	<body>
 		<button id="reset">RESET</button>
@@ -116,6 +117,20 @@
 			<div class="line-flex">
 				<button id="active-trackpoint-split" class="btn-l">Split</button>
 				<button id="active-trackpoint-delete" class="btn-l">Delete</button>
+			</div>
+		</div>
+		<div id="machine-editor-menu" class="menu">
+			<div id="machine-editor-objects">
+
+			</div>
+			<div id="machine-editor-buttons">
+				<div class="line-flex">
+					<button id="test-1" class="btn-m">Load</button>
+					<button id="test-2" class="btn-m">Save</button>
+				</div>
+				<div class="line-flex">
+					<button id="test-1" class="btn-m">Main Menu</button>
+				</div>
 			</div>
 		</div>
         <canvas id="render-canvas" class="full-screen"></canvas>

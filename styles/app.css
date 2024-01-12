@@ -44,18 +44,18 @@ body {
     z-index: 1;
 }
 
-#track-editor-menu {
-    top: 20px;
-    left: 20px;
-    width: 400px;
-}
-
 .menu {
     position: fixed;
     z-index: 1;
     font-family: Arial, Helvetica, sans-serif;
     background-color: rgba(255, 255, 255, 20%);
+}
+
+#track-editor-menu {
     padding: 10px;
+    top: 20px;
+    left: 20px;
+    width: 400px;
 }
 
 .line {
@@ -73,7 +73,7 @@ body {
     height: 30px;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 
 .paginated-title {

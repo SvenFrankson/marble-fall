@@ -1,0 +1,70 @@
+#machine-editor-menu {
+    z-index: 2;
+}
+
+#machine-editor-menu.left {
+    left: 0;
+    top: 0;
+    width: 300px;
+    height: 100%;
+}
+
+#machine-editor-menu.bottom {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 300px;
+}
+
+#machine-editor-objects {
+    position: fixed;
+    left: 0;
+    outline: 1px solid blue;
+    width: 300px;
+    height: 300px;
+    z-index: 2;
+}
+
+#machine-editor-menu.left #machine-editor-objects {
+    height: calc(100vh - 300px);
+    top: 0;
+    left: 0;
+}
+
+#machine-editor-menu.bottom #machine-editor-objects {
+    width: calc(100vw - 300px);
+    bottom: 0;
+    left: 0;
+}
+
+#machine-editor-buttons {
+    position: fixed;
+    bottom: 0;
+    outline: 1px solid lime;
+    width: 300px;
+    height: 300px;
+    z-index: 2;
+}
+
+#machine-editor-menu.left #machine-editor-buttons {
+    bottom: 0;
+    left: 0;
+}
+
+#machine-editor-menu.bottom #machine-editor-buttons {
+    bottom: 0;
+    right: 0;
+}
+
+#machine-editor-buttons .line-flex {
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+#machine-editor-buttons button {
+    height: 80px;
+    font-size: 26px;
+    font-weight: bold;
+    margin: 5px;
+    width: 300px;
+}
