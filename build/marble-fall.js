@@ -533,7 +533,7 @@ class Game {
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target");
         this.machine = new Machine(this);
         this.machine.balls = [];
-        for (let n = 0; n < 10; n++) {
+        for (let n = 0; n < 3; n++) {
             let ball = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
             ball.instantiate();
             this.machine.balls.push(ball);
@@ -571,11 +571,11 @@ class Game {
         ];
         */
         this.machine.tracks = [
-            new Ramp(this.machine, -1, 0, 3, 1),
-            new ElevatorBottom(this.machine, 2, -5, 6),
-            new ElevatorTop(this.machine, 2, -5),
-            new Spiral(this.machine, 1, -4, true),
-            new Flat(this.machine, -1, -1, 2),
+            new Ramp(this.machine, -1, 0, 4, 1),
+            new ElevatorBottom(this.machine, 3, -5, 6),
+            new ElevatorTop(this.machine, 3, -5),
+            new Spiral(this.machine, 2, -4, true),
+            new Flat(this.machine, -1, -1, 3),
             new UTurn(this.machine, -2, -1, true)
         ];
         this.tileMenuContainer = new BABYLON.Mesh("menu");
@@ -694,16 +694,28 @@ class Game {
                 this.tileMenuContainer.position.z = -0.02;
                 this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.35);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
+                this.camera.lowerAlphaLimit = -Math.PI * 0.65;
+                this.camera.upperAlphaLimit = -Math.PI * 0.35;
+                this.camera.lowerBetaLimit = Math.PI * 0.35;
+                this.camera.upperBetaLimit = Math.PI * 0.65;
                 this.scene.onPointerObservable.add(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
+                this.camera.lowerAlphaLimit = -Math.PI * 0.95;
+                this.camera.upperAlphaLimit = -Math.PI * 0.05;
+                this.camera.lowerBetaLimit = Math.PI * 0.05;
+                this.camera.upperBetaLimit = Math.PI * 0.95;
                 this.machineEditor.instantiate();
             }
             else if (this.mode === GameMode.DemoMode) {
                 this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
+                this.camera.lowerAlphaLimit = -Math.PI * 0.95;
+                this.camera.upperAlphaLimit = -Math.PI * 0.05;
+                this.camera.lowerBetaLimit = Math.PI * 0.05;
+                this.camera.upperBetaLimit = Math.PI * 0.95;
             }
         }
     }
