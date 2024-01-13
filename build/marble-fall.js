@@ -5,6 +5,7 @@ class Ball extends BABYLON.Mesh {
         this.machine = machine;
         this.size = 0.016;
         this.velocity = BABYLON.Vector3.Zero();
+        this._showPositionZeroGhost = false;
         this._timer = 0;
     }
     get game() {
@@ -22,14 +23,37 @@ class Ball extends BABYLON.Mesh {
     get sectionArea() {
         return Math.PI * this.radius * this.radius;
     }
+    get showPositionZeroGhost() {
+        return this._showPositionZeroGhost;
+    }
+    setShowPositionZeroGhost(v) {
+        this._showPositionZeroGhost = v;
+        if (this.positionZeroGhost) {
+            this.positionZeroGhost.isVisible = v;
+        }
+    }
+    setPositionZero(p) {
+        this.positionZero.copyFrom(p);
+        this.positionZeroGhost.position.copyFrom(p);
+    }
     async instantiate() {
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
         this.material = this.game.steelMaterial;
+        if (this.positionZeroGhost) {
+            this.positionZeroGhost.dispose();
+        }
+        this.positionZeroGhost = BABYLON.MeshBuilder.CreateSphere(this.name + "-ghost", { diameter: this.size * 0.95 });
+        this.positionZeroGhost.material = this.game.ghostMaterial;
+        this.positionZeroGhost.position.copyFrom(this.positionZero);
+        this.positionZeroGhost.isVisible = this._showPositionZeroGhost;
         this.reset();
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+        if (this.positionZeroGhost) {
+            this.positionZeroGhost.dispose();
+        }
         let index = this.machine.balls.indexOf(this);
         if (index > -1) {
             this.machine.balls.splice(index, 1);
@@ -584,6 +608,9 @@ class MachineEditor {
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         };
+        for (let i = 0; i < this.machine.balls.length; i++) {
+            this.machine.balls[i].setShowPositionZeroGhost(true);
+        }
     }
     dispose() {
         this.container.style.display = "none";
@@ -592,6 +619,9 @@ class MachineEditor {
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
+        for (let i = 0; i < this.machine.balls.length; i++) {
+            this.machine.balls[i].setShowPositionZeroGhost(false);
+        }
     }
     update() {
         let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
@@ -695,6 +725,10 @@ class Game {
         this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
         this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.insertHandleMaterial.alpha = 0.5;
+        this.ghostMaterial = new BABYLON.StandardMaterial("ghost-material");
+        this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
+        this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.ghostMaterial.alpha = 0.3;
         this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
         this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
         this.steelMaterial.metallic = 1.0; // set to 1 to only use it from the metallicRoughnessTexture

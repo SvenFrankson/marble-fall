@@ -19,6 +19,24 @@ class Ball extends BABYLON.Mesh {
     }
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
+    public _showPositionZeroGhost: boolean = false;
+    public get showPositionZeroGhost(): boolean {
+        return this._showPositionZeroGhost;
+    }
+    public setShowPositionZeroGhost(v: boolean): void {
+        this._showPositionZeroGhost = v;
+        if (this.positionZeroGhost) {
+            this.positionZeroGhost.isVisible = v;
+        }
+    }
+    public positionZeroGhost: BABYLON.Mesh;
+
+    public setPositionZero(p: BABYLON.Vector3): void {
+        this.positionZero.copyFrom(p);
+        this.positionZeroGhost.position.copyFrom(p);
+    }
+
+
     constructor(public positionZero: BABYLON.Vector3, public machine: Machine) {
         super("ball");
     }
@@ -29,12 +47,23 @@ class Ball extends BABYLON.Mesh {
 
         this.material = this.game.steelMaterial;
 
+        if (this.positionZeroGhost) {
+            this.positionZeroGhost.dispose();
+        }
+        this.positionZeroGhost = BABYLON.MeshBuilder.CreateSphere(this.name + "-ghost", { diameter: this.size * 0.95 });
+        this.positionZeroGhost.material = this.game.ghostMaterial;
+        this.positionZeroGhost.position.copyFrom(this.positionZero);
+        this.positionZeroGhost.isVisible = this._showPositionZeroGhost;
+
         this.reset();
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
+        if (this.positionZeroGhost) {
+            this.positionZeroGhost.dispose();
+        }
         let index = this.machine.balls.indexOf(this);
         if (index > - 1) {
             this.machine.balls.splice(index, 1);

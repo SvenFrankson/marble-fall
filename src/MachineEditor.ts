@@ -130,6 +130,10 @@ class MachineEditor {
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         }
+
+        for (let i = 0; i < this.machine.balls.length; i++) {
+            this.machine.balls[i].setShowPositionZeroGhost(true);
+        }
     }
 
     public dispose(): void {
@@ -139,6 +143,10 @@ class MachineEditor {
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
+
+        for (let i = 0; i < this.machine.balls.length; i++) {
+            this.machine.balls[i].setShowPositionZeroGhost(false);
+        }
     }
 
     public update(): void {
