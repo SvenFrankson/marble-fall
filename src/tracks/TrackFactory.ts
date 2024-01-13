@@ -22,6 +22,7 @@ var TrackNames = [
     "loop",
     "wave",
     "snake",
+    "spiral",
     "elevator-bottom-6",
     "elevator-bottom-10",
     "elevator-bottom-14",

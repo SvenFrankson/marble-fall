@@ -118,6 +118,10 @@ class Ball extends BABYLON.Mesh {
 
     private _timer: number = 0;
     public update(dt: number): void {
+        if (this.position.y < - 10) {
+            return;
+        }
+
         this._timer += dt * this.game.timeFactor;
         this._timer = Math.min(this._timer, 1);
 
@@ -202,10 +206,6 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             
             this.position.addInPlace(this.velocity.scale(dt));
-        }
-
-        if (this.position.y < - 10) {
-            this.dispose();
         }
     }
 }

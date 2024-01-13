@@ -99,6 +99,9 @@ class Ball extends BABYLON.Mesh {
         this._timer = 0;
     }
     update(dt) {
+        if (this.position.y < -10) {
+            return;
+        }
         this._timer += dt * this.game.timeFactor;
         this._timer = Math.min(this._timer, 1);
         while (this._timer > 0) {
@@ -159,9 +162,6 @@ class Ball extends BABYLON.Mesh {
             let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
-        }
-        if (this.position.y < -10) {
-            this.dispose();
         }
     }
 }
@@ -934,12 +934,12 @@ class Game {
         ];
         */
         this.machine.tracks = [
-            new Ramp(this.machine, -1, 0, 4, 1),
+            new Ramp(this.machine, 0, 0, 3, 1),
             new ElevatorBottom(this.machine, 3, -5, 6),
             new ElevatorTop(this.machine, 3, -5),
             new Spiral(this.machine, 2, -4, true),
-            new Flat(this.machine, -1, -1, 3),
-            new UTurn(this.machine, -2, -1, true)
+            new Flat(this.machine, 0, -1, 2),
+            new UTurn(this.machine, -1, -1, true)
         ];
         this.tileMenuContainer = new BABYLON.Mesh("menu");
         this.tileMenuContainer.position.z = -1;
@@ -2627,6 +2627,7 @@ var TrackNames = [
     "loop",
     "wave",
     "snake",
+    "spiral",
     "elevator-bottom-6",
     "elevator-bottom-10",
     "elevator-bottom-14",

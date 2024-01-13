@@ -209,12 +209,12 @@ class Game {
         */
        
         this.machine.tracks = [
-            new Ramp(this.machine, -1, 0, 4, 1),
+            new Ramp(this.machine, 0, 0, 3, 1),
             new ElevatorBottom(this.machine, 3, -5, 6),
             new ElevatorTop(this.machine, 3, -5),
             new Spiral(this.machine, 2, -4, true),
-            new Flat(this.machine, -1, -1, 3),
-            new UTurn(this.machine, -2, -1, true)
+            new Flat(this.machine, 0, -1, 2),
+            new UTurn(this.machine, -1, -1, true)
         ];
 
         this.tileMenuContainer = new BABYLON.Mesh("menu");
