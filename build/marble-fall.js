@@ -237,6 +237,8 @@ class Machine {
         this.tracks = [];
         this.balls = [];
         this.instantiated = false;
+        this.playing = false;
+        this.onStopCallbacks = new Nabu.UniqueList();
         this.trackFactory = new TrackFactory(this);
     }
     async instantiate() {
@@ -269,15 +271,29 @@ class Machine {
         if (!this.instantiated) {
             return;
         }
-        let dt = this.game.scene.deltaTime / 1000;
-        if (isFinite(dt)) {
-            for (let i = 0; i < this.balls.length; i++) {
-                this.balls[i].update(dt);
-            }
-            for (let i = 0; i < this.tracks.length; i++) {
-                this.tracks[i].update(dt);
+        if (this.playing) {
+            let dt = this.game.scene.deltaTime / 1000;
+            if (isFinite(dt)) {
+                for (let i = 0; i < this.balls.length; i++) {
+                    this.balls[i].update(dt);
+                }
+                for (let i = 0; i < this.tracks.length; i++) {
+                    this.tracks[i].update(dt);
+                }
             }
         }
+    }
+    play() {
+        this.playing = true;
+    }
+    stop() {
+        for (let i = 0; i < this.balls.length; i++) {
+            this.balls[i].reset();
+        }
+        this.onStopCallbacks.forEach(callback => {
+            callback();
+        });
+        this.playing = false;
     }
     generateBaseMesh() {
         let minX = -0.15;
@@ -378,12 +394,12 @@ class MachineEditor {
         this.pointerDown = (event) => {
             if (this.selectedTrack) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    return mesh === this.game.machine.baseWall;
+                    return mesh === this.machine.baseWall;
                 });
                 if (pick.hit) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    let pickedTrack = this.game.machine.tracks.find(track => {
+                    let pickedTrack = this.machine.tracks.find(track => {
                         if (track.i <= i) {
                             if ((track.i + track.deltaI) >= i) {
                                 if (track.j <= j) {
@@ -403,7 +419,7 @@ class MachineEditor {
         this.pointerMove = (event) => {
             if (this.draggedTrack) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    return mesh === this.game.machine.baseWall;
+                    return mesh === this.machine.baseWall;
                 });
                 if (pick.hit) {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
@@ -419,7 +435,7 @@ class MachineEditor {
         };
         this.pointerUp = (event) => {
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                return mesh === this.game.machine.baseWall;
+                return mesh === this.machine.baseWall;
             });
             if (pick.hit) {
                 if (this.draggedTrack) {
@@ -427,8 +443,8 @@ class MachineEditor {
                     let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                     this.draggedTrack.setI(i);
                     this.draggedTrack.setJ(j);
-                    if (this.game.machine.tracks.indexOf(this.draggedTrack) === -1) {
-                        this.game.machine.tracks.push(this.draggedTrack);
+                    if (this.machine.tracks.indexOf(this.draggedTrack) === -1) {
+                        this.machine.tracks.push(this.draggedTrack);
                     }
                     this.draggedTrack.setIsVisible(true);
                     this.draggedTrack.generateWires();
@@ -437,13 +453,13 @@ class MachineEditor {
                         this.setSelectedTrack(this.draggedTrack);
                         this.setDraggedTrack(undefined);
                         this.setSelectedItem("");
-                        this.game.machine.generateBaseMesh();
+                        this.machine.generateBaseMesh();
                     });
                 }
                 else {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    let pickedTrack = this.game.machine.tracks.find(track => {
+                    let pickedTrack = this.machine.tracks.find(track => {
                         if (track.i <= i) {
                             if ((track.i + track.deltaI) >= i) {
                                 if (track.j <= j) {
@@ -460,6 +476,9 @@ class MachineEditor {
         };
         this.container = document.getElementById("machine-editor-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
+    }
+    get machine() {
+        return this.game.machine;
     }
     get selectedItem() {
         return this._selectedItem;
@@ -524,7 +543,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.game.machine.trackFactory.createTrack(this._selectedItem, -10, -10);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10);
                     track.instantiate().then(() => {
                         track.setIsVisible(false);
                     });
@@ -556,6 +575,12 @@ class MachineEditor {
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
+        document.getElementById("machine-editor-play").onclick = () => {
+            this.machine.play();
+        };
+        document.getElementById("machine-editor-stop").onclick = () => {
+            this.machine.stop();
+        };
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         };
@@ -580,9 +605,9 @@ class MachineEditor {
         }
     }
     async mirrorTrackInPlace(track) {
-        let mirroredTrack = this.game.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
         track.dispose();
-        this.game.machine.tracks.push(mirroredTrack);
+        this.machine.tracks.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
         await mirroredTrack.instantiate();
@@ -778,7 +803,7 @@ class Game {
             new UTurn(this.machine, -2, -1, true)
         ];
         this.tileMenuContainer = new BABYLON.Mesh("menu");
-        this.tileMenuContainer.position.z = -0.02;
+        this.tileMenuContainer.position.z = -1;
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
         this.tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
@@ -835,7 +860,7 @@ class Game {
         }, 5000);
         */
         this.machineEditor = new MachineEditor(this);
-        this.setContext(GameMode.MainMenu);
+        this.setContext(GameMode.CreateMode);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2007,6 +2032,11 @@ class ElevatorBottom extends Track {
         this.boxX = [];
         this.boxes = [];
         this.wheels = [];
+        this.reset = () => {
+            for (let i = 0; i < this.boxesCount; i++) {
+                this.boxX[i] = i / this.boxesCount * this.chainLength;
+            }
+        };
         this.l = 0;
         this.p = 0;
         this.chainLength = 0;
@@ -2063,10 +2093,13 @@ class ElevatorBottom extends Track {
         this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
         this.p = 2 * Math.PI * 0.015;
         this.chainLength = 2 * this.l + this.p;
-        for (let i = 0; i < this.boxesCount; i++) {
-            this.boxX[i] = i / this.boxesCount * this.chainLength;
-        }
+        this.machine.onStopCallbacks.push(this.reset);
+        this.reset();
         this.generateWires();
+    }
+    dispose() {
+        super.dispose();
+        this.machine.onStopCallbacks.remove(this.reset);
     }
     update(dt) {
         let dx = this.speed * dt * this.game.timeFactor;

@@ -26,6 +26,8 @@ class Machine {
 
     public instantiated: boolean = false;
 
+    public playing: boolean = false;
+
     constructor(public game: Game) {
         this.trackFactory = new TrackFactory(this);
     }
@@ -63,15 +65,32 @@ class Machine {
         if (!this.instantiated) {
             return;
         }
-        let dt = this.game.scene.deltaTime / 1000;
-        if (isFinite(dt)) {
-            for (let i = 0; i < this.balls.length; i++) {
-                this.balls[i].update(dt);
-            }
-            for (let i = 0; i < this.tracks.length; i++) {
-                this.tracks[i].update(dt);
+        if (this.playing) {
+            let dt = this.game.scene.deltaTime / 1000;
+            if (isFinite(dt)) {
+                for (let i = 0; i < this.balls.length; i++) {
+                    this.balls[i].update(dt);
+                }
+                for (let i = 0; i < this.tracks.length; i++) {
+                    this.tracks[i].update(dt);
+                }
             }
         }
+    }
+
+    public play(): void {
+        this.playing = true;
+    }
+
+    public onStopCallbacks: Nabu.UniqueList<() => void> = new Nabu.UniqueList<() => void>();
+    public stop(): void {
+        for (let i = 0; i < this.balls.length; i++) {
+            this.balls[i].reset();
+        }
+        this.onStopCallbacks.forEach(callback => {
+            callback();
+        })
+        this.playing = false;
     }
 
     public generateBaseMesh(): void {

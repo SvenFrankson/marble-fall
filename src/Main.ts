@@ -216,7 +216,7 @@ class Game {
         ];
 
         this.tileMenuContainer = new BABYLON.Mesh("menu");
-        this.tileMenuContainer.position.z = -0.02;
+        this.tileMenuContainer.position.z = - 1;
 
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
@@ -285,7 +285,7 @@ class Game {
 
         this.machineEditor = new MachineEditor(this);
 
-        this.setContext(GameMode.MainMenu);
+        this.setContext(GameMode.CreateMode);
 	}
 
 	public animate(): void {

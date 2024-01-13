@@ -1,5 +1,9 @@
 class MachineEditor {
 
+    public get machine(): Machine {
+        return this.game.machine;
+    }
+
     public container: HTMLDivElement;
     public itemContainer: HTMLDivElement;
     public items: Map<string, HTMLDivElement> = new Map<string, HTMLDivElement>();
@@ -80,7 +84,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.game.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10);
                     track.instantiate().then(() => {
                         track.setIsVisible(false);
                     });
@@ -115,6 +119,14 @@ class MachineEditor {
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
 
+        document.getElementById("machine-editor-play").onclick = () => {
+            this.machine.play();
+        }
+
+        document.getElementById("machine-editor-stop").onclick = () => {
+            this.machine.stop();
+        }
+
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         }
@@ -147,14 +159,14 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    return mesh === this.game.machine.baseWall;
+                    return mesh === this.machine.baseWall;
                 }
             )
     
             if (pick.hit) {
                 let i = Math.round(pick.pickedPoint.x / tileWidth);
                 let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                let pickedTrack = this.game.machine.tracks.find(track => {
+                let pickedTrack = this.machine.tracks.find(track => {
                     if (track.i <= i) {
                         if ((track.i + track.deltaI) >= i) {
                             if (track.j <= j) {
@@ -178,7 +190,7 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    return mesh === this.game.machine.baseWall;
+                    return mesh === this.machine.baseWall;
                 }
             )
     
@@ -200,7 +212,7 @@ class MachineEditor {
             this.game.scene.pointerX,
             this.game.scene.pointerY,
             (mesh) => {
-                return mesh === this.game.machine.baseWall;
+                return mesh === this.machine.baseWall;
             }
         )
 
@@ -210,8 +222,8 @@ class MachineEditor {
                 let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                 this.draggedTrack.setI(i);
                 this.draggedTrack.setJ(j);
-                if (this.game.machine.tracks.indexOf(this.draggedTrack) === -1) {
-                    this.game.machine.tracks.push(this.draggedTrack);
+                if (this.machine.tracks.indexOf(this.draggedTrack) === -1) {
+                    this.machine.tracks.push(this.draggedTrack);
                 }
                 this.draggedTrack.setIsVisible(true);
                 this.draggedTrack.generateWires();
@@ -220,13 +232,13 @@ class MachineEditor {
                     this.setSelectedTrack(this.draggedTrack);
                     this.setDraggedTrack(undefined);
                     this.setSelectedItem("");
-                    this.game.machine.generateBaseMesh();
+                    this.machine.generateBaseMesh();
                 });
             }
             else {
                 let i = Math.round(pick.pickedPoint.x / tileWidth);
                 let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                let pickedTrack = this.game.machine.tracks.find(track => {
+                let pickedTrack = this.machine.tracks.find(track => {
                     if (track.i <= i) {
                         if ((track.i + track.deltaI) >= i) {
                             if (track.j <= j) {
@@ -243,9 +255,9 @@ class MachineEditor {
     }
 
     public async mirrorTrackInPlace(track: Track): Promise<Track> {
-        let mirroredTrack = this.game.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
         track.dispose();
-        this.game.machine.tracks.push(mirroredTrack);
+        this.machine.tracks.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
         await mirroredTrack.instantiate();

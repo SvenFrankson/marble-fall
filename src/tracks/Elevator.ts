@@ -89,11 +89,21 @@ class ElevatorBottom extends Track {
         this.p = 2 * Math.PI * 0.015;
         this.chainLength = 2 * this.l + this.p;
 
+        this.machine.onStopCallbacks.push(this.reset);
+        this.reset();
+
+        this.generateWires();
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this.machine.onStopCallbacks.remove(this.reset);
+    }
+    
+    public reset = () => {
         for (let i = 0; i < this.boxesCount; i++) {
             this.boxX[i] = i / this.boxesCount * this.chainLength;
         }
-
-        this.generateWires();
     }
 
     public l: number = 0;
