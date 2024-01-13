@@ -225,6 +225,21 @@ class MachineEditor {
                     });
                 }
                 if (pickedObject === this.selectedObject) {
+                    pick = this.game.scene.pick(
+                        this.game.scene.pointerX,
+                        this.game.scene.pointerY,
+                        (mesh) => {
+                            if (mesh === this.machine.baseWall) {
+                                return true;
+                            }
+                        }
+                    )
+                    if (pick.hit && pick.pickedPoint) {
+                        this._dragOffset.copyFrom(this.selectedObject.position).subtractInPlace(pick.pickedPoint);
+                    }
+                    else {
+                        this._dragOffset.copyFromFloats(0, 0, 0);
+                    }
                     this.setDraggedObject(this.selectedObject);
                 }
             }
@@ -243,15 +258,16 @@ class MachineEditor {
             console.log("move " + (pick.pickedMesh ? pick.pickedMesh.name : "no hit"));
     
             if (pick.hit) {
+                let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof Track) {
-                    let i = Math.round(pick.pickedPoint.x / tileWidth);
-                    let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
+                    let i = Math.round(point.x / tileWidth);
+                    let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
                     this.draggedObject.setI(i);
                     this.draggedObject.setJ(j);
                     this.draggedObject.setIsVisible(true);
                 }
                 else if (this.draggedObject instanceof Ball) {
-                    let p = pick.pickedPoint.clone();
+                    let p = point.clone();
                     p.z = 0;
                     this.draggedObject.setPositionZero(p);
                     this.draggedObject.setIsVisible(true);
@@ -284,10 +300,11 @@ class MachineEditor {
         console.log("up " + (pick.pickedMesh ? pick.pickedMesh.name : "no hit"));
 
         if (pick.hit) {
+            let point = pick.pickedPoint.add(this._dragOffset);
             if (this.draggedObject instanceof Track) {
                 let draggedTrack = this.draggedObject as Track;
-                let i = Math.round(pick.pickedPoint.x / tileWidth);
-                let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
+                let i = Math.round(point.x / tileWidth);
+                let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
                 draggedTrack.setI(i);
                 draggedTrack.setJ(j);
                 if (this.machine.tracks.indexOf(draggedTrack) === -1) {
@@ -304,7 +321,7 @@ class MachineEditor {
                 });
             }
             else if (this.draggedObject instanceof Ball) {
-                let p = pick.pickedPoint.clone();
+                let p = point.clone();
                 p.z = 0;
                 this.draggedObject.setPositionZero(p);
                 if (this.machine.balls.indexOf(this.draggedObject) === -1) {
