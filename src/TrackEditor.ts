@@ -345,12 +345,12 @@ class TrackEditor {
         this.removeHandles();
 
         for (let i = 0; i < this.track.trackPoints.length; i++) {
-            let handle = new TrackPointHandle(this.track.trackPoints[i]);
+            let handle = new TrackPointHandle(this.track.trackPoints[0][i]);
             this.trackPointhandles.push(handle);
 
-            let pPrev = this.track.trackPoints[i - 1] ? this.track.trackPoints[i - 1].position : undefined;
-            let p = this.track.trackPoints[i].position;
-            let pNext = this.track.trackPoints[i + 1] ? this.track.trackPoints[i + 1].position : undefined;
+            let pPrev = this.track.trackPoints[0][i - 1] ? this.track.trackPoints[0][i - 1].position : undefined;
+            let p = this.track.trackPoints[0][i].position;
+            let pNext = this.track.trackPoints[0][i + 1] ? this.track.trackPoints[0][i + 1].position : undefined;
 
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
@@ -359,7 +359,7 @@ class TrackEditor {
                 pNext = p.add(p.subtract(pPrev));
             }
 
-            Mummu.QuaternionFromYZAxisToRef(this.track.trackPoints[i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
+            Mummu.QuaternionFromYZAxisToRef(this.track.trackPoints[0][i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
         }
 
         this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.03, diameter: 0.0025, tessellation: 8 });

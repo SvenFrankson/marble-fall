@@ -89,6 +89,7 @@ class MachineEditor {
                     ball.setIsVisible(false);
                 });
                 this.setDraggedObject(ball);
+                this._dragOffset.copyFromFloats(0, 0, 0);
             }
         });
 
@@ -115,6 +116,7 @@ class MachineEditor {
                         track.setIsVisible(false);
                     });
                     this.setDraggedObject(track);
+                    this._dragOffset.copyFromFloats(0, 0, 0);
                 }
             });
         }
@@ -235,7 +237,12 @@ class MachineEditor {
                         }
                     )
                     if (pick.hit && pick.pickedPoint) {
-                        this._dragOffset.copyFrom(this.selectedObject.position).subtractInPlace(pick.pickedPoint);
+                        if (this.selectedObject instanceof Track) {
+                            this._dragOffset.copyFrom(this.selectedObject.position).subtractInPlace(pick.pickedPoint);
+                        }
+                        else if (this.selectedObject instanceof Ball) {
+                            this._dragOffset.copyFrom(this.selectedObject.positionZero).subtractInPlace(pick.pickedPoint);
+                        }
                     }
                     else {
                         this._dragOffset.copyFromFloats(0, 0, 0);

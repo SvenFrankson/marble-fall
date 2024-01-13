@@ -210,15 +210,14 @@ class Game {
        
         this.machine.tracks = [
             new Ramp(this.machine, 0, 0, 3, 1),
-            new ElevatorBottom(this.machine, 3, -5, 6),
-            new ElevatorTop(this.machine, 3, -5),
+            new Elevator(this.machine, 3, -5, 6),
             new Spiral(this.machine, 2, -4, true),
             new Flat(this.machine, 0, -1, 2),
             new UTurn(this.machine, -1, -1, true)
         ];
 
         this.tileMenuContainer = new BABYLON.Mesh("menu");
-        this.tileMenuContainer.position.z = - 1;
+        this.tileMenuContainer.position.z = 1;
 
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
@@ -350,7 +349,7 @@ class Game {
     public setContext(mode: GameMode): void {
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
-                this.tileMenuContainer.position.z = - 1;
+                this.tileMenuContainer.position.z = 1;
                 this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {

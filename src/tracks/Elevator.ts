@@ -1,4 +1,4 @@
-class ElevatorBottom extends Track {
+class Elevator extends Track {
 
     public boxesCount: number = 10;
     public boxX: number[] = [];
@@ -12,36 +12,56 @@ class ElevatorBottom extends Track {
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
+
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(- 1, 1, 0);
+        nRight.normalize();
         
         this.deltaJ = h;
 
         this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(
-                - tileWidth * 0.5,
-                - tileHeight * this.deltaJ,
-                0
-            ), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(
-                0,
-                - tileHeight * (this.deltaJ + 0.25),
-                0
-            ), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(
-                0 + 0.01,
-                - tileHeight * (this.deltaJ + 0.25) + 0.01,
-                0
-            ), dir.scale(-1), n),
-            new TrackPoint(this, new BABYLON.Vector3(
-                0 + 0.01,
-                0 - tileHeight,
-                0
-            ), dir.scale(-1), n),
-            new TrackPoint(this, new BABYLON.Vector3(
-                -0.005,
-                0.035 - tileHeight,
-                0
-            ), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+            [
+                new TrackPoint(this, new BABYLON.Vector3(
+                    - tileWidth * 0.5,
+                    - tileHeight * this.deltaJ,
+                    0
+                ), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(
+                    0,
+                    - tileHeight * (this.deltaJ + 0.25),
+                    0
+                ), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(
+                    0 + 0.01,
+                    - tileHeight * (this.deltaJ + 0.25) + 0.01,
+                    0
+                ), dir.scale(-1), n),
+                new TrackPoint(this, new BABYLON.Vector3(
+                    0 + 0.01,
+                    0 - tileHeight,
+                    0
+                ), dir.scale(-1), n),
+                new TrackPoint(this, new BABYLON.Vector3(
+                    -0.005,
+                    0.035 - tileHeight,
+                    0
+                ), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+            ],
+            [
+                new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), nLeft, dirLeft),
+                new TrackPoint(this, new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), nRight, dirRight)
+            ]
         ];
+        
+        this.wires.push(new Wire(this), new Wire(this));
+
+        this.generateWires();
 
         for (let i = 0; i < this.boxesCount; i++) {
             let box = new BABYLON.Mesh("box");
@@ -91,8 +111,6 @@ class ElevatorBottom extends Track {
 
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
-
-        this.generateWires();
     }
 
     public dispose(): void {
@@ -143,36 +161,11 @@ class ElevatorBottom extends Track {
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right, BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
-            this.wires[2 + i].recomputeAbsolutePath();
+            this.wires[4 + i].recomputeAbsolutePath();
         }
         
         let deltaAngle = dx / this.p * 2 * Math.PI;
         this.wheels[0].rotation.z -= deltaAngle;
         this.wheels[1].rotation.z -= deltaAngle;
-        this.wires[2].recomputeAbsolutePath();
-    }
-}
-
-class ElevatorTop extends Track {
-
-    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, mirror);
-        this.trackName = "elevator-top";
-        let dirLeft = new BABYLON.Vector3(1, 0, 0);
-        dirLeft.normalize();
-        let nLeft = new BABYLON.Vector3(0, 1, 0);
-        nLeft.normalize();
-        
-        let dirRight = new BABYLON.Vector3(1, 1, 0);
-        dirRight.normalize();
-        let nRight = new BABYLON.Vector3(- 1, 1, 0);
-        nRight.normalize();
-        
-        this.trackPoints = [
-            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), nLeft, dirLeft),
-            new TrackPoint(this, new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), nRight, dirRight)
-        ];
-
-        this.generateWires();
     }
 }

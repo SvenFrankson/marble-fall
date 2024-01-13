@@ -52,7 +52,7 @@ class TrackPoint {
     }
 
     public isFirstOrLast(): boolean {
-        let index = this.track.trackPoints.indexOf(this);
+        let index = this.track.trackPoints[0].indexOf(this);
         if (index === 0 || index === this.track.trackPoints.length - 1) {
             return true;
         }
@@ -83,10 +83,10 @@ class Track extends BABYLON.Mesh {
     public deltaI: number = 0;
     public deltaJ: number = 0;
 
-    public trackPoints: TrackPoint[];
+    public trackPoints: TrackPoint[][];
     public wires: Wire[];
-    public interpolatedPoints: BABYLON.Vector3[];
-    public interpolatedNormals: BABYLON.Vector3[];
+    public interpolatedPoints: BABYLON.Vector3[][];
+    public interpolatedNormals: BABYLON.Vector3[][];
 
     public wireSize: number = 0.0015;
     public wireGauge: number = 0.013;
@@ -144,21 +144,23 @@ class Track extends BABYLON.Mesh {
     }
 
     protected mirrorTrackPointsInPlace(): void {
-        for (let i = 0; i < this.trackPoints.length; i++) {
-            this.trackPoints[i].position.x *= - 1;
-            this.trackPoints[i].position.x += this.deltaI * tileWidth;
-            if (this.trackPoints[i].normal) {
-                this.trackPoints[i].normal.x *= - 1;
-            }
-            if (this.trackPoints[i].dir) {
-                this.trackPoints[i].dir.x *= - 1;
+        for (let j = 0; j < this.trackPoints.length; j++) {
+            for (let i = 0; i < this.trackPoints[j].length; i++) {
+                this.trackPoints[j][i].position.x *= - 1;
+                this.trackPoints[j][i].position.x += this.deltaI * tileWidth;
+                if (this.trackPoints[j][i].normal) {
+                    this.trackPoints[j][i].normal.x *= - 1;
+                }
+                if (this.trackPoints[j][i].dir) {
+                    this.trackPoints[j][i].dir.x *= - 1;
+                }
             }
         }
     }
 
-    public getSlopeAt(index: number): number {
-        let trackpoint = this.trackPoints[index];
-        let nextTrackPoint = this.trackPoints[index + 1];
+    public getSlopeAt(index: number, trackIndex: number = 0): number {
+        let trackpoint = this.trackPoints[trackIndex][index];
+        let nextTrackPoint = this.trackPoints[trackIndex][index + 1];
         if (trackpoint) {
             if (nextTrackPoint) {
                 let dy = nextTrackPoint.position.y - trackpoint.position.y;
@@ -174,8 +176,8 @@ class Track extends BABYLON.Mesh {
         return 0;
     }
 
-    public getBankAt(index: number): number {
-        let trackpoint = this.trackPoints[index];
+    public getBankAt(index: number, trackIndex: number = 0): number {
+        let trackpoint = this.trackPoints[trackIndex][index];
         if (trackpoint) {
             let n = trackpoint.normal;
             if (n.y < 0) {
@@ -187,10 +189,10 @@ class Track extends BABYLON.Mesh {
         return 0;
     }
 
-    public splitTrackPointAt(index: number): void {
+    public splitTrackPointAt(index: number, trackIndex: number = 0): void {
         if (index === 0) {
-            let trackPoint = this.trackPoints[0];
-            let nextTrackPoint = this.trackPoints[0 + 1];
+            let trackPoint = this.trackPoints[trackIndex][0];
+            let nextTrackPoint = this.trackPoints[trackIndex][0 + 1];
 
             let distA = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
             let tanInA = trackPoint.dir.scale(distA * trackPoint.tangentOut);
@@ -200,12 +202,12 @@ class Track extends BABYLON.Mesh {
 
             let trackPointA = new TrackPoint(this, pointA, normalA);
 
-            this.trackPoints.splice(1, 0, trackPointA);
+            this.trackPoints[trackIndex].splice(1, 0, trackPointA);
         }
-        if (index > 0 && index < this.trackPoints.length - 1) {
-            let prevTrackPoint = this.trackPoints[index - 1];
-            let trackPoint = this.trackPoints[index];
-            let nextTrackPoint = this.trackPoints[index + 1];
+        if (index > 0 && index < this.trackPoints[trackIndex].length - 1) {
+            let prevTrackPoint = this.trackPoints[trackIndex][index - 1];
+            let trackPoint = this.trackPoints[trackIndex][index];
+            let nextTrackPoint = this.trackPoints[trackIndex][index + 1];
 
             let distA = BABYLON.Vector3.Distance(trackPoint.position, prevTrackPoint.position);
             let tanInA = prevTrackPoint.dir.scale(distA * prevTrackPoint.tangentOut);
@@ -222,13 +224,13 @@ class Track extends BABYLON.Mesh {
             let trackPointA = new TrackPoint(this, pointA, normalA);
             let trackPointB = new TrackPoint(this, pointB, normalB);
 
-            this.trackPoints.splice(index, 1, trackPointA, trackPointB);
+            this.trackPoints[trackIndex].splice(index, 1, trackPointA, trackPointB);
         }
     }
 
-    public deleteTrackPointAt(index: number): void {
-        if (index > 0 && index < this.trackPoints.length - 1) {
-            this.trackPoints.splice(index, 1);
+    public deleteTrackPointAt(index: number, trackIndex: number = 0): void {
+        if (index > 0 && index < this.trackPoints[trackIndex].length - 1) {
+            this.trackPoints[trackIndex].splice(index, 1);
         }
     }
 
@@ -236,7 +238,7 @@ class Track extends BABYLON.Mesh {
         if (this.trackPoints.length < 2) {
             return this.position.clone();
         }
-        let barycenter = this.trackPoints.map(
+        let barycenter = this.trackPoints[0].map(
             trackpoint => {
                 return trackpoint.position;
             }
@@ -249,125 +251,132 @@ class Track extends BABYLON.Mesh {
     }
 
     public generateWires(): void {
-        // Update normals and tangents
-        for (let i = 1; i < this.trackPoints.length - 1; i++) {
-            let prevTrackPoint = this.trackPoints[i - 1];
-            let trackPoint = this.trackPoints[i];
-            let nextTrackPoint = this.trackPoints[i + 1];
-
-            if (!trackPoint.fixedDir) {
-                trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
-            }
-            if (!trackPoint.fixedTangentIn) {
-                trackPoint.tangentIn = 1;
-            }
-            if (!trackPoint.fixedTangentOut) {
-                trackPoint.tangentOut = 1;
-            }
-            if (!trackPoint.fixedNormal) {
-                let n = 0;
-                let nextTrackPointWithFixedNormal: TrackPoint;
-                while (!nextTrackPointWithFixedNormal) {
-                    n++;
-                    let tmpTrackPoint = this.trackPoints[i + n];
-                    if (tmpTrackPoint.fixedNormal) {
-                        nextTrackPointWithFixedNormal = tmpTrackPoint;
-                    }
-                }
-                trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
-            }
-            let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
-            trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
-        }
-
-        this.wires[0].path = [];
-        this.wires[1].path = [];
-
         this.interpolatedPoints = [];
         this.interpolatedNormals = [];
+        // Update normals and tangents
+        for (let j = 0; j < this.trackPoints.length; j++) {
+            let trackPoints = this.trackPoints[j];
+            let interpolatedPoints = [];
+            this.interpolatedPoints[j] = interpolatedPoints;
+            let interpolatedNormals = [];
+            this.interpolatedNormals[j] = interpolatedNormals;
+            for (let i = 1; i < trackPoints.length - 1; i++) {
 
-        this.trackPoints[0].summedLength = 0;
-        for (let i = 0; i < this.trackPoints.length - 1; i++) {
-            let trackPoint = this.trackPoints[i];
-            let nextTrackPoint = this.trackPoints[i + 1];
-            let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
-            let tanIn = this.trackPoints[i].dir.scale(dist * trackPoint.tangentOut);
-            let tanOut = this.trackPoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
-            let count = Math.round(dist / 0.003);
-            count = Math.max(0, count);
-            this.interpolatedPoints.push(trackPoint.position);
-            this.interpolatedNormals.push(trackPoint.normal);
-            nextTrackPoint.summedLength = trackPoint.summedLength;
-            for (let j = 1; j < count; j++) {
-                let amount = j / count;
-                let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
-                let normal = BABYLON.Vector3.CatmullRom(trackPoint.normal, trackPoint.normal, nextTrackPoint.normal, nextTrackPoint.normal, amount);
-                this.interpolatedPoints.push(point);
-                this.interpolatedNormals.push(normal);
-                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(this.interpolatedPoints[this.interpolatedPoints.length - 2], this.interpolatedPoints[this.interpolatedPoints.length - 1]);
+                let prevTrackPoint = trackPoints[i - 1];
+                let trackPoint = trackPoints[i];
+                let nextTrackPoint = trackPoints[i + 1];
+    
+                if (!trackPoint.fixedDir) {
+                    trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
+                }
+                if (!trackPoint.fixedTangentIn) {
+                    trackPoint.tangentIn = 1;
+                }
+                if (!trackPoint.fixedTangentOut) {
+                    trackPoint.tangentOut = 1;
+                }
+                if (!trackPoint.fixedNormal) {
+                    let n = 0;
+                    let nextTrackPointWithFixedNormal: TrackPoint;
+                    while (!nextTrackPointWithFixedNormal) {
+                        n++;
+                        let tmpTrackPoint = trackPoints[i + n];
+                        if (tmpTrackPoint.fixedNormal) {
+                            nextTrackPointWithFixedNormal = tmpTrackPoint;
+                        }
+                    }
+                    trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
+                }
+                let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
+                trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
             }
-            nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, this.interpolatedPoints[this.interpolatedPoints.length - 1]);
-        }
-
-        this.interpolatedPoints.push(this.trackPoints[this.trackPoints.length - 1].position);
-        this.interpolatedNormals.push(this.trackPoints[this.trackPoints.length - 1].normal);
-
-        let N = this.interpolatedPoints.length;
-
-        this.summedLength = [0];
-        this.totalLength = 0;
-        for (let i = 0; i < N - 1; i++) {
-            let p = this.interpolatedPoints[i];
-            let pNext = this.interpolatedPoints[i + 1];
-            let d = BABYLON.Vector3.Distance(p, pNext);
-            this.summedLength[i + 1] = this.summedLength[i] + d;
-        }
-        this.totalLength = this.summedLength[N - 1];
-
-        let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
-        this.globalSlope = dh / this.totalLength * 100;
-
-        // Compute wire path and Update AABB values.
-        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
-        this.AABBMax.copyFromFloats(- Infinity, - Infinity, - Infinity);
-        for (let i = 0; i < N; i++) {
-            let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
-            let p = this.interpolatedPoints[i];
-            let pNext = this.interpolatedPoints[i + 1] ? this.interpolatedPoints[i + 1] : undefined;
-
-            if (!pPrev) {
-                pPrev = p.subtract(pNext.subtract(p));
-            }
-            if (!pNext) {
-                pNext = p.add(p.subtract(pPrev));
+    
+            this.wires[2 * j].path = [];
+            this.wires[2 * j + 1].path = [];
+    
+            trackPoints[0].summedLength = 0;
+            for (let i = 0; i < trackPoints.length - 1; i++) {
+                let trackPoint = trackPoints[i];
+                let nextTrackPoint = trackPoints[i + 1];
+                let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+                let tanIn = trackPoints[i].dir.scale(dist * trackPoint.tangentOut);
+                let tanOut = trackPoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
+                let count = Math.round(dist / 0.003);
+                count = Math.max(0, count);
+                interpolatedPoints.push(trackPoint.position);
+                interpolatedNormals.push(trackPoint.normal);
+                nextTrackPoint.summedLength = trackPoint.summedLength;
+                for (let k = 1; k < count; k++) {
+                    let amount = k / count;
+                    let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
+                    let normal = BABYLON.Vector3.CatmullRom(trackPoint.normal, trackPoint.normal, nextTrackPoint.normal, nextTrackPoint.normal, amount);
+                    interpolatedPoints.push(point);
+                    interpolatedNormals.push(normal);
+                    nextTrackPoint.summedLength += BABYLON.Vector3.Distance(interpolatedPoints[interpolatedPoints.length - 2], interpolatedPoints[interpolatedPoints.length - 1]);
+                }
+                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, interpolatedPoints[interpolatedPoints.length - 1]);
             }
 
-            let dir = pNext.subtract(pPrev).normalize();
-            let up = this.interpolatedNormals[i];
-
-            let rotation = BABYLON.Quaternion.Identity();
-            Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
-
-            let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
-
-            this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(- this.wireGauge * 0.5, 0, 0), matrix);
-            this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
-            this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
-            this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
-            this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
-            this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
+            interpolatedPoints.push(trackPoints[trackPoints.length - 1].position);
+            interpolatedNormals.push(trackPoints[trackPoints.length - 1].normal);
+    
+            let N = interpolatedPoints.length;
+    
+            this.summedLength = [0];
+            this.totalLength = 0;
+            for (let i = 0; i < N - 1; i++) {
+                let p = interpolatedPoints[i];
+                let pNext = interpolatedPoints[i + 1];
+                let d = BABYLON.Vector3.Distance(p, pNext);
+                this.summedLength[i + 1] = this.summedLength[i] + d;
+            }
+            this.totalLength = this.summedLength[N - 1];
+    
+            let dh = interpolatedPoints[interpolatedPoints.length - 1].y - interpolatedPoints[0].y;
+            this.globalSlope = dh / this.totalLength * 100;
+    
+            // Compute wire path and Update AABB values.
+            this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
+            this.AABBMax.copyFromFloats(- Infinity, - Infinity, - Infinity);
+            for (let i = 0; i < N; i++) {
+                let pPrev = interpolatedPoints[i - 1] ? interpolatedPoints[i - 1] : undefined;
+                let p = interpolatedPoints[i];
+                let pNext = interpolatedPoints[i + 1] ? interpolatedPoints[i + 1] : undefined;
+    
+                if (!pPrev) {
+                    pPrev = p.subtract(pNext.subtract(p));
+                }
+                if (!pNext) {
+                    pNext = p.add(p.subtract(pPrev));
+                }
+    
+                let dir = pNext.subtract(pPrev).normalize();
+                let up = interpolatedNormals[i];
+    
+                let rotation = BABYLON.Quaternion.Identity();
+                Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
+    
+                let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
+    
+                this.wires[2 * j].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(- this.wireGauge * 0.5, 0, 0), matrix);
+                this.wires[2 * j + 1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
+                this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
+                this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
+                this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
+                this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
+            }
+            Mummu.DecimatePathInPlace(this.wires[2 * j].path, 2 / 180 * Math.PI);
+            Mummu.DecimatePathInPlace(this.wires[2 * j + 1].path, 2 / 180 * Math.PI);
+    
+            this.AABBMin.x -= this.wireSize * 0.5;
+            this.AABBMin.y -= this.wireSize * 0.5;
+            this.AABBMin.z -= this.wireSize * 0.5;
+            this.AABBMax.x += this.wireSize * 0.5;
+            this.AABBMax.y += this.wireSize * 0.5;
+            this.AABBMax.z += this.wireSize * 0.5;
+            BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.getWorldMatrix(), this.AABBMin);
+            BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.getWorldMatrix(), this.AABBMax);
         }
-        Mummu.DecimatePathInPlace(this.wires[0].path, 2 / 180 * Math.PI);
-        Mummu.DecimatePathInPlace(this.wires[1].path, 2 / 180 * Math.PI);
-
-        this.AABBMin.x -= this.wireSize * 0.5;
-        this.AABBMin.y -= this.wireSize * 0.5;
-        this.AABBMin.z -= this.wireSize * 0.5;
-        this.AABBMax.x += this.wireSize * 0.5;
-        this.AABBMax.y += this.wireSize * 0.5;
-        this.AABBMax.z += this.wireSize * 0.5;
-        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.getWorldMatrix(), this.AABBMin);
-        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.getWorldMatrix(), this.AABBMax);
     }
 
     public recomputeAbsolutePath(): void {
@@ -424,7 +433,7 @@ class Track extends BABYLON.Mesh {
                 shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
             }
 
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.interpolatedPoints[0], closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
@@ -449,21 +458,21 @@ class Track extends BABYLON.Mesh {
     public serialize(): ITrackData {
         let data: ITrackData = { points: []};
 
-        for (let i = 0; i < this.trackPoints.length; i++) {
+        for (let i = 0; i < this.trackPoints[0].length; i++) {
             data.points[i] = {
-                position: { x: this.trackPoints[i].position.x, y: this.trackPoints[i].position.y, z: this.trackPoints[i].position.z }
+                position: { x: this.trackPoints[0][i].position.x, y: this.trackPoints[0][i].position.y, z: this.trackPoints[0][i].position.z }
             };
-            if (this.trackPoints[i].fixedNormal) {
-                data.points[i].normal = { x: this.trackPoints[i].normal.x, y: this.trackPoints[i].normal.y, z: this.trackPoints[i].normal.z }
+            if (this.trackPoints[0][i].fixedNormal) {
+                data.points[i].normal = { x: this.trackPoints[0][i].normal.x, y: this.trackPoints[0][i].normal.y, z: this.trackPoints[0][i].normal.z }
             }
-            if (this.trackPoints[i].fixedDir) {
-                data.points[i].dir = { x: this.trackPoints[i].dir.x, y: this.trackPoints[i].dir.y, z: this.trackPoints[i].dir.z }
+            if (this.trackPoints[0][i].fixedDir) {
+                data.points[i].dir = { x: this.trackPoints[0][i].dir.x, y: this.trackPoints[0][i].dir.y, z: this.trackPoints[0][i].dir.z }
             }
-            if (this.trackPoints[i].fixedTangentIn) {
-                data.points[i].tangentIn = this.trackPoints[i].tangentIn;
+            if (this.trackPoints[0][i].fixedTangentIn) {
+                data.points[i].tangentIn = this.trackPoints[0][i].tangentIn;
             }
-            if (this.trackPoints[i].fixedTangentOut) {
-                data.points[i].tangentOut = this.trackPoints[i].tangentOut;
+            if (this.trackPoints[0][i].fixedTangentOut) {
+                data.points[i].tangentOut = this.trackPoints[0][i].tangentOut;
             }
         }
 
@@ -471,7 +480,7 @@ class Track extends BABYLON.Mesh {
     }
 
     public deserialize(data: ITrackData): void {
-        this.trackPoints = [];
+        this.trackPoints = [[]];
         for (let i = 0; i < data.points.length; i++) {
             let pointData = data.points[i];
             let normal: BABYLON.Vector3;
@@ -491,7 +500,7 @@ class Track extends BABYLON.Mesh {
                 pointData.tangentIn,
                 pointData.tangentOut
             );
-            this.trackPoints[i] = trackPoint;
+            this.trackPoints[0][i] = trackPoint;
         }
     }
 }

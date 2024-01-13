@@ -10,10 +10,10 @@ class Flat extends Track {
         
         this.deltaI = w - 1;
 
-        this.trackPoints = [
+        this.trackPoints = [[
             new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
             new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir)
-        ];
+        ]];
 
         this.generateWires();
     }
@@ -32,11 +32,11 @@ class CrossingFlat extends Track {
         
         this.deltaI = w - 1;
 
-        this.trackPoints = [
+        this.trackPoints = [[
             new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
             new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5)- tileWidth * 0.5) * 0.5, 0, - 0.03), nBank, dir, 1.4, 1.4),
             new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir, 1.4, 1.4)
-        ];
+        ]];
 
         this.generateWires();
     }
