@@ -505,6 +505,7 @@ class MachineEditor {
                         let p = pick.pickedPoint.clone();
                         p.z = 0;
                         this.draggedObject.setPositionZero(p);
+                        this.draggedObject.setIsVisible(true);
                         if (!this.machine.playing) {
                             this.draggedObject.reset();
                         }
@@ -550,6 +551,10 @@ class MachineEditor {
                     let p = pick.pickedPoint.clone();
                     p.z = 0;
                     this.draggedObject.setPositionZero(p);
+                    if (this.machine.balls.indexOf(this.draggedObject) === -1) {
+                        this.machine.balls.push(this.draggedObject);
+                    }
+                    this.draggedObject.setIsVisible(true);
                     this.draggedObject.reset();
                     this.setSelectedObject(this.draggedObject);
                     this.setDraggedObject(undefined);
@@ -630,6 +635,29 @@ class MachineEditor {
     }
     instantiate() {
         this.container.style.display = "block";
+        let ballItem = document.createElement("div");
+        ballItem.classList.add("machine-editor-item");
+        ballItem.innerText = "ball";
+        this.itemContainer.appendChild(ballItem);
+        this.items.set("ball", ballItem);
+        ballItem.addEventListener("pointerdown", () => {
+            if (this.draggedObject) {
+                this.draggedObject.dispose();
+                this.setDraggedObject(undefined);
+            }
+            if (this.selectedItem === "ball") {
+                this.setSelectedItem("");
+            }
+            else {
+                this.setSelectedItem("ball");
+                let ball = new Ball(BABYLON.Vector3.Zero(), this.machine);
+                ball.instantiate().then(() => {
+                    ball.setShowPositionZeroGhost(true);
+                    ball.setIsVisible(false);
+                });
+                this.setDraggedObject(ball);
+            }
+        });
         for (let i = 0; i < TrackNames.length; i++) {
             let trackname = TrackNames[i];
             let item = document.createElement("div");
