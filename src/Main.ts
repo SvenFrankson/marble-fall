@@ -175,10 +175,6 @@ class Game {
             this.machine.balls.push(ball);
         }
 
-        setInterval(() => {
-            console.log(this.machine.tracks.length + " tracks");
-        }, 1000);
-        
         /*
         this.tracks = [
             new Ramp(this, 0, 0, 2, 1),

@@ -1,3 +1,10 @@
+class BallGhost extends BABYLON.Mesh {
+
+    constructor(public ball: Ball) {
+        super(ball.name + "-ghost");
+    }
+}
+
 class Ball extends BABYLON.Mesh {
 
     public get game(): Game {
@@ -30,6 +37,7 @@ class Ball extends BABYLON.Mesh {
         }
     }
     public positionZeroGhost: BABYLON.Mesh;
+    public selectedMesh: BABYLON.Mesh;
 
     public setPositionZero(p: BABYLON.Vector3): void {
         this.positionZero.copyFrom(p);
@@ -41,6 +49,21 @@ class Ball extends BABYLON.Mesh {
         super("ball");
     }
 
+    public select(): void {
+        this.selectedMesh.isVisible = true;
+    }
+
+    public unselect(): void {
+        this.selectedMesh.isVisible = false;
+    }
+    
+    public setIsVisible(isVisible: boolean): void {
+        this.isVisible = isVisible;
+        this.getChildMeshes().forEach(m => {
+            m.isVisible = isVisible;
+        })
+    }
+
     public async instantiate(): Promise<void> {
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -50,10 +73,27 @@ class Ball extends BABYLON.Mesh {
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
         }
-        this.positionZeroGhost = BABYLON.MeshBuilder.CreateSphere(this.name + "-ghost", { diameter: this.size * 0.95 });
+        this.positionZeroGhost = new BallGhost(this);
+        BABYLON.CreateSphereVertexData({ diameter: this.size * 0.95 }).applyToMesh(this.positionZeroGhost);
         this.positionZeroGhost.material = this.game.ghostMaterial;
         this.positionZeroGhost.position.copyFrom(this.positionZero);
         this.positionZeroGhost.isVisible = this._showPositionZeroGhost;
+        
+        if (this.selectedMesh) {
+            this.selectedMesh.dispose();
+        }
+        let points: BABYLON.Vector3[] = [];
+        for (let i = 0; i <= 32; i++) {
+            let a = i / 32 * 2 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            points.push(new BABYLON.Vector3(cosa * (this.radius + 0.005), sina * (this.radius + 0.005), 0));
+        }
+        this.selectedMesh = BABYLON.MeshBuilder.CreateLines("select-mesh", {
+            points: points
+        });
+        this.selectedMesh.parent = this.positionZeroGhost;
+        this.selectedMesh.isVisible = false;
 
         this.reset();
     }
