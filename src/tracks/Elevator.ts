@@ -7,8 +7,9 @@ class Elevator extends Track {
     public wheels: BABYLON.Mesh[] = [];
     public cable: BABYLON.Mesh;
 
-    constructor(machine: Machine, i: number, j: number, h: number = 1, mirror?: boolean) {
+    constructor(machine: Machine, i: number, j: number, public h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.yExtendable = true;
         this.trackName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

@@ -2,6 +2,10 @@ class Ramp extends Track {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.w = w;
+        this.h = h;
+        this.xExtendable = true;
+        this.yExtendable = true;
         this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -12,8 +16,8 @@ class Ramp extends Track {
         this.deltaJ = h;
 
         this.trackPoints = [[
-            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n.clone(), dir.clone()),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ), 0), n.clone(), dir.clone())
+            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ), 0), n, dir)
         ]];
 
         if (mirror) {
@@ -28,6 +32,10 @@ class CrossingRamp extends Track {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.w = w;
+        this.h = h;
+        this.xExtendable = true;
+        this.yExtendable = true;
         this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

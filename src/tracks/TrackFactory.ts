@@ -34,30 +34,37 @@ class TrackFactory {
 
     }
 
+    public createTrackWH(trackname: string, i: number, j: number, w?: number, h?: number, mirror?: boolean): Track {
+        trackname = trackname.split("-")[0];
+        let wh = "";
+        if (isFinite(w)) {
+            wh += w.toFixed(0) + ".";
+        }
+        if (isFinite(h)) {
+            wh += h.toFixed(0);
+        }
+        trackname += "-" + wh;
+        return this.createTrack(trackname, i, j, mirror);
+    }
+
     public createTrack(trackname: string, i: number, j: number, mirror?: boolean): Track {
-        for (let n = 1; n <= 3; n++) {
-            if (trackname === "flat-" + n.toFixed(0)) {
-                return new Flat(this.machine, i, j, n);
-            }
+        if (trackname.startsWith("flat-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            return new Flat(this.machine, i, j, w);
         }
-        for (let n = 1; n <= 3; n++) {
-            if (trackname === "flatX-" + n.toFixed(0)) {
-                return new CrossingFlat(this.machine, i, j, n);
-            }
+        if (trackname.startsWith("flatX-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            return new Flat(this.machine, i, j, w);
         }
-        for (let n = 1; n <= 3; n++) {
-            for (let m = 1; m <= 2; m++) {
-                if (trackname === "ramp-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new Ramp(this.machine, i, j, n, m, mirror);
-                }
-            }
+        if (trackname.startsWith("ramp-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Ramp(this.machine, i, j, w, h, mirror);
         }
-        for (let n = 1; n <= 3; n++) {
-            for (let m = 1; m <= 2; m++) {
-                if (trackname === "rampX-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new CrossingRamp(this.machine, i, j, n, m, mirror);
-                }
-            }
+        if (trackname.startsWith("rampX-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Ramp(this.machine, i, j, w, h, mirror);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, mirror);
@@ -77,10 +84,9 @@ class TrackFactory {
         if (trackname === "spiral") {
             return new Spiral(this.machine, i, j, mirror);
         }
-        for (let n = 6; n <= 14; n += 4) {
-            if (trackname === "elevator-" + n.toFixed(0)) {
-                return new Elevator(this.machine, i, j, n, mirror);
-            }
+        if (trackname.startsWith("elevator-")) {
+            let h = parseInt(trackname.split("-")[1]);
+            return new Elevator(this.machine, i, j, h, mirror);
         }
     }
 }

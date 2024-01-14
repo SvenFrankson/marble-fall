@@ -82,6 +82,8 @@ class Track extends BABYLON.Mesh {
         return this.machine.game;
     }
     
+    public w: number;
+    public h: number;
     public deltaI: number = 0;
     public deltaJ: number = 0;
 
@@ -102,6 +104,9 @@ class Track extends BABYLON.Mesh {
     public globalSlope: number = 0;
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
+    public xExtendable: boolean = false;
+    public yExtendable: boolean = false;
 
     constructor(public machine: Machine, private _i: number, private _j: number, public mirror?: boolean) {
         super("track", machine.game.scene);

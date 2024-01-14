@@ -514,15 +514,19 @@ class MachineEditor {
                     if (this.draggedObject instanceof Track) {
                         let i = Math.round(point.x / tileWidth);
                         let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
-                        this.draggedObject.setI(i);
-                        this.draggedObject.setJ(j);
-                        this.draggedObject.setIsVisible(true);
+                        if (i != this.draggedObject.i || j != this.draggedObject.j) {
+                            this.draggedObject.setI(i);
+                            this.draggedObject.setJ(j);
+                            this.draggedObject.setIsVisible(true);
+                            this.updateActionTile();
+                        }
                     }
                     else if (this.draggedObject instanceof Ball) {
                         let p = point.clone();
                         p.z = 0;
                         this.draggedObject.setPositionZero(p);
                         this.draggedObject.setIsVisible(true);
+                        this.updateActionTile();
                         if (!this.machine.playing) {
                             this.draggedObject.reset();
                         }
@@ -534,6 +538,15 @@ class MachineEditor {
             }
         };
         this.pointerUp = (event) => {
+            if (!this.draggedObject) {
+                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    return mesh instanceof BABYLON.Mesh && this.actionTiles.indexOf(mesh) != -1;
+                });
+                if (pick.hit && pick.pickedMesh instanceof BABYLON.Mesh) {
+                    this.onActionTilePointerUp(pick.pickedMesh);
+                    return;
+                }
+            }
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                 if (!this.draggedObject && mesh instanceof BallGhost) {
                     return true;
@@ -543,7 +556,6 @@ class MachineEditor {
                 }
                 return false;
             });
-            console.log("up " + (pick.pickedMesh ? pick.pickedMesh.name : "no hit"));
             if (pick.hit) {
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof Track) {
@@ -601,6 +613,7 @@ class MachineEditor {
                 }
             }
         };
+        this.actionTileSize = 0.015;
         this.container = document.getElementById("machine-editor-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
     }
@@ -650,6 +663,7 @@ class MachineEditor {
         if (this._selectedObject) {
             this._selectedObject.select();
         }
+        this.updateActionTile();
     }
     instantiate() {
         this.container.style.display = "block";
@@ -761,6 +775,28 @@ class MachineEditor {
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
+        this.actionTileHPlusTop = BABYLON.MeshBuilder.CreatePlane("tile-h-plus-top", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileHMinusTop = BABYLON.MeshBuilder.CreatePlane("tile-h-minus-top", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileWPlusRight = BABYLON.MeshBuilder.CreatePlane("tile-w-plus-right", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileWMinusRight = BABYLON.MeshBuilder.CreatePlane("tile-w-minus-right", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileHPlusBottom = BABYLON.MeshBuilder.CreatePlane("tile-h-plus-bottom", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileHMinusBottom = BABYLON.MeshBuilder.CreatePlane("tile-h-minus-bottom", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileWPlusLeft = BABYLON.MeshBuilder.CreatePlane("tile-w-plus-left", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileWMinusLeft = BABYLON.MeshBuilder.CreatePlane("tile-w-minus-left", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileDelete = BABYLON.MeshBuilder.CreatePlane("tile-delete", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileMirror = BABYLON.MeshBuilder.CreatePlane("tile-mirror", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTiles = [
+            this.actionTileHPlusTop,
+            this.actionTileHMinusTop,
+            this.actionTileWPlusRight,
+            this.actionTileWMinusRight,
+            this.actionTileHPlusBottom,
+            this.actionTileHMinusBottom,
+            this.actionTileWPlusLeft,
+            this.actionTileWMinusLeft,
+            this.actionTileDelete,
+            this.actionTileMirror
+        ];
     }
     dispose() {
         this.container.style.display = "none";
@@ -769,6 +805,9 @@ class MachineEditor {
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
+        this.actionTiles.forEach(tile => {
+            tile.dispose();
+        });
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(false);
         }
@@ -796,6 +835,140 @@ class MachineEditor {
     }
     getCurrentItemElement() {
         return this.items.get(this._selectedItem);
+    }
+    updateActionTile() {
+        this.actionTiles.forEach(tile => {
+            tile.isVisible = false;
+        });
+        if (this.selectedObject) {
+            let s = this.actionTileSize;
+            if (this.selectedObject instanceof Ball) {
+                this.actionTileDelete.isVisible = true;
+                this.actionTileDelete.position.x = 0;
+                this.actionTileDelete.position.y = -this.selectedObject.radius - 1.2 * s;
+                this.actionTileDelete.position.addInPlace(this.selectedObject.positionZeroGhost.position);
+            }
+            else if (this.selectedObject instanceof Track) {
+                let s34 = 3 * s / 4;
+                let xLeft = -tileWidth * 0.5;
+                let xRight = tileWidth * (this.selectedObject.deltaI + 0.5);
+                let xCenter = (xLeft + xRight) * 0.5;
+                let yTop = tileHeight * 0.25;
+                let yBottom = -tileHeight * (this.selectedObject.deltaJ + 0.75);
+                let yCenter = (yTop + yBottom) * 0.5;
+                this.actionTileHPlusTop.position.x = xCenter + s34;
+                this.actionTileHPlusTop.position.y = yTop + s;
+                this.actionTileHMinusTop.position.x = xCenter - s34;
+                this.actionTileHMinusTop.position.y = yTop + s;
+                this.actionTileWPlusRight.position.x = xRight + s;
+                this.actionTileWPlusRight.position.y = yCenter + s34;
+                this.actionTileWMinusRight.position.x = xRight + s;
+                this.actionTileWMinusRight.position.y = yCenter - s34;
+                this.actionTileHPlusBottom.position.x = xCenter + s34;
+                this.actionTileHPlusBottom.position.y = yBottom - s;
+                this.actionTileHMinusBottom.position.x = xCenter - s34;
+                this.actionTileHMinusBottom.position.y = yBottom - s;
+                this.actionTileWPlusLeft.position.x = xLeft - s;
+                this.actionTileWPlusLeft.position.y = yCenter + s34;
+                this.actionTileWMinusLeft.position.x = xLeft - s;
+                this.actionTileWMinusLeft.position.y = yCenter - s34;
+                this.actionTileMirror.position.x = xRight - s34 - s * 1.5;
+                this.actionTileMirror.position.y = yBottom - s;
+                this.actionTileDelete.position.x = xRight - s34;
+                this.actionTileDelete.position.y = yBottom - s;
+                if (this.selectedObject.xExtendable) {
+                    this.actionTileWMinusRight.isVisible = true;
+                    this.actionTileWPlusRight.isVisible = true;
+                    this.actionTileWMinusLeft.isVisible = true;
+                    this.actionTileWPlusLeft.isVisible = true;
+                }
+                if (this.selectedObject.yExtendable) {
+                    this.actionTileHMinusTop.isVisible = true;
+                    this.actionTileHPlusTop.isVisible = true;
+                    this.actionTileHMinusBottom.isVisible = true;
+                    this.actionTileHPlusBottom.isVisible = true;
+                }
+                this.actionTileDelete.isVisible = true;
+                this.actionTileMirror.isVisible = true;
+                this.actionTiles.forEach(tile => {
+                    tile.position.addInPlace(this.selectedObject.position);
+                });
+            }
+        }
+    }
+    async onActionTilePointerUp(tile) {
+        if (this.selectedObject) {
+            if (tile === this.actionTileDelete) {
+                this.selectedObject.dispose();
+                this.setSelectedObject(undefined);
+                this.setDraggedObject(undefined);
+            }
+            else if (this.selectedObject instanceof Track) {
+                let track = this.selectedObject;
+                if (tile === this.actionTileHPlusTop) {
+                    if (track.yExtendable) {
+                        let h = track.h + 1;
+                        let j = track.j - 1;
+                        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, j, track.xExtendable ? track.w : undefined, h, track.mirror);
+                        track.dispose();
+                        this.machine.tracks.push(editedTrack);
+                        editedTrack.setIsVisible(true);
+                        editedTrack.generateWires();
+                        await editedTrack.instantiate();
+                        editedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(editedTrack);
+                    }
+                }
+                else if (tile === this.actionTileHMinusTop) {
+                    if (track.yExtendable) {
+                        let h = track.h - 1;
+                        let j = track.j + 1;
+                        if (h >= 0) {
+                            let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, j, track.xExtendable ? track.w : undefined, h, track.mirror);
+                            track.dispose();
+                            this.machine.tracks.push(editedTrack);
+                            editedTrack.setIsVisible(true);
+                            editedTrack.generateWires();
+                            await editedTrack.instantiate();
+                            editedTrack.recomputeAbsolutePath();
+                            this.setSelectedObject(editedTrack);
+                        }
+                    }
+                }
+                else if (tile === this.actionTileHPlusBottom) {
+                    if (track.yExtendable) {
+                        let h = track.h + 1;
+                        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, track.j, track.xExtendable ? track.w : undefined, h, track.mirror);
+                        track.dispose();
+                        this.machine.tracks.push(editedTrack);
+                        editedTrack.setIsVisible(true);
+                        editedTrack.generateWires();
+                        await editedTrack.instantiate();
+                        editedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(editedTrack);
+                    }
+                }
+                else if (tile === this.actionTileHMinusBottom) {
+                    if (track.yExtendable) {
+                        let h = track.h - 1;
+                        if (h >= 0) {
+                            let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, track.j, track.xExtendable ? track.w : undefined, h, track.mirror);
+                            track.dispose();
+                            this.machine.tracks.push(editedTrack);
+                            editedTrack.setIsVisible(true);
+                            editedTrack.generateWires();
+                            await editedTrack.instantiate();
+                            editedTrack.recomputeAbsolutePath();
+                            this.setSelectedObject(editedTrack);
+                        }
+                    }
+                }
+                else if (tile === this.actionTileMirror) {
+                    track = await this.mirrorTrackInPlace(track);
+                    this.setSelectedObject(track);
+                }
+            }
+        }
     }
 }
 /// <reference path="../lib/babylon.d.ts"/>
@@ -1851,6 +2024,8 @@ class Track extends BABYLON.Mesh {
         this.globalSlope = 0;
         this.AABBMin = BABYLON.Vector3.Zero();
         this.AABBMax = BABYLON.Vector3.Zero();
+        this.xExtendable = false;
+        this.yExtendable = false;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.wires = [
@@ -2223,6 +2398,7 @@ class DoubleLoop extends Track {
 class Elevator extends Track {
     constructor(machine, i, j, h = 1, mirror) {
         super(machine, i, j, mirror);
+        this.h = h;
         this.boxesCount = 10;
         this.rWheel = 0.015;
         this.boxX = [];
@@ -2238,6 +2414,7 @@ class Elevator extends Track {
         this.p = 0;
         this.chainLength = 0;
         this.speed = 0.03; // in m/s
+        this.yExtendable = true;
         this.trackName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -2392,6 +2569,8 @@ class Elevator extends Track {
 class Flat extends Track {
     constructor(machine, i, j, w = 1) {
         super(machine, i, j);
+        this.w = w;
+        this.xExtendable = true;
         this.trackName = "flat-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -2408,6 +2587,8 @@ class Flat extends Track {
 class CrossingFlat extends Track {
     constructor(machine, i, j, w = 1) {
         super(machine, i, j);
+        this.w = w;
+        this.xExtendable = true;
         this.trackName = "flatX-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -2484,6 +2665,10 @@ class Loop extends Track {
 class Ramp extends Track {
     constructor(machine, i, j, w = 1, h = 1, mirror) {
         super(machine, i, j, mirror);
+        this.w = w;
+        this.h = h;
+        this.xExtendable = true;
+        this.yExtendable = true;
         this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -2492,8 +2677,8 @@ class Ramp extends Track {
         this.deltaI = w - 1;
         this.deltaJ = h;
         this.trackPoints = [[
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone()),
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ), 0), n.clone(), dir.clone())
+                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ), 0), n, dir)
             ]];
         if (mirror) {
             this.mirrorTrackPointsInPlace();
@@ -2504,6 +2689,10 @@ class Ramp extends Track {
 class CrossingRamp extends Track {
     constructor(machine, i, j, w = 1, h = 1, mirror) {
         super(machine, i, j, mirror);
+        this.w = w;
+        this.h = h;
+        this.xExtendable = true;
+        this.yExtendable = true;
         this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -2730,30 +2919,36 @@ class TrackFactory {
     constructor(machine) {
         this.machine = machine;
     }
+    createTrackWH(trackname, i, j, w, h, mirror) {
+        trackname = trackname.split("-")[0];
+        let wh = "";
+        if (isFinite(w)) {
+            wh += w.toFixed(0) + ".";
+        }
+        if (isFinite(h)) {
+            wh += h.toFixed(0);
+        }
+        trackname += "-" + wh;
+        return this.createTrack(trackname, i, j, mirror);
+    }
     createTrack(trackname, i, j, mirror) {
-        for (let n = 1; n <= 3; n++) {
-            if (trackname === "flat-" + n.toFixed(0)) {
-                return new Flat(this.machine, i, j, n);
-            }
+        if (trackname.startsWith("flat-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            return new Flat(this.machine, i, j, w);
         }
-        for (let n = 1; n <= 3; n++) {
-            if (trackname === "flatX-" + n.toFixed(0)) {
-                return new CrossingFlat(this.machine, i, j, n);
-            }
+        if (trackname.startsWith("flatX-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            return new Flat(this.machine, i, j, w);
         }
-        for (let n = 1; n <= 3; n++) {
-            for (let m = 1; m <= 2; m++) {
-                if (trackname === "ramp-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new Ramp(this.machine, i, j, n, m, mirror);
-                }
-            }
+        if (trackname.startsWith("ramp-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Ramp(this.machine, i, j, w, h, mirror);
         }
-        for (let n = 1; n <= 3; n++) {
-            for (let m = 1; m <= 2; m++) {
-                if (trackname === "rampX-" + n.toFixed(0) + "." + m.toFixed(0)) {
-                    return new CrossingRamp(this.machine, i, j, n, m, mirror);
-                }
-            }
+        if (trackname.startsWith("rampX-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Ramp(this.machine, i, j, w, h, mirror);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, mirror);
@@ -2773,10 +2968,9 @@ class TrackFactory {
         if (trackname === "spiral") {
             return new Spiral(this.machine, i, j, mirror);
         }
-        for (let n = 6; n <= 14; n += 4) {
-            if (trackname === "elevator-" + n.toFixed(0)) {
-                return new Elevator(this.machine, i, j, n, mirror);
-            }
+        if (trackname.startsWith("elevator-")) {
+            let h = parseInt(trackname.split("-")[1]);
+            return new Elevator(this.machine, i, j, h, mirror);
         }
     }
 }
