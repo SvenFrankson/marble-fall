@@ -25,6 +25,7 @@ class TrackPoint {
             this.fixedNormal = false;
             this.normal = BABYLON.Vector3.Up();
         }
+        this.normal = this.normal.clone();
 
         if (dir) {
             this.fixedDir = true;
@@ -33,6 +34,7 @@ class TrackPoint {
             this.fixedDir = false;
             this.dir = BABYLON.Vector3.Right();
         }
+        this.dir = this.dir.clone();
         
         if (tangentIn) {
             this.fixedTangentIn = true;
@@ -145,14 +147,15 @@ class Track extends BABYLON.Mesh {
 
     protected mirrorTrackPointsInPlace(): void {
         for (let j = 0; j < this.trackPoints.length; j++) {
-            for (let i = 0; i < this.trackPoints[j].length; i++) {
-                this.trackPoints[j][i].position.x *= - 1;
-                this.trackPoints[j][i].position.x += this.deltaI * tileWidth;
-                if (this.trackPoints[j][i].normal) {
-                    this.trackPoints[j][i].normal.x *= - 1;
+            let trackpoints = this.trackPoints[j];
+            for (let i = 0; i < trackpoints.length; i++) {
+                trackpoints[i].position.x *= - 1;
+                trackpoints[i].position.x += this.deltaI * tileWidth;
+                if (trackpoints[i].normal) {
+                    trackpoints[i].normal.x *= - 1;
                 }
-                if (this.trackPoints[j][i].dir) {
-                    this.trackPoints[j][i].dir.x *= - 1;
+                if (trackpoints[i].dir) {
+                    trackpoints[i].dir.x *= - 1;
                 }
             }
         }

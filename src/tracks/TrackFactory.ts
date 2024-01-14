@@ -79,7 +79,7 @@ class TrackFactory {
         }
         for (let n = 6; n <= 14; n += 4) {
             if (trackname === "elevator-" + n.toFixed(0)) {
-                return new Elevator(this.machine, i, j, n);
+                return new Elevator(this.machine, i, j, n, mirror);
             }
         }
     }
