@@ -155,6 +155,24 @@ class MachineEditor {
             this.machine.stop();
         }
 
+        document.getElementById("machine-editor-save").addEventListener("click", () => {
+            let data = this.machine.serialize();
+            window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
+            Nabu.download("my-marble-machine.json", JSON.stringify(data));
+        });
+        document.getElementById("machine-editor-load-input").addEventListener("change", (event: Event) => {
+            let files = (event.target as HTMLInputElement).files;
+            let file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.addEventListener('load', (event) => {
+                    this.machine.dispose();
+                    this.machine.deserialize(JSON.parse(event.target.result as string));
+                    this.machine.instantiate();
+                });
+                reader.readAsText(file);
+            }
+        })
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         }

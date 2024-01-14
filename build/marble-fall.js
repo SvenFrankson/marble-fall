@@ -733,6 +733,24 @@ class MachineEditor {
         document.getElementById("machine-editor-stop").onclick = () => {
             this.machine.stop();
         };
+        document.getElementById("machine-editor-save").addEventListener("click", () => {
+            let data = this.machine.serialize();
+            window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
+            Nabu.download("my-marble-machine.json", JSON.stringify(data));
+        });
+        document.getElementById("machine-editor-load-input").addEventListener("change", (event) => {
+            let files = event.target.files;
+            let file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.addEventListener('load', (event) => {
+                    this.machine.dispose();
+                    this.machine.deserialize(JSON.parse(event.target.result));
+                    this.machine.instantiate();
+                });
+                reader.readAsText(file);
+            }
+        });
         document.getElementById("machine-editor-main-menu").onclick = () => {
             this.game.setContext(GameMode.MainMenu);
         };
@@ -2208,7 +2226,7 @@ class Elevator extends Track {
         this.p = 0;
         this.chainLength = 0;
         this.speed = 0.03; // in m/s
-        this.trackName = "elevator-bottom-" + h.toFixed(0);
+        this.trackName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -2324,7 +2342,7 @@ class Elevator extends Track {
 class Flat extends Track {
     constructor(machine, i, j, w = 1) {
         super(machine, i, j);
-        this.trackName = "flatX-" + w.toFixed(0);
+        this.trackName = "flat-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
