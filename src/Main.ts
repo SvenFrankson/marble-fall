@@ -48,6 +48,7 @@ class Game {
 
     public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public woodMaterial: BABYLON.StandardMaterial;
+    public leatherMaterial: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
     public handleMaterialHover: BABYLON.StandardMaterial;
@@ -108,12 +109,16 @@ class Game {
         this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
 
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
-        this.woodMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
+        this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
         this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
         this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
         this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
         this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
         this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+        
+        this.leatherMaterial = new BABYLON.StandardMaterial("wood-material");
+        this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
+        this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
 
         let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 10 / Math.sqrt(3) }, this.scene);
         skybox.rotation.y = Math.PI / 2;

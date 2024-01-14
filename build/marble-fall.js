@@ -881,12 +881,15 @@ class Game {
         this.steelMaterial.roughness = 0.15; // set to 1 to only use it from the metallicRoughnessTexture
         this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
-        this.woodMaterial.diffuseColor.copyFromFloats(0.2, 0.2, 0.2);
+        this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
         this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
         this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
         this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
         this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
         this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+        this.leatherMaterial = new BABYLON.StandardMaterial("wood-material");
+        this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
+        this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 10 / Math.sqrt(3) }, this.scene);
         skybox.rotation.y = Math.PI / 2;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
@@ -2217,12 +2220,14 @@ class Elevator extends Track {
     constructor(machine, i, j, h = 1, mirror) {
         super(machine, i, j, mirror);
         this.boxesCount = 10;
+        this.rWheel = 0.015;
         this.boxX = [];
         this.boxes = [];
         this.wheels = [];
         this.reset = () => {
             for (let i = 0; i < this.boxesCount; i++) {
                 this.boxX[i] = i / this.boxesCount * this.chainLength;
+                this.update(0);
             }
         };
         this.l = 0;
@@ -2275,7 +2280,7 @@ class Elevator extends Track {
                 let a = i / nRamp * Math.PI;
                 let cosa = Math.cos(a);
                 let sina = Math.sin(a);
-                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.001) * x, 0, cosa * rRamp));
+                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
             }
             rampWire0.path.push(new BABYLON.Vector3(-0.02 * x, 0.001, -rRamp));
             rampWire0.parent = box;
@@ -2300,8 +2305,37 @@ class Elevator extends Track {
             }
         });
         this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
-        this.p = 2 * Math.PI * 0.015;
+        this.p = 2 * Math.PI * this.rWheel;
         this.chainLength = 2 * this.l + this.p;
+        let rCable = 0.00075;
+        let nCable = 8;
+        let cableShape = [];
+        for (let i = 0; i < nCable; i++) {
+            let a = i / nCable * 2 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            cableShape[i] = new BABYLON.Vector3(cosa * rCable, sina * rCable, 0);
+        }
+        let x0 = this.wheels[0].position.x;
+        let y0 = this.wheels[0].position.y;
+        let pathCable = [];
+        for (let i = 0; i <= 16; i++) {
+            let a = i / 16 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            pathCable.push(new BABYLON.Vector3(x0 + cosa * this.rWheel, y0 - sina * this.rWheel));
+        }
+        x0 = this.wheels[1].position.x;
+        y0 = this.wheels[1].position.y;
+        for (let i = 0; i <= 16; i++) {
+            let a = i / 16 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            pathCable.push(new BABYLON.Vector3(x0 - cosa * this.rWheel, y0 + sina * this.rWheel));
+        }
+        this.cable = BABYLON.ExtrudeShape("wire", { shape: cableShape, path: pathCable, closeShape: true, closePath: true });
+        this.cable.material = this.game.leatherMaterial;
+        this.cable.parent = this;
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
     }
@@ -2321,26 +2355,26 @@ class Elevator extends Track {
                 this.boxX[i] -= this.chainLength;
             }
             if (this.boxX[i] < this.l) {
-                this.boxes[i].position.x = this.wheels[0].position.x - 0.015 * x;
+                this.boxes[i].position.x = this.wheels[0].position.x - this.rWheel * x;
                 this.boxes[i].position.y = this.wheels[0].position.y + this.boxX[i];
                 Mummu.QuaternionFromXZAxisToRef(BABYLON.Axis.X, BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
             else if (this.boxX[i] < this.l + 0.5 * this.p) {
                 let a = (this.boxX[i] - this.l) / (0.5 * this.p) * Math.PI;
-                this.boxes[i].position.x = this.wheels[1].position.x - Math.cos(a) * 0.015 * x;
-                this.boxes[i].position.y = this.wheels[1].position.y + Math.sin(a) * 0.015;
+                this.boxes[i].position.x = this.wheels[1].position.x - Math.cos(a) * this.rWheel * x;
+                this.boxes[i].position.y = this.wheels[1].position.y + Math.sin(a) * this.rWheel;
                 let right = this.wheels[1].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
             else if (this.boxX[i] < 2 * this.l + 0.5 * this.p) {
-                this.boxes[i].position.x = this.wheels[0].position.x + 0.015 * x;
+                this.boxes[i].position.x = this.wheels[0].position.x + this.rWheel * x;
                 this.boxes[i].position.y = this.wheels[1].position.y - (this.boxX[i] - (this.l + 0.5 * this.p));
                 Mummu.QuaternionFromXZAxisToRef(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
             else {
                 let a = (this.boxX[i] - (2 * this.l + 0.5 * this.p)) / (0.5 * this.p) * Math.PI;
-                this.boxes[i].position.x = this.wheels[0].position.x + Math.cos(a) * 0.015 * x;
-                this.boxes[i].position.y = this.wheels[0].position.y - Math.sin(a) * 0.015;
+                this.boxes[i].position.x = this.wheels[0].position.x + Math.cos(a) * this.rWheel * x;
+                this.boxes[i].position.y = this.wheels[0].position.y - Math.sin(a) * this.rWheel;
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
