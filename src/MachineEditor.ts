@@ -169,6 +169,10 @@ class MachineEditor {
                     this.machine.dispose();
                     this.machine.deserialize(JSON.parse(event.target.result as string));
                     this.machine.instantiate();
+                    this.machine.generateBaseMesh();
+                    for (let i = 0; i < this.machine.balls.length; i++) {
+                        this.machine.balls[i].setShowPositionZeroGhost(true);
+                    }
                 });
                 reader.readAsText(file);
             }

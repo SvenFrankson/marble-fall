@@ -747,6 +747,10 @@ class MachineEditor {
                     this.machine.dispose();
                     this.machine.deserialize(JSON.parse(event.target.result));
                     this.machine.instantiate();
+                    this.machine.generateBaseMesh();
+                    for (let i = 0; i < this.machine.balls.length; i++) {
+                        this.machine.balls[i].setShowPositionZeroGhost(true);
+                    }
                 });
                 reader.readAsText(file);
             }
@@ -812,7 +816,7 @@ var GameMode;
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.targetTimeFactor = 1;
+        this.targetTimeFactor = 0.5;
         this.timeFactor = 0.1;
         this.physicDT = 0.001;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
