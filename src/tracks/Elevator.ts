@@ -7,7 +7,7 @@ class Elevator extends Track {
 
     constructor(machine: Machine, i: number, j: number, h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
-        this.trackName = "elevator-bottom-" + h.toFixed(0);
+        this.trackName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);

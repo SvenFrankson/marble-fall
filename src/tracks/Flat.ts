@@ -2,7 +2,7 @@ class Flat extends Track {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1) {
         super(machine, i, j);
-        this.trackName = "flatX-" + w.toFixed(0);
+        this.trackName = "flat-" + w.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
