@@ -229,55 +229,95 @@ class Game {
             new UTurn(this.machine, -1, -1, true)
         ];
 
+        let blackboardTex = document.getElementById("blackboard-tex") as HTMLImageElement;
+
         this.tileMenuContainer = new BABYLON.Mesh("menu");
         this.tileMenuContainer.position.y = - 10;
         this.tileMenuContainer.position.z = 1;
 
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
-        this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
-        this.tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
         await this.tileDemo1.instantiate();
         this.tileDemo1.position.x = - 0.09;
         this.tileDemo1.position.y = 0.055;
         this.tileDemo1.parent = this.tileMenuContainer;
 
         this.tileDemo2 = new MenuTile("tile-demo-2", 0.05, 0.075, this);
-        this.tileDemo2.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
-        this.tileDemo2.texture.drawText("II", 107, 270, "128px 'Serif'", "white", null);
         await this.tileDemo2.instantiate();
         this.tileDemo2.position.y = 0.075;
         this.tileDemo2.parent = this.tileMenuContainer;
         
         this.tileDemo3 = new MenuTile("tile-demo-3", 0.05, 0.075, this);
-        this.tileDemo3.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
-        this.tileDemo3.texture.drawText("III", 86, 270, "128px 'Serif'", "white", null);
         await this.tileDemo3.instantiate();
         this.tileDemo3.position.x = 0.09;
         this.tileDemo3.position.y = 0.055;
         this.tileDemo3.parent = this.tileMenuContainer;
         
         this.tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
-        this.tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", "black");
         await this.tileCreate.instantiate();
         this.tileCreate.position.x = - 0.07;
         this.tileCreate.position.y = - 0.03;
         this.tileCreate.parent = this.tileMenuContainer;
         
         this.tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
-        this.tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", "black");
         await this.tileLoad.instantiate();
         this.tileLoad.position.x = 0.07;
         this.tileLoad.position.y = - 0.03;
         this.tileLoad.parent = this.tileMenuContainer;
         
         this.tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
-        this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", "black");
         await this.tileCredit.instantiate();
         this.tileCredit.position.x = 0.07;
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
 
         this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileLoad, this.tileCredit];
+
+        let doDrawTileMenuTextures = () => {
+            let ctx = this.tileDemo1.texture.getContext();
+            let w = this.tileDemo1.texW;
+            let h = this.tileDemo1.texH;
+            ctx.drawImage(blackboardTex, 0, 0);
+            this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", null);
+            this.tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
+            
+            ctx = this.tileDemo2.texture.getContext();
+            w = this.tileDemo2.texW;
+            h = this.tileDemo2.texH;
+            ctx.drawImage(blackboardTex, 100, 150, w, h, 0, 0, w, h);
+            this.tileDemo2.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", null);
+            this.tileDemo2.texture.drawText("II", 107, 270, "128px 'Serif'", "white", null);
+            
+            ctx = this.tileDemo3.texture.getContext();
+            w = this.tileDemo3.texW;
+            h = this.tileDemo3.texH;
+            ctx.drawImage(blackboardTex, 50, 200, w, h, 0, 0, w, h);
+            this.tileDemo3.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", null);
+            this.tileDemo3.texture.drawText("III", 86, 270, "128px 'Serif'", "white", null);
+            
+            ctx = this.tileCreate.texture.getContext();
+            w = this.tileCreate.texW;
+            h = this.tileCreate.texH;
+            ctx.drawImage(blackboardTex, 200, 300, w, h, 0, 0, w, h);
+            this.tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", null);
+            
+            ctx = this.tileLoad.texture.getContext();
+            w = this.tileLoad.texW;
+            h = this.tileLoad.texH;
+            ctx.drawImage(blackboardTex, 80, 90, w, h, 0, 0, w, h);
+            this.tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", null);
+            
+            ctx = this.tileCredit.texture.getContext();
+            w = this.tileCredit.texW;
+            h = this.tileCredit.texH;
+            ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
+            this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", null);
+        }
+        if (blackboardTex.complete) {
+            doDrawTileMenuTextures();
+        }
+        else {
+            blackboardTex.addEventListener("load", doDrawTileMenuTextures);
+        }
 
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -298,7 +338,7 @@ class Game {
         }, 5000);
         */
 
-        this.setContext(GameMode.CreateMode);
+        this.setContext(GameMode.MainMenu);
         //await this.makeScreenshot("ball");
         /*
         for (let i = 0; i < TrackNames.length; i++) {

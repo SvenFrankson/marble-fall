@@ -62,6 +62,8 @@ class MenuTile extends BABYLON.Mesh {
     }
 
     public texture: BABYLON.DynamicTexture;
+    public texW: number;
+    public texH: number;
 
     constructor(
         name: string,
@@ -70,7 +72,9 @@ class MenuTile extends BABYLON.Mesh {
         public game: Game
     ) {
         super(name);
-        this.texture = new BABYLON.DynamicTexture(this.name + "-texture", { width: this.w * this.ppm, height: this.h * this.ppm });
+        this.texW = this.w * this.ppm;
+        this.texH = this.h * this.ppm;
+        this.texture = new BABYLON.DynamicTexture(this.name + "-texture", { width: this.texW, height: this.texH });
     }
 
     public async instantiate(): Promise<void> {
