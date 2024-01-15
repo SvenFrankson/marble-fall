@@ -44,9 +44,14 @@ class Ball extends BABYLON.Mesh {
         this.positionZeroGhost.position.copyFrom(p);
     }
 
+    public marbleChocSound: Sound;
 
     constructor(public positionZero: BABYLON.Vector3, public machine: Machine) {
         super("ball");
+        this.marbleChocSound = new Sound({
+            fileName: "./datas/sounds/marble-choc.wav",
+            loop: false
+        });
     }
 
     public select(): void {
@@ -181,6 +186,13 @@ class Ball extends BABYLON.Mesh {
                         let otherSpeed = ball.velocity.clone();
                         let mySpeed = this.velocity.clone();
                         
+                        let v = this.velocity.length();
+                        if (v > 0.1) {
+                            console.log(v);
+                            this.marbleChocSound.volume = v / 5;
+                            this.marbleChocSound.play();
+                        }
+
                         this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
                         ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);

@@ -13,6 +13,10 @@ class Ball extends BABYLON.Mesh {
         this.velocity = BABYLON.Vector3.Zero();
         this._showPositionZeroGhost = false;
         this._timer = 0;
+        this.marbleChocSound = new Sound({
+            fileName: "./datas/sounds/marble-choc.wav",
+            loop: false
+        });
     }
     get game() {
         return this.machine.game;
@@ -142,6 +146,12 @@ class Ball extends BABYLON.Mesh {
                         //this.velocity.scaleInPlace(0.3);
                         let otherSpeed = ball.velocity.clone();
                         let mySpeed = this.velocity.clone();
+                        let v = this.velocity.length();
+                        if (v > 0.1) {
+                            console.log(v);
+                            this.marbleChocSound.volume = v / 5;
+                            this.marbleChocSound.play();
+                        }
                         this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
                         ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
@@ -1560,6 +1570,39 @@ class MenuTile extends BABYLON.Mesh {
     }
 }
 MenuTile.ppc = 60;
+class Sound {
+    constructor(prop) {
+        if (prop) {
+            if (prop.fileName) {
+                this._audioElement = new Audio(prop.fileName);
+            }
+            if (this._audioElement) {
+                if (prop.loop) {
+                    this._audioElement.loop = prop.loop;
+                }
+            }
+        }
+    }
+    get volume() {
+        return this._audioElement.volume;
+    }
+    set volume(v) {
+        this._audioElement.volume = v;
+    }
+    play(fromBegin = true) {
+        if (this._audioElement) {
+            if (fromBegin) {
+                this._audioElement.currentTime = 0;
+            }
+            this._audioElement.play();
+        }
+    }
+    pause() {
+        if (this._audioElement) {
+            this._audioElement.pause();
+        }
+    }
+}
 class TrackPointHandle extends BABYLON.Mesh {
     constructor(trackPoint) {
         super("trackpoint-handle");
