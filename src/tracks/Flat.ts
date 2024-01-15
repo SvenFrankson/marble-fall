@@ -1,3 +1,4 @@
+/*
 class Flat extends Track {
 
     constructor(machine: Machine, i: number, j: number, public w: number = 1) {
@@ -43,3 +44,4 @@ class CrossingFlat extends Track {
         this.generateWires();
     }
 }
+*/

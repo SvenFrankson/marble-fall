@@ -1,31 +1,13 @@
 var TrackNames = [
-    "flat-1",
-    "flat-2",
-    "flat-3",
-    "flatX-1",
-    "flatX-2",
-    "flatX-3",
     "ramp-1.1",
-    "ramp-2.1",
-    "ramp-3.1",
-    "ramp-1.2",
-    "ramp-2.2",
-    "ramp-3.2",
     "rampX-1.1",
-    "rampX-2.1",
-    "rampX-3.1",
-    "rampX-1.2",
-    "rampX-2.2",
-    "rampX-3.2",
     "uturn-s",
     "uturn-l",
     "loop",
     "wave",
     "snake",
     "spiral",
-    "elevator-6",
-    "elevator-10",
-    "elevator-14",
+    "elevator"
 ];
 
 class TrackFactory {
@@ -50,11 +32,11 @@ class TrackFactory {
     public createTrack(trackname: string, i: number, j: number, mirror?: boolean): Track {
         if (trackname.startsWith("flat-")) {
             let w = parseInt(trackname.split("-")[1]);
-            return new Flat(this.machine, i, j, w);
+            return new Ramp(this.machine, i, j, w, 0, mirror);
         }
         if (trackname.startsWith("flatX-")) {
             let w = parseInt(trackname.split("-")[1]);
-            return new Flat(this.machine, i, j, w);
+            return new CrossingRamp(this.machine, i, j, w, 0, mirror);
         }
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -64,7 +46,7 @@ class TrackFactory {
         if (trackname.startsWith("rampX-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Ramp(this.machine, i, j, w, h, mirror);
+            return new CrossingRamp(this.machine, i, j, w, h, mirror);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, mirror);

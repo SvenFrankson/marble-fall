@@ -8,18 +8,18 @@ class MachineEditor {
     public itemContainer: HTMLDivElement;
     public items: Map<string, HTMLDivElement> = new Map<string, HTMLDivElement>();
 
-    public actionTiles: BABYLON.Mesh[];
+    public actionTiles: ActionTile[];
     
-    public actionTileHPlusTop: BABYLON.Mesh;
-    public actionTileHMinusTop: BABYLON.Mesh;
-    public actionTileWPlusRight: BABYLON.Mesh;
-    public actionTileWMinusRight: BABYLON.Mesh;
-    public actionTileHPlusBottom: BABYLON.Mesh;
-    public actionTileHMinusBottom: BABYLON.Mesh;
-    public actionTileWPlusLeft: BABYLON.Mesh;
-    public actionTileWMinusLeft: BABYLON.Mesh;
-    public actionTileDelete: BABYLON.Mesh;
-    public actionTileMirror: BABYLON.Mesh;
+    public actionTileHPlusTop: ActionTile;
+    public actionTileHMinusTop: ActionTile;
+    public actionTileWPlusRight: ActionTile;
+    public actionTileWMinusRight: ActionTile;
+    public actionTileHDownBottom: ActionTile;
+    public actionTileHUpBottom: ActionTile;
+    public actionTileWPlusLeft: ActionTile;
+    public actionTileWMinusLeft: ActionTile;
+    public actionTileDelete: ActionTile;
+    public actionTileMirror: ActionTile;
 
     private _selectedItem: string = "";
     public get selectedItem(): string {
@@ -199,24 +199,59 @@ class MachineEditor {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
 
-        this.actionTileHPlusTop = BABYLON.MeshBuilder.CreatePlane("tile-h-plus-top", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileHMinusTop = BABYLON.MeshBuilder.CreatePlane("tile-h-minus-top", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileWPlusRight = BABYLON.MeshBuilder.CreatePlane("tile-w-plus-right", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileWMinusRight = BABYLON.MeshBuilder.CreatePlane("tile-w-minus-right", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileHPlusBottom = BABYLON.MeshBuilder.CreatePlane("tile-h-plus-bottom", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileHMinusBottom = BABYLON.MeshBuilder.CreatePlane("tile-h-minus-bottom", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileWPlusLeft = BABYLON.MeshBuilder.CreatePlane("tile-w-plus-left", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileWMinusLeft = BABYLON.MeshBuilder.CreatePlane("tile-w-minus-left", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileDelete = BABYLON.MeshBuilder.CreatePlane("tile-delete", { width: this.actionTileSize, height: this.actionTileSize });
-        this.actionTileMirror = BABYLON.MeshBuilder.CreatePlane("tile-mirror", { width: this.actionTileSize, height: this.actionTileSize });
+        this.actionTileHPlusTop = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileHPlusTop.instantiate();
+        this.actionTileHPlusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileHMinusTop = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileHMinusTop.instantiate();
+        this.actionTileHMinusTop.rotation.z = Math.PI;
+        this.actionTileHMinusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileWPlusRight = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileWPlusRight.instantiate();
+        this.actionTileWPlusRight.rotation.z = - Math.PI / 2;
+        this.actionTileWPlusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileWMinusRight = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileWMinusRight.instantiate();
+        this.actionTileWMinusRight.rotation.z = Math.PI / 2;
+        this.actionTileWMinusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileHDownBottom = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileHDownBottom.instantiate();
+        this.actionTileHDownBottom.rotation.z = Math.PI;
+        this.actionTileHDownBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileHUpBottom = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileHUpBottom.instantiate();
+        this.actionTileHUpBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileWPlusLeft = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileWPlusLeft.instantiate();
+        this.actionTileWPlusLeft.rotation.z = Math.PI / 2;
+        this.actionTileWPlusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileWMinusLeft = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileWMinusLeft.instantiate();
+        this.actionTileWMinusLeft.rotation.z = - Math.PI / 2;
+        this.actionTileWMinusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+
+        this.actionTileDelete = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileDelete.instantiate();
+        this.actionTileDelete.texture.drawText("x", 20, 45, "50px 'Arial'", "white", "black");
+
+        this.actionTileMirror = new ActionTile("", this.actionTileSize, this.game);
+        this.actionTileMirror.instantiate();
+        this.actionTileMirror.texture.drawText("< >", 5, 44, "37px 'Arial'", "white", "black");
 
         this.actionTiles = [
             this.actionTileHPlusTop,
             this.actionTileHMinusTop,
             this.actionTileWPlusRight,
             this.actionTileWMinusRight,
-            this.actionTileHPlusBottom,
-            this.actionTileHMinusBottom,
+            this.actionTileHDownBottom,
+            this.actionTileHUpBottom,
             this.actionTileWPlusLeft,
             this.actionTileWMinusLeft,
             this.actionTileDelete,
@@ -253,7 +288,11 @@ class MachineEditor {
         }
     }
 
+    private _pointerDownX: number = 0;
+    private _pointerDownY: number = 0;
     public pointerDown = (event: PointerEvent) => {
+        this._pointerDownX = this.game.scene.pointerX;
+        this._pointerDownY = this.game.scene.pointerY;
         if (this.selectedObject) {
             let pick = this.game.scene.pick(
                 this.game.scene.pointerX,
@@ -268,7 +307,6 @@ class MachineEditor {
                     return false;
                 }
             )
-            console.log("down " + (pick.pickedMesh ? pick.pickedMesh.name : "no hit"));
     
             if (pick.hit) {
                 let pickedObject: Track | Ball;
@@ -326,7 +364,6 @@ class MachineEditor {
                     return mesh === this.machine.baseWall;
                 }
             )
-            console.log("move " + (pick.pickedMesh ? pick.pickedMesh.name : "no hit"));
     
             if (pick.hit) {
                 let point = pick.pickedPoint.add(this._dragOffset);
@@ -363,7 +400,7 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    return mesh instanceof BABYLON.Mesh && this.actionTiles.indexOf(mesh) != - 1;
+                    return mesh instanceof ActionTile && this.actionTiles.indexOf(mesh) != - 1;
                 }
             )
             if (pick.hit && pick.pickedMesh instanceof BABYLON.Mesh) {
@@ -421,27 +458,52 @@ class MachineEditor {
                 this.setSelectedItem("");
             }
             else {
-                if (pick.pickedMesh instanceof BallGhost) {
-                    this.setSelectedObject(pick.pickedMesh.ball);
-                }
-                else if (pick.pickedMesh === this.machine.baseWall) {
-                    let i = Math.round(pick.pickedPoint.x / tileWidth);
-                    let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    let pickedTrack = this.machine.tracks.find(track => {
-                        if (track.i <= i) {
-                            if ((track.i + track.deltaI) >= i) {
-                                if (track.j <= j) {
-                                    if ((track.j + track.deltaJ) >= j) {
-                                        return true;
+                let dx = (this._pointerDownX - this.game.scene.pointerX);
+                let dy = (this._pointerDownY - this.game.scene.pointerY);
+                if (dx * dx + dy * dy < 10) {
+                    if (pick.pickedMesh instanceof BallGhost) {
+                        this.setSelectedObject(pick.pickedMesh.ball);
+                    }
+                    else if (pick.pickedMesh === this.machine.baseWall) {
+                        let i = Math.round(pick.pickedPoint.x / tileWidth);
+                        let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
+                        let pickedTrack = this.machine.tracks.find(track => {
+                            if (track.i <= i) {
+                                if ((track.i + track.deltaI) >= i) {
+                                    if (track.j <= j) {
+                                        if ((track.j + track.deltaJ) >= j) {
+                                            return true;
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
-                    this.setSelectedObject(pickedTrack);
+                        });
+                        this.setSelectedObject(pickedTrack);
+                    }
                 }
             }
         }
+    }
+
+    public async editTrackInPlace(track: Track, i?: number, j?: number, w?: number, h?: number, mirror?: boolean): Promise<Track> {
+        if (!isFinite(i)) {
+            i = track.i;
+        }
+        if (!isFinite(j)) {
+            j = track.j;
+        }
+        if (!mirror) {
+            mirror = track.mirror;
+        }
+
+        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, i, j, w, h, mirror);
+        track.dispose();
+        this.machine.tracks.push(editedTrack);
+        editedTrack.setIsVisible(true);
+        editedTrack.generateWires();
+        await editedTrack.instantiate();
+        editedTrack.recomputeAbsolutePath();
+        return editedTrack;
     }
 
     public async mirrorTrackInPlace(track: Track): Promise<Track> {
@@ -459,15 +521,15 @@ class MachineEditor {
         return this.items.get(this._selectedItem);
     }
 
-    public actionTileSize: number = 0.015;
+    public actionTileSize: number = 0.018;
     public updateActionTile(): void {
         this.actionTiles.forEach(tile => {
-            tile.isVisible = false;
+            tile.setIsVisible(false);
         })
         if (this.selectedObject) {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
-                this.actionTileDelete.isVisible = true;
+                this.actionTileDelete.setIsVisible(true);
                 
                 this.actionTileDelete.position.x = 0;
                 this.actionTileDelete.position.y = - this.selectedObject.radius - 1.2 * s;
@@ -483,9 +545,9 @@ class MachineEditor {
                 let yBottom = - tileHeight * (this.selectedObject.deltaJ + 0.75);
                 let yCenter = (yTop + yBottom) * 0.5;
 
-                this.actionTileHPlusTop.position.x = xCenter + s34;
+                this.actionTileHPlusTop.position.x = xCenter - s34;
                 this.actionTileHPlusTop.position.y = yTop + s;
-                this.actionTileHMinusTop.position.x = xCenter - s34;
+                this.actionTileHMinusTop.position.x = xCenter + s34;
                 this.actionTileHMinusTop.position.y = yTop + s;
                 
                 this.actionTileWPlusRight.position.x = xRight + s;
@@ -493,10 +555,10 @@ class MachineEditor {
                 this.actionTileWMinusRight.position.x = xRight + s;
                 this.actionTileWMinusRight.position.y = yCenter - s34;
 
-                this.actionTileHPlusBottom.position.x = xCenter + s34;
-                this.actionTileHPlusBottom.position.y = yBottom - s;
-                this.actionTileHMinusBottom.position.x = xCenter - s34;
-                this.actionTileHMinusBottom.position.y = yBottom - s;
+                this.actionTileHUpBottom.position.x = xCenter - s34;
+                this.actionTileHUpBottom.position.y = yBottom - s;
+                this.actionTileHDownBottom.position.x = xCenter + s34;
+                this.actionTileHDownBottom.position.y = yBottom - s;
                 
                 this.actionTileWPlusLeft.position.x = xLeft - s;
                 this.actionTileWPlusLeft.position.y = yCenter + s34;
@@ -509,19 +571,19 @@ class MachineEditor {
                 this.actionTileDelete.position.y = yBottom - s;
 
                 if (this.selectedObject.xExtendable) {
-                    this.actionTileWMinusRight.isVisible = true;
-                    this.actionTileWPlusRight.isVisible = true;
-                    this.actionTileWMinusLeft.isVisible = true;
-                    this.actionTileWPlusLeft.isVisible = true;
+                    this.actionTileWMinusRight.setIsVisible(true);
+                    this.actionTileWPlusRight.setIsVisible(true);
+                    this.actionTileWMinusLeft.setIsVisible(true);
+                    this.actionTileWPlusLeft.setIsVisible(true);
                 }
                 if (this.selectedObject.yExtendable) {
-                    this.actionTileHMinusTop.isVisible = true;
-                    this.actionTileHPlusTop.isVisible = true;
-                    this.actionTileHMinusBottom.isVisible = true;
-                    this.actionTileHPlusBottom.isVisible = true;
+                    this.actionTileHMinusTop.setIsVisible(true);
+                    this.actionTileHPlusTop.setIsVisible(true);
+                    this.actionTileHUpBottom.setIsVisible(true);
+                    this.actionTileHDownBottom.setIsVisible(true);
                 }
-                this.actionTileDelete.isVisible = true;
-                this.actionTileMirror.isVisible = true;
+                this.actionTileDelete.setIsVisible(true);
+                this.actionTileMirror.setIsVisible(true);
 
                 this.actionTiles.forEach(tile => {
                     tile.position.addInPlace(this.selectedObject.position);
@@ -544,13 +606,7 @@ class MachineEditor {
                         let h = track.h + 1;
                         let j = track.j - 1;
     
-                        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, j, track.xExtendable ? track.w : undefined, h, track.mirror);
-                        track.dispose();
-                        this.machine.tracks.push(editedTrack);
-                        editedTrack.setIsVisible(true);
-                        editedTrack.generateWires();
-                        await editedTrack.instantiate();
-                        editedTrack.recomputeAbsolutePath();
+                        let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
                         this.setSelectedObject(editedTrack);
                     }
                 }
@@ -558,43 +614,64 @@ class MachineEditor {
                     if (track.yExtendable) {
                         let h = track.h - 1;
                         let j = track.j + 1;
+
                         if (h >= 0) {
-                            let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, j, track.xExtendable ? track.w : undefined, h, track.mirror);
-                            track.dispose();
-                            this.machine.tracks.push(editedTrack);
-                            editedTrack.setIsVisible(true);
-                            editedTrack.generateWires();
-                            await editedTrack.instantiate();
-                            editedTrack.recomputeAbsolutePath();
+                            let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
                             this.setSelectedObject(editedTrack);
                         }
                     }
                 }
-                else if (tile === this.actionTileHPlusBottom) {
-                    if (track.yExtendable) {
-                        let h = track.h + 1;
-    
-                        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, track.j, track.xExtendable ? track.w : undefined, h, track.mirror);
-                        track.dispose();
-                        this.machine.tracks.push(editedTrack);
-                        editedTrack.setIsVisible(true);
-                        editedTrack.generateWires();
-                        await editedTrack.instantiate();
-                        editedTrack.recomputeAbsolutePath();
+                else if (tile === this.actionTileWPlusRight) {
+                    if (track.xExtendable) {
+                        let w = track.w + 1;
+
+                        let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
                         this.setSelectedObject(editedTrack);
                     }
                 }
-                else if (tile === this.actionTileHMinusBottom) {
+                else if (tile === this.actionTileWMinusRight) {
+                    if (track.xExtendable) {
+                        let w = track.w - 1;
+
+                        if (w >= 1) {
+                            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                            this.setSelectedObject(editedTrack);
+                        }
+                    }
+                }
+                else if (tile === this.actionTileHDownBottom) {
+                    if (track.yExtendable) {
+                        let h = track.h + 1;
+                        
+                        let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                        this.setSelectedObject(editedTrack);
+                    }
+                }
+                else if (tile === this.actionTileHUpBottom) {
                     if (track.yExtendable) {
                         let h = track.h - 1;
                         if (h >= 0) {
-                            let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, track.i, track.j, track.xExtendable ? track.w : undefined, h, track.mirror);
-                            track.dispose();
-                            this.machine.tracks.push(editedTrack);
-                            editedTrack.setIsVisible(true);
-                            editedTrack.generateWires();
-                            await editedTrack.instantiate();
-                            editedTrack.recomputeAbsolutePath();
+                            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                            this.setSelectedObject(editedTrack);
+                        }
+                    }
+                }
+                else if (tile === this.actionTileWPlusLeft) {
+                    if (track.xExtendable) {
+                        let i = track.i - 1;
+                        let w = track.w + 1;
+
+                        let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+                        this.setSelectedObject(editedTrack);
+                    }
+                }
+                else if (tile === this.actionTileWMinusLeft) {
+                    if (track.xExtendable) {
+                        let i = track.i + 1;
+                        let w = track.w - 1;
+
+                        if (w >= 1) {
+                            let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
                             this.setSelectedObject(editedTrack);
                         }
                     }
