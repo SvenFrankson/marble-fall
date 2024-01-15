@@ -1,6 +1,6 @@
 class Elevator extends Track {
 
-    public boxesCount: number = 10;
+    public boxesCount: number = 4;
     public rWheel: number = 0.015;
     public boxX: number[] = [];
     public boxes: BABYLON.Mesh[] = [];
@@ -9,6 +9,7 @@ class Elevator extends Track {
 
     constructor(machine: Machine, i: number, j: number, public h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
+        this.boxesCount
         this.yExtendable = true;
         this.trackName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
@@ -33,6 +34,11 @@ class Elevator extends Track {
                 new TrackPoint(this, new BABYLON.Vector3(
                     - tileWidth * 0.5,
                     - tileHeight * this.deltaJ,
+                    0
+                ), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(
+                    - tileWidth * 0.1,
+                    - tileHeight * (this.deltaJ + 0.1),
                     0
                 ), n, dir),
                 new TrackPoint(this, new BABYLON.Vector3(
@@ -72,28 +78,6 @@ class Elevator extends Track {
 
         this.generateWires();
 
-        for (let i = 0; i < this.boxesCount; i++) {
-            let box = new BABYLON.Mesh("box");
-            box.rotationQuaternion = BABYLON.Quaternion.Identity();
-            box.parent = this;
-    
-            let rampWire0 = new Wire(this);
-            let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.001, rRamp)];
-            let nRamp = 12;
-            for (let i = 0; i <= nRamp; i++) {
-                let a = i / nRamp * Math.PI;
-                let cosa = Math.cos(a);
-                let sina = Math.sin(a);
-                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
-            }
-            rampWire0.path.push(new BABYLON.Vector3(- 0.02 * x, 0.001, - rRamp));
-            rampWire0.parent = box;
-    
-            this.boxes.push(box);
-            this.wires.push(rampWire0);
-        }
-
         this.wheels = [
             new BABYLON.Mesh("wheel-0"),
             new BABYLON.Mesh("wheel-1")
@@ -117,6 +101,30 @@ class Elevator extends Track {
         this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
         this.p = 2 * Math.PI * this.rWheel;
         this.chainLength = 2 * this.l + this.p;
+
+        this.boxesCount = Math.round(this.chainLength / 0.08);
+
+        for (let i = 0; i < this.boxesCount; i++) {
+            let box = new BABYLON.Mesh("box");
+            box.rotationQuaternion = BABYLON.Quaternion.Identity();
+            box.parent = this;
+    
+            let rampWire0 = new Wire(this);
+            let rRamp = this.wireGauge * 0.35;
+            rampWire0.path = [new BABYLON.Vector3(-0.019 * x, 0.001, rRamp)];
+            let nRamp = 12;
+            for (let i = 0; i <= nRamp; i++) {
+                let a = i / nRamp * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
+            }
+            rampWire0.path.push(new BABYLON.Vector3(- 0.019 * x, 0.001, - rRamp));
+            rampWire0.parent = box;
+    
+            this.boxes.push(box);
+            this.wires.push(rampWire0);
+        }
 
         let rCable = 0.00075;
         let nCable = 8;
@@ -167,7 +175,7 @@ class Elevator extends Track {
     public l: number = 0;
     public p: number = 0;
     public chainLength: number = 0;
-    public speed: number = 0.03; // in m/s
+    public speed: number = 0.04; // in m/s
 
     public update(dt: number): void {
         let dx = this.speed * dt * this.game.timeFactor;
