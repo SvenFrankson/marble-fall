@@ -7,7 +7,7 @@ var TrackNames = [
     "wave",
     "snake",
     "spiral",
-    "elevator"
+    "elevator-4"
 ];
 
 class TrackFactory {

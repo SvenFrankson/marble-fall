@@ -89,7 +89,7 @@
 }
 
 .machine-editor-item.selected {
-    background-color: rgba(127, 255, 127, 50%);
+    outline: 1px solid white;
 }
 
 .machine-editor-item-container {

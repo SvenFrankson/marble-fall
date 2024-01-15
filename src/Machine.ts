@@ -93,7 +93,7 @@ class Machine {
         this.playing = false;
     }
 
-    public generateBaseMesh(): void {
+    public async generateBaseMesh(): Promise<void> {
 
         let minX = - 0.15;
         let maxX = 0.15;
@@ -129,29 +129,28 @@ class Machine {
         this.baseFrame.position.copyFrom(this.baseWall.position);
         this.baseFrame.material = this.game.steelMaterial;
 
-        this.game.vertexDataLoader.get("./meshes/base-frame.babylon").then(vertexData => {
-            let data = Mummu.CloneVertexData(vertexData[0]);
-            let positions = [...data.positions]
-            for (let i = 0; i < positions.length / 3; i++) {
-                let x = positions[3 * i];
-                let y = positions[3 * i + 1];
-                
-                if (x > 0) {
-                    positions[3 * i] += w * 0.5 - 0.01 + 0.1;
-                }
-                else if (x < 0) {
-                    positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
-                }
-                if (y > 0) {
-                    positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
-                }
-                else if (y < 0) {
-                    positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
-                }
+        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon")
+        let data = Mummu.CloneVertexData(vertexDatas[0]);
+        let positions = [...data.positions]
+        for (let i = 0; i < positions.length / 3; i++) {
+            let x = positions[3 * i];
+            let y = positions[3 * i + 1];
+            
+            if (x > 0) {
+                positions[3 * i] += w * 0.5 - 0.01 + 0.1;
             }
-            data.positions = positions;
-            data.applyToMesh(this.baseFrame);
-        })
+            else if (x < 0) {
+                positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
+            }
+            if (y > 0) {
+                positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
+            }
+            else if (y < 0) {
+                positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
+            }
+        }
+        data.positions = positions;
+        data.applyToMesh(this.baseFrame);
     }
 
     public serialize(): IMachineData {

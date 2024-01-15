@@ -83,6 +83,8 @@ class MachineEditor {
 
         let ballItem = document.createElement("div") as HTMLDivElement;
         ballItem.classList.add("machine-editor-item");
+        ballItem.style.backgroundImage = "url(./datas/icons/ball.png)"
+        ballItem.style.backgroundSize = "cover";
         ballItem.innerText = "ball";
         this.itemContainer.appendChild(ballItem);
         this.items.set("ball", ballItem);
@@ -109,12 +111,11 @@ class MachineEditor {
 
         for (let i = 0; i < TrackNames.length; i++) {
             let trackname = TrackNames[i];
-            if (trackname === "elevator") {
-                trackname = "elevator-4";
-            }
             let item = document.createElement("div") as HTMLDivElement;
             item.classList.add("machine-editor-item");
-            item.innerText = trackname;
+            item.style.backgroundImage = "url(./datas/icons/" + trackname + ".png)"
+            item.style.backgroundSize = "cover";
+            item.innerText = trackname.split("-")[0];
             this.itemContainer.appendChild(item);
             this.items.set(trackname, item);
 

@@ -46,9 +46,12 @@ class Game {
     public tileCredit: MenuTile;
     public tiles: MenuTile[];
 
+    public skybox: BABYLON.Mesh;
+
     public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public woodMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
+    public deepBlackMaterial: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
     public handleMaterialHover: BABYLON.StandardMaterial;
@@ -73,7 +76,7 @@ class Game {
         this.scene = new BABYLON.Scene(this.engine);
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
 
-        this.scene.clearColor = BABYLON.Color4.FromHexString("#66b0ff");
+        this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
 
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, - 2)).normalize(), this.scene);
 
@@ -119,9 +122,13 @@ class Game {
         this.leatherMaterial = new BABYLON.StandardMaterial("wood-material");
         this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
         this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        
+        this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
+        this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
+        this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
 
-        let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 10 / Math.sqrt(3) }, this.scene);
-        skybox.rotation.y = Math.PI / 2;
+        this.skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 10 / Math.sqrt(3) }, this.scene);
+        this.skybox.rotation.y = Math.PI / 2;
         let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
         let skyTexture = new BABYLON.CubeTexture(
@@ -132,7 +139,7 @@ class Game {
         skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        skybox.material = skyboxMaterial;
+        this.skybox.material = skyboxMaterial;
 
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
         this.camera.speed = 0.02;
@@ -172,11 +179,12 @@ class Game {
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target");
 
         this.machine = new Machine(this);
+        this.machineEditor = new MachineEditor(this);
 
         this.machine.balls = [];
         for (let n = 0; n < 9; n++) {
             let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
-            ball.instantiate();
+            await ball.instantiate();
             this.machine.balls.push(ball);
         }
 
@@ -222,12 +230,13 @@ class Game {
         ];
 
         this.tileMenuContainer = new BABYLON.Mesh("menu");
+        this.tileMenuContainer.position.y = - 10;
         this.tileMenuContainer.position.z = 1;
 
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         this.tileDemo1.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
         this.tileDemo1.texture.drawText("I", 129, 270, "128px 'Serif'", "white", null);
-        this.tileDemo1.instantiate();
+        await this.tileDemo1.instantiate();
         this.tileDemo1.position.x = - 0.09;
         this.tileDemo1.position.y = 0.055;
         this.tileDemo1.parent = this.tileMenuContainer;
@@ -235,43 +244,43 @@ class Game {
         this.tileDemo2 = new MenuTile("tile-demo-2", 0.05, 0.075, this);
         this.tileDemo2.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
         this.tileDemo2.texture.drawText("II", 107, 270, "128px 'Serif'", "white", null);
-        this.tileDemo2.instantiate();
+        await this.tileDemo2.instantiate();
         this.tileDemo2.position.y = 0.075;
         this.tileDemo2.parent = this.tileMenuContainer;
         
         this.tileDemo3 = new MenuTile("tile-demo-3", 0.05, 0.075, this);
         this.tileDemo3.texture.drawText("DEMO", 52, 120, "64px 'Serif'", "white", "black");
         this.tileDemo3.texture.drawText("III", 86, 270, "128px 'Serif'", "white", null);
-        this.tileDemo3.instantiate();
+        await this.tileDemo3.instantiate();
         this.tileDemo3.position.x = 0.09;
         this.tileDemo3.position.y = 0.055;
         this.tileDemo3.parent = this.tileMenuContainer;
         
         this.tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
         this.tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", "black");
-        this.tileCreate.instantiate();
+        await this.tileCreate.instantiate();
         this.tileCreate.position.x = - 0.07;
         this.tileCreate.position.y = - 0.03;
         this.tileCreate.parent = this.tileMenuContainer;
         
         this.tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
         this.tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", "black");
-        this.tileLoad.instantiate();
+        await this.tileLoad.instantiate();
         this.tileLoad.position.x = 0.07;
         this.tileLoad.position.y = - 0.03;
         this.tileLoad.parent = this.tileMenuContainer;
         
         this.tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
         this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", "black");
-        this.tileCredit.instantiate();
+        await this.tileCredit.instantiate();
         this.tileCredit.position.x = 0.07;
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
 
         this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileLoad, this.tileCredit];
 
-        this.machine.instantiate();
-        this.machine.generateBaseMesh();
+        await this.machine.instantiate();
+        await this.machine.generateBaseMesh();
 
         document.getElementById("track-editor-menu").style.display = "none";
         //this.trackEditor = new TrackEditor(this);
@@ -289,9 +298,14 @@ class Game {
         }, 5000);
         */
 
-        this.machineEditor = new MachineEditor(this);
-
         this.setContext(GameMode.CreateMode);
+        //await this.makeScreenshot("ball");
+        /*
+        for (let i = 0; i < TrackNames.length; i++) {
+            let trackname = TrackNames[i];
+            await this.makeScreenshot(trackname);
+        }
+        */
 	}
 
 	public animate(): void {
@@ -337,8 +351,12 @@ class Game {
         }
         this.camera.target.z = 0;
 
-        this.machineEditor.update();
-        this.machine.update();
+        if (this.machineEditor) {
+            this.machineEditor.update();
+        }
+        if (this.machine) {
+            this.machine.update();
+        }
 
         let dt = this.scene.deltaTime / 1000;
         let fps = 1 / dt;
@@ -354,6 +372,7 @@ class Game {
     public setContext(mode: GameMode): void {
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
+                this.tileMenuContainer.position.y = - 10;
                 this.tileMenuContainer.position.z = 1;
                 this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
             }
@@ -364,6 +383,7 @@ class Game {
             this.mode = mode;
             
             if (this.mode === GameMode.MainMenu) {
+                this.tileMenuContainer.position.y = 0;
                 this.tileMenuContainer.position.z = - 0.02;
 
                 this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35);
@@ -450,6 +470,52 @@ class Game {
         await anim(- Math.PI / 16, 0.2);
         await anim(0, 0.6);
     }
+
+    public async makeScreenshot(objectName: string): Promise<void> {
+        this.machine.baseWall.isVisible = false;
+        this.machine.baseFrame.isVisible = false;
+        this.skybox.isVisible = false;
+        
+        this.camera.alpha = - 0.8 * Math.PI / 2;
+        this.camera.beta = 0.75 * Math.PI / 2;
+
+        return new Promise<void>(resolve => {
+            requestAnimationFrame(async () => {
+                this.machine.dispose();
+                let track: Track; 
+                let ball: Ball; 
+                if (objectName === "ball") {
+                    ball = new Ball(BABYLON.Vector3.Zero(), this.machine);
+                    this.camera.target.copyFromFloats(0, 0, 0);
+                    this.camera.radius = 0.1;
+                }
+                else {
+                    track = this.machine.trackFactory.createTrack(objectName, 0, 0);
+                    this.camera.radius = 0.25 + Math.max(0.15 * track.deltaI, 0);
+                    this.camera.target.copyFromFloats(tileWidth * (track.deltaI * 0.55), - tileHeight * (track.deltaJ) * 0.5, 0);
+                }
+
+                if (objectName === "spiral") {
+                    this.camera.target.x -= tileWidth * 0.1;
+                    this.camera.target.y -= tileHeight * 0.6;
+                    this.camera.radius += 0.1;
+                }
+
+                if (track) {
+                    this.machine.tracks = [track];
+                }
+                if (ball) {
+                    this.machine.balls = [ball];
+                }
+                await this.machine.instantiate();
+
+                requestAnimationFrame(async () => {
+                    await Mummu.MakeScreenshot({ miniatureName: objectName });
+                    resolve();
+                });
+            });
+        });
+    } 
 }
 
 window.addEventListener("DOMContentLoaded", () => {
