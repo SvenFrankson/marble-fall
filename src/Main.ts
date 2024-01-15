@@ -29,7 +29,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public targetTimeFactor: number = 0.5;
+    public targetTimeFactor: number = 1;
     public timeFactor: number = 0.1;
     public physicDT: number = 0.001;
 

@@ -78,7 +78,7 @@ class MachineEditor {
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
     }
 
-    public instantiate(): void {
+    public async instantiate(): Promise<void> {
         this.container.style.display = "block";
 
         let ballItem = document.createElement("div") as HTMLDivElement;
@@ -200,49 +200,49 @@ class MachineEditor {
         }
 
         this.actionTileHPlusTop = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHPlusTop.instantiate();
+        await this.actionTileHPlusTop.instantiate();
         this.actionTileHPlusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileHMinusTop = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHMinusTop.instantiate();
+        await this.actionTileHMinusTop.instantiate();
         this.actionTileHMinusTop.rotation.z = Math.PI;
         this.actionTileHMinusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileWPlusRight = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWPlusRight.instantiate();
+        await this.actionTileWPlusRight.instantiate();
         this.actionTileWPlusRight.rotation.z = - Math.PI / 2;
         this.actionTileWPlusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileWMinusRight = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWMinusRight.instantiate();
+        await this.actionTileWMinusRight.instantiate();
         this.actionTileWMinusRight.rotation.z = Math.PI / 2;
         this.actionTileWMinusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileHDownBottom = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHDownBottom.instantiate();
+        await this.actionTileHDownBottom.instantiate();
         this.actionTileHDownBottom.rotation.z = Math.PI;
         this.actionTileHDownBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileHUpBottom = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHUpBottom.instantiate();
+        await this.actionTileHUpBottom.instantiate();
         this.actionTileHUpBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileWPlusLeft = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWPlusLeft.instantiate();
+        await this.actionTileWPlusLeft.instantiate();
         this.actionTileWPlusLeft.rotation.z = Math.PI / 2;
         this.actionTileWPlusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileWMinusLeft = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWMinusLeft.instantiate();
+        await this.actionTileWMinusLeft.instantiate();
         this.actionTileWMinusLeft.rotation.z = - Math.PI / 2;
         this.actionTileWMinusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
 
         this.actionTileDelete = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileDelete.instantiate();
+        await this.actionTileDelete.instantiate();
         this.actionTileDelete.texture.drawText("x", 20, 45, "50px 'Arial'", "white", "black");
 
         this.actionTileMirror = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileMirror.instantiate();
+        await this.actionTileMirror.instantiate();
         this.actionTileMirror.texture.drawText("< >", 5, 44, "37px 'Arial'", "white", "black");
 
         this.actionTiles = [
@@ -256,7 +256,9 @@ class MachineEditor {
             this.actionTileWMinusLeft,
             this.actionTileDelete,
             this.actionTileMirror
-        ]
+        ];
+
+        this.updateActionTile();
     }
 
     public dispose(): void {

@@ -671,7 +671,7 @@ class MachineEditor {
         }
         this.updateActionTile();
     }
-    instantiate() {
+    async instantiate() {
         this.container.style.display = "block";
         let ballItem = document.createElement("div");
         ballItem.classList.add("machine-editor-item");
@@ -782,40 +782,40 @@ class MachineEditor {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
         this.actionTileHPlusTop = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHPlusTop.instantiate();
+        await this.actionTileHPlusTop.instantiate();
         this.actionTileHPlusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileHMinusTop = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHMinusTop.instantiate();
+        await this.actionTileHMinusTop.instantiate();
         this.actionTileHMinusTop.rotation.z = Math.PI;
         this.actionTileHMinusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileWPlusRight = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWPlusRight.instantiate();
+        await this.actionTileWPlusRight.instantiate();
         this.actionTileWPlusRight.rotation.z = -Math.PI / 2;
         this.actionTileWPlusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileWMinusRight = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWMinusRight.instantiate();
+        await this.actionTileWMinusRight.instantiate();
         this.actionTileWMinusRight.rotation.z = Math.PI / 2;
         this.actionTileWMinusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileHDownBottom = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHDownBottom.instantiate();
+        await this.actionTileHDownBottom.instantiate();
         this.actionTileHDownBottom.rotation.z = Math.PI;
         this.actionTileHDownBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileHUpBottom = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileHUpBottom.instantiate();
+        await this.actionTileHUpBottom.instantiate();
         this.actionTileHUpBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileWPlusLeft = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWPlusLeft.instantiate();
+        await this.actionTileWPlusLeft.instantiate();
         this.actionTileWPlusLeft.rotation.z = Math.PI / 2;
         this.actionTileWPlusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileWMinusLeft = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileWMinusLeft.instantiate();
+        await this.actionTileWMinusLeft.instantiate();
         this.actionTileWMinusLeft.rotation.z = -Math.PI / 2;
         this.actionTileWMinusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
         this.actionTileDelete = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileDelete.instantiate();
+        await this.actionTileDelete.instantiate();
         this.actionTileDelete.texture.drawText("x", 20, 45, "50px 'Arial'", "white", "black");
         this.actionTileMirror = new ActionTile("", this.actionTileSize, this.game);
-        this.actionTileMirror.instantiate();
+        await this.actionTileMirror.instantiate();
         this.actionTileMirror.texture.drawText("< >", 5, 44, "37px 'Arial'", "white", "black");
         this.actionTiles = [
             this.actionTileHPlusTop,
@@ -829,6 +829,7 @@ class MachineEditor {
             this.actionTileDelete,
             this.actionTileMirror
         ];
+        this.updateActionTile();
     }
     dispose() {
         this.container.style.display = "none";
@@ -1050,7 +1051,7 @@ var GameMode;
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.targetTimeFactor = 0.5;
+        this.targetTimeFactor = 1;
         this.timeFactor = 0.1;
         this.physicDT = 0.001;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
@@ -1416,7 +1417,8 @@ class ActionTile extends BABYLON.Mesh {
         frame.material = this.game.steelMaterial;
         frame.parent = this;
         this.game.vertexDataLoader.get("./meshes/action-tile-frame.babylon").then(vertexData => {
-            let positions = [...vertexData[0].positions];
+            let data = Mummu.CloneVertexData(vertexData[0]);
+            let positions = [...data.positions];
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
@@ -1434,8 +1436,8 @@ class ActionTile extends BABYLON.Mesh {
                     positions[3 * i + 1] -= this.s * 0.5 - 0.001;
                 }
             }
-            vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(frame);
+            data.positions = positions;
+            data.applyToMesh(frame);
         });
     }
 }
@@ -1473,7 +1475,8 @@ class MenuTile extends BABYLON.Mesh {
         frame.material = this.game.steelMaterial;
         frame.parent = this;
         this.game.vertexDataLoader.get("./meshes/menu-tile-frame.babylon").then(vertexData => {
-            let positions = [...vertexData[0].positions];
+            let data = Mummu.CloneVertexData(vertexData[0]);
+            let positions = [...data.positions];
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
@@ -1491,8 +1494,8 @@ class MenuTile extends BABYLON.Mesh {
                     positions[3 * i + 1] -= this.h * 0.5 - 0.001;
                 }
             }
-            vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(frame);
+            data.positions = positions;
+            data.applyToMesh(frame);
         });
     }
 }
@@ -2507,7 +2510,7 @@ class Elevator extends Track {
     constructor(machine, i, j, h = 1, mirror) {
         super(machine, i, j, mirror);
         this.h = h;
-        this.boxesCount = 10;
+        this.boxesCount = 4;
         this.rWheel = 0.015;
         this.boxX = [];
         this.boxes = [];
@@ -2521,7 +2524,8 @@ class Elevator extends Track {
         this.l = 0;
         this.p = 0;
         this.chainLength = 0;
-        this.speed = 0.03; // in m/s
+        this.speed = 0.04; // in m/s
+        this.boxesCount;
         this.yExtendable = true;
         this.trackName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
@@ -2540,6 +2544,7 @@ class Elevator extends Track {
         this.trackPoints = [
             [
                 new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.deltaJ, 0), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.deltaJ + 0.1), 0), n, dir),
                 new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.deltaJ + 0.25), 0), n, dir),
                 new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.deltaJ + 0.25) + 0.01, 0), dir.scale(-1), n),
                 new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
@@ -2557,25 +2562,6 @@ class Elevator extends Track {
             x = -1;
         }
         this.generateWires();
-        for (let i = 0; i < this.boxesCount; i++) {
-            let box = new BABYLON.Mesh("box");
-            box.rotationQuaternion = BABYLON.Quaternion.Identity();
-            box.parent = this;
-            let rampWire0 = new Wire(this);
-            let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.001, rRamp)];
-            let nRamp = 12;
-            for (let i = 0; i <= nRamp; i++) {
-                let a = i / nRamp * Math.PI;
-                let cosa = Math.cos(a);
-                let sina = Math.sin(a);
-                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
-            }
-            rampWire0.path.push(new BABYLON.Vector3(-0.02 * x, 0.001, -rRamp));
-            rampWire0.parent = box;
-            this.boxes.push(box);
-            this.wires.push(rampWire0);
-        }
         this.wheels = [
             new BABYLON.Mesh("wheel-0"),
             new BABYLON.Mesh("wheel-1")
@@ -2596,6 +2582,26 @@ class Elevator extends Track {
         this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
         this.p = 2 * Math.PI * this.rWheel;
         this.chainLength = 2 * this.l + this.p;
+        this.boxesCount = Math.round(this.chainLength / 0.08);
+        for (let i = 0; i < this.boxesCount; i++) {
+            let box = new BABYLON.Mesh("box");
+            box.rotationQuaternion = BABYLON.Quaternion.Identity();
+            box.parent = this;
+            let rampWire0 = new Wire(this);
+            let rRamp = this.wireGauge * 0.35;
+            rampWire0.path = [new BABYLON.Vector3(-0.019 * x, 0.001, rRamp)];
+            let nRamp = 12;
+            for (let i = 0; i <= nRamp; i++) {
+                let a = i / nRamp * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
+            }
+            rampWire0.path.push(new BABYLON.Vector3(-0.019 * x, 0.001, -rRamp));
+            rampWire0.parent = box;
+            this.boxes.push(box);
+            this.wires.push(rampWire0);
+        }
         let rCable = 0.00075;
         let nCable = 8;
         let cableShape = [];

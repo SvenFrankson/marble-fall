@@ -29,7 +29,8 @@ class ActionTile extends BABYLON.Mesh {
         frame.parent = this;
 
         this.game.vertexDataLoader.get("./meshes/action-tile-frame.babylon").then(vertexData => {
-            let positions = [...vertexData[0].positions]
+            let data = Mummu.CloneVertexData(vertexData[0]);
+            let positions = [...data.positions]
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
@@ -47,8 +48,8 @@ class ActionTile extends BABYLON.Mesh {
                     positions[3 * i + 1] -= this.s * 0.5 - 0.001;
                 }
             }
-            vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(frame);
+            data.positions = positions;
+            data.applyToMesh(frame);
         })
     }
 }
@@ -98,7 +99,8 @@ class MenuTile extends BABYLON.Mesh {
         frame.parent = this;
 
         this.game.vertexDataLoader.get("./meshes/menu-tile-frame.babylon").then(vertexData => {
-            let positions = [...vertexData[0].positions]
+            let data = Mummu.CloneVertexData(vertexData[0]);
+            let positions = [...data.positions]
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
                 let y = positions[3 * i + 1];
@@ -116,8 +118,8 @@ class MenuTile extends BABYLON.Mesh {
                     positions[3 * i + 1] -= this.h * 0.5 - 0.001;
                 }
             }
-            vertexData[0].positions = positions;
-            vertexData[0].applyToMesh(frame);
+            data.positions = positions;
+            data.applyToMesh(frame);
         })
     }
 }
