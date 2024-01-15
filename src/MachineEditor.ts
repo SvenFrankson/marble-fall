@@ -109,6 +109,9 @@ class MachineEditor {
 
         for (let i = 0; i < TrackNames.length; i++) {
             let trackname = TrackNames[i];
+            if (trackname === "elevator") {
+                trackname = "elevator-4";
+            }
             let item = document.createElement("div") as HTMLDivElement;
             item.classList.add("machine-editor-item");
             item.innerText = trackname;
