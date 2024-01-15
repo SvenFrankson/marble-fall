@@ -45,12 +45,17 @@ class Ball extends BABYLON.Mesh {
     }
 
     public marbleChocSound: Sound;
+    public marbleLoopSound: Sound;
 
     constructor(public positionZero: BABYLON.Vector3, public machine: Machine) {
         super("ball");
         this.marbleChocSound = new Sound({
             fileName: "./datas/sounds/marble-choc.wav",
             loop: false
+        });
+        this.marbleLoopSound = new Sound({
+            fileName: "./datas/sounds/loop.wav",
+            loop: true
         });
     }
 
@@ -70,6 +75,8 @@ class Ball extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
+        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
 
@@ -106,6 +113,7 @@ class Ball extends BABYLON.Mesh {
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
+        this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
         }
@@ -122,6 +130,8 @@ class Ball extends BABYLON.Mesh {
     }
 
     private _timer: number = 0;
+    public strReaction: number = 0;
+    public logStrReaction: boolean = false;
     public update(dt: number): void {
         if (this.position.y < - 10) {
             return;
@@ -209,6 +219,8 @@ class Ball extends BABYLON.Mesh {
                 canceledSpeed.scaleInPlace(1 / reactionsCount);
                 forcedDisplacement.scaleInPlace(1 / reactionsCount);
             }
+            this.strReaction = this.strReaction * 0.98;
+            this.strReaction += reactions.length() * 0.02;
             this.velocity.subtractInPlace(canceledSpeed);
             this.position.addInPlace(forcedDisplacement);
 
@@ -218,6 +230,10 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             
             this.position.addInPlace(this.velocity.scale(dt));
+        }
+        this.marbleLoopSound.volume = this.strReaction * 5 * this.velocity.length();
+        if (this.logStrReaction) {
+            console.log(this.velocity.length() + " " + this.strReaction);
         }
     }
 }

@@ -182,7 +182,7 @@ class Game {
         this.machineEditor = new MachineEditor(this);
 
         this.machine.balls = [];
-        for (let n = 0; n < 9; n++) {
+        for (let n = 0; n < 1; n++) {
             let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
             await ball.instantiate();
             this.machine.balls.push(ball);

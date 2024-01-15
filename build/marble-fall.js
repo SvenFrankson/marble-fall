@@ -13,9 +13,15 @@ class Ball extends BABYLON.Mesh {
         this.velocity = BABYLON.Vector3.Zero();
         this._showPositionZeroGhost = false;
         this._timer = 0;
+        this.strReaction = 0;
+        this.logStrReaction = false;
         this.marbleChocSound = new Sound({
             fileName: "./datas/sounds/marble-choc.wav",
             loop: false
+        });
+        this.marbleLoopSound = new Sound({
+            fileName: "./datas/sounds/loop.wav",
+            loop: true
         });
     }
     get game() {
@@ -59,6 +65,8 @@ class Ball extends BABYLON.Mesh {
         });
     }
     async instantiate() {
+        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
         this.material = this.game.steelMaterial;
@@ -89,6 +97,7 @@ class Ball extends BABYLON.Mesh {
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+        this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
         }
@@ -166,12 +175,18 @@ class Ball extends BABYLON.Mesh {
                 canceledSpeed.scaleInPlace(1 / reactionsCount);
                 forcedDisplacement.scaleInPlace(1 / reactionsCount);
             }
+            this.strReaction = this.strReaction * 0.98;
+            this.strReaction += reactions.length() * 0.02;
             this.velocity.subtractInPlace(canceledSpeed);
             this.position.addInPlace(forcedDisplacement);
             let friction = this.velocity.scale(-1).scaleInPlace(0.005);
             let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
+        }
+        this.marbleLoopSound.volume = this.strReaction * 5 * this.velocity.length();
+        if (this.logStrReaction) {
+            console.log(this.velocity.length() + " " + this.strReaction);
         }
     }
 }
@@ -1193,7 +1208,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         this.machine.balls = [];
-        for (let n = 0; n < 9; n++) {
+        for (let n = 0; n < 1; n++) {
             let ball = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
             await ball.instantiate();
             this.machine.balls.push(ball);
@@ -1594,7 +1609,14 @@ class Sound {
             if (fromBegin) {
                 this._audioElement.currentTime = 0;
             }
-            this._audioElement.play();
+            try {
+                this._audioElement.play();
+            }
+            catch (error) {
+                requestAnimationFrame(() => {
+                    this._audioElement.play();
+                });
+            }
         }
     }
     pause() {

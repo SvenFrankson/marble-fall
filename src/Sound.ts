@@ -32,7 +32,13 @@ class Sound {
             if (fromBegin) {
                 this._audioElement.currentTime = 0;
             }
-            this._audioElement.play();
+            try {
+                this._audioElement.play();
+            } catch (error) {
+                requestAnimationFrame(() => {
+                    this._audioElement.play();
+                })
+            }
         }
     }
 
