@@ -923,10 +923,10 @@ class MachineEditor {
                 this.actionTileWPlusLeft.position.y = yCenter + s34;
                 this.actionTileWMinusLeft.position.x = xLeft - s;
                 this.actionTileWMinusLeft.position.y = yCenter - s34;
-                this.actionTileMirror.position.x = xRight - s34 - s * 1.5;
+                this.actionTileMirror.position.x = xRight - 0.5 * s;
                 this.actionTileMirror.position.y = yBottom - s;
-                this.actionTileDelete.position.x = xRight - s34;
-                this.actionTileDelete.position.y = yBottom - s;
+                this.actionTileDelete.position.x = xRight - 0.5 * s;
+                this.actionTileDelete.position.y = yTop + s;
                 if (this.selectedObject.xExtendable) {
                     this.actionTileWMinusRight.setIsVisible(true);
                     this.actionTileWPlusRight.setIsVisible(true);
