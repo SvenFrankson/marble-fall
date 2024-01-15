@@ -903,6 +903,7 @@ class MachineEditor {
         editedTrack.generateWires();
         await editedTrack.instantiate();
         editedTrack.recomputeAbsolutePath();
+        this.machine.generateBaseMesh();
         return editedTrack;
     }
     async mirrorTrackInPlace(track) {
