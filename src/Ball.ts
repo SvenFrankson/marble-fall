@@ -113,6 +113,7 @@ class Ball extends BABYLON.Mesh {
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
+        this.marbleLoopSound.volume = 0;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -127,6 +128,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
+        this.marbleLoopSound.volume = 0;
     }
 
     private _timer: number = 0;
