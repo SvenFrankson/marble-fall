@@ -12,7 +12,8 @@ function addLine(text: string): void {
 enum GameMode {
     MainMenu,
     CreateMode,
-    DemoMode
+    DemoMode,
+    Credit
 }
 
 class Game {
@@ -217,6 +218,14 @@ class Game {
         this.tileCredit.position.x = 0.07;
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
+        
+        let creditPlaque = new MenuTile("credit-plaque", 0.2, 0.15, this);
+        await creditPlaque.instantiate();
+        (creditPlaque.material as BABYLON.StandardMaterial).emissiveColor.copyFromFloats(1, 1, 1);
+        creditPlaque.position.x = 0;
+        creditPlaque.position.y = 0;
+        creditPlaque.position.z = 0.13;
+        creditPlaque.rotation.y = Math.PI;
 
         this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileCredit];
 
@@ -254,6 +263,17 @@ class Game {
             h = this.tileCredit.texH;
             ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
             this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", null);
+            
+            ctx = creditPlaque.texture.getContext();
+            w = creditPlaque.texW;
+            h = creditPlaque.texH;
+            ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
+            creditPlaque.texture.drawText("DESIGN, ART & CODE", 140, 200, "70px 'Serif'", "white", null);
+            creditPlaque.texture.drawText("Sven Frankson", 70, 300, "70px 'Serif'", "white", null);
+            creditPlaque.texture.drawText("Powered by BABYLONJS", 70, 450, "50px 'Serif'", "white", null);
+            creditPlaque.texture.drawText("Blackboard texture from FREEPIK", 70, 550, "50px 'Serif'", "white", null);
+            creditPlaque.texture.drawText("CC0 Wood material from TEXTURECAN", 70, 650, "50px 'Serif'", "white", null);
+            creditPlaque.texture.drawText("Find license file on GitHub for related urls", 70, 750, "40px 'Serif'", "#8a8674", null);
         }
         if (blackboardTex.complete) {
             doDrawTileMenuTextures();
@@ -379,6 +399,9 @@ class Game {
             else if (this.mode === GameMode.CreateMode) {
                 this.machineEditor.dispose();
             }
+            else if (this.mode === GameMode.Credit) {
+                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1);
+            }
 
             this.mode = mode;
             
@@ -393,8 +416,8 @@ class Game {
                 this.tileMenuContainer.position.z = - 0.03;
                 document.getElementById("machine-buttons").style.display = "none";
 
-                this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
+                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35);
                 this.camera.lowerAlphaLimit = - Math.PI * 0.65;
                 this.camera.upperAlphaLimit = - Math.PI * 0.35;
                 this.camera.lowerBetaLimit = Math.PI * 0.35;
@@ -409,8 +432,8 @@ class Game {
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
 
-                this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
+                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.camera.lowerAlphaLimit = - Math.PI * 0.95;
                 this.camera.upperAlphaLimit = - Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -419,7 +442,6 @@ class Game {
                 this.machineEditor.instantiate();
             }
             else if (this.mode === GameMode.DemoMode) {
-                this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 if (demoIndex === 1) {
                     this.setCameraTarget(BABYLON.Vector3.Zero());
                 }
@@ -432,23 +454,33 @@ class Game {
                 else {
                     this.setCameraTarget(BABYLON.Vector3.Zero());
                 }
+                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.camera.lowerAlphaLimit = - Math.PI * 0.95;
                 this.camera.upperAlphaLimit = - Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
                 this.camera.upperBetaLimit = Math.PI * 0.95;
             }
+            else if (this.mode === GameMode.Credit) {
+                this.setCameraTarget(new BABYLON.Vector3(0, 0, 0.13));
+                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1);
+                await this.setCameraAlphaBeta(Math.PI * 0.5, Math.PI * 0.5, 0.4);
+                this.camera.lowerAlphaLimit = Math.PI * 0.2;
+                this.camera.upperAlphaLimit = Math.PI * 0.8;
+                this.camera.lowerBetaLimit = Math.PI * 0.2;
+                this.camera.upperBetaLimit = Math.PI * 0.8;
+            }
         }
     }
 
-    public setCameraAlphaBeta(alpha: number, beta: number, radius?: number): void {
+    public async setCameraAlphaBeta(alpha: number, beta: number, radius?: number): Promise<void> {
         if (!radius) {
             radius = this.camera.radius;
         }
-        this._animateCamera([alpha, beta, radius], 0.8);
+        await this._animateCamera([alpha, beta, radius], 0.8);
     }
 
-    public setCameraTarget(target: BABYLON.Vector3): void {
-        this._animateCameraTarget(target, 0.8);
+    public async setCameraTarget(target: BABYLON.Vector3): Promise<void> {
+        await this._animateCameraTarget(target, 0.8);
     }
 
     public onPointerEvent = (eventData: BABYLON.PointerInfo, eventState: BABYLON.EventState) => {
@@ -506,6 +538,11 @@ class Game {
                         await this.machine.instantiate();
                         await this.machine.generateBaseMesh();
                         this.setContext(GameMode.DemoMode, 3);
+                    });
+                }
+                else if (tile === this.tileCredit) {
+                    this.pressTile(tile).then(async () => {
+                        this.setContext(GameMode.Credit);
                     });
                 }
             }
