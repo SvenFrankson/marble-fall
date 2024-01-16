@@ -24,7 +24,9 @@ class Sound {
         return this._audioElement.volume;
     }
     public set volume(v: number) {
-        this._audioElement.volume = v;
+        if (isFinite(v)) {
+            this._audioElement.volume = Math.max(Math.min(v, 1), 0);
+        }
     }
 
     public play(fromBegin: boolean = true): void {

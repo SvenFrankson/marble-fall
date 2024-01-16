@@ -1776,7 +1776,9 @@ class Sound {
         return this._audioElement.volume;
     }
     set volume(v) {
-        this._audioElement.volume = v;
+        if (isFinite(v)) {
+            this._audioElement.volume = Math.max(Math.min(v, 1), 0);
+        }
     }
     play(fromBegin = true) {
         if (this._audioElement) {
