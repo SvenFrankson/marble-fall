@@ -133,7 +133,6 @@ class Ball extends BABYLON.Mesh {
 
     private _timer: number = 0;
     public strReaction: number = 0;
-    public logStrReaction: boolean = false;
     public update(dt: number): void {
         if (this.position.y < - 10) {
             return;
@@ -200,7 +199,6 @@ class Ball extends BABYLON.Mesh {
                         
                         let v = this.velocity.length();
                         if (v > 0.1) {
-                            console.log(v);
                             this.marbleChocSound.volume = v / 5;
                             this.marbleChocSound.play();
                         }
@@ -233,9 +231,6 @@ class Ball extends BABYLON.Mesh {
             
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * 5 * this.velocity.length();
-        if (this.logStrReaction) {
-            console.log(this.velocity.length() + " " + this.strReaction);
-        }
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length();
     }
 }

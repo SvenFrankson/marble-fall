@@ -1,15 +1,15 @@
-#machine-editor-menu {
+#machine-menu {
     z-index: 2;
 }
 
-#machine-editor-menu.left {
+#machine-menu.left {
     left: 0;
     top: 0;
     width: 300px;
     height: 100%;
 }
 
-#machine-editor-menu.bottom {
+#machine-menu.bottom {
     left: 0;
     bottom: 0;
     width: 100%;
@@ -26,7 +26,7 @@
     z-index: 2;
 }
 
-#machine-editor-menu.left #machine-editor-objects {
+#machine-menu.left #machine-editor-objects {
     height: calc(100vh - 306px);
     width: 294px;
     top: 0;
@@ -35,7 +35,7 @@
     overflow-y: scroll;
 }
 
-#machine-editor-menu.bottom #machine-editor-objects {
+#machine-menu.bottom #machine-editor-objects {
     width: calc(100vw - 306px);
     height: 294px;
     bottom: 0;
@@ -44,38 +44,43 @@
     overflow-y: hidden;
 }
 
-#machine-editor-buttons {
+#machine-buttons {
     position: fixed;
     bottom: 0;
     width: 294px;
     height: 294px;
     padding: 3px;
     z-index: 2;
+    display: flex;
+    flex-direction: column-reverse;
 }
 
-#machine-editor-menu.left #machine-editor-buttons {
+#machine-menu.left #machine-buttons {
     bottom: 0;
     left: 0;
 }
 
-#machine-editor-menu.bottom #machine-editor-buttons {
+#machine-menu.bottom #machine-buttons {
     bottom: 0;
     right: 0;
     text-align: right;
 }
 
-#machine-editor-buttons .line-flex {
-    height: 80px;
+#machine-buttons .line-flex {
+    height: 88px;
     margin-bottom: 10px;
 }
 
-#machine-editor-buttons button {
-    height: 80px;
+#machine-buttons button {
+    height: 88px;
     font-size: 26px;
     font-weight: bold;
     margin: 5px;
     width: 300px;
     border-radius: 10px;
+    color: white;
+    background-color: #272b2e;
+    border: 2px solid white;
 }
 
 .machine-editor-item {
@@ -99,16 +104,16 @@
     padding: 0;
 }
 
-#machine-editor-menu.left .machine-editor-item{
+#machine-menu.left .machine-editor-item{
     width: 110px;
     height: 110px;
 }
 
-#machine-editor-menu.bottom .machine-editor-item{
+#machine-menu.bottom .machine-editor-item{
     width: 147px;
     height: 147px;
 }
 
-#machine-editor-menu.bottom #machine-editor-item-container {
+#machine-menu.bottom #machine-editor-item-container {
     width: 1210px;
 }

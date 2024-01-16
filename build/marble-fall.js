@@ -14,7 +14,6 @@ class Ball extends BABYLON.Mesh {
         this._showPositionZeroGhost = false;
         this._timer = 0;
         this.strReaction = 0;
-        this.logStrReaction = false;
         this.marbleChocSound = new Sound({
             fileName: "./datas/sounds/marble-choc.wav",
             loop: false
@@ -159,7 +158,6 @@ class Ball extends BABYLON.Mesh {
                         let mySpeed = this.velocity.clone();
                         let v = this.velocity.length();
                         if (v > 0.1) {
-                            console.log(v);
                             this.marbleChocSound.volume = v / 5;
                             this.marbleChocSound.play();
                         }
@@ -186,12 +184,96 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * 5 * this.velocity.length();
-        if (this.logStrReaction) {
-            console.log(this.velocity.length() + " " + this.strReaction);
-        }
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length();
     }
 }
+var demo1 = {
+    balls: [
+        { x: 0.45223644798326457, y: -0.14555925508040052 },
+        { x: 0.4542039643251569, y: -0.06168364093616862 },
+        { x: 0.4554387140880808, y: 0.021382350340019358 },
+        { x: 0.4552031364946579, y: 0.10582023181972072 },
+        { x: 0.45496577489396894, y: 0.19089755354340562 },
+        { x: 0.4265645074593439, y: -0.14331937155899638 },
+        { x: 0.40186220720561006, y: -0.1411542072522732 },
+        { x: 0.37693605105079203, y: -0.1396427223486105 },
+    ],
+    parts: [
+        { name: "ramp-3.1", i: -1, j: -6, mirror: true },
+        { name: "ramp-3.1", i: -1, j: 4 },
+        { name: "uturn-s", i: -2, j: -1, mirror: true },
+        { name: "uturn-s", i: -2, j: 3, mirror: true },
+        { name: "uturn-s", i: -2, j: -5, mirror: true },
+        { name: "elevator-12", i: 3, j: -7 },
+        { name: "ramp-1.0", i: 2, j: -6 },
+        { name: "ramp-1.0", i: 2, j: 5 },
+        { name: "wave", i: -1, j: -4 },
+        { name: "ramp-2.1", i: -1, j: -2, mirror: true },
+        { name: "uturn-l", i: 1, j: -3 },
+        { name: "ramp-2.1", i: -1, j: 2, mirror: true },
+        { name: "wave", i: -1, j: 0 },
+        { name: "uturn-l", i: 1, j: 1 },
+    ],
+};
+var demo2 = {
+    balls: [
+        { x: 0.45223644798326457, y: -0.14555925508040052 },
+        { x: 0.4542039643251569, y: -0.06168364093616862 },
+        { x: 0.4554387140880808, y: 0.021382350340019358 },
+        { x: 0.4552031364946579, y: 0.10582023181972072 },
+        { x: 0.45496577489396894, y: 0.19089755354340562 },
+        { x: 0.4265645074593439, y: -0.14331937155899638 },
+        { x: 0.40186220720561006, y: -0.1411542072522732 },
+        { x: 0.37693605105079203, y: -0.1396427223486105 },
+    ],
+    parts: [
+        { name: "loop", i: 0, j: -11, mirror: true },
+        { name: "uturn-s", i: -1, j: -8, mirror: true },
+        { name: "loop", i: 0, j: -7 },
+        { name: "uturn-s", i: 2, j: -4, mirror: false },
+        { name: "loop", i: 0, j: -3, mirror: true },
+        { name: "uturn-s", i: -1, j: 0, mirror: true },
+        { name: "loop", i: 0, j: 1 },
+        { name: "elevator-17", i: 3, j: -12 },
+        { name: "ramp-1.0", i: 2, j: -11 },
+        { name: "ramp-1.1", i: 2, j: 4 },
+    ],
+};
+var demo3 = {
+    balls: [
+        { x: 0.12476951267973313, y: 0.2806605053683935 },
+        { x: 0.7228827470468443, y: 0.38349402643321606 },
+        { x: -0.24228091170965893, y: 0.013750785382989239 },
+        { x: 0.661647904217299, y: -0.010727205949085328 },
+    ],
+    parts: [
+        { name: "elevator-14", i: 5, j: -13 },
+        { name: "elevator-14", i: -2, j: -14, mirror: true },
+        { name: "rampX-2.1", i: 1, j: -9 },
+        { name: "spiral", i: 0, j: -12 },
+        { name: "loop", i: 3, j: -12, mirror: true },
+        { name: "ramp-1.1", i: 3, j: -8 },
+        { name: "uturn-s", i: 4, j: -7 },
+        { name: "uturn-l", i: 0, j: -2 },
+        { name: "ramp-1.1", i: -1, j: -1, mirror: true },
+        { name: "ramp-1.1", i: 4, j: 0 },
+        { name: "uturn-s", i: 4, j: -3 },
+        { name: "uturn-s", i: 1, j: -5, mirror: true },
+        { name: "ramp-2.1", i: 2, j: -6, mirror: true },
+        { name: "uturn-s", i: 2, j: -1, mirror: true },
+        { name: "ramp-1.1", i: 3, j: -2, mirror: true },
+        { name: "ramp-1.0", i: 3, j: 0 },
+        { name: "ramp-2.1", i: 2, j: -4 },
+        { name: "uturn-l", i: 1, j: -7 },
+        { name: "uturn-s", i: -1, j: -3, mirror: true },
+        { name: "uturn-s", i: -1, j: -5, mirror: true },
+        { name: "uturn-s", i: 0, j: -4 },
+        { name: "ramp-1.1", i: 0, j: -6, mirror: true },
+        { name: "ramp-1.1", i: -1, j: -13 },
+        { name: "ramp-2.1", i: 1, j: -9, mirror: true },
+        { name: "uturn-s", i: 0, j: -8, mirror: true },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -646,7 +728,7 @@ class MachineEditor {
             }
         };
         this.actionTileSize = 0.018;
-        this.container = document.getElementById("machine-editor-menu");
+        this.container = document.getElementById("machine-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
     }
     get machine() {
@@ -698,7 +780,8 @@ class MachineEditor {
         this.updateActionTile();
     }
     async instantiate() {
-        this.container.style.display = "block";
+        document.getElementById("machine-editor-objects").style.display = "block";
+        document.getElementById("machine-file").style.display = "flex";
         let ballItem = document.createElement("div");
         ballItem.classList.add("machine-editor-item");
         ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -777,12 +860,6 @@ class MachineEditor {
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
-        document.getElementById("machine-editor-play").onclick = () => {
-            this.machine.play();
-        };
-        document.getElementById("machine-editor-stop").onclick = () => {
-            this.machine.stop();
-        };
         document.getElementById("machine-editor-save").addEventListener("click", () => {
             let data = this.machine.serialize();
             window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
@@ -805,9 +882,6 @@ class MachineEditor {
                 reader.readAsText(file);
             }
         });
-        document.getElementById("machine-editor-main-menu").onclick = () => {
-            this.game.setContext(GameMode.MainMenu);
-        };
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
@@ -862,7 +936,8 @@ class MachineEditor {
         this.updateActionTile();
     }
     dispose() {
-        this.container.style.display = "none";
+        document.getElementById("machine-editor-objects").style.display = "none";
+        document.getElementById("machine-file").style.display = "none";
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
@@ -1107,8 +1182,35 @@ class Game {
                         tile = pick.pickedMesh.parent;
                     }
                     if (tile === this.tileCreate) {
-                        this.pressTile(tile).then(() => {
+                        this.pressTile(tile).then(async () => {
                             this.setContext(GameMode.CreateMode);
+                        });
+                    }
+                    else if (tile === this.tileDemo1) {
+                        this.pressTile(tile).then(async () => {
+                            this.machine.dispose();
+                            this.machine.deserialize(demo1);
+                            await this.machine.instantiate();
+                            await this.machine.generateBaseMesh();
+                            this.setContext(GameMode.DemoMode, 1);
+                        });
+                    }
+                    else if (tile === this.tileDemo2) {
+                        this.pressTile(tile).then(async () => {
+                            this.machine.dispose();
+                            this.machine.deserialize(demo2);
+                            await this.machine.instantiate();
+                            await this.machine.generateBaseMesh();
+                            this.setContext(GameMode.DemoMode, 2);
+                        });
+                    }
+                    else if (tile === this.tileDemo3) {
+                        this.pressTile(tile).then(async () => {
+                            this.machine.dispose();
+                            this.machine.deserialize(demo3);
+                            await this.machine.instantiate();
+                            await this.machine.generateBaseMesh();
+                            this.setContext(GameMode.DemoMode, 3);
                         });
                     }
                 }
@@ -1178,7 +1280,7 @@ class Game {
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
-        this.camera.panningSensibility = 100000;
+        this.camera.panningSensibility = 10000;
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
@@ -1210,55 +1312,12 @@ class Game {
         this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target");
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.balls = [];
-        for (let n = 0; n < 1; n++) {
-            let ball = new Ball(new BABYLON.Vector3(-tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
-            await ball.instantiate();
-            this.machine.balls.push(ball);
-        }
-        /*
-        this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new Spiral(this, 2, 1),
-            new UTurn(this, 3, 4),
-            new Spiral(this, 2, 5, true),
-            new Loop(this, 0, 8, true),
-            new UTurn(this, -1, 11, true),
-            new Ramp(this, 0, 12, 2, 1),
-            new CrossingRamp(this, 2, 12, 2, 1, true),
-            new Snake(this, 4, 12),
-            new CrossingFlat(this, 6, 12, 2),
-            new UTurnLarge(this, 8, 13),
-            new Ramp(this, 6, 14, 2, 1, true),
-            new UTurn(this, 5, 15, true),
-            new UTurn(this, 6, 16),
-            new UTurn(this, 5, 17, true),
-            new UTurn(this, 6, 18),
-            new UTurn(this, 5, 19, true),
-            new UTurn(this, 6, 20),
-            new UTurn(this, 5, 21, true),
-            new UTurn(this, 6, 22),
-            new UTurn(this, 5, 23, true),
-            new UTurn(this, 6, 24),
-            new UTurn(this, 5, 25, true),
-            new UTurn(this, 6, 26),
-            new UTurn(this, 5, 27, true),
-            new UTurn(this, 6, 28),
-            new UTurn(this, 5, 29, true),
-            new UTurn(this, 6, 30),
-        ];
-        */
-        this.machine.tracks = [
-            new Ramp(this.machine, 0, 0, 3, 1),
-            new Elevator(this.machine, 3, -5, 6),
-            new Spiral(this.machine, 2, -4, true),
-            new Ramp(this.machine, 0, -1, 2, 0),
-            new UTurn(this.machine, -1, -1, true)
-        ];
+        this.machine.deserialize(demo1);
         let blackboardTex = document.getElementById("blackboard-tex");
         this.tileMenuContainer = new BABYLON.Mesh("menu");
         this.tileMenuContainer.position.y = -10;
         this.tileMenuContainer.position.z = 1;
+        document.getElementById("machine-buttons").style.display = "none";
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         await this.tileDemo1.instantiate();
         this.tileDemo1.position.x = -0.09;
@@ -1273,22 +1332,17 @@ class Game {
         this.tileDemo3.position.x = 0.09;
         this.tileDemo3.position.y = 0.055;
         this.tileDemo3.parent = this.tileMenuContainer;
-        this.tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
+        this.tileCreate = new MenuTile("tile-create", 0.16, 0.05, this);
         await this.tileCreate.instantiate();
-        this.tileCreate.position.x = -0.07;
+        this.tileCreate.position.x = 0;
         this.tileCreate.position.y = -0.03;
         this.tileCreate.parent = this.tileMenuContainer;
-        this.tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
-        await this.tileLoad.instantiate();
-        this.tileLoad.position.x = 0.07;
-        this.tileLoad.position.y = -0.03;
-        this.tileLoad.parent = this.tileMenuContainer;
         this.tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
         await this.tileCredit.instantiate();
         this.tileCredit.position.x = 0.07;
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
-        this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileLoad, this.tileCredit];
+        this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileCredit];
         let doDrawTileMenuTextures = () => {
             let ctx = this.tileDemo1.texture.getContext();
             let w = this.tileDemo1.texW;
@@ -1312,12 +1366,8 @@ class Game {
             w = this.tileCreate.texW;
             h = this.tileCreate.texH;
             ctx.drawImage(blackboardTex, 200, 300, w, h, 0, 0, w, h);
-            this.tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", null);
-            ctx = this.tileLoad.texture.getContext();
-            w = this.tileLoad.texW;
-            h = this.tileLoad.texH;
-            ctx.drawImage(blackboardTex, 80, 90, w, h, 0, 0, w, h);
-            this.tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", null);
+            this.tileCreate.texture.drawText("CREATE", 70, 140, "100px 'Serif'", "white", null);
+            this.tileCreate.texture.drawText("your own machine", 70, 230, "60px 'Serif'", "#8a8674", null);
             ctx = this.tileCredit.texture.getContext();
             w = this.tileCredit.texW;
             h = this.tileCredit.texH;
@@ -1333,6 +1383,19 @@ class Game {
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         document.getElementById("track-editor-menu").style.display = "none";
+        document.getElementById("machine-play").onclick = () => {
+            if (this.machine) {
+                this.machine.play();
+            }
+        };
+        document.getElementById("machine-stop").onclick = () => {
+            if (this.machine) {
+                this.machine.stop();
+            }
+        };
+        document.getElementById("machine-back-main-menu").onclick = () => {
+            this.setContext(GameMode.MainMenu);
+        };
         //this.trackEditor = new TrackEditor(this);
         //this.trackEditor.initialize();
         /*
@@ -1406,11 +1469,12 @@ class Game {
             this.timeFactor = this.timeFactor * 0.5 + this.targetTimeFactor * 0.5;
         }
     }
-    setContext(mode) {
+    async setContext(mode, demoIndex) {
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
                 this.tileMenuContainer.position.y = -10;
                 this.tileMenuContainer.position.z = 1;
+                document.getElementById("machine-buttons").style.display = "flex";
                 this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
@@ -1418,8 +1482,14 @@ class Game {
             }
             this.mode = mode;
             if (this.mode === GameMode.MainMenu) {
+                this.machine.dispose();
+                this.machine.deserialize(demo1);
+                await this.machine.instantiate();
+                await this.machine.generateBaseMesh();
+                this.machine.play();
                 this.tileMenuContainer.position.y = 0;
-                this.tileMenuContainer.position.z = -0.02;
+                this.tileMenuContainer.position.z = -0.03;
+                document.getElementById("machine-buttons").style.display = "none";
                 this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.35);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
                 this.camera.lowerAlphaLimit = -Math.PI * 0.65;
@@ -1429,6 +1499,11 @@ class Game {
                 this.scene.onPointerObservable.add(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
+                this.machine.dispose();
+                this.machine.deserialize(demo1);
+                await this.machine.instantiate();
+                await this.machine.generateBaseMesh();
+                this.machine.stop();
                 this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
                 this.camera.lowerAlphaLimit = -Math.PI * 0.95;
@@ -1439,7 +1514,18 @@ class Game {
             }
             else if (this.mode === GameMode.DemoMode) {
                 this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.8);
-                this.setCameraTarget(BABYLON.Vector3.Zero());
+                if (demoIndex === 1) {
+                    this.setCameraTarget(BABYLON.Vector3.Zero());
+                }
+                else if (demoIndex === 2) {
+                    this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
+                }
+                else if (demoIndex === 3) {
+                    this.setCameraTarget(new BABYLON.Vector3(0.22, 0.15, 0));
+                }
+                else {
+                    this.setCameraTarget(BABYLON.Vector3.Zero());
+                }
                 this.camera.lowerAlphaLimit = -Math.PI * 0.95;
                 this.camera.upperAlphaLimit = -Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -1458,7 +1544,7 @@ class Game {
     }
     async pressTile(tile) {
         let axis = "x";
-        if (tile === this.tileCreate || tile === this.tileLoad || tile === this.tileCredit) {
+        if (tile === this.tileCreate || tile === this.tileCredit) {
             axis = "y";
         }
         let anim = Mummu.AnimationFactory.CreateNumber(tile, tile.rotation, axis);

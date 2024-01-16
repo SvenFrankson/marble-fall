@@ -74,12 +74,13 @@ class MachineEditor {
     }
 
     constructor(public game: Game) {
-        this.container = document.getElementById("machine-editor-menu") as HTMLDivElement;
+        this.container = document.getElementById("machine-menu") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
     }
 
     public async instantiate(): Promise<void> {
-        this.container.style.display = "block";
+        document.getElementById("machine-editor-objects").style.display = "block";
+        document.getElementById("machine-file").style.display = "flex";
 
         let ballItem = document.createElement("div") as HTMLDivElement;
         ballItem.classList.add("machine-editor-item");
@@ -165,14 +166,6 @@ class MachineEditor {
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
 
-        document.getElementById("machine-editor-play").onclick = () => {
-            this.machine.play();
-        }
-
-        document.getElementById("machine-editor-stop").onclick = () => {
-            this.machine.stop();
-        }
-
         document.getElementById("machine-editor-save").addEventListener("click", () => {
             let data = this.machine.serialize();
             window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
@@ -195,9 +188,6 @@ class MachineEditor {
                 reader.readAsText(file);
             }
         })
-        document.getElementById("machine-editor-main-menu").onclick = () => {
-            this.game.setContext(GameMode.MainMenu);
-        }
 
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(true);
@@ -266,7 +256,9 @@ class MachineEditor {
     }
 
     public dispose(): void {
-        this.container.style.display = "none";
+        document.getElementById("machine-editor-objects").style.display = "none";
+        document.getElementById("machine-file").style.display = "none";
+
         this.itemContainer.innerHTML = "";
         this.items = new Map<string, HTMLDivElement>();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);

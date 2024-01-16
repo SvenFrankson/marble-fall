@@ -42,7 +42,6 @@ class Game {
     public tileDemo2: MenuTile;
     public tileDemo3: MenuTile;
     public tileCreate: MenuTile;
-    public tileLoad: MenuTile;
     public tileCredit: MenuTile;
     public tiles: MenuTile[];
 
@@ -146,7 +145,7 @@ class Game {
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
-        this.camera.panningSensibility = 100000;
+        this.camera.panningSensibility = 10000;
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
@@ -181,59 +180,14 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        this.machine.balls = [];
-        for (let n = 0; n < 1; n++) {
-            let ball = new Ball(new BABYLON.Vector3(- tileWidth * 0.5 * 0.9 + tileWidth * 0.5 * 0.4 * n, 0.008 - 0.001 * n, 0), this.machine);
-            await ball.instantiate();
-            this.machine.balls.push(ball);
-        }
-
-        /*
-        this.tracks = [
-            new Ramp(this, 0, 0, 2, 1),
-            new Spiral(this, 2, 1),
-            new UTurn(this, 3, 4),
-            new Spiral(this, 2, 5, true),
-            new Loop(this, 0, 8, true),
-            new UTurn(this, -1, 11, true),
-            new Ramp(this, 0, 12, 2, 1),
-            new CrossingRamp(this, 2, 12, 2, 1, true),
-            new Snake(this, 4, 12),
-            new CrossingFlat(this, 6, 12, 2),
-            new UTurnLarge(this, 8, 13),
-            new Ramp(this, 6, 14, 2, 1, true),
-            new UTurn(this, 5, 15, true),
-            new UTurn(this, 6, 16),
-            new UTurn(this, 5, 17, true),
-            new UTurn(this, 6, 18),
-            new UTurn(this, 5, 19, true),
-            new UTurn(this, 6, 20),
-            new UTurn(this, 5, 21, true),
-            new UTurn(this, 6, 22),
-            new UTurn(this, 5, 23, true),
-            new UTurn(this, 6, 24),
-            new UTurn(this, 5, 25, true),
-            new UTurn(this, 6, 26),
-            new UTurn(this, 5, 27, true),
-            new UTurn(this, 6, 28),
-            new UTurn(this, 5, 29, true),
-            new UTurn(this, 6, 30),
-        ];
-        */
-       
-        this.machine.tracks = [
-            new Ramp(this.machine, 0, 0, 3, 1),
-            new Elevator(this.machine, 3, -5, 6),
-            new Spiral(this.machine, 2, -4, true),
-            new Ramp(this.machine, 0, -1, 2, 0),
-            new UTurn(this.machine, -1, -1, true)
-        ];
+        this.machine.deserialize(demo1);
 
         let blackboardTex = document.getElementById("blackboard-tex") as HTMLImageElement;
 
         this.tileMenuContainer = new BABYLON.Mesh("menu");
         this.tileMenuContainer.position.y = - 10;
         this.tileMenuContainer.position.z = 1;
+        document.getElementById("machine-buttons").style.display = "none";
 
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         await this.tileDemo1.instantiate();
@@ -252,17 +206,11 @@ class Game {
         this.tileDemo3.position.y = 0.055;
         this.tileDemo3.parent = this.tileMenuContainer;
         
-        this.tileCreate = new MenuTile("tile-create", 0.12, 0.05, this);
+        this.tileCreate = new MenuTile("tile-create", 0.16, 0.05, this);
         await this.tileCreate.instantiate();
-        this.tileCreate.position.x = - 0.07;
+        this.tileCreate.position.x = 0;
         this.tileCreate.position.y = - 0.03;
         this.tileCreate.parent = this.tileMenuContainer;
-        
-        this.tileLoad = new MenuTile("tile-load", 0.1, 0.04, this);
-        await this.tileLoad.instantiate();
-        this.tileLoad.position.x = 0.07;
-        this.tileLoad.position.y = - 0.03;
-        this.tileLoad.parent = this.tileMenuContainer;
         
         this.tileCredit = new MenuTile("tile-credit", 0.08, 0.025, this);
         await this.tileCredit.instantiate();
@@ -270,7 +218,7 @@ class Game {
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
 
-        this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileLoad, this.tileCredit];
+        this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileCredit];
 
         let doDrawTileMenuTextures = () => {
             let ctx = this.tileDemo1.texture.getContext();
@@ -298,13 +246,8 @@ class Game {
             w = this.tileCreate.texW;
             h = this.tileCreate.texH;
             ctx.drawImage(blackboardTex, 200, 300, w, h, 0, 0, w, h);
-            this.tileCreate.texture.drawText("CREATE", 70, 180, "100px 'Serif'", "white", null);
-            
-            ctx = this.tileLoad.texture.getContext();
-            w = this.tileLoad.texW;
-            h = this.tileLoad.texH;
-            ctx.drawImage(blackboardTex, 80, 90, w, h, 0, 0, w, h);
-            this.tileLoad.texture.drawText("LOAD", 70, 150, "100px 'Serif'", "white", null);
+            this.tileCreate.texture.drawText("CREATE", 70, 140, "100px 'Serif'", "white", null);
+            this.tileCreate.texture.drawText("your own machine", 70, 230, "60px 'Serif'", "#8a8674", null);
             
             ctx = this.tileCredit.texture.getContext();
             w = this.tileCredit.texW;
@@ -323,6 +266,22 @@ class Game {
         await this.machine.generateBaseMesh();
 
         document.getElementById("track-editor-menu").style.display = "none";
+
+        document.getElementById("machine-play").onclick = () => {
+            if (this.machine) {
+                this.machine.play();
+            }
+        }
+
+        document.getElementById("machine-stop").onclick = () => {
+            if (this.machine) {
+                this.machine.stop();
+            }
+        }
+        
+        document.getElementById("machine-back-main-menu").onclick = () => {
+            this.setContext(GameMode.MainMenu);
+        }
         //this.trackEditor = new TrackEditor(this);
         //this.trackEditor.initialize();
 
@@ -409,11 +368,12 @@ class Game {
     }
 
     public mode: GameMode;
-    public setContext(mode: GameMode): void {
+    public async setContext(mode: GameMode, demoIndex?: number): Promise<void> {
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
                 this.tileMenuContainer.position.y = - 10;
                 this.tileMenuContainer.position.z = 1;
+                document.getElementById("machine-buttons").style.display = "flex";
                 this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
@@ -423,8 +383,15 @@ class Game {
             this.mode = mode;
             
             if (this.mode === GameMode.MainMenu) {
+                this.machine.dispose();
+                this.machine.deserialize(demo1);
+                await this.machine.instantiate();
+                await this.machine.generateBaseMesh();
+                this.machine.play();
+
                 this.tileMenuContainer.position.y = 0;
-                this.tileMenuContainer.position.z = - 0.02;
+                this.tileMenuContainer.position.z = - 0.03;
+                document.getElementById("machine-buttons").style.display = "none";
 
                 this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
@@ -436,6 +403,12 @@ class Game {
                 this.scene.onPointerObservable.add(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
+                this.machine.dispose();
+                this.machine.deserialize(demo1);
+                await this.machine.instantiate();
+                await this.machine.generateBaseMesh();
+                this.machine.stop();
+
                 this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
                 this.setCameraTarget(BABYLON.Vector3.Zero());
                 this.camera.lowerAlphaLimit = - Math.PI * 0.95;
@@ -447,7 +420,18 @@ class Game {
             }
             else if (this.mode === GameMode.DemoMode) {
                 this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
-                this.setCameraTarget(BABYLON.Vector3.Zero());
+                if (demoIndex === 1) {
+                    this.setCameraTarget(BABYLON.Vector3.Zero());
+                }
+                else if (demoIndex === 2) {
+                    this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
+                }
+                else if (demoIndex === 3) {
+                    this.setCameraTarget(new BABYLON.Vector3(0.22, 0.15, 0));
+                }
+                else {
+                    this.setCameraTarget(BABYLON.Vector3.Zero());
+                }
                 this.camera.lowerAlphaLimit = - Math.PI * 0.95;
                 this.camera.upperAlphaLimit = - Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -493,8 +477,35 @@ class Game {
                 }
 
                 if (tile === this.tileCreate) {
-                    this.pressTile(tile).then(() => {
+                    this.pressTile(tile).then(async () => {
                         this.setContext(GameMode.CreateMode);
+                    });
+                }
+                else if (tile === this.tileDemo1) {
+                    this.pressTile(tile).then(async () => {
+                        this.machine.dispose();
+                        this.machine.deserialize(demo1);
+                        await this.machine.instantiate();
+                        await this.machine.generateBaseMesh();
+                        this.setContext(GameMode.DemoMode, 1);
+                    });
+                }
+                else if (tile === this.tileDemo2) {
+                    this.pressTile(tile).then(async () => {
+                        this.machine.dispose();
+                        this.machine.deserialize(demo2);
+                        await this.machine.instantiate();
+                        await this.machine.generateBaseMesh();
+                        this.setContext(GameMode.DemoMode, 2);
+                    });
+                }
+                else if (tile === this.tileDemo3) {
+                    this.pressTile(tile).then(async () => {
+                        this.machine.dispose();
+                        this.machine.deserialize(demo3);
+                        await this.machine.instantiate();
+                        await this.machine.generateBaseMesh();
+                        this.setContext(GameMode.DemoMode, 3);
                     });
                 }
             }
@@ -503,7 +514,7 @@ class Game {
 
     public async pressTile(tile: MenuTile): Promise<void> {
         let axis = "x";
-        if (tile === this.tileCreate || tile === this.tileLoad || tile === this.tileCredit) {
+        if (tile === this.tileCreate || tile === this.tileCredit) {
             axis = "y";
         }
         let anim = Mummu.AnimationFactory.CreateNumber(tile, tile.rotation, axis);
