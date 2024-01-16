@@ -2635,7 +2635,11 @@ class Track extends BABYLON.Mesh {
             for (let i = 0; i < N - 1; i++) {
                 let p = interpolatedPoints[i];
                 let pNext = interpolatedPoints[i + 1];
-                let d = BABYLON.Vector3.Distance(p, pNext);
+                let dir = pNext.subtract(p);
+                let d = dir.length();
+                dir.scaleInPlace(1 / d);
+                let right = BABYLON.Vector3.Cross(interpolatedNormals[i], dir);
+                interpolatedNormals[i] = BABYLON.Vector3.Cross(dir, right).normalize();
                 this.summedLength[i + 1] = this.summedLength[i] + d;
             }
             this.totalLength = this.summedLength[N - 1];
