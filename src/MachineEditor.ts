@@ -141,7 +141,7 @@ class MachineEditor {
         }
 
         document.addEventListener("keyup", (event: KeyboardEvent) => {
-            if (event.key === "x") {
+            if (event.key === "x" || event.key === "Delete") {
                 if (this.selectedObject) {
                     this.selectedObject.dispose();
                     this.setSelectedObject(undefined);
