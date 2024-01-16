@@ -30,7 +30,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public targetTimeFactor: number = 1;
+    public targetTimeFactor: number = 0.8;
     public timeFactor: number = 0.1;
     public physicDT: number = 0.001;
 
@@ -142,11 +142,15 @@ class Game {
         this.skybox.material = skyboxMaterial;
 
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
-        this.camera.speed = 0.02;
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 10000;
+        this.camera.lowerRadiusLimit = 0.05;
+        this.camera.upperRadiusLimit = 2;
+        this.camera.angularSensibilityX = 2000;
+        this.camera.angularSensibilityY = 2000;
+        this.camera.pinchPrecision = 10000;
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
@@ -379,11 +383,11 @@ class Game {
 
         let dt = this.scene.deltaTime / 1000;
         let fps = 1 / dt;
-        if (fps < 55) {
-            this.timeFactor *= 0.5;
+        if (fps < 30) {
+            this.timeFactor *= 0.9;
         }
         else {
-            this.timeFactor = this.timeFactor * 0.5 + this.targetTimeFactor * 0.5;
+            this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
         }
     }
 
@@ -400,7 +404,7 @@ class Game {
                 this.machineEditor.dispose();
             }
             else if (this.mode === GameMode.Credit) {
-                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1);
+                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1 * 0.8 / this.getCameraMinFOV());
             }
 
             this.mode = mode;
@@ -417,7 +421,7 @@ class Game {
                 document.getElementById("machine-buttons").style.display = "none";
 
                 this.setCameraTarget(BABYLON.Vector3.Zero());
-                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35);
+                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = - Math.PI * 0.65;
                 this.camera.upperAlphaLimit = - Math.PI * 0.35;
                 this.camera.lowerBetaLimit = Math.PI * 0.35;
@@ -433,7 +437,7 @@ class Game {
                 this.machine.stop();
 
                 this.setCameraTarget(BABYLON.Vector3.Zero());
-                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
+                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = - Math.PI * 0.95;
                 this.camera.upperAlphaLimit = - Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -454,7 +458,7 @@ class Game {
                 else {
                     this.setCameraTarget(BABYLON.Vector3.Zero());
                 }
-                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8);
+                await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = - Math.PI * 0.95;
                 this.camera.upperAlphaLimit = - Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -462,8 +466,8 @@ class Game {
             }
             else if (this.mode === GameMode.Credit) {
                 this.setCameraTarget(new BABYLON.Vector3(0, 0, 0.13));
-                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1);
-                await this.setCameraAlphaBeta(Math.PI * 0.5, Math.PI * 0.5, 0.4);
+                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1 * 0.8 / this.getCameraMinFOV());
+                await this.setCameraAlphaBeta(Math.PI * 0.5, Math.PI * 0.5, 0.4 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = Math.PI * 0.2;
                 this.camera.upperAlphaLimit = Math.PI * 0.8;
                 this.camera.lowerBetaLimit = Math.PI * 0.2;
@@ -603,7 +607,16 @@ class Game {
                 });
             });
         });
-    } 
+    }
+
+    public getCameraMinFOV(): number {
+        let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
+        let fov = this.camera.fov;
+        if (ratio > 1) {
+            return fov;
+        }
+        return fov * ratio;
+    }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
