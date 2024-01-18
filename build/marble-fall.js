@@ -784,6 +784,7 @@ class MachineEditor {
     }
     async instantiate() {
         document.getElementById("machine-editor-objects").style.display = "block";
+        this.game.toolbar.resize();
         let ballItem = document.createElement("div");
         ballItem.classList.add("machine-editor-item");
         ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -917,6 +918,7 @@ class MachineEditor {
     }
     dispose() {
         document.getElementById("machine-editor-objects").style.display = "none";
+        this.game.toolbar.resize();
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
@@ -1207,9 +1209,6 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
         this.engine = new BABYLON.Engine(this.canvas, true);
         BABYLON.Engine.ShadersRepository = "./shaders/";
-        setInterval(() => {
-            document.querySelector("#toolbar button .value").innerHTML = (30 * Math.random()).toFixed(1);
-        }, 500);
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
@@ -3419,6 +3418,8 @@ class Wave extends Track {
 class Toolbar {
     constructor(game) {
         this.game = game;
+        this.timeFactorInputShown = false;
+        this.soundInputShown = false;
         this._udpate = () => {
             if (this.game.machine) {
                 if (this.game.machine.playing != this._lastPlaying) {
@@ -3431,7 +3432,9 @@ class Toolbar {
                         this.pauseButton.style.display = "none";
                     }
                     this._lastPlaying = this.game.machine.playing;
+                    this.resize();
                 }
+                this.timeFactorValue.innerText = this.game.timeFactor.toFixed(2);
             }
         };
         this.onPlay = () => {
@@ -3442,6 +3445,13 @@ class Toolbar {
         };
         this.onStop = () => {
             this.game.machine.stop();
+        };
+        this.onTimeFactorButton = () => {
+            this.timeFactorInputShown = !this.timeFactorInputShown;
+            this.resize();
+        };
+        this.onTimeFactorInput = (e) => {
+            this.game.targetTimeFactor = parseFloat(e.target.value);
         };
         this.onSave = () => {
             let data = this.game.machine.serialize();
@@ -3465,6 +3475,13 @@ class Toolbar {
                 reader.readAsText(file);
             }
         };
+        this.onSoundButton = () => {
+            this.soundInputShown = !this.soundInputShown;
+            this.resize();
+        };
+        this.onSoundInput = (e) => {
+            this.game.mainSound = parseFloat(e.target.value);
+        };
         this.onBack = () => {
             this.game.setContext(GameMode.MainMenu);
         };
@@ -3477,11 +3494,23 @@ class Toolbar {
         this.pauseButton.addEventListener("click", this.onPause);
         this.stopButton = document.querySelector("#toolbar-stop");
         this.stopButton.addEventListener("click", this.onStop);
+        this.timeFactorButton = document.querySelector("#toolbar-time-factor");
+        this.timeFactorButton.addEventListener("click", this.onTimeFactorButton);
+        this.timeFactorValue = document.querySelector("#toolbar-time-factor .value");
+        this.timeFactorInput = document.querySelector("#time-factor-value");
+        this.timeFactorInput.value = this.game.targetTimeFactor.toFixed(2);
+        this.timeFactorInput.addEventListener("input", this.onTimeFactorInput);
+        this.timeFactorInputContainer = this.timeFactorInput.parentElement;
         this.saveButton = document.querySelector("#toolbar-save");
         this.saveButton.addEventListener("click", this.onSave);
         this.loadButton = document.querySelector("#toolbar-load");
         this.loadButton.addEventListener("click", this.onLoad);
-        this.speedButton = document.querySelector("#toolbar-speed");
+        this.soundButton = document.querySelector("#toolbar-sound");
+        this.soundButton.addEventListener("click", this.onSoundButton);
+        this.soundInput = document.querySelector("#sound-value");
+        this.soundInput.value = this.game.mainSound.toFixed(2);
+        this.soundInput.addEventListener("input", this.onSoundInput);
+        this.soundInputContainer = this.soundInput.parentElement;
         this.backButton = document.querySelector("#toolbar-back");
         this.backButton.addEventListener("click", this.onBack);
         this.resize();
@@ -3492,13 +3521,23 @@ class Toolbar {
     }
     resize() {
         let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
-        if (ratio > 1) {
-            this.container.style.bottom = "10px";
-        }
-        else {
-            this.container.style.bottom = "310px";
+        this.container.style.bottom = "20px";
+        if (ratio < 1) {
+            if (document.getElementById("machine-editor-objects").style.display != "none") {
+                this.container.style.bottom = "310px";
+            }
         }
         let containerWidth = this.container.clientWidth;
         this.container.style.left = ((this.game.engine.getRenderWidth() - containerWidth) * 0.5) + "px";
+        this.timeFactorInputContainer.style.display = this.timeFactorInputShown ? "block" : "none";
+        let rectButton = this.timeFactorButton.getBoundingClientRect();
+        let rectContainer = this.timeFactorInputContainer.getBoundingClientRect();
+        this.timeFactorInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
+        this.timeFactorInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.soundInputContainer.style.display = this.soundInputShown ? "block" : "none";
+        rectButton = this.soundButton.getBoundingClientRect();
+        rectContainer = this.soundInputContainer.getBoundingClientRect();
+        this.soundInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
+        this.soundInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
     }
 }

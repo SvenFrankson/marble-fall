@@ -80,6 +80,7 @@ class MachineEditor {
 
     public async instantiate(): Promise<void> {
         document.getElementById("machine-editor-objects").style.display = "block";
+        this.game.toolbar.resize();
 
         let ballItem = document.createElement("div") as HTMLDivElement;
         ballItem.classList.add("machine-editor-item");
@@ -233,6 +234,7 @@ class MachineEditor {
 
     public dispose(): void {
         document.getElementById("machine-editor-objects").style.display = "none";
+        this.game.toolbar.resize();
 
         this.itemContainer.innerHTML = "";
         this.items = new Map<string, HTMLDivElement>();

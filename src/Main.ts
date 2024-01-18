@@ -72,10 +72,6 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 		this.engine = new BABYLON.Engine(this.canvas, true);
 		BABYLON.Engine.ShadersRepository = "./shaders/";
-
-        setInterval(() => {
-            document.querySelector("#toolbar button .value").innerHTML = (30 * Math.random()).toFixed(1);
-        }, 500);
 	}
 
     public async createScene(): Promise<void> {

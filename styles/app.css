@@ -152,6 +152,7 @@ input-number {
 :root {
     --button-xs-size: 5vh;
     --button-s-size: 10vh;
+    --button-m-size: 20vh;
     --half-button-xs-size: calc(var(--button-xs-size) * 0.5);
 }
 
@@ -216,12 +217,23 @@ input-number {
 
 #toolbar .dropdown {
     position: fixed;
-    bottom: 80px;
-    left: 100px;
-    width: 300px;
     background-color: #272b2e;
     border-radius: var(--half-button-xs-size);
     color: white;
-    padding-left: var(--half-button-xs-size);
-    padding-right: var(--half-button-xs-size);
+    padding: 1vh;
+    outline: 1px solid white;
+}
+
+#time-factor-value {
+    display: block;
+    width: var(--half-button-xs-size);
+    height: var(--half-button-m-size);
+    appearance: slider-vertical;
+}
+
+#sound-value {
+    display: block;
+    width: var(--half-button-xs-size);
+    height: var(--half-button-m-size);
+    appearance: slider-vertical;
 }
