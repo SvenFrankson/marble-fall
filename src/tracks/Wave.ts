@@ -2,7 +2,7 @@
 
 class Wave extends Track {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
         this.trackName = "wave";
 
         this.deltaI = 1;

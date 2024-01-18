@@ -3219,7 +3219,7 @@ class SleeperMeshBuilder {
 /// <reference path="./Track.ts"/>
 class Snake extends Track {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
         this.trackName = "snake";
         this.deltaI = 1;
         this.deltaJ = 0;
@@ -3405,7 +3405,7 @@ class UTurn extends Track {
 /// <reference path="./Track.ts"/>
 class Wave extends Track {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j);
+        super(machine, i, j, mirror);
         this.trackName = "wave";
         this.deltaI = 1;
         this.deltaJ = 1;
