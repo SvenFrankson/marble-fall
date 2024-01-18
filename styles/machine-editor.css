@@ -27,62 +27,19 @@
 }
 
 #machine-menu.left #machine-editor-objects {
-    height: calc(100vh - 306px);
+    height: 100%;
     width: 294px;
     top: 0;
     left: 0;
     border-bottom: 2px solid white;
-    overflow-x: hidden;
-    overflow-y: scroll;
 }
 
 #machine-menu.bottom #machine-editor-objects {
-    width: calc(100vw - 306px);
+    width: 100%;
     height: 294px;
     bottom: 0;
     left: 0;
     border-right: 2px solid white;
-    overflow-x: scroll;
-    overflow-y: hidden;
-}
-
-#machine-buttons {
-    position: fixed;
-    bottom: 0;
-    width: 294px;
-    height: 294px;
-    padding: 3px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column-reverse;
-}
-
-#machine-menu.left #machine-buttons {
-    bottom: 0;
-    left: 0;
-}
-
-#machine-menu.bottom #machine-buttons {
-    bottom: 0;
-    right: 0;
-    text-align: right;
-}
-
-#machine-buttons .line-flex {
-    height: 88px;
-    margin-bottom: 10px;
-}
-
-#machine-buttons button {
-    height: 88px;
-    font-size: 26px;
-    font-weight: bold;
-    margin: 5px;
-    width: 300px;
-    border-radius: 10px;
-    color: white;
-    background-color: #272b2e;
-    border: 2px solid white;
 }
 
 .machine-editor-item {

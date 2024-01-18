@@ -12,6 +12,55 @@
 		<link rel="stylesheet" type="text/css" href="./styles/machine-editor.css">
 	</head>
 	<body>
+		<div id="toolbar">
+			<button id="toolbar-play" class="xs">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M30 25 L80 50 L30 80 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			</button>
+			<button id="toolbar-pause" class="xs">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M25 25 L32 25 L32 75 L25 75 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M68 25 L75 25 L75 75 L68 75 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			</button>
+			<button id="toolbar-stop" class="xs">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M25 25 L75 25 L75 75 L25 75 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			</button>
+			<button id="toolbar-save" class="xs">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M15 84 L85 84 L85 90 L15 90 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M50 5 L50 55" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M35 40 L50 60 L65 40 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			</button>
+			<button id="toolbar-load" class="xs">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M15 84 L85 84 L85 90 L15 90 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M50 10 L50 60" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M35 25 L50 5 L65 25 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			</button>
+			<button id="toolbar-speed" class="s">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M80 85 L20 85 A40 40 0 1 1 80 85 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M45 55 L50 6 L55 55 L50 60 Z" transform="rotate(30 50 55)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+				<span class="value">42.5</span>
+			</button>
+			<button id="toolbar-back" class="xs">
+				<svg class="label" viewBox="0 0 100 100">
+					<path d="M5 45 L25 30 L25 60 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M10 45 L80 45 L80 75" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			</button>
+			<div class="dropdown" style="display: none;">
+				<p>Loreq Ipsum</p>
+				<p>So you two dig up, dig up dinosaurs? You really think you can fly that thing? Did he just throw my cat out of the window? Hey, you know how I'm, like, always trying to save the planet? Here's my chance. Hey, you know how I'm, like, always trying to save the planet? Here's my chance.</p>
+			</div>
+		</div>
 		<img id="blackboard-tex" src="./datas/textures/blackboard.png" style="display: none;"></img>
 		<div id="track-editor-menu" class="menu" style="display: none;">
 			<div class="line">
@@ -122,22 +171,6 @@
 		<div id="machine-menu" class="menu">
 			<div id="machine-editor-objects" style="display:none">
 				<div id="machine-editor-item-container">
-				</div>
-			</div>
-			<div id="machine-buttons">
-				<div id="machine-back" class="line-flex">
-					<button id="machine-back-main-menu" class="btn-m">Main Menu</button>
-				</div>
-				<div id="machine-file" class="line-flex" style="display:none">
-					<button id="machine-editor-load" class="btn-m">
-						Load
-						<input id="machine-editor-load-input" class="btn-m" type="file"/>
-					</button>
-					<button id="machine-editor-save" class="btn-m">Save</button>
-				</div>
-				<div id="machine-time" class="line-flex">
-					<button id="machine-play" class="btn-m">Play</button>
-					<button id="machine-stop" class="btn-m">Stop</button>
 				</div>
 			</div>
 		</div>

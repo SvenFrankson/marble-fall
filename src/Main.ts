@@ -27,9 +27,11 @@ class Game {
     public camera: BABYLON.ArcRotateCamera;
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
+    public toolbar: Toolbar;
 
     public cameraOrtho: boolean = false;
 
+    public mainSound: number = 0;
     public targetTimeFactor: number = 0.8;
     public timeFactor: number = 0.1;
     public physicDT: number = 0.001;
@@ -70,6 +72,10 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 		this.engine = new BABYLON.Engine(this.canvas, true);
 		BABYLON.Engine.ShadersRepository = "./shaders/";
+
+        setInterval(() => {
+            document.querySelector("#toolbar button .value").innerHTML = (30 * Math.random()).toFixed(1);
+        }, 500);
 	}
 
     public async createScene(): Promise<void> {
@@ -192,7 +198,6 @@ class Game {
         this.tileMenuContainer = new BABYLON.Mesh("menu");
         this.tileMenuContainer.position.y = - 10;
         this.tileMenuContainer.position.z = 1;
-        document.getElementById("machine-buttons").style.display = "none";
 
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         await this.tileDemo1.instantiate();
@@ -291,35 +296,8 @@ class Game {
 
         document.getElementById("track-editor-menu").style.display = "none";
 
-        document.getElementById("machine-play").onclick = () => {
-            if (this.machine) {
-                this.machine.play();
-            }
-        }
-
-        document.getElementById("machine-stop").onclick = () => {
-            if (this.machine) {
-                this.machine.stop();
-            }
-        }
-        
-        document.getElementById("machine-back-main-menu").onclick = () => {
-            this.setContext(GameMode.MainMenu);
-        }
-        //this.trackEditor = new TrackEditor(this);
-        //this.trackEditor.initialize();
-
-        /*
-        setTimeout(() => {
-            let data = this.machine.serialize();
-            this.machine.dispose();
-            setTimeout(() => {
-                this.machine.deserialize(data);
-                this.machine.instantiate();
-                
-            }, 5000);
-        }, 5000);
-        */
+        this.toolbar = new Toolbar(this);
+        this.toolbar.initialize();
 
         this.setContext(GameMode.MainMenu);
         //await this.makeScreenshot("ball");
@@ -339,6 +317,7 @@ class Game {
 
 		window.addEventListener("resize", () => {
 			this.engine.resize();
+            this.toolbar.resize();
 		});
 	}
 
@@ -397,7 +376,6 @@ class Game {
             if (this.mode === GameMode.MainMenu) {
                 this.tileMenuContainer.position.y = - 10;
                 this.tileMenuContainer.position.z = 1;
-                document.getElementById("machine-buttons").style.display = "flex";
                 this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
@@ -418,7 +396,6 @@ class Game {
 
                 this.tileMenuContainer.position.y = 0;
                 this.tileMenuContainer.position.z = - 0.03;
-                document.getElementById("machine-buttons").style.display = "none";
 
                 this.setCameraTarget(BABYLON.Vector3.Zero());
                 await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());

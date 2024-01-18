@@ -64,7 +64,7 @@ class Ball extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.volume = 0 * this.game.mainSound;
         this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -96,7 +96,7 @@ class Ball extends BABYLON.Mesh {
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.volume = 0 * this.game.mainSound;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -110,7 +110,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.volume = 0 * this.game.mainSound;
     }
     update(dt) {
         if (this.position.y < -10) {
@@ -158,7 +158,7 @@ class Ball extends BABYLON.Mesh {
                         let mySpeed = this.velocity.clone();
                         let v = this.velocity.length();
                         if (v > 0.1) {
-                            this.marbleChocSound.volume = v / 5;
+                            this.marbleChocSound.volume = v / 5 * this.game.mainSound;
                             this.marbleChocSound.play();
                         }
                         this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
@@ -184,7 +184,7 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length();
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.mainSound;
     }
 }
 var demo1 = {
@@ -784,7 +784,6 @@ class MachineEditor {
     }
     async instantiate() {
         document.getElementById("machine-editor-objects").style.display = "block";
-        document.getElementById("machine-file").style.display = "flex";
         let ballItem = document.createElement("div");
         ballItem.classList.add("machine-editor-item");
         ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -863,28 +862,6 @@ class MachineEditor {
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
-        document.getElementById("machine-editor-save").addEventListener("click", () => {
-            let data = this.machine.serialize();
-            window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
-            Nabu.download("my-marble-machine.json", JSON.stringify(data));
-        });
-        document.getElementById("machine-editor-load-input").addEventListener("change", (event) => {
-            let files = event.target.files;
-            let file = files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.addEventListener('load', (event) => {
-                    this.machine.dispose();
-                    this.machine.deserialize(JSON.parse(event.target.result));
-                    this.machine.instantiate();
-                    this.machine.generateBaseMesh();
-                    for (let i = 0; i < this.machine.balls.length; i++) {
-                        this.machine.balls[i].setShowPositionZeroGhost(true);
-                    }
-                });
-                reader.readAsText(file);
-            }
-        });
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
@@ -940,7 +917,6 @@ class MachineEditor {
     }
     dispose() {
         document.getElementById("machine-editor-objects").style.display = "none";
-        document.getElementById("machine-file").style.display = "none";
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
@@ -1161,6 +1137,7 @@ var GameMode;
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
+        this.mainSound = 0;
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
         this.physicDT = 0.001;
@@ -1230,6 +1207,9 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
         this.engine = new BABYLON.Engine(this.canvas, true);
         BABYLON.Engine.ShadersRepository = "./shaders/";
+        setInterval(() => {
+            document.querySelector("#toolbar button .value").innerHTML = (30 * Math.random()).toFixed(1);
+        }, 500);
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
@@ -1330,7 +1310,6 @@ class Game {
         this.tileMenuContainer = new BABYLON.Mesh("menu");
         this.tileMenuContainer.position.y = -10;
         this.tileMenuContainer.position.z = 1;
-        document.getElementById("machine-buttons").style.display = "none";
         this.tileDemo1 = new MenuTile("tile-demo-1", 0.05, 0.075, this);
         await this.tileDemo1.instantiate();
         this.tileDemo1.position.x = -0.09;
@@ -1413,32 +1392,8 @@ class Game {
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         document.getElementById("track-editor-menu").style.display = "none";
-        document.getElementById("machine-play").onclick = () => {
-            if (this.machine) {
-                this.machine.play();
-            }
-        };
-        document.getElementById("machine-stop").onclick = () => {
-            if (this.machine) {
-                this.machine.stop();
-            }
-        };
-        document.getElementById("machine-back-main-menu").onclick = () => {
-            this.setContext(GameMode.MainMenu);
-        };
-        //this.trackEditor = new TrackEditor(this);
-        //this.trackEditor.initialize();
-        /*
-        setTimeout(() => {
-            let data = this.machine.serialize();
-            this.machine.dispose();
-            setTimeout(() => {
-                this.machine.deserialize(data);
-                this.machine.instantiate();
-                
-            }, 5000);
-        }, 5000);
-        */
+        this.toolbar = new Toolbar(this);
+        this.toolbar.initialize();
         this.setContext(GameMode.MainMenu);
         //await this.makeScreenshot("ball");
         /*
@@ -1455,6 +1410,7 @@ class Game {
         });
         window.addEventListener("resize", () => {
             this.engine.resize();
+            this.toolbar.resize();
         });
     }
     async initialize() {
@@ -1504,7 +1460,6 @@ class Game {
             if (this.mode === GameMode.MainMenu) {
                 this.tileMenuContainer.position.y = -10;
                 this.tileMenuContainer.position.z = 1;
-                document.getElementById("machine-buttons").style.display = "flex";
                 this.scene.onPointerObservable.removeCallback(this.onPointerEvent);
             }
             else if (this.mode === GameMode.CreateMode) {
@@ -1522,7 +1477,6 @@ class Game {
                 this.machine.play();
                 this.tileMenuContainer.position.y = 0;
                 this.tileMenuContainer.position.z = -0.03;
-                document.getElementById("machine-buttons").style.display = "none";
                 this.setCameraTarget(BABYLON.Vector3.Zero());
                 await this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = -Math.PI * 0.65;
@@ -3460,5 +3414,91 @@ class Wave extends Track {
             this.mirrorTrackPointsInPlace();
         }
         this.generateWires();
+    }
+}
+class Toolbar {
+    constructor(game) {
+        this.game = game;
+        this._udpate = () => {
+            if (this.game.machine) {
+                if (this.game.machine.playing != this._lastPlaying) {
+                    if (this.game.machine.playing) {
+                        this.playButton.style.display = "none";
+                        this.pauseButton.style.display = "inline-block";
+                    }
+                    else {
+                        this.playButton.style.display = "inline-block";
+                        this.pauseButton.style.display = "none";
+                    }
+                    this._lastPlaying = this.game.machine.playing;
+                }
+            }
+        };
+        this.onPlay = () => {
+            this.game.machine.playing = true;
+        };
+        this.onPause = () => {
+            this.game.machine.playing = false;
+        };
+        this.onStop = () => {
+            this.game.machine.stop();
+        };
+        this.onSave = () => {
+            let data = this.game.machine.serialize();
+            window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
+            Nabu.download("my-marble-machine.json", JSON.stringify(data));
+        };
+        this.onLoad = (event) => {
+            let files = event.target.files;
+            let file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.addEventListener('load', (event) => {
+                    this.game.machine.dispose();
+                    this.game.machine.deserialize(JSON.parse(event.target.result));
+                    this.game.machine.instantiate();
+                    this.game.machine.generateBaseMesh();
+                    for (let i = 0; i < this.game.machine.balls.length; i++) {
+                        this.game.machine.balls[i].setShowPositionZeroGhost(true);
+                    }
+                });
+                reader.readAsText(file);
+            }
+        };
+        this.onBack = () => {
+            this.game.setContext(GameMode.MainMenu);
+        };
+    }
+    initialize() {
+        this.container = document.querySelector("#toolbar");
+        this.playButton = document.querySelector("#toolbar-play");
+        this.playButton.addEventListener("click", this.onPlay);
+        this.pauseButton = document.querySelector("#toolbar-pause");
+        this.pauseButton.addEventListener("click", this.onPause);
+        this.stopButton = document.querySelector("#toolbar-stop");
+        this.stopButton.addEventListener("click", this.onStop);
+        this.saveButton = document.querySelector("#toolbar-save");
+        this.saveButton.addEventListener("click", this.onSave);
+        this.loadButton = document.querySelector("#toolbar-load");
+        this.loadButton.addEventListener("click", this.onLoad);
+        this.speedButton = document.querySelector("#toolbar-speed");
+        this.backButton = document.querySelector("#toolbar-back");
+        this.backButton.addEventListener("click", this.onBack);
+        this.resize();
+        this.game.scene.onBeforeRenderObservable.add(this._udpate);
+    }
+    dispose() {
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._udpate);
+    }
+    resize() {
+        let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
+        if (ratio > 1) {
+            this.container.style.bottom = "10px";
+        }
+        else {
+            this.container.style.bottom = "310px";
+        }
+        let containerWidth = this.container.clientWidth;
+        this.container.style.left = ((this.game.engine.getRenderWidth() - containerWidth) * 0.5) + "px";
     }
 }

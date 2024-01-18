@@ -80,7 +80,6 @@ class MachineEditor {
 
     public async instantiate(): Promise<void> {
         document.getElementById("machine-editor-objects").style.display = "block";
-        document.getElementById("machine-file").style.display = "flex";
 
         let ballItem = document.createElement("div") as HTMLDivElement;
         ballItem.classList.add("machine-editor-item");
@@ -166,29 +165,6 @@ class MachineEditor {
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
 
-        document.getElementById("machine-editor-save").addEventListener("click", () => {
-            let data = this.machine.serialize();
-            window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
-            Nabu.download("my-marble-machine.json", JSON.stringify(data));
-        });
-        document.getElementById("machine-editor-load-input").addEventListener("change", (event: Event) => {
-            let files = (event.target as HTMLInputElement).files;
-            let file = files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.addEventListener('load', (event) => {
-                    this.machine.dispose();
-                    this.machine.deserialize(JSON.parse(event.target.result as string));
-                    this.machine.instantiate();
-                    this.machine.generateBaseMesh();
-                    for (let i = 0; i < this.machine.balls.length; i++) {
-                        this.machine.balls[i].setShowPositionZeroGhost(true);
-                    }
-                });
-                reader.readAsText(file);
-            }
-        })
-
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
@@ -257,7 +233,6 @@ class MachineEditor {
 
     public dispose(): void {
         document.getElementById("machine-editor-objects").style.display = "none";
-        document.getElementById("machine-file").style.display = "none";
 
         this.itemContainer.innerHTML = "";
         this.items = new Map<string, HTMLDivElement>();

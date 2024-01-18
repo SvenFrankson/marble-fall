@@ -73,12 +73,6 @@ body {
     flex-direction: row;
 }
 
-.label {
-    display: inline-block;
-    width: 85px;
-    font-size: 13px;
-}
-
 .label-s {
     display: inline-block;
     width: 35px;
@@ -152,4 +146,82 @@ input-vec3 {
 input-number {
     display: inline-block;
     width: 100px;
+}
+
+
+:root {
+    --button-xs-size: 5vh;
+    --button-s-size: 10vh;
+    --half-button-xs-size: calc(var(--button-xs-size) * 0.5);
+}
+
+#toolbar {
+    position: fixed;
+    bottom: 10px;
+    left: 50px;
+    z-index: 2;
+}
+
+#toolbar button {
+    position:relative;
+    height: var(--button-xs-size);
+    font-size: var(--half-button-xs-size);
+    vertical-align: bottom;
+    background-color: #272b2e;
+    border-radius: var(--half-button-xs-size);
+    border: none;
+    outline: 1px solid white;
+    color: white;
+    font-weight: bold;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+#toolbar button.xs {
+    width: var(--button-xs-size);
+}
+
+#toolbar button.s {
+    width: var(--button-s-size);
+}
+
+#toolbar button .label {
+    position: absolute;
+    top: var(--half-button-xs-size);
+    left: var(--half-button-xs-size);
+    transform: translate(-50%, -50%);
+}
+
+#toolbar button .value {
+    position: absolute;
+    display: inline-block;
+    top: var(--half-button-xs-size);
+    right: calc(var(--half-button-xs-size) * 0.7);
+    transform: translate(0, -50%);
+    color: rgb(189, 189, 189);
+    text-align: right;
+    font-size: calc(var(--half-button-xs-size) * 0.7);
+}
+
+#toolbar button svg {
+    height: 60%;
+    fill: white;
+    stroke: white;
+}
+
+#toolbar button img {
+    height: 60%;
+    fill: white;
+}
+
+#toolbar .dropdown {
+    position: fixed;
+    bottom: 80px;
+    left: 100px;
+    width: 300px;
+    background-color: #272b2e;
+    border-radius: var(--half-button-xs-size);
+    color: white;
+    padding-left: var(--half-button-xs-size);
+    padding-right: var(--half-button-xs-size);
 }

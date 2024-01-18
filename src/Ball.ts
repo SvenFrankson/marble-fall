@@ -75,7 +75,7 @@ class Ball extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.volume = 0 * this.game.mainSound;
         this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -113,7 +113,7 @@ class Ball extends BABYLON.Mesh {
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.volume = 0 * this.game.mainSound;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -128,7 +128,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.volume = 0 * this.game.mainSound;
     }
 
     private _timer: number = 0;
@@ -199,7 +199,7 @@ class Ball extends BABYLON.Mesh {
                         
                         let v = this.velocity.length();
                         if (v > 0.1) {
-                            this.marbleChocSound.volume = v / 5;
+                            this.marbleChocSound.volume = v / 5 * this.game.mainSound;
                             this.marbleChocSound.play();
                         }
 
@@ -231,6 +231,6 @@ class Ball extends BABYLON.Mesh {
             
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length();
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.mainSound;
     }
 }
