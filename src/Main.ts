@@ -296,13 +296,10 @@ class Game {
         this.toolbar.initialize();
 
         this.setContext(GameMode.MainMenu);
-        //await this.makeScreenshot("ball");
-        /*
-        for (let i = 0; i < TrackNames.length; i++) {
-            let trackname = TrackNames[i];
-            await this.makeScreenshot(trackname);
-        }
-        */
+        
+        let test = FloatingElement.CreateSpacePanel(this);
+        test.innerText = "Hello World !";
+        test.setTarget(this.machine.baseFrame);
 	}
 
 	public animate(): void {
