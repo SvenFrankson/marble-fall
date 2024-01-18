@@ -184,7 +184,7 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.mainSound;
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainSound;
     }
 }
 var demo1 = {
@@ -449,6 +449,16 @@ class Machine {
                 }
                 for (let i = 0; i < this.tracks.length; i++) {
                     this.tracks[i].update(dt);
+                }
+            }
+        }
+        else {
+            for (let i = 0; i < this.balls.length; i++) {
+                if (this.balls[i].marbleLoopSound.volume > 0.01) {
+                    this.balls[i].marbleLoopSound.volume *= 0.9;
+                }
+                else {
+                    this.balls[i].marbleLoopSound.volume = 0;
                 }
             }
         }
@@ -1526,6 +1536,7 @@ class Game {
                 this.camera.lowerBetaLimit = Math.PI * 0.2;
                 this.camera.upperBetaLimit = Math.PI * 0.8;
             }
+            this.toolbar.resize();
         }
     }
     async setCameraAlphaBeta(alpha, beta, radius) {
@@ -3419,16 +3430,17 @@ class Toolbar {
     constructor(game) {
         this.game = game;
         this.timeFactorInputShown = false;
+        this.loadInputShown = false;
         this.soundInputShown = false;
         this._udpate = () => {
             if (this.game.machine) {
                 if (this.game.machine.playing != this._lastPlaying) {
                     if (this.game.machine.playing) {
                         this.playButton.style.display = "none";
-                        this.pauseButton.style.display = "inline-block";
+                        this.pauseButton.style.display = "";
                     }
                     else {
-                        this.playButton.style.display = "inline-block";
+                        this.playButton.style.display = "";
                         this.pauseButton.style.display = "none";
                     }
                     this._lastPlaying = this.game.machine.playing;
@@ -3458,7 +3470,11 @@ class Toolbar {
             window.localStorage.setItem("last-saved-machine", JSON.stringify(data));
             Nabu.download("my-marble-machine.json", JSON.stringify(data));
         };
-        this.onLoad = (event) => {
+        this.onLoad = () => {
+            this.loadInputShown = !this.loadInputShown;
+            this.resize();
+        };
+        this.onLoadInput = (event) => {
             let files = event.target.files;
             let file = files[0];
             if (file) {
@@ -3471,6 +3487,8 @@ class Toolbar {
                     for (let i = 0; i < this.game.machine.balls.length; i++) {
                         this.game.machine.balls[i].setShowPositionZeroGhost(true);
                     }
+                    this.loadInputShown = false;
+                    this.resize();
                 });
                 reader.readAsText(file);
             }
@@ -3505,6 +3523,9 @@ class Toolbar {
         this.saveButton.addEventListener("click", this.onSave);
         this.loadButton = document.querySelector("#toolbar-load");
         this.loadButton.addEventListener("click", this.onLoad);
+        this.loadInput = document.querySelector("#load-input");
+        this.loadInput.addEventListener("input", this.onLoadInput);
+        this.loadInputContainer = this.loadInput.parentElement;
         this.soundButton = document.querySelector("#toolbar-sound");
         this.soundButton.addEventListener("click", this.onSoundButton);
         this.soundInput = document.querySelector("#sound-value");
@@ -3519,7 +3540,33 @@ class Toolbar {
     dispose() {
         this.game.scene.onBeforeRenderObservable.removeCallback(this._udpate);
     }
+    updateButtonsVisibility() {
+        if (this.game.mode === GameMode.MainMenu) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "none";
+        }
+        else if (this.game.mode === GameMode.Credit) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "";
+        }
+        else if (this.game.mode === GameMode.CreateMode) {
+            this.saveButton.style.display = "";
+            this.loadButton.style.display = "";
+            this.backButton.style.display = "";
+        }
+        else if (this.game.mode === GameMode.DemoMode) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "";
+        }
+    }
     resize() {
+        this.updateButtonsVisibility();
         let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
         this.container.style.bottom = "20px";
         if (ratio < 1) {
@@ -3529,12 +3576,17 @@ class Toolbar {
         }
         let containerWidth = this.container.clientWidth;
         this.container.style.left = ((this.game.engine.getRenderWidth() - containerWidth) * 0.5) + "px";
-        this.timeFactorInputContainer.style.display = this.timeFactorInputShown ? "block" : "none";
+        this.timeFactorInputContainer.style.display = this.timeFactorInputShown ? "" : "none";
         let rectButton = this.timeFactorButton.getBoundingClientRect();
         let rectContainer = this.timeFactorInputContainer.getBoundingClientRect();
         this.timeFactorInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
         this.timeFactorInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
-        this.soundInputContainer.style.display = this.soundInputShown ? "block" : "none";
+        this.loadInputContainer.style.display = this.loadInputShown ? "" : "none";
+        rectButton = this.loadButton.getBoundingClientRect();
+        rectContainer = this.loadInputContainer.getBoundingClientRect();
+        this.loadInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
+        this.loadInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.soundInputContainer.style.display = this.soundInputShown ? "" : "none";
         rectButton = this.soundButton.getBoundingClientRect();
         rectContainer = this.soundInputContainer.getBoundingClientRect();
         this.soundInputContainer.style.left = (rectButton.left).toFixed(0) + "px";

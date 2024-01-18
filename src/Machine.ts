@@ -76,6 +76,16 @@ class Machine {
                 }
             }
         }
+        else {
+            for (let i = 0; i < this.balls.length; i++) {
+                if (this.balls[i].marbleLoopSound.volume > 0.01) {
+                    this.balls[i].marbleLoopSound.volume *= 0.9;
+                }
+                else {
+                    this.balls[i].marbleLoopSound.volume = 0;
+                }
+            }
+        }
     }
 
     public play(): void {

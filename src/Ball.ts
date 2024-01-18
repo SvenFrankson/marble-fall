@@ -231,6 +231,6 @@ class Ball extends BABYLON.Mesh {
             
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.mainSound;
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainSound;
     }
 }

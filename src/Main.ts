@@ -446,6 +446,7 @@ class Game {
                 this.camera.lowerBetaLimit = Math.PI * 0.2;
                 this.camera.upperBetaLimit = Math.PI * 0.8;
             }
+            this.toolbar.resize();
         }
     }
 

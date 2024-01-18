@@ -18,17 +18,20 @@
 					<path d="M30 25 L80 50 L30 80 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
 			</button>
+
 			<button id="toolbar-pause" class="xs">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M25 25 L32 25 L32 75 L25 75 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 					<path d="M68 25 L75 25 L75 75 L68 75 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
 			</button>
+
 			<button id="toolbar-stop" class="xs">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M25 25 L75 25 L75 75 L25 75 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
 			</button>
+
 			<button id="toolbar-time-factor" class="s">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M80 85 L20 85 A40 40 0 1 1 80 85 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -39,6 +42,7 @@
 			<div class="dropdown">
 				<input id="time-factor-value" type="range" orient="vertical" min="0" max="1" step ="0.01"/>	
 			</div>
+
 			<button id="toolbar-save" class="xs">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M15 84 L85 84 L85 90 L15 90 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -46,6 +50,7 @@
 					<path d="M35 40 L50 60 L65 40 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
 			</button>
+
 			<button id="toolbar-load" class="xs">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M15 84 L85 84 L85 90 L15 90 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -53,6 +58,10 @@
 					<path d="M35 25 L50 5 L65 25 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
 			</button>
+			<div class="dropdown">
+				<input id="load-input" type="file"/>	
+			</div>
+
 			<button id="toolbar-sound" class="xs">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M10 40 L30 40 L50 20 L50 80 L30 60 L10 60 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -62,16 +71,13 @@
 			<div class="dropdown">
 				<input id="sound-value" type="range" orient="vertical" min="0" max="1" step ="0.01"/>	
 			</div>
+
 			<button id="toolbar-back" class="xs">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M5 45 L25 30 L25 60 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 					<path d="M10 45 L80 45 L80 75" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
 			</button>
-			<div class="dropdown" style="display: none;">
-				<p>Loreq Ipsum</p>
-				<p>So you two dig up, dig up dinosaurs? You really think you can fly that thing? Did he just throw my cat out of the window? Hey, you know how I'm, like, always trying to save the planet? Here's my chance. Hey, you know how I'm, like, always trying to save the planet? Here's my chance.</p>
-			</div>
 		</div>
 		<img id="blackboard-tex" src="./datas/textures/blackboard.png" style="display: none;"></img>
 		<div id="track-editor-menu" class="menu" style="display: none;">
