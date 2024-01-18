@@ -72,10 +72,12 @@ class Toolbar {
         this.backButton.addEventListener("click", this.onBack);
         this.resize();
 
+        this.game.canvas.addEventListener("pointerdown", this.closeAllDropdowns);
         this.game.scene.onBeforeRenderObservable.add(this._udpate);
     }
 
     public dispose(): void {
+        this.game.canvas.removeEventListener("pointerdown", this.closeAllDropdowns);
         this.game.scene.onBeforeRenderObservable.removeCallback(this._udpate);
     }
 
@@ -219,5 +221,14 @@ class Toolbar {
 
     public onBack = () => {
         this.game.setContext(GameMode.MainMenu);
+    }
+
+    public closeAllDropdowns = () => {
+        if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown) {
+            this.timeFactorInputShown = false;
+            this.loadInputShown = false;
+            this.soundInputShown = false;
+            this.resize();
+        }        
     }
 }
