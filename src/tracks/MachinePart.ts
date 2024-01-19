@@ -11,7 +11,7 @@ class TrackPoint {
     public summedLength: number = 0;
 
     constructor(
-        public track: Track,
+        public track: MachinePart,
         public position: BABYLON.Vector3,
         public normal?: BABYLON.Vector3,
         public dir?: BABYLON.Vector3,
@@ -74,16 +74,20 @@ interface ITrackData {
     points: ITrackPointData[];
 }
 
-class Track extends BABYLON.Mesh {
+class Track {
+    
+}
 
-    public trackName: string = "track";
+class MachinePart extends BABYLON.Mesh {
+
+    public partName: string = "track";
 
     public get game(): Game {
         return this.machine.game;
     }
     
-    public w: number;
-    public h: number;
+    public w: number = 1;
+    public h: number = 1;
     public deltaI: number = 0;
     public deltaJ: number = 0;
 

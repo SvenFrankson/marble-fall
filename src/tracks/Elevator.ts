@@ -1,4 +1,4 @@
-class Elevator extends Track {
+class Elevator extends MachinePart {
 
     public boxesCount: number = 4;
     public rWheel: number = 0.015;
@@ -11,7 +11,7 @@ class Elevator extends Track {
         super(machine, i, j, mirror);
         this.boxesCount
         this.yExtendable = true;
-        this.trackName = "elevator-" + h.toFixed(0);
+        this.partName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);

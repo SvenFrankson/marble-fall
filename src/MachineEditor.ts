@@ -46,11 +46,11 @@ class MachineEditor {
     }
 
     private _dragOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _draggedTrack: Track | Ball;
-    public get draggedObject(): Track | Ball {
+    private _draggedTrack: MachinePart | Ball;
+    public get draggedObject(): MachinePart | Ball {
         return this._draggedTrack;
     }
-    public setDraggedObject(s: Track | Ball): void {
+    public setDraggedObject(s: MachinePart | Ball): void {
         if (s != this._draggedTrack) {
             this._draggedTrack = s;
             if (this._draggedTrack) {
@@ -62,11 +62,11 @@ class MachineEditor {
         }
     }
 
-    private _selectedObject: Track | Ball;
-    public get selectedObject(): Track | Ball {
+    private _selectedObject: MachinePart | Ball;
+    public get selectedObject(): MachinePart | Ball {
         return this._selectedObject;
     }
-    public setSelectedObject(s: Track | Ball): void {
+    public setSelectedObject(s: MachinePart | Ball): void {
         if (this._selectedObject) {
             this._selectedObject.unselect();
         }
@@ -155,12 +155,12 @@ class MachineEditor {
                 }
             }
             else if (event.key === "m") {
-                if (this.draggedObject && this.draggedObject instanceof Track) {
+                if (this.draggedObject && this.draggedObject instanceof MachinePart) {
                     this.mirrorTrackInPlace(this.draggedObject).then(track => {
                         this.setDraggedObject(track);
                     });
                 }
-                else if (this.selectedObject && this.selectedObject instanceof Track) {
+                else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
                     this.mirrorTrackInPlace(this.selectedObject).then(track => {
                         this.setSelectedObject(track);
                     });
@@ -346,7 +346,7 @@ class MachineEditor {
             )
     
             if (pick.hit) {
-                let pickedObject: Track | Ball;
+                let pickedObject: MachinePart | Ball;
                 if (pick.pickedMesh instanceof BallGhost) {
                     pickedObject = pick.pickedMesh.ball;
                 }
@@ -376,7 +376,7 @@ class MachineEditor {
                         }
                     )
                     if (pick.hit && pick.pickedPoint) {
-                        if (this.selectedObject instanceof Track) {
+                        if (this.selectedObject instanceof MachinePart) {
                             this._dragOffset.copyFrom(this.selectedObject.position).subtractInPlace(pick.pickedPoint);
                         }
                         else if (this.selectedObject instanceof Ball) {
@@ -404,7 +404,7 @@ class MachineEditor {
     
             if (pick.hit) {
                 let point = pick.pickedPoint.add(this._dragOffset);
-                if (this.draggedObject instanceof Track) {
+                if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);
                     let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
                     if (i != this.draggedObject.i || j != this.draggedObject.j) {
@@ -448,8 +448,8 @@ class MachineEditor {
 
         if (pick.hit) {
             let point = pick.pickedPoint.add(this._dragOffset);
-            if (this.draggedObject instanceof Track) {
-                let draggedTrack = this.draggedObject as Track;
+            if (this.draggedObject instanceof MachinePart) {
+                let draggedTrack = this.draggedObject as MachinePart;
                 let i = Math.round(point.x / tileWidth);
                 let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
                 draggedTrack.setI(i);
@@ -508,7 +508,7 @@ class MachineEditor {
         }
     }
 
-    public async editTrackInPlace(track: Track, i?: number, j?: number, w?: number, h?: number, mirror?: boolean): Promise<Track> {
+    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, w?: number, h?: number, mirror?: boolean): Promise<MachinePart> {
         if (!isFinite(i)) {
             i = track.i;
         }
@@ -519,7 +519,7 @@ class MachineEditor {
             mirror = track.mirror;
         }
 
-        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, i, j, w, h, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, w, h, mirror);
         track.dispose();
         this.machine.tracks.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -530,8 +530,8 @@ class MachineEditor {
         return editedTrack;
     }
 
-    public async mirrorTrackInPlace(track: Track): Promise<Track> {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
+    public async mirrorTrackInPlace(track: MachinePart): Promise<MachinePart> {
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, !track.mirror);
         track.dispose();
         this.machine.tracks.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -562,7 +562,7 @@ class MachineEditor {
                 ));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
             }
-            else if (this.selectedObject instanceof Track) {
+            else if (this.selectedObject instanceof MachinePart) {
                 let s34 = 3 * s / 4;
                 let xLeft = - tileWidth * 0.5;
                 let xRight = tileWidth * (this.selectedObject.deltaI + 0.5);
@@ -628,7 +628,7 @@ class MachineEditor {
 
     private _onHPlusTop = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.yExtendable) {
+        if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h + 1;
             let j = track.j - 1;
 
@@ -639,7 +639,7 @@ class MachineEditor {
 
     private _onHMinusTop = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.yExtendable) {
+        if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h - 1;
             let j = track.j + 1;
 
@@ -652,7 +652,7 @@ class MachineEditor {
 
     private _onWPlusRight = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.xExtendable) {
+        if (track instanceof MachinePart && track.xExtendable) {
             let w = track.w + 1;
 
             let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
@@ -662,7 +662,7 @@ class MachineEditor {
 
     private _onWMinusRight = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.xExtendable) {
+        if (track instanceof MachinePart && track.xExtendable) {
             let w = track.w - 1;
 
             if (w >= 1) {
@@ -674,7 +674,7 @@ class MachineEditor {
 
     private _onHPlusBottom = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.yExtendable) {
+        if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h + 1;
             
             let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
@@ -684,7 +684,7 @@ class MachineEditor {
 
     private _onHMinusBottom = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.yExtendable) {
+        if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h - 1;
             if (h >= 0) {
                 let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
@@ -695,7 +695,7 @@ class MachineEditor {
 
     private _onWPlusLeft = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.xExtendable) {
+        if (track instanceof MachinePart && track.xExtendable) {
             let i = track.i - 1;
             let w = track.w + 1;
 
@@ -706,7 +706,7 @@ class MachineEditor {
 
     private _onWMinusLeft = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track && track.xExtendable) {
+        if (track instanceof MachinePart && track.xExtendable) {
             let i = track.i + 1;
             let w = track.w - 1;
 
@@ -727,7 +727,7 @@ class MachineEditor {
 
     private _onMirror = async () => {
         let track = this.selectedObject;
-        if (track instanceof Track) {
+        if (track instanceof MachinePart) {
             track = await this.mirrorTrackInPlace(track);
             this.setSelectedObject(track);
         }

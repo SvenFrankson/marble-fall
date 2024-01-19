@@ -1,9 +1,9 @@
-/// <reference path="./Track.ts"/>
+/// <reference path="./MachinePart.ts"/>
 
-class Loop extends Track {
+class Loop extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
         super(machine, i, j, mirror);
-        this.trackName = "loop";
+        this.partName = "loop";
 
         this.deltaI = 1;
         this.deltaJ = 3;

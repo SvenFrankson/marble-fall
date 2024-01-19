@@ -1,6 +1,6 @@
 class SleeperMeshBuilder {
 
-    public static GenerateSleepersVertexData(track: Track, spacing: number): BABYLON.VertexData {
+    public static GenerateSleepersVertexData(track: MachinePart, spacing: number): BABYLON.VertexData {
         let partialsDatas: BABYLON.VertexData[] = [];
 
         for (let j = 0; j < track.interpolatedPoints.length; j++) {

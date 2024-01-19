@@ -10,13 +10,13 @@ var TrackNames = [
     "elevator-4"
 ];
 
-class TrackFactory {
+class MachinePartFactory {
 
     constructor(public machine: Machine) {
 
     }
 
-    public createTrackWH(trackname: string, i: number, j: number, w?: number, h?: number, mirror?: boolean): Track {
+    public createTrackWH(trackname: string, i: number, j: number, w?: number, h?: number, mirror?: boolean): MachinePart {
         trackname = trackname.split("-")[0];
         let wh = "";
         if (isFinite(w)) {
@@ -29,7 +29,7 @@ class TrackFactory {
         return this.createTrack(trackname, i, j, mirror);
     }
 
-    public createTrack(trackname: string, i: number, j: number, mirror?: boolean): Track {
+    public createTrack(trackname: string, i: number, j: number, mirror?: boolean): MachinePart {
         if (trackname.startsWith("flat-")) {
             let w = parseInt(trackname.split("-")[1]);
             return new Ramp(this.machine, i, j, w, 0, mirror);

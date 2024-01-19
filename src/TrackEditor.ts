@@ -35,11 +35,11 @@ class TrackPointHandle extends BABYLON.Mesh {
 
 class TrackEditor {
 
-    private _track: Track;
-    public get track(): Track {
+    private _track: MachinePart;
+    public get track(): MachinePart {
         return this._track;
     }
-    public setTrack(t: Track): void {
+    public setTrack(t: MachinePart): void {
         if (t != this.track) {
             if (this._track) {
                 

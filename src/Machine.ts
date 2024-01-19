@@ -19,17 +19,17 @@ class Machine {
 
     public baseWall: BABYLON.Mesh;
     public baseFrame: BABYLON.Mesh;
-    public tracks: Track[] = [];
+    public tracks: MachinePart[] = [];
     public balls: Ball[] = [];
 
-    public trackFactory: TrackFactory;
+    public trackFactory: MachinePartFactory;
 
     public instantiated: boolean = false;
 
     public playing: boolean = false;
 
     constructor(public game: Game) {
-        this.trackFactory = new TrackFactory(this);
+        this.trackFactory = new MachinePartFactory(this);
     }
 
     public async instantiate(): Promise<void> {
@@ -178,7 +178,7 @@ class Machine {
 
         for (let i = 0; i < this.tracks.length; i++) {
             data.parts.push({
-                name: this.tracks[i].trackName,
+                name: this.tracks[i].partName,
                 i: this.tracks[i].i,
                 j: this.tracks[i].j,
                 mirror: this.tracks[i].mirror

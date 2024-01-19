@@ -1,6 +1,6 @@
-/// <reference path="./Track.ts"/>
+/// <reference path="./MachinePart.ts"/>
 
-class DoubleLoop extends Track {
+class DoubleLoop extends MachinePart {
     constructor(machine: Machine, i: number, j: number) {
         super(machine, i, j);
 

@@ -14,7 +14,7 @@ class Wire extends BABYLON.Mesh {
         return this.size * 0.5;
     }
 
-    constructor(public track: Track) {
+    constructor(public track: MachinePart) {
         super("wire");
         this.parent = this.track;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();

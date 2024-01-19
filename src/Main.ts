@@ -542,7 +542,7 @@ class Game {
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {
                 this.machine.dispose();
-                let track: Track; 
+                let track: MachinePart; 
                 let ball: Ball; 
                 if (objectName === "ball") {
                     ball = new Ball(BABYLON.Vector3.Zero(), this.machine);

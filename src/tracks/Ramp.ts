@@ -1,4 +1,4 @@
-class Ramp extends Track {
+class Ramp extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
@@ -6,7 +6,7 @@ class Ramp extends Track {
         this.h = h;
         this.xExtendable = true;
         this.yExtendable = true;
-        this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
+        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -28,7 +28,7 @@ class Ramp extends Track {
     }
 }
 
-class CrossingRamp extends Track {
+class CrossingRamp extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
         super(machine, i, j, mirror);
@@ -36,7 +36,7 @@ class CrossingRamp extends Track {
         this.h = h;
         this.xExtendable = true;
         this.yExtendable = true;
-        this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
+        this.partName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);

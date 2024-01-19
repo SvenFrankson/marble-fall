@@ -541,7 +541,7 @@ class Machine {
         }
         for (let i = 0; i < this.tracks.length; i++) {
             data.parts.push({
-                name: this.tracks[i].trackName,
+                name: this.tracks[i].partName,
                 i: this.tracks[i].i,
                 j: this.tracks[i].j,
                 mirror: this.tracks[i].mirror
@@ -612,7 +612,7 @@ class MachineEditor {
                             }
                         });
                         if (pick.hit && pick.pickedPoint) {
-                            if (this.selectedObject instanceof Track) {
+                            if (this.selectedObject instanceof MachinePart) {
                                 this._dragOffset.copyFrom(this.selectedObject.position).subtractInPlace(pick.pickedPoint);
                             }
                             else if (this.selectedObject instanceof Ball) {
@@ -634,7 +634,7 @@ class MachineEditor {
                 });
                 if (pick.hit) {
                     let point = pick.pickedPoint.add(this._dragOffset);
-                    if (this.draggedObject instanceof Track) {
+                    if (this.draggedObject instanceof MachinePart) {
                         let i = Math.round(point.x / tileWidth);
                         let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
                         if (i != this.draggedObject.i || j != this.draggedObject.j) {
@@ -672,7 +672,7 @@ class MachineEditor {
             });
             if (pick.hit) {
                 let point = pick.pickedPoint.add(this._dragOffset);
-                if (this.draggedObject instanceof Track) {
+                if (this.draggedObject instanceof MachinePart) {
                     let draggedTrack = this.draggedObject;
                     let i = Math.round(point.x / tileWidth);
                     let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
@@ -734,7 +734,7 @@ class MachineEditor {
         this.actionTileSize = 0.018;
         this._onHPlusTop = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.yExtendable) {
+            if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h + 1;
                 let j = track.j - 1;
                 let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
@@ -743,7 +743,7 @@ class MachineEditor {
         };
         this._onHMinusTop = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.yExtendable) {
+            if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h - 1;
                 let j = track.j + 1;
                 if (h >= 0) {
@@ -754,7 +754,7 @@ class MachineEditor {
         };
         this._onWPlusRight = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.xExtendable) {
+            if (track instanceof MachinePart && track.xExtendable) {
                 let w = track.w + 1;
                 let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
                 this.setSelectedObject(editedTrack);
@@ -762,7 +762,7 @@ class MachineEditor {
         };
         this._onWMinusRight = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.xExtendable) {
+            if (track instanceof MachinePart && track.xExtendable) {
                 let w = track.w - 1;
                 if (w >= 1) {
                     let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
@@ -772,7 +772,7 @@ class MachineEditor {
         };
         this._onHPlusBottom = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.yExtendable) {
+            if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h + 1;
                 let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
                 this.setSelectedObject(editedTrack);
@@ -780,7 +780,7 @@ class MachineEditor {
         };
         this._onHMinusBottom = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.yExtendable) {
+            if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h - 1;
                 if (h >= 0) {
                     let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
@@ -790,7 +790,7 @@ class MachineEditor {
         };
         this._onWPlusLeft = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.xExtendable) {
+            if (track instanceof MachinePart && track.xExtendable) {
                 let i = track.i - 1;
                 let w = track.w + 1;
                 let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
@@ -799,7 +799,7 @@ class MachineEditor {
         };
         this._onWMinusLeft = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track && track.xExtendable) {
+            if (track instanceof MachinePart && track.xExtendable) {
                 let i = track.i + 1;
                 let w = track.w - 1;
                 if (w >= 1) {
@@ -817,7 +817,7 @@ class MachineEditor {
         };
         this._onMirror = async () => {
             let track = this.selectedObject;
-            if (track instanceof Track) {
+            if (track instanceof MachinePart) {
                 track = await this.mirrorTrackInPlace(track);
                 this.setSelectedObject(track);
             }
@@ -939,12 +939,12 @@ class MachineEditor {
                 }
             }
             else if (event.key === "m") {
-                if (this.draggedObject && this.draggedObject instanceof Track) {
+                if (this.draggedObject && this.draggedObject instanceof MachinePart) {
                     this.mirrorTrackInPlace(this.draggedObject).then(track => {
                         this.setDraggedObject(track);
                     });
                 }
-                else if (this.selectedObject && this.selectedObject instanceof Track) {
+                else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
                     this.mirrorTrackInPlace(this.selectedObject).then(track => {
                         this.setSelectedObject(track);
                     });
@@ -1102,7 +1102,7 @@ class MachineEditor {
         if (!mirror) {
             mirror = track.mirror;
         }
-        let editedTrack = this.machine.trackFactory.createTrackWH(track.trackName, i, j, w, h, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, w, h, mirror);
         track.dispose();
         this.machine.tracks.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -1113,7 +1113,7 @@ class MachineEditor {
         return editedTrack;
     }
     async mirrorTrackInPlace(track) {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.trackName, track.i, track.j, !track.mirror);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, !track.mirror);
         track.dispose();
         this.machine.tracks.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -1136,7 +1136,7 @@ class MachineEditor {
                 this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x, this.selectedObject.position.y - this.selectedObject.radius - 0.005, this.selectedObject.position.z + 0));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
             }
-            else if (this.selectedObject instanceof Track) {
+            else if (this.selectedObject instanceof MachinePart) {
                 let s34 = 3 * s / 4;
                 let xLeft = -tileWidth * 0.5;
                 let xRight = tileWidth * (this.selectedObject.deltaI + 0.5);
@@ -2415,14 +2415,16 @@ class TrackPoint {
         return false;
     }
 }
-class Track extends BABYLON.Mesh {
+class Track {
+}
+class MachinePart extends BABYLON.Mesh {
     constructor(machine, _i, _j, mirror) {
         super("track", machine.game.scene);
         this.machine = machine;
         this._i = _i;
         this._j = _j;
         this.mirror = mirror;
-        this.trackName = "track";
+        this.partName = "track";
         this.deltaI = 0;
         this.deltaJ = 0;
         this.wireSize = 0.0015;
@@ -2782,8 +2784,8 @@ class Track extends BABYLON.Mesh {
         }
     }
 }
-/// <reference path="./Track.ts"/>
-class DoubleLoop extends Track {
+/// <reference path="./MachinePart.ts"/>
+class DoubleLoop extends MachinePart {
     constructor(machine, i, j) {
         super(machine, i, j);
         this.deserialize({
@@ -2808,7 +2810,7 @@ class DoubleLoop extends Track {
         this.generateWires();
     }
 }
-class Elevator extends Track {
+class Elevator extends MachinePart {
     constructor(machine, i, j, h = 1, mirror) {
         super(machine, i, j, mirror);
         this.h = h;
@@ -2829,7 +2831,7 @@ class Elevator extends Track {
         this.speed = 0.04; // in m/s
         this.boxesCount;
         this.yExtendable = true;
-        this.trackName = "elevator-" + h.toFixed(0);
+        this.partName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -3029,8 +3031,8 @@ class CrossingFlat extends Track {
     }
 }
 */ 
-/// <reference path="./Track.ts"/>
-class FlatLoop extends Track {
+/// <reference path="./MachinePart.ts"/>
+class FlatLoop extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j);
         this.deserialize({
@@ -3055,11 +3057,11 @@ class FlatLoop extends Track {
         this.generateWires();
     }
 }
-/// <reference path="./Track.ts"/>
-class Loop extends Track {
+/// <reference path="./MachinePart.ts"/>
+class Loop extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
-        this.trackName = "loop";
+        this.partName = "loop";
         this.deltaI = 1;
         this.deltaJ = 3;
         this.deserialize({
@@ -3087,14 +3089,14 @@ class Loop extends Track {
         this.generateWires();
     }
 }
-class Ramp extends Track {
+class Ramp extends MachinePart {
     constructor(machine, i, j, w = 1, h = 1, mirror) {
         super(machine, i, j, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
         this.yExtendable = true;
-        this.trackName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
+        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -3111,14 +3113,14 @@ class Ramp extends Track {
         this.generateWires();
     }
 }
-class CrossingRamp extends Track {
+class CrossingRamp extends MachinePart {
     constructor(machine, i, j, w = 1, h = 1, mirror) {
         super(machine, i, j, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
         this.yExtendable = true;
-        this.trackName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
+        this.partName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -3249,11 +3251,11 @@ class SleeperMeshBuilder {
         return Mummu.MergeVertexDatas(...partialsDatas);
     }
 }
-/// <reference path="./Track.ts"/>
-class Snake extends Track {
+/// <reference path="./MachinePart.ts"/>
+class Snake extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
-        this.trackName = "snake";
+        this.partName = "snake";
         this.deltaI = 1;
         this.deltaJ = 0;
         this.deserialize({
@@ -3268,11 +3270,11 @@ class Snake extends Track {
         this.generateWires();
     }
 }
-/// <reference path="./Track.ts"/>
-class Spiral extends Track {
+/// <reference path="./MachinePart.ts"/>
+class Spiral extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
-        this.trackName = "spiral";
+        this.partName = "spiral";
         this.deltaJ = 3;
         this.deserialize({
             points: [
@@ -3381,10 +3383,10 @@ class TrackFactory {
         }
     }
 }
-class UTurnLarge extends Track {
+class UTurnLarge extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
-        this.trackName = "uturn-l";
+        this.partName = "uturn-l";
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -3411,10 +3413,10 @@ class UTurnLarge extends Track {
         this.generateWires();
     }
 }
-class UTurn extends Track {
+class UTurn extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
-        this.trackName = "uturn-s";
+        this.partName = "uturn-s";
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -3435,11 +3437,11 @@ class UTurn extends Track {
         this.generateWires();
     }
 }
-/// <reference path="./Track.ts"/>
-class Wave extends Track {
+/// <reference path="./MachinePart.ts"/>
+class Wave extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, mirror);
-        this.trackName = "wave";
+        this.partName = "wave";
         this.deltaI = 1;
         this.deltaJ = 1;
         this.deserialize({
