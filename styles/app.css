@@ -150,10 +150,13 @@ input-number {
 
 
 :root {
-    --button-xs-size: 5vh;
-    --button-s-size: 10vh;
-    --button-m-size: 20vh;
+    --button-xs-size: 4vh;
     --half-button-xs-size: calc(var(--button-xs-size) * 0.5);
+    --button-s-size: 5vh;
+    --button-m-size: 10vh;
+    --button-l-size: 20vh;
+    --button-height: 5vh;
+    --half-button-height: calc(var(--button-height) * 0.5);
 }
 
 #toolbar {
@@ -163,54 +166,76 @@ input-number {
     z-index: 2;
 }
 
-#toolbar button {
-    position:relative;
-    height: var(--button-xs-size);
+.btn {
+    position: relative;
     font-size: var(--half-button-xs-size);
     vertical-align: bottom;
     background-color: #272b2e;
-    border-radius: var(--half-button-xs-size);
     border: none;
     outline: 1px solid white;
     color: white;
     font-weight: bold;
-    margin-left: 1px;
-    margin-right: 1px;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 
-#toolbar button.xs {
+.btn.xs {
     width: var(--button-xs-size);
+    height: var(--button-xs-size);
+    border-radius: var(--button-xs-size);
 }
 
-#toolbar button.s {
+.btn.s {
     width: var(--button-s-size);
+    height: var(--button-height);
+    border-radius: var(--button-height);
 }
 
-#toolbar button .label {
+.btn.m {
+    width: var(--button-m-size);
+    height: var(--button-height);
+    border-radius: var(--button-height);
+}
+
+.btn.xs .label {
     position: absolute;
     top: var(--half-button-xs-size);
     left: var(--half-button-xs-size);
     transform: translate(-50%, -50%);
 }
 
-#toolbar button .value {
+.btn.s .label {
+    position: absolute;
+    top: var(--half-button-height);
+    left: var(--half-button-height);
+    transform: translate(-50%, -50%);
+}
+
+.btn.m .label {
+    position: absolute;
+    top: var(--half-button-height);
+    left: var(--half-button-height);
+    transform: translate(-50%, -50%);
+}
+
+.btn .value {
     position: absolute;
     display: inline-block;
-    top: var(--half-button-xs-size);
-    right: calc(var(--half-button-xs-size) * 0.7);
+    top: var(--half-button-height);
+    right: calc(var(--half-button-height) * 0.7);
     transform: translate(0, -50%);
     color: rgb(189, 189, 189);
     text-align: right;
-    font-size: calc(var(--half-button-xs-size) * 0.7);
+    font-size: calc(var(--half-button-height) * 0.7);
 }
 
-#toolbar button svg {
+.btn svg {
     height: 60%;
     fill: white;
     stroke: white;
 }
 
-#toolbar button img {
+.btn img {
     height: 60%;
     fill: white;
 }
@@ -218,7 +243,7 @@ input-number {
 #toolbar .dropdown {
     position: fixed;
     background-color: #272b2e;
-    border-radius: var(--half-button-xs-size);
+    border-radius: var(--half-button-height);
     color: white;
     padding: 1vh;
     outline: 1px solid white;
@@ -226,14 +251,14 @@ input-number {
 
 #time-factor-value {
     display: block;
-    width: var(--half-button-xs-size);
+    width: var(--half-button-height);
     height: var(--half-button-m-size);
     appearance: slider-vertical;
 }
 
 #sound-value {
     display: block;
-    width: var(--half-button-xs-size);
+    width: var(--half-button-height);
     height: var(--half-button-m-size);
     appearance: slider-vertical;
 }

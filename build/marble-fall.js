@@ -661,15 +661,6 @@ class MachineEditor {
             }
         };
         this.pointerUp = (event) => {
-            if (!this.draggedObject) {
-                let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    return mesh instanceof ActionTile && this.actionTiles.indexOf(mesh) != -1;
-                });
-                if (pick.hit && pick.pickedMesh instanceof BABYLON.Mesh) {
-                    this.onActionTilePointerUp(pick.pickedMesh);
-                    return;
-                }
-            }
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                 if (!this.draggedObject && mesh instanceof BallGhost) {
                     return true;
@@ -741,6 +732,96 @@ class MachineEditor {
             }
         };
         this.actionTileSize = 0.018;
+        this._onHPlusTop = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.yExtendable) {
+                let h = track.h + 1;
+                let j = track.j - 1;
+                let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
+                this.setSelectedObject(editedTrack);
+            }
+        };
+        this._onHMinusTop = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.yExtendable) {
+                let h = track.h - 1;
+                let j = track.j + 1;
+                if (h >= 0) {
+                    let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
+                    this.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this._onWPlusRight = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.xExtendable) {
+                let w = track.w + 1;
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                this.setSelectedObject(editedTrack);
+            }
+        };
+        this._onWMinusRight = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.xExtendable) {
+                let w = track.w - 1;
+                if (w >= 1) {
+                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                    this.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this._onHPlusBottom = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.yExtendable) {
+                let h = track.h + 1;
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                this.setSelectedObject(editedTrack);
+            }
+        };
+        this._onHMinusBottom = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.yExtendable) {
+                let h = track.h - 1;
+                if (h >= 0) {
+                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                    this.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this._onWPlusLeft = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.xExtendable) {
+                let i = track.i - 1;
+                let w = track.w + 1;
+                let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+                this.setSelectedObject(editedTrack);
+            }
+        };
+        this._onWMinusLeft = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track && track.xExtendable) {
+                let i = track.i + 1;
+                let w = track.w - 1;
+                if (w >= 1) {
+                    let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+                    this.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this._onDelete = async () => {
+            if (this.selectedObject) {
+                this.selectedObject.dispose();
+                this.setSelectedObject(undefined);
+                this.setDraggedObject(undefined);
+            }
+        };
+        this._onMirror = async () => {
+            let track = this.selectedObject;
+            if (track instanceof Track) {
+                track = await this.mirrorTrackInPlace(track);
+                this.setSelectedObject(track);
+            }
+        };
         this.container = document.getElementById("machine-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
     }
@@ -876,67 +957,126 @@ class MachineEditor {
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
-        this.actionTileHPlusTop = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHPlusTop.instantiate();
-        this.actionTileHPlusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileHMinusTop = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHMinusTop.instantiate();
-        this.actionTileHMinusTop.rotation.z = Math.PI;
-        this.actionTileHMinusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileWPlusRight = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWPlusRight.instantiate();
-        this.actionTileWPlusRight.rotation.z = -Math.PI / 2;
-        this.actionTileWPlusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileWMinusRight = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWMinusRight.instantiate();
-        this.actionTileWMinusRight.rotation.z = Math.PI / 2;
-        this.actionTileWMinusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileHDownBottom = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHDownBottom.instantiate();
-        this.actionTileHDownBottom.rotation.z = Math.PI;
-        this.actionTileHDownBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileHUpBottom = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHUpBottom.instantiate();
-        this.actionTileHUpBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileWPlusLeft = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWPlusLeft.instantiate();
-        this.actionTileWPlusLeft.rotation.z = Math.PI / 2;
-        this.actionTileWPlusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileWMinusLeft = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWMinusLeft.instantiate();
-        this.actionTileWMinusLeft.rotation.z = -Math.PI / 2;
-        this.actionTileWMinusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-        this.actionTileDelete = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileDelete.instantiate();
-        this.actionTileDelete.texture.drawText("x", 20, 45, "50px 'Arial'", "white", "black");
-        this.actionTileMirror = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileMirror.instantiate();
-        this.actionTileMirror.texture.drawText("< >", 5, 44, "37px 'Arial'", "white", "black");
-        this.actionTiles = [
-            this.actionTileHPlusTop,
-            this.actionTileHMinusTop,
-            this.actionTileWPlusRight,
-            this.actionTileWMinusRight,
-            this.actionTileHDownBottom,
-            this.actionTileHUpBottom,
-            this.actionTileWPlusLeft,
-            this.actionTileWMinusLeft,
-            this.actionTileDelete,
-            this.actionTileMirror
+        this.floatingElementTop = FloatingElement.Create(this.game);
+        this.floatingElementTop.anchor = FloatingElementAnchor.BottomCenter;
+        this.HPlusTopButton = this._createButton("machine-editor-h-plus-top", this.floatingElementTop);
+        this.HPlusTopButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HPlusTopButton.onclick = this._onHPlusTop;
+        this.HMinusTopButton = this._createButton("machine-editor-h-minus-top", this.floatingElementTop);
+        this.HMinusTopButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HMinusTopButton.onclick = this._onHMinusTop;
+        this.floatingElementRight = FloatingElement.Create(this.game);
+        this.floatingElementRight.anchor = FloatingElementAnchor.LeftMiddle;
+        this.WMinusRightButton = this._createButton("machine-editor-w-minus-right", this.floatingElementRight);
+        this.WMinusRightButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.WMinusRightButton.onclick = this._onWMinusRight;
+        this.WPlusRightButton = this._createButton("machine-editor-w-plus-right", this.floatingElementRight);
+        this.WPlusRightButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+				<path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+			</svg>
+        `;
+        this.WPlusRightButton.onclick = this._onWPlusRight;
+        this.floatingElementBottom = FloatingElement.Create(this.game);
+        this.floatingElementBottom.anchor = FloatingElementAnchor.TopCenter;
+        this.HMinusBottomButton = this._createButton("machine-editor-h-minus-bottom", this.floatingElementBottom);
+        this.HMinusBottomButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HMinusBottomButton.onclick = this._onHMinusBottom;
+        this.HPlusBottomButton = this._createButton("machine-editor-h-plus-bottom", this.floatingElementBottom);
+        this.HPlusBottomButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HPlusBottomButton.onclick = this._onHPlusBottom;
+        this.floatingElementLeft = FloatingElement.Create(this.game);
+        this.floatingElementLeft.anchor = FloatingElementAnchor.RightMiddle;
+        this.WPlusLeftButton = this._createButton("machine-editor-w-plus-left", this.floatingElementLeft);
+        this.WPlusLeftButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.WPlusLeftButton.onclick = this._onWPlusLeft;
+        this.WMinusLeftButton = this._createButton("machine-editor-w-minus-left", this.floatingElementLeft);
+        this.WMinusLeftButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.WMinusLeftButton.onclick = this._onWMinusLeft;
+        this.floatingElementDelete = FloatingElement.Create(this.game);
+        this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
+        this.deletebutton = this._createButton("machine-editor-delete", this.floatingElementDelete);
+        this.deletebutton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.deletebutton.onclick = this._onDelete;
+        this.floatingElementBottomRight = FloatingElement.Create(this.game);
+        this.floatingElementBottomRight.anchor = FloatingElementAnchor.LeftTop;
+        this.tileMirrorButton = this._createButton("machine-editor-mirror", this.floatingElementBottomRight);
+        this.tileMirrorButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L10 50 L25 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M75 30 L90 50 L75 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M15 50 L85 50" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.tileMirrorButton.onclick = this._onMirror;
+        this.floatingButtons = [
+            this.HPlusTopButton,
+            this.HMinusTopButton,
+            this.WMinusRightButton,
+            this.WPlusRightButton,
+            this.HMinusBottomButton,
+            this.HPlusBottomButton,
+            this.WPlusLeftButton,
+            this.WMinusLeftButton,
+            this.deletebutton,
+            this.tileMirrorButton
         ];
         this.updateActionTile();
+    }
+    _createButton(id, parent) {
+        let button = document.createElement("button");
+        button.id = id;
+        button.classList.add("btn");
+        button.classList.add("xs");
+        parent.appendChild(button);
+        return button;
     }
     dispose() {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
+        this.floatingElementTop.dispose();
+        this.floatingElementRight.dispose();
+        this.floatingElementBottom.dispose();
+        this.floatingElementLeft.dispose();
+        this.floatingElementDelete.dispose();
+        this.floatingElementBottomRight.dispose();
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
-        this.actionTiles.forEach(tile => {
-            tile.dispose();
-        });
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(false);
         }
@@ -986,16 +1126,15 @@ class MachineEditor {
         return this.items.get(this._selectedItem);
     }
     updateActionTile() {
-        this.actionTiles.forEach(tile => {
-            tile.setIsVisible(false);
+        this.floatingButtons.forEach(button => {
+            button.style.display = "none";
         });
         if (this.selectedObject) {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
-                this.actionTileDelete.setIsVisible(true);
-                this.actionTileDelete.position.x = 0;
-                this.actionTileDelete.position.y = -this.selectedObject.radius - 1.2 * s;
-                this.actionTileDelete.position.addInPlace(this.selectedObject.positionZeroGhost.position);
+                this.deletebutton.style.display = "";
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x, this.selectedObject.position.y + -this.selectedObject.radius - 1.2 * s, this.selectedObject.position.z + 0));
+                this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
             }
             else if (this.selectedObject instanceof Track) {
                 let s34 = 3 * s / 4;
@@ -1005,127 +1144,27 @@ class MachineEditor {
                 let yTop = tileHeight * 0.25;
                 let yBottom = -tileHeight * (this.selectedObject.deltaJ + 0.75);
                 let yCenter = (yTop + yBottom) * 0.5;
-                this.actionTileHPlusTop.position.x = xCenter - s34;
-                this.actionTileHPlusTop.position.y = yTop + s;
-                this.actionTileHMinusTop.position.x = xCenter + s34;
-                this.actionTileHMinusTop.position.y = yTop + s;
-                this.actionTileWPlusRight.position.x = xRight + s;
-                this.actionTileWPlusRight.position.y = yCenter + s34;
-                this.actionTileWMinusRight.position.x = xRight + s;
-                this.actionTileWMinusRight.position.y = yCenter - s34;
-                this.actionTileHUpBottom.position.x = xCenter - s34;
-                this.actionTileHUpBottom.position.y = yBottom - s;
-                this.actionTileHDownBottom.position.x = xCenter + s34;
-                this.actionTileHDownBottom.position.y = yBottom - s;
-                this.actionTileWPlusLeft.position.x = xLeft - s;
-                this.actionTileWPlusLeft.position.y = yCenter + s34;
-                this.actionTileWMinusLeft.position.x = xLeft - s;
-                this.actionTileWMinusLeft.position.y = yCenter - s34;
-                this.actionTileMirror.position.x = xRight - 0.5 * s;
-                this.actionTileMirror.position.y = yBottom - s;
-                this.actionTileDelete.position.x = xRight - 0.5 * s;
-                this.actionTileDelete.position.y = yTop + s;
+                this.floatingElementTop.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yTop, this.selectedObject.position.z + 0));
+                this.floatingElementRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yCenter, this.selectedObject.position.z + 0));
+                this.floatingElementBottom.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yBottom, this.selectedObject.position.z + 0));
+                this.floatingElementLeft.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xLeft, this.selectedObject.position.y + yCenter, this.selectedObject.position.z + 0));
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yTop, this.selectedObject.position.z + 0));
+                this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
+                this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yBottom, this.selectedObject.position.z + 0));
                 if (this.selectedObject.xExtendable) {
-                    this.actionTileWMinusRight.setIsVisible(true);
-                    this.actionTileWPlusRight.setIsVisible(true);
-                    this.actionTileWMinusLeft.setIsVisible(true);
-                    this.actionTileWPlusLeft.setIsVisible(true);
+                    this.WMinusRightButton.style.display = "";
+                    this.WPlusRightButton.style.display = "";
+                    this.WMinusLeftButton.style.display = "";
+                    this.WPlusLeftButton.style.display = "";
                 }
                 if (this.selectedObject.yExtendable) {
-                    this.actionTileHMinusTop.setIsVisible(true);
-                    this.actionTileHPlusTop.setIsVisible(true);
-                    this.actionTileHUpBottom.setIsVisible(true);
-                    this.actionTileHDownBottom.setIsVisible(true);
+                    this.HMinusTopButton.style.display = "";
+                    this.HPlusTopButton.style.display = "";
+                    this.HPlusBottomButton.style.display = "";
+                    this.HMinusBottomButton.style.display = "";
                 }
-                this.actionTileDelete.setIsVisible(true);
-                this.actionTileMirror.setIsVisible(true);
-                this.actionTiles.forEach(tile => {
-                    tile.position.addInPlace(this.selectedObject.position);
-                });
-            }
-        }
-    }
-    async onActionTilePointerUp(tile) {
-        if (this.selectedObject) {
-            if (tile === this.actionTileDelete) {
-                this.selectedObject.dispose();
-                this.setSelectedObject(undefined);
-                this.setDraggedObject(undefined);
-            }
-            else if (this.selectedObject instanceof Track) {
-                let track = this.selectedObject;
-                if (tile === this.actionTileHPlusTop) {
-                    if (track.yExtendable) {
-                        let h = track.h + 1;
-                        let j = track.j - 1;
-                        let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileHMinusTop) {
-                    if (track.yExtendable) {
-                        let h = track.h - 1;
-                        let j = track.j + 1;
-                        if (h >= 0) {
-                            let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileWPlusRight) {
-                    if (track.xExtendable) {
-                        let w = track.w + 1;
-                        let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileWMinusRight) {
-                    if (track.xExtendable) {
-                        let w = track.w - 1;
-                        if (w >= 1) {
-                            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileHDownBottom) {
-                    if (track.yExtendable) {
-                        let h = track.h + 1;
-                        let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileHUpBottom) {
-                    if (track.yExtendable) {
-                        let h = track.h - 1;
-                        if (h >= 0) {
-                            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileWPlusLeft) {
-                    if (track.xExtendable) {
-                        let i = track.i - 1;
-                        let w = track.w + 1;
-                        let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileWMinusLeft) {
-                    if (track.xExtendable) {
-                        let i = track.i + 1;
-                        let w = track.w - 1;
-                        if (w >= 1) {
-                            let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileMirror) {
-                    track = await this.mirrorTrackInPlace(track);
-                    this.setSelectedObject(track);
-                }
+                this.deletebutton.style.display = "";
+                this.tileMirrorButton.style.display = "";
             }
         }
     }
@@ -1403,10 +1442,7 @@ class Game {
         document.getElementById("track-editor-menu").style.display = "none";
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
-        this.setContext(GameMode.MainMenu);
-        let test = FloatingElement.CreateSpacePanel(this);
-        test.innerText = "Hello World !";
-        test.setTarget(this.machine.baseFrame);
+        this.setContext(GameMode.CreateMode);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -3422,23 +3458,64 @@ class Wave extends Track {
         this.generateWires();
     }
 }
+var FloatingElementAnchor;
+(function (FloatingElementAnchor) {
+    FloatingElementAnchor[FloatingElementAnchor["BottomCenter"] = 0] = "BottomCenter";
+    FloatingElementAnchor[FloatingElementAnchor["LeftMiddle"] = 1] = "LeftMiddle";
+    FloatingElementAnchor[FloatingElementAnchor["TopCenter"] = 2] = "TopCenter";
+    FloatingElementAnchor[FloatingElementAnchor["RightMiddle"] = 3] = "RightMiddle";
+    FloatingElementAnchor[FloatingElementAnchor["LeftBottom"] = 4] = "LeftBottom";
+    FloatingElementAnchor[FloatingElementAnchor["LeftTop"] = 5] = "LeftTop";
+})(FloatingElementAnchor || (FloatingElementAnchor = {}));
 class FloatingElement extends HTMLElement {
     constructor() {
         super();
         this._initialized = false;
+        this.anchor = FloatingElementAnchor.BottomCenter;
+        this.anchorMargin = 10;
         this._update = () => {
-            if (!this._target) {
+            if (!this._targetMesh && !this._targetPosition) {
                 return;
             }
             if (this.style.display === "none") {
                 return;
             }
-            let screenPos = BABYLON.Vector3.Project(this._target.position, BABYLON.Matrix.Identity(), this._target.getScene().getTransformMatrix(), this.game.camera.viewport.toGlobal(1, 1));
-            this.style.left = (screenPos.x * this.game.canvas.width - this.clientWidth * 0.5) + "px";
-            this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height) + "px";
+            let p = this._targetPosition;
+            if (!p) {
+                p = this._targetMesh.absolutePosition;
+            }
+            let screenPos = BABYLON.Vector3.Project(p, BABYLON.Matrix.Identity(), this.game.scene.getTransformMatrix(), this.game.camera.viewport.toGlobal(1, 1));
+            let dLeft = 0;
+            let dBottom = 0;
+            if (this.anchor === FloatingElementAnchor.TopCenter) {
+                dLeft = -0.5 * this.clientWidth;
+                dBottom = -this.clientHeight - this.anchorMargin;
+            }
+            if (this.anchor === FloatingElementAnchor.LeftMiddle) {
+                dLeft = this.anchorMargin;
+                dBottom = -0.5 * this.clientHeight;
+            }
+            if (this.anchor === FloatingElementAnchor.BottomCenter) {
+                dLeft = -0.5 * this.clientWidth;
+                dBottom = this.anchorMargin;
+            }
+            if (this.anchor === FloatingElementAnchor.RightMiddle) {
+                dLeft = -this.clientWidth - this.anchorMargin;
+                dBottom = -0.5 * this.clientHeight;
+            }
+            if (this.anchor === FloatingElementAnchor.LeftBottom) {
+                dLeft = this.anchorMargin;
+                dBottom = this.anchorMargin;
+            }
+            if (this.anchor === FloatingElementAnchor.LeftTop) {
+                dLeft = this.anchorMargin;
+                dBottom = -this.clientHeight - this.anchorMargin;
+            }
+            this.style.left = (screenPos.x * this.game.canvas.width + dLeft).toFixed(1) + "px";
+            this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height + dBottom).toFixed(1) + "px";
         };
     }
-    static CreateSpacePanel(game) {
+    static Create(game) {
         let panel = document.createElement("floating-element");
         panel.game = game;
         document.body.appendChild(panel);
@@ -3451,8 +3528,8 @@ class FloatingElement extends HTMLElement {
         this._initialized = true;
     }
     dispose() {
-        if (this._target) {
-            this._target.getScene().onBeforeRenderObservable.removeCallback(this._update);
+        if (this._targetMesh) {
+            this._targetMesh.getScene().onBeforeRenderObservable.removeCallback(this._update);
         }
         document.body.removeChild(this);
     }
@@ -3462,10 +3539,17 @@ class FloatingElement extends HTMLElement {
     hide() {
         this.style.display = "none";
     }
-    setTarget(mesh) {
+    setTarget(target) {
         this.style.position = "fixed";
-        this._target = mesh;
-        this._target.getScene().onBeforeRenderObservable.add(this._update);
+        if (target instanceof BABYLON.Mesh) {
+            this._targetMesh = target;
+            this._targetPosition = undefined;
+        }
+        else if (target instanceof BABYLON.Vector3) {
+            this._targetPosition = target;
+            this._targetMesh = undefined;
+        }
+        this.game.scene.onAfterRenderObservable.add(this._update);
     }
 }
 window.customElements.define("floating-element", FloatingElement);

@@ -295,11 +295,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
 
-        this.setContext(GameMode.MainMenu);
-        
-        let test = FloatingElement.CreateSpacePanel(this);
-        test.innerText = "Hello World !";
-        test.setTarget(this.machine.baseFrame);
+        this.setContext(GameMode.CreateMode);
 	}
 
 	public animate(): void {

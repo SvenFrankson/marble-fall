@@ -8,18 +8,24 @@ class MachineEditor {
     public itemContainer: HTMLDivElement;
     public items: Map<string, HTMLDivElement> = new Map<string, HTMLDivElement>();
 
-    public actionTiles: ActionTile[];
-    
-    public actionTileHPlusTop: ActionTile;
-    public actionTileHMinusTop: ActionTile;
-    public actionTileWPlusRight: ActionTile;
-    public actionTileWMinusRight: ActionTile;
-    public actionTileHDownBottom: ActionTile;
-    public actionTileHUpBottom: ActionTile;
-    public actionTileWPlusLeft: ActionTile;
-    public actionTileWMinusLeft: ActionTile;
-    public actionTileDelete: ActionTile;
-    public actionTileMirror: ActionTile;
+    public floatingButtons: HTMLButtonElement[];
+
+    public floatingElementTop: FloatingElement;
+    public floatingElementRight: FloatingElement;
+    public floatingElementBottom: FloatingElement;
+    public floatingElementLeft: FloatingElement;
+    public floatingElementDelete: FloatingElement;
+    public floatingElementBottomRight: FloatingElement;
+    public HPlusTopButton: HTMLButtonElement;
+    public HMinusTopButton: HTMLButtonElement;
+    public WPlusRightButton: HTMLButtonElement;
+    public WMinusRightButton: HTMLButtonElement;
+    public HPlusBottomButton: HTMLButtonElement;
+    public HMinusBottomButton: HTMLButtonElement;
+    public WPlusLeftButton: HTMLButtonElement;
+    public WMinusLeftButton: HTMLButtonElement;
+    public deletebutton: HTMLButtonElement;
+    public tileMirrorButton: HTMLButtonElement;
 
     private _selectedItem: string = "";
     public get selectedItem(): string {
@@ -70,7 +76,7 @@ class MachineEditor {
         if (this._selectedObject) {
             this._selectedObject.select();
         }
-        this.updateActionTile();
+        this.updateFloatingElements();
     }
 
     constructor(public game: Game) {
@@ -170,81 +176,137 @@ class MachineEditor {
             this.machine.balls[i].setShowPositionZeroGhost(true);
         }
 
-        this.actionTileHPlusTop = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHPlusTop.instantiate();
-        this.actionTileHPlusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+        this.floatingElementTop = FloatingElement.Create(this.game);
+        this.floatingElementTop.anchor = FloatingElementAnchor.BottomCenter;
+        this.HPlusTopButton = this._createButton("machine-editor-h-plus-top", this.floatingElementTop);
+        this.HPlusTopButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HPlusTopButton.onclick = this._onHPlusTop;
+        this.HMinusTopButton = this._createButton("machine-editor-h-minus-top", this.floatingElementTop);
+        this.HMinusTopButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HMinusTopButton.onclick = this._onHMinusTop;
 
-        this.actionTileHMinusTop = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHMinusTop.instantiate();
-        this.actionTileHMinusTop.rotation.z = Math.PI;
-        this.actionTileHMinusTop.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+        this.floatingElementRight = FloatingElement.Create(this.game);
+        this.floatingElementRight.anchor = FloatingElementAnchor.LeftMiddle;
+        this.WMinusRightButton = this._createButton("machine-editor-w-minus-right", this.floatingElementRight);
+        this.WMinusRightButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.WMinusRightButton.onclick = this._onWMinusRight;
+        this.WPlusRightButton = this._createButton("machine-editor-w-plus-right", this.floatingElementRight);
+        this.WPlusRightButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+				<path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+			</svg>
+        `;
+        this.WPlusRightButton.onclick = this._onWPlusRight;
 
-        this.actionTileWPlusRight = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWPlusRight.instantiate();
-        this.actionTileWPlusRight.rotation.z = - Math.PI / 2;
-        this.actionTileWPlusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+        this.floatingElementBottom = FloatingElement.Create(this.game);
+        this.floatingElementBottom.anchor = FloatingElementAnchor.TopCenter;
+        this.HMinusBottomButton = this._createButton("machine-editor-h-minus-bottom", this.floatingElementBottom);
+        this.HMinusBottomButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HMinusBottomButton.onclick = this._onHMinusBottom;
+        this.HPlusBottomButton = this._createButton("machine-editor-h-plus-bottom", this.floatingElementBottom);
+        this.HPlusBottomButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.HPlusBottomButton.onclick = this._onHPlusBottom;
 
-        this.actionTileWMinusRight = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWMinusRight.instantiate();
-        this.actionTileWMinusRight.rotation.z = Math.PI / 2;
-        this.actionTileWMinusRight.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+        this.floatingElementLeft = FloatingElement.Create(this.game);
+        this.floatingElementLeft.anchor = FloatingElementAnchor.RightMiddle;
+        this.WPlusLeftButton = this._createButton("machine-editor-w-plus-left", this.floatingElementLeft);
+        this.WPlusLeftButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.WPlusLeftButton.onclick = this._onWPlusLeft;
+        this.WMinusLeftButton = this._createButton("machine-editor-w-minus-left", this.floatingElementLeft);
+        this.WMinusLeftButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.WMinusLeftButton.onclick = this._onWMinusLeft;
 
-        this.actionTileHDownBottom = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHDownBottom.instantiate();
-        this.actionTileHDownBottom.rotation.z = Math.PI;
-        this.actionTileHDownBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+        this.floatingElementDelete = FloatingElement.Create(this.game);
+        this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
+        this.deletebutton = this._createButton("machine-editor-delete", this.floatingElementDelete);
+        this.deletebutton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.deletebutton.onclick = this._onDelete;
 
-        this.actionTileHUpBottom = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileHUpBottom.instantiate();
-        this.actionTileHUpBottom.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
+        this.floatingElementBottomRight = FloatingElement.Create(this.game);
+        this.floatingElementBottomRight.anchor = FloatingElementAnchor.LeftTop;
+        this.tileMirrorButton = this._createButton("machine-editor-mirror", this.floatingElementBottomRight);
+        this.tileMirrorButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L10 50 L25 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M75 30 L90 50 L75 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M15 50 L85 50" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.tileMirrorButton.onclick = this._onMirror;
 
-        this.actionTileWPlusLeft = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWPlusLeft.instantiate();
-        this.actionTileWPlusLeft.rotation.z = Math.PI / 2;
-        this.actionTileWPlusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-
-        this.actionTileWMinusLeft = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileWMinusLeft.instantiate();
-        this.actionTileWMinusLeft.rotation.z = - Math.PI / 2;
-        this.actionTileWMinusLeft.texture.drawText("^", 17, 66, "64px 'Arial'", "white", "black");
-
-        this.actionTileDelete = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileDelete.instantiate();
-        this.actionTileDelete.texture.drawText("x", 20, 45, "50px 'Arial'", "white", "black");
-
-        this.actionTileMirror = new ActionTile("", this.actionTileSize, this.game);
-        await this.actionTileMirror.instantiate();
-        this.actionTileMirror.texture.drawText("< >", 5, 44, "37px 'Arial'", "white", "black");
-
-        this.actionTiles = [
-            this.actionTileHPlusTop,
-            this.actionTileHMinusTop,
-            this.actionTileWPlusRight,
-            this.actionTileWMinusRight,
-            this.actionTileHDownBottom,
-            this.actionTileHUpBottom,
-            this.actionTileWPlusLeft,
-            this.actionTileWMinusLeft,
-            this.actionTileDelete,
-            this.actionTileMirror
+        this.floatingButtons = [
+            this.HPlusTopButton,
+            this.HMinusTopButton,
+            this.WMinusRightButton,
+            this.WPlusRightButton,
+            this.HMinusBottomButton,
+            this.HPlusBottomButton,
+            this.WPlusLeftButton,
+            this.WMinusLeftButton,
+            this.deletebutton,
+            this.tileMirrorButton
         ];
 
-        this.updateActionTile();
+        this.updateFloatingElements();
+    }
+
+    private _createButton(id: string, parent: HTMLElement): HTMLButtonElement {
+        let button = document.createElement("button");
+        button.id = id;
+        button.classList.add("btn");
+        button.classList.add("xs");
+        parent.appendChild(button);
+        return button;
     }
 
     public dispose(): void {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
 
+        this.floatingElementTop.dispose();
+        this.floatingElementRight.dispose();
+        this.floatingElementBottom.dispose();
+        this.floatingElementLeft.dispose();
+        this.floatingElementDelete.dispose();
+        this.floatingElementBottomRight.dispose();
+
         this.itemContainer.innerHTML = "";
         this.items = new Map<string, HTMLDivElement>();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
-
-        this.actionTiles.forEach(tile => {
-            tile.dispose();
-        });
 
         for (let i = 0; i < this.machine.balls.length; i++) {
             this.machine.balls[i].setShowPositionZeroGhost(false);
@@ -349,7 +411,7 @@ class MachineEditor {
                         this.draggedObject.setI(i);
                         this.draggedObject.setJ(j);
                         this.draggedObject.setIsVisible(true);
-                        this.updateActionTile();
+                        this.updateFloatingElements();
                     }
                 }
                 else if (this.draggedObject instanceof Ball) {
@@ -357,7 +419,7 @@ class MachineEditor {
                     p.z = 0;
                     this.draggedObject.setPositionZero(p);
                     this.draggedObject.setIsVisible(true);
-                    this.updateActionTile();
+                    this.updateFloatingElements();
                     if (!this.machine.playing) {
                         this.draggedObject.reset();
                     }
@@ -370,20 +432,6 @@ class MachineEditor {
     }
 
     public pointerUp = (event: PointerEvent) => {
-        if (!this.draggedObject) {
-            let pick = this.game.scene.pick(
-                this.game.scene.pointerX,
-                this.game.scene.pointerY,
-                (mesh) => {
-                    return mesh instanceof ActionTile && this.actionTiles.indexOf(mesh) != - 1;
-                }
-            )
-            if (pick.hit && pick.pickedMesh instanceof BABYLON.Mesh) {
-                this.onActionTilePointerUp(pick.pickedMesh);
-                return;
-            }
-        }
-        
         let pick = this.game.scene.pick(
             this.game.scene.pointerX,
             this.game.scene.pointerY,
@@ -498,19 +546,21 @@ class MachineEditor {
     }
 
     public actionTileSize: number = 0.018;
-    public updateActionTile(): void {
-        this.actionTiles.forEach(tile => {
-            tile.setIsVisible(false);
+    public updateFloatingElements(): void {
+        this.floatingButtons.forEach(button => {
+            button.style.display = "none";
         })
         if (this.selectedObject) {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
-                this.actionTileDelete.setIsVisible(true);
+                this.deletebutton.style.display = "";
                 
-                this.actionTileDelete.position.x = 0;
-                this.actionTileDelete.position.y = - this.selectedObject.radius - 1.2 * s;
-
-                this.actionTileDelete.position.addInPlace(this.selectedObject.positionZeroGhost.position);
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x,
+                    this.selectedObject.position.y + - this.selectedObject.radius - 1.2 * s,
+                    this.selectedObject.position.z + 0,
+                ));
+                this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
             }
             else if (this.selectedObject instanceof Track) {
                 let s34 = 3 * s / 4;
@@ -521,142 +571,165 @@ class MachineEditor {
                 let yBottom = - tileHeight * (this.selectedObject.deltaJ + 0.75);
                 let yCenter = (yTop + yBottom) * 0.5;
 
-                this.actionTileHPlusTop.position.x = xCenter - s34;
-                this.actionTileHPlusTop.position.y = yTop + s;
-                this.actionTileHMinusTop.position.x = xCenter + s34;
-                this.actionTileHMinusTop.position.y = yTop + s;
+                this.floatingElementTop.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xCenter,
+                    this.selectedObject.position.y + yTop,
+                    this.selectedObject.position.z + 0,
+                ));
                 
-                this.actionTileWPlusRight.position.x = xRight + s;
-                this.actionTileWPlusRight.position.y = yCenter + s34;
-                this.actionTileWMinusRight.position.x = xRight + s;
-                this.actionTileWMinusRight.position.y = yCenter - s34;
+                this.floatingElementRight.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xRight,
+                    this.selectedObject.position.y + yCenter,
+                    this.selectedObject.position.z + 0,
+                ));
 
-                this.actionTileHUpBottom.position.x = xCenter - s34;
-                this.actionTileHUpBottom.position.y = yBottom - s;
-                this.actionTileHDownBottom.position.x = xCenter + s34;
-                this.actionTileHDownBottom.position.y = yBottom - s;
+                this.floatingElementBottom.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xCenter,
+                    this.selectedObject.position.y + yBottom,
+                    this.selectedObject.position.z + 0,
+                ));
                 
-                this.actionTileWPlusLeft.position.x = xLeft - s;
-                this.actionTileWPlusLeft.position.y = yCenter + s34;
-                this.actionTileWMinusLeft.position.x = xLeft - s;
-                this.actionTileWMinusLeft.position.y = yCenter - s34;
+                this.floatingElementLeft.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xLeft,
+                    this.selectedObject.position.y + yCenter,
+                    this.selectedObject.position.z + 0,
+                ));
 
-                this.actionTileMirror.position.x = xRight - 0.5 * s;
-                this.actionTileMirror.position.y = yBottom - s;
-                this.actionTileDelete.position.x = xRight - 0.5 * s;
-                this.actionTileDelete.position.y = yTop + s;
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xRight,
+                    this.selectedObject.position.y + yTop,
+                    this.selectedObject.position.z + 0,
+                ));
+                this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
+
+                this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xRight,
+                    this.selectedObject.position.y + yBottom,
+                    this.selectedObject.position.z + 0,
+                ));
 
                 if (this.selectedObject.xExtendable) {
-                    this.actionTileWMinusRight.setIsVisible(true);
-                    this.actionTileWPlusRight.setIsVisible(true);
-                    this.actionTileWMinusLeft.setIsVisible(true);
-                    this.actionTileWPlusLeft.setIsVisible(true);
+                    this.WMinusRightButton.style.display = "";
+                    this.WPlusRightButton.style.display = "";
+                    this.WMinusLeftButton.style.display = "";
+                    this.WPlusLeftButton.style.display = "";
                 }
                 if (this.selectedObject.yExtendable) {
-                    this.actionTileHMinusTop.setIsVisible(true);
-                    this.actionTileHPlusTop.setIsVisible(true);
-                    this.actionTileHUpBottom.setIsVisible(true);
-                    this.actionTileHDownBottom.setIsVisible(true);
+                    this.HMinusTopButton.style.display = "";
+                    this.HPlusTopButton.style.display = "";
+                    this.HPlusBottomButton.style.display = "";
+                    this.HMinusBottomButton.style.display = "";
                 }
-                this.actionTileDelete.setIsVisible(true);
-                this.actionTileMirror.setIsVisible(true);
-
-                this.actionTiles.forEach(tile => {
-                    tile.position.addInPlace(this.selectedObject.position);
-                })
+                this.deletebutton.style.display = "";
+                this.tileMirrorButton.style.display = "";
             }
         }
     }
 
-    public async onActionTilePointerUp(tile: BABYLON.Mesh): Promise<void> {
+    private _onHPlusTop = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.yExtendable) {
+            let h = track.h + 1;
+            let j = track.j - 1;
+
+            let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
+            this.setSelectedObject(editedTrack);
+        }
+    }
+
+    private _onHMinusTop = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.yExtendable) {
+            let h = track.h - 1;
+            let j = track.j + 1;
+
+            if (h >= 0) {
+                let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
+                this.setSelectedObject(editedTrack);
+            }
+        }
+    }
+
+    private _onWPlusRight = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.xExtendable) {
+            let w = track.w + 1;
+
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+            this.setSelectedObject(editedTrack);
+        }
+    }
+
+    private _onWMinusRight = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.xExtendable) {
+            let w = track.w - 1;
+
+            if (w >= 1) {
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                this.setSelectedObject(editedTrack);
+            }
+        }
+    }
+
+    private _onHPlusBottom = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.yExtendable) {
+            let h = track.h + 1;
+            
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+            this.setSelectedObject(editedTrack);
+        }
+    }
+
+    private _onHMinusBottom = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.yExtendable) {
+            let h = track.h - 1;
+            if (h >= 0) {
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                this.setSelectedObject(editedTrack);
+            }
+        }
+    }
+
+    private _onWPlusLeft = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.xExtendable) {
+            let i = track.i - 1;
+            let w = track.w + 1;
+
+            let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+            this.setSelectedObject(editedTrack);
+        }
+    }
+
+    private _onWMinusLeft = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track && track.xExtendable) {
+            let i = track.i + 1;
+            let w = track.w - 1;
+
+            if (w >= 1) {
+                let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+                this.setSelectedObject(editedTrack);
+            }
+        }
+    }
+
+    private _onDelete = async () => {
         if (this.selectedObject) {
-            if (tile === this.actionTileDelete) {
-                this.selectedObject.dispose();
-                this.setSelectedObject(undefined);
-                this.setDraggedObject(undefined);
-            }
-            else if (this.selectedObject instanceof Track) {
-                let track = this.selectedObject;
-                if (tile === this.actionTileHPlusTop) {
-                    if (track.yExtendable) {
-                        let h = track.h + 1;
-                        let j = track.j - 1;
-    
-                        let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileHMinusTop) {
-                    if (track.yExtendable) {
-                        let h = track.h - 1;
-                        let j = track.j + 1;
+            this.selectedObject.dispose();
+            this.setSelectedObject(undefined);
+            this.setDraggedObject(undefined);
+        }
+    }
 
-                        if (h >= 0) {
-                            let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileWPlusRight) {
-                    if (track.xExtendable) {
-                        let w = track.w + 1;
-
-                        let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileWMinusRight) {
-                    if (track.xExtendable) {
-                        let w = track.w - 1;
-
-                        if (w >= 1) {
-                            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileHDownBottom) {
-                    if (track.yExtendable) {
-                        let h = track.h + 1;
-                        
-                        let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileHUpBottom) {
-                    if (track.yExtendable) {
-                        let h = track.h - 1;
-                        if (h >= 0) {
-                            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileWPlusLeft) {
-                    if (track.xExtendable) {
-                        let i = track.i - 1;
-                        let w = track.w + 1;
-
-                        let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
-                        this.setSelectedObject(editedTrack);
-                    }
-                }
-                else if (tile === this.actionTileWMinusLeft) {
-                    if (track.xExtendable) {
-                        let i = track.i + 1;
-                        let w = track.w - 1;
-
-                        if (w >= 1) {
-                            let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
-                            this.setSelectedObject(editedTrack);
-                        }
-                    }
-                }
-                else if (tile === this.actionTileMirror) {
-                    track = await this.mirrorTrackInPlace(track);
-                    this.setSelectedObject(track);
-                }
-            }
+    private _onMirror = async () => {
+        let track = this.selectedObject;
+        if (track instanceof Track) {
+            track = await this.mirrorTrackInPlace(track);
+            this.setSelectedObject(track);
         }
     }
 }

@@ -3,13 +3,25 @@ interface IMeshWithGroundWidth {
     height: number;
 }
 
+enum FloatingElementAnchor {
+    BottomCenter,
+    LeftMiddle,
+    TopCenter,
+    RightMiddle,
+
+    LeftBottom,
+    LeftTop,
+}
+
 class FloatingElement extends HTMLElement {
 
     private _initialized: boolean = false;
 
+    public anchor: FloatingElementAnchor = FloatingElementAnchor.BottomCenter;
+    public anchorMargin: number = 10;
     public game: Game;
 
-    public static CreateSpacePanel(game: Game): FloatingElement {
+    public static Create(game: Game): FloatingElement {
         let panel = document.createElement("floating-element") as FloatingElement;
         panel.game = game;
         document.body.appendChild(panel);
@@ -28,8 +40,8 @@ class FloatingElement extends HTMLElement {
     }
 
     public dispose(): void {
-        if (this._target) {
-            this._target.getScene().onBeforeRenderObservable.removeCallback(this._update);
+        if (this._targetMesh) {
+            this._targetMesh.getScene().onBeforeRenderObservable.removeCallback(this._update);
         }
         document.body.removeChild(this);
     }
@@ -42,29 +54,67 @@ class FloatingElement extends HTMLElement {
         this.style.display = "none";
     }
 
-    private _target: BABYLON.Mesh;
-    public setTarget(mesh: BABYLON.Mesh): void {
+    private _targetMesh: BABYLON.Mesh;
+    private _targetPosition: BABYLON.Vector3;
+    public setTarget(target: BABYLON.Mesh | BABYLON.Vector3): void {
         this.style.position = "fixed";
-        this._target = mesh;
+        if (target instanceof BABYLON.Mesh) {
+            this._targetMesh = target;
+            this._targetPosition = undefined;
+        }
+        else if (target instanceof BABYLON.Vector3) {
+            this._targetPosition = target;
+            this._targetMesh = undefined;
+        }
         
-        this._target.getScene().onBeforeRenderObservable.add(this._update);
+        this.game.scene.onAfterRenderObservable.add(this._update);
     }
 
     private _update = () => {
-        if (!this._target) {
+        if (!this._targetMesh && !this._targetPosition) {
             return;
         }
         if (this.style.display === "none") {
             return;
         }
+        let p = this._targetPosition;
+        if (!p) {
+            p = this._targetMesh.absolutePosition;
+        }
         let screenPos = BABYLON.Vector3.Project(
-            this._target.position,
+            p,
             BABYLON.Matrix.Identity(),
-            this._target.getScene().getTransformMatrix(),
+            this.game.scene.getTransformMatrix(),
             this.game.camera.viewport.toGlobal(1, 1)
         );
-        this.style.left = (screenPos.x * this.game.canvas.width - this.clientWidth * 0.5) + "px";
-        this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height) + "px";
+        let dLeft = 0;
+        let dBottom = 0;
+        if (this.anchor === FloatingElementAnchor.TopCenter) {
+            dLeft = - 0.5 * this.clientWidth;
+            dBottom = - this.clientHeight - this.anchorMargin;
+        }
+        if (this.anchor === FloatingElementAnchor.LeftMiddle) {
+            dLeft = this.anchorMargin;
+            dBottom = - 0.5 * this.clientHeight;
+        }
+        if (this.anchor === FloatingElementAnchor.BottomCenter) {
+            dLeft = - 0.5 * this.clientWidth;
+            dBottom = this.anchorMargin;
+        }
+        if (this.anchor === FloatingElementAnchor.RightMiddle) {
+            dLeft = - this.clientWidth - this.anchorMargin;
+            dBottom = - 0.5 * this.clientHeight;
+        }
+        if (this.anchor === FloatingElementAnchor.LeftBottom) {
+            dLeft = this.anchorMargin;
+            dBottom = this.anchorMargin;
+        }
+        if (this.anchor === FloatingElementAnchor.LeftTop) {
+            dLeft = this.anchorMargin;
+            dBottom = - this.clientHeight - this.anchorMargin;
+        }
+        this.style.left = (screenPos.x * this.game.canvas.width + dLeft).toFixed(1) + "px";
+        this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height + dBottom).toFixed(1) + "px";
     }
 }
 
