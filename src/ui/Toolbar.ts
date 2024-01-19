@@ -76,7 +76,7 @@ class Toolbar {
         this.zoomButton.addEventListener("click", this.onZoomButton);
 
         this.zoomInput = document.querySelector("#zoom-value") as HTMLInputElement;
-        this.zoomInput.value = this.game.camera.radius.toFixed(1);
+        this.zoomInput.value = this.game.getCameraZoomFactor().toFixed(3);
         this.zoomInput.addEventListener("input", this.onZoomInput);
 
         this.zoomInputContainer = this.zoomInput.parentElement as HTMLDivElement;
@@ -124,10 +124,12 @@ class Toolbar {
         this.updateButtonsVisibility();
 
         let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
-        this.container.style.bottom = "20px";
+        this.container.style.bottom = "10px";
         if (ratio < 1) {
-            if (document.getElementById("machine-editor-objects").style.display != "none") {
-                this.container.style.bottom = "310px";
+            let objectsElement = document.getElementById("machine-editor-objects");
+            if (objectsElement.style.display != "none") {
+                let h = objectsElement.getBoundingClientRect().height;
+                this.container.style.bottom = (h + 10).toFixed(0) + "px";
             }
         }
         let containerWidth = this.container.clientWidth;
@@ -174,6 +176,9 @@ class Toolbar {
                 this.resize();
             }
             this.timeFactorValue.innerText = this.game.timeFactor.toFixed(2);
+        }
+        if (this.zoomInputShown) {
+            this.zoomInput.value = this.game.getCameraZoomFactor().toFixed(3);
         }
     }
 
@@ -244,7 +249,7 @@ class Toolbar {
     }
 
     public onZoomInput = (e: InputEvent) => {
-        this.game.camera.radius = parseFloat((e.target as HTMLInputElement).value);
+        this.game.setCameraZoomFactor(parseFloat((e.target as HTMLInputElement).value));
     }
 
     public onBack = () => {

@@ -150,7 +150,7 @@ class Game {
         this.camera.panningSensibility = 2000;
         this.camera.panningInertia *= 0.1;
         this.camera.lowerRadiusLimit = 0.05;
-        this.camera.upperRadiusLimit = 2;
+        this.camera.upperRadiusLimit = 1.5;
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 10000;
@@ -584,6 +584,16 @@ class Game {
             return fov;
         }
         return fov * ratio;
+    }
+
+    public getCameraZoomFactor(): number {
+        let f = 1 - (this.camera.radius - this.camera.lowerRadiusLimit) / (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit);
+        return f * f;
+    }
+
+    public setCameraZoomFactor(v: number) {
+        let f = Math.sqrt(v);
+        this.camera.radius = (1 - f) * (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit) + this.camera.lowerRadiusLimit;
     }
 }
 

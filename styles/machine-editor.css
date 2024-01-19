@@ -18,9 +18,6 @@
 
 #machine-editor-objects {
     position: fixed;
-    left: 0;
-    width: 294px;
-    height: 294px;
     padding: 3px;
     margin: 0;
     z-index: 2;
@@ -28,32 +25,38 @@
 
 #machine-menu.left #machine-editor-objects {
     height: 100%;
-    width: 294px;
+    width: 28vh;
     top: 0;
     left: 0;
-    border-bottom: 2px solid white;
 }
 
 #machine-menu.bottom #machine-editor-objects {
     width: 100%;
-    height: 294px;
+    height: 33vw;
     bottom: 0;
     left: 0;
-    border-right: 2px solid white;
 }
 
 .machine-editor-item {
     display: inline-block;
-    border: 2px solid white;
+    outline: 1px solid white;
     border-radius: 10px;
-    margin: 2px;
-    padding: 10px;
     color: white;
     background-color: rgba(0, 0, 0, 50%);
 }
 
+#machine-menu.left #machine-editor-objects .machine-editor-item{
+    margin: 0.25vh;
+    padding: 1vh;
+}
+
+#machine-menu.bottom #machine-editor-objects .machine-editor-item{
+    margin: 0.5vw;
+    padding: 1vw;
+}
+
 .machine-editor-item.selected {
-    outline: 3px solid white;
+    outline: 6px solid white;
 }
 
 .machine-editor-item-container {
@@ -64,15 +67,15 @@
 }
 
 #machine-menu.left .machine-editor-item{
-    width: 110px;
-    height: 110px;
+    width: 11vh;
+    height: 11vh;
 }
 
 #machine-menu.bottom .machine-editor-item{
-    width: 110px;
-    height: 110px;
+    width: 13.5vw;
+    height: 13.5vw;
 }
 
 #machine-menu.bottom #machine-editor-item-container {
-    width: 700px;
+    width: 100%;
 }
