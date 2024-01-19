@@ -1,4 +1,4 @@
-/// <reference path="./MachinePart.ts"/>
+/// <reference path="../machine/MachinePart.ts"/>
 
 class Snake extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {

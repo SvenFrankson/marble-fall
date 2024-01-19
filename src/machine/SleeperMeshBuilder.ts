@@ -1,10 +1,10 @@
 class SleeperMeshBuilder {
 
-    public static GenerateSleepersVertexData(track: MachinePart, spacing: number): BABYLON.VertexData {
+    public static GenerateSleepersVertexData(part: MachinePart, spacing: number): BABYLON.VertexData {
         let partialsDatas: BABYLON.VertexData[] = [];
 
-        for (let j = 0; j < track.interpolatedPoints.length; j++) {
-            let interpolatedPoints = track.interpolatedPoints[j];
+        for (let j = 0; j < part.tracks.length; j++) {
+            let interpolatedPoints = part.tracks[j].interpolatedPoints;
             let summedLength: number[] = [0];
             for (let i = 1; i < interpolatedPoints.length; i++) {
                 let prev = interpolatedPoints[i - 1];
@@ -17,7 +17,7 @@ class SleeperMeshBuilder {
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
 
 
-            let radius = track.wireSize * 0.5 * 0.75;
+            let radius = part.wireSize * 0.5 * 0.75;
             let nShape = 6;
             let shape: BABYLON.Vector3[] = [];
             for (let i = 0; i < nShape; i++) {
@@ -35,7 +35,7 @@ class SleeperMeshBuilder {
                 shapeSmall[i] = new BABYLON.Vector3(cosa * radius * 0.75, sina * radius * 0.75, 0);
             }
 
-            let radiusPath = track.wireGauge * 0.5;
+            let radiusPath = part.wireGauge * 0.5;
             let nPath = 12;
             let basePath: BABYLON.Vector3[] = [];
             for (let i = 0; i <= nPath; i++) {
@@ -70,7 +70,7 @@ class SleeperMeshBuilder {
         
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(track.interpolatedNormals[j][i], dir, q);
+                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, q);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), q, t);
                     
                     for (let j = 0; j < path.length; j++) {

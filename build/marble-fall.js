@@ -127,10 +127,10 @@ class Ball extends BABYLON.Mesh {
             let reactionsCount = 0;
             let forcedDisplacement = BABYLON.Vector3.Zero();
             let canceledSpeed = BABYLON.Vector3.Zero();
-            this.machine.tracks.forEach(track => {
-                if (Mummu.AABBAABBIntersect(this.position.x - this.radius, this.position.x + this.radius, this.position.y - this.radius, this.position.y + this.radius, this.position.z - this.radius, this.position.z + this.radius, track.AABBMin.x - this.radius, track.AABBMax.x + this.radius, track.AABBMin.y - this.radius, track.AABBMax.y + this.radius, track.AABBMin.z - this.radius, track.AABBMax.z + this.radius)) {
-                    track.wires.forEach(wire => {
-                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, !(track instanceof UTurnLarge));
+            this.machine.parts.forEach(part => {
+                if (Mummu.AABBAABBIntersect(this.position.x - this.radius, this.position.x + this.radius, this.position.y - this.radius, this.position.y + this.radius, this.position.z - this.radius, this.position.z + this.radius, part.AABBMin.x - this.radius, part.AABBMax.x + this.radius, part.AABBMin.y - this.radius, part.AABBMax.y + this.radius, part.AABBMin.z - this.radius, part.AABBMax.z + this.radius)) {
+                    part.allWires.forEach(wire => {
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, !(part instanceof UTurnLarge));
                         if (col.hit) {
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
@@ -401,169 +401,6 @@ class HelperShape {
         }
     }
 }
-class Machine {
-    constructor(game) {
-        this.game = game;
-        this.tracks = [];
-        this.balls = [];
-        this.instantiated = false;
-        this.playing = false;
-        this.onStopCallbacks = new Nabu.UniqueList();
-        this.trackFactory = new MachinePartFactory(this);
-    }
-    async instantiate() {
-        for (let i = 0; i < this.balls.length; i++) {
-            await this.balls[i].instantiate();
-        }
-        for (let i = 0; i < this.tracks.length; i++) {
-            await this.tracks[i].instantiate();
-        }
-        return new Promise(resolve => {
-            requestAnimationFrame(() => {
-                for (let i = 0; i < this.tracks.length; i++) {
-                    this.tracks[i].recomputeAbsolutePath();
-                }
-                this.instantiated = true;
-                resolve();
-            });
-        });
-    }
-    dispose() {
-        while (this.balls.length > 0) {
-            this.balls[0].dispose();
-        }
-        while (this.tracks.length > 0) {
-            this.tracks[0].dispose();
-        }
-        this.instantiated = false;
-    }
-    update() {
-        if (!this.instantiated) {
-            return;
-        }
-        if (this.playing) {
-            let dt = this.game.scene.deltaTime / 1000;
-            if (isFinite(dt)) {
-                for (let i = 0; i < this.balls.length; i++) {
-                    this.balls[i].update(dt);
-                }
-                for (let i = 0; i < this.tracks.length; i++) {
-                    this.tracks[i].update(dt);
-                }
-            }
-        }
-        else {
-            for (let i = 0; i < this.balls.length; i++) {
-                if (this.balls[i].marbleLoopSound.volume > 0.01) {
-                    this.balls[i].marbleLoopSound.volume *= 0.9;
-                }
-                else {
-                    this.balls[i].marbleLoopSound.volume = 0;
-                }
-            }
-        }
-    }
-    play() {
-        this.playing = true;
-    }
-    stop() {
-        for (let i = 0; i < this.balls.length; i++) {
-            this.balls[i].reset();
-        }
-        this.onStopCallbacks.forEach(callback => {
-            callback();
-        });
-        this.playing = false;
-    }
-    async generateBaseMesh() {
-        let minX = -0.15;
-        let maxX = 0.15;
-        let minY = -0.15;
-        let maxY = 0.15;
-        for (let i = 0; i < this.tracks.length; i++) {
-            let track = this.tracks[i];
-            minX = Math.min(minX, track.position.x - tileWidth * 0.5);
-            maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
-            minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
-            maxY = Math.max(maxY, track.position.y);
-        }
-        let w = maxX - minX;
-        let h = maxY - minY;
-        let u = w * 4;
-        let v = h * 4;
-        if (this.baseWall) {
-            this.baseWall.dispose();
-        }
-        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-        this.baseWall.position.x = (maxX + minX) * 0.5;
-        this.baseWall.position.y = (maxY + minY) * 0.5;
-        this.baseWall.position.z += 0.016;
-        this.baseWall.rotation.z = Math.PI / 2;
-        this.baseWall.material = this.game.woodMaterial;
-        if (this.baseFrame) {
-            this.baseFrame.dispose();
-        }
-        this.baseFrame = new BABYLON.Mesh("base-frame");
-        this.baseFrame.position.copyFrom(this.baseWall.position);
-        this.baseFrame.material = this.game.steelMaterial;
-        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon");
-        let data = Mummu.CloneVertexData(vertexDatas[0]);
-        let positions = [...data.positions];
-        for (let i = 0; i < positions.length / 3; i++) {
-            let x = positions[3 * i];
-            let y = positions[3 * i + 1];
-            if (x > 0) {
-                positions[3 * i] += w * 0.5 - 0.01 + 0.1;
-            }
-            else if (x < 0) {
-                positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
-            }
-            if (y > 0) {
-                positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
-            }
-            else if (y < 0) {
-                positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
-            }
-        }
-        data.positions = positions;
-        data.applyToMesh(this.baseFrame);
-    }
-    serialize() {
-        let data = {
-            balls: [],
-            parts: []
-        };
-        for (let i = 0; i < this.balls.length; i++) {
-            data.balls.push({
-                x: this.balls[i].positionZero.x,
-                y: this.balls[i].positionZero.y,
-            });
-        }
-        for (let i = 0; i < this.tracks.length; i++) {
-            data.parts.push({
-                name: this.tracks[i].partName,
-                i: this.tracks[i].i,
-                j: this.tracks[i].j,
-                mirror: this.tracks[i].mirror
-            });
-        }
-        return data;
-    }
-    deserialize(data) {
-        this.balls = [];
-        this.tracks = [];
-        for (let i = 0; i < data.balls.length; i++) {
-            let ballData = data.balls[i];
-            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, 0), this);
-            this.balls.push(ball);
-        }
-        for (let i = 0; i < data.parts.length; i++) {
-            let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.mirror);
-            this.tracks.push(track);
-        }
-    }
-}
 class MachineEditor {
     constructor(game) {
         this.game = game;
@@ -593,7 +430,7 @@ class MachineEditor {
                     else {
                         let i = Math.round(pick.pickedPoint.x / tileWidth);
                         let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                        pickedObject = this.machine.tracks.find(track => {
+                        pickedObject = this.machine.parts.find(track => {
                             if (track.i <= i) {
                                 if ((track.i + track.w - 1) >= i) {
                                     if (track.j <= j) {
@@ -678,8 +515,8 @@ class MachineEditor {
                     let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
                     draggedTrack.setI(i);
                     draggedTrack.setJ(j);
-                    if (this.machine.tracks.indexOf(draggedTrack) === -1) {
-                        this.machine.tracks.push(draggedTrack);
+                    if (this.machine.parts.indexOf(draggedTrack) === -1) {
+                        this.machine.parts.push(draggedTrack);
                     }
                     draggedTrack.setIsVisible(true);
                     draggedTrack.generateWires();
@@ -714,7 +551,7 @@ class MachineEditor {
                         else if (pick.pickedMesh === this.machine.baseWall) {
                             let i = Math.round(pick.pickedPoint.x / tileWidth);
                             let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                            let pickedTrack = this.machine.tracks.find(track => {
+                            let pickedTrack = this.machine.parts.find(track => {
                                 if (track.i <= i) {
                                     if ((track.i + track.w - 1) >= i) {
                                         if (track.j <= j) {
@@ -1104,7 +941,7 @@ class MachineEditor {
         }
         let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, w, h, mirror);
         track.dispose();
-        this.machine.tracks.push(editedTrack);
+        this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
         editedTrack.generateWires();
         await editedTrack.instantiate();
@@ -1115,7 +952,7 @@ class MachineEditor {
     async mirrorTrackInPlace(track) {
         let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, !track.mirror);
         track.dispose();
-        this.machine.tracks.push(mirroredTrack);
+        this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
         await mirroredTrack.instantiate();
@@ -1617,7 +1454,7 @@ class Game {
                     this.camera.radius += 0.1;
                 }
                 if (track) {
-                    this.machine.tracks = [track];
+                    this.machine.parts = [track];
                 }
                 if (ball) {
                     this.machine.balls = [ball];
@@ -1803,16 +1640,16 @@ class TrackPointHandle extends BABYLON.Mesh {
         super("trackpoint-handle");
         this.trackPoint = trackPoint;
         this._normal = BABYLON.Vector3.Up();
-        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.wireGauge });
+        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.part.wireGauge });
         data.applyToMesh(this);
         this.position.copyFrom(this.trackPoint.position);
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.setNormal(trackPoint.normal);
-        this.parent = trackPoint.track;
-        let normalIndicator = BABYLON.MeshBuilder.CreateCylinder("normal", { height: this.trackPoint.track.wireGauge, diameter: 0.0005, tessellation: 8 });
+        this.parent = trackPoint.track.part;
+        let normalIndicator = BABYLON.MeshBuilder.CreateCylinder("normal", { height: this.trackPoint.track.part.wireGauge, diameter: 0.0005, tessellation: 8 });
         normalIndicator.parent = this;
-        normalIndicator.position.copyFromFloats(0, 0.6 * this.trackPoint.track.wireGauge * 0.5 + this.trackPoint.track.wireGauge * 0.5, 0);
-        this.setMaterial(this.trackPoint.track.game.handleMaterial);
+        normalIndicator.position.copyFromFloats(0, 0.6 * this.trackPoint.track.part.wireGauge * 0.5 + this.trackPoint.track.part.wireGauge * 0.5, 0);
+        this.setMaterial(this.trackPoint.track.part.game.handleMaterial);
     }
     get normal() {
         return this._normal;
@@ -1916,17 +1753,17 @@ class TrackEditor {
                     this.dragNormal = false;
                     this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
                     this.selectedTrackPoint.fixedNormal = true;
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
                 else if (this.dragTrackPoint && this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
                     this.dragTrackPoint = false;
                     this.hoveredTrackPoint.position.copyFrom(this.hoveredTrackPointHandle.position);
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
                 else {
@@ -1953,9 +1790,9 @@ class TrackEditor {
                         let dA = 3 * (eventData.event.deltaY / 100) / 180 * Math.PI;
                         Mummu.RotateInPlace(this.hoveredTrackPoint.normal, this.hoveredTrackPoint.dir, dA);
                         this.hoveredTrackPoint.fixedNormal = true;
-                        this.track.generateWires();
-                        this.track.recomputeAbsolutePath();
-                        this.track.rebuildWireMeshes();
+                        this.part.generateWires();
+                        this.part.recomputeAbsolutePath();
+                        this.part.rebuildWireMeshes();
                         this.updateHandles();
                     }
                 }
@@ -1971,31 +1808,31 @@ class TrackEditor {
                     this.activeTrackpointPositionInput.targetXYZ = this.selectedTrackPoint.position;
                     this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
                 }
-                let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
+                let slopePrev = this.part.getSlopeAt(this.selectedTrackPointIndex - 1);
                 document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
-                let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
+                let slopeCurr = this.part.getSlopeAt(this.selectedTrackPointIndex);
                 document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
-                let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
+                let slopeNext = this.part.getSlopeAt(this.selectedTrackPointIndex + 1);
                 document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
                 this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
                 this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
-                let bankCurr = this.track.getBankAt(this.selectedTrackPointIndex);
+                let bankCurr = this.part.getBankAt(this.selectedTrackPointIndex);
                 document.getElementById("active-trackpoint-bank").innerText = bankCurr.toFixed(1) + "°";
             }
-            if (this.track) {
-                document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(1) + "%";
+            if (this.part) {
+                document.getElementById("slope-global").innerText = this.part.globalSlope.toFixed(1) + "%";
             }
             this.helperCircleRadius.setValue(this.helperShape.circleRadius);
             this.helperGridSize.setValue(this.helperShape.gridSize);
         };
-        this.setTrack(this.game.machine.tracks[0]);
+        this.setTrack(this.game.machine.parts[0]);
         this.helperShape = new HelperShape();
     }
-    get track() {
+    get part() {
         return this._track;
     }
     setTrack(t) {
-        if (t != this.track) {
+        if (t != this.part) {
             if (this._track) {
             }
             this._track = t;
@@ -2009,34 +1846,34 @@ class TrackEditor {
         this.pointerPlane.visibility = 0;
         this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         document.getElementById("prev-track").addEventListener("click", () => {
-            let trackIndex = this.game.machine.tracks.indexOf(this._track);
+            let trackIndex = this.game.machine.parts.indexOf(this._track);
             if (trackIndex > 0) {
-                this.setTrack(this.game.machine.tracks[trackIndex - 1]);
+                this.setTrack(this.game.machine.parts[trackIndex - 1]);
                 this.centerOnTrack();
             }
         });
         document.getElementById("next-track").addEventListener("click", () => {
-            let trackIndex = this.game.machine.tracks.indexOf(this._track);
-            if (trackIndex < this.game.machine.tracks.length - 1) {
-                this.setTrack(this.game.machine.tracks[trackIndex + 1]);
+            let trackIndex = this.game.machine.parts.indexOf(this._track);
+            if (trackIndex < this.game.machine.parts.length - 1) {
+                this.setTrack(this.game.machine.parts[trackIndex + 1]);
                 this.centerOnTrack();
             }
         });
         document.getElementById("load").addEventListener("click", () => {
-            if (this.track) {
+            if (this.part) {
                 let s = window.localStorage.getItem("last-saved-track");
                 if (s) {
                     let data = JSON.parse(s);
-                    this.track.deserialize(data);
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.deserialize(data);
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                 }
             }
         });
         document.getElementById("save").addEventListener("click", () => {
-            if (this.track) {
-                let data = this.track.serialize();
+            if (this.part) {
+                let data = this.part.serialize();
                 window.localStorage.setItem("last-saved-track", JSON.stringify(data));
                 Nabu.download("track.json", JSON.stringify(data));
             }
@@ -2065,8 +1902,8 @@ class TrackEditor {
             this.helperShape.setShow(false);
         });
         document.getElementById("btn-focus-point").addEventListener("click", () => {
-            if (this.track && this.selectedTrackPoint) {
-                let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.track.getWorldMatrix());
+            if (this.part && this.selectedTrackPoint) {
+                let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.part.getWorldMatrix());
                 this.game.setCameraTarget(target);
             }
         });
@@ -2074,16 +1911,16 @@ class TrackEditor {
             this.centerOnTrack();
         });
         document.getElementById("btn-display-wire").addEventListener("click", () => {
-            if (this.track) {
-                this.track.renderOnlyPath = false;
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.renderOnlyPath = false;
+                this.part.rebuildWireMeshes();
                 this.updateHandles();
             }
         });
         document.getElementById("btn-display-path").addEventListener("click", () => {
-            if (this.track) {
-                this.track.renderOnlyPath = true;
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.renderOnlyPath = true;
+                this.part.rebuildWireMeshes();
                 this.updateHandles();
             }
         });
@@ -2102,80 +1939,80 @@ class TrackEditor {
             this.helperShape.setGridSize(n);
         };
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
-            if (this.track) {
-                let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.track.trackPoints.length) % this.track.trackPoints.length;
+            if (this.part) {
+                let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.part.tracks[0].trackpoints.length) % this.part.tracks[0].trackpoints.length;
                 this.setSelectedTrackPointIndex(newTrackIndex);
             }
         });
         document.getElementById("next-trackpoint").addEventListener("click", () => {
-            if (this.track) {
-                let newTrackIndex = (this.selectedTrackPointIndex + 1) % this.track.trackPoints.length;
+            if (this.part) {
+                let newTrackIndex = (this.selectedTrackPointIndex + 1) % this.part.tracks[0].trackpoints.length;
                 this.setSelectedTrackPointIndex(newTrackIndex);
             }
         });
         this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos");
         this.activeTrackpointPositionInput.onInputXYZCallback = (xyz) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
         };
         this.activeTrackpointNormalInput = document.getElementById("active-trackpoint-normal");
         this.activeTrackpointNormalInput.onInputXYZCallback = (xyz) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
         };
         this.activeTrackpointTangentIn = document.getElementById("active-trackpoint-tan-in");
         this.activeTrackpointTangentIn.onInputNCallback = (n) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.selectedTrackPoint.tangentIn = n;
                     this.selectedTrackPoint.fixedTangentIn = true;
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
         };
         this.activeTrackpointTangentOut = document.getElementById("active-trackpoint-tan-out");
         this.activeTrackpointTangentOut.onInputNCallback = (n) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.selectedTrackPoint.tangentOut = n;
                     this.selectedTrackPoint.fixedTangentOut = true;
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
         };
         document.getElementById("active-trackpoint-split").addEventListener("click", () => {
-            if (this.track) {
-                this.track.splitTrackPointAt(this.selectedTrackPointIndex);
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.splitTrackPointAt(this.selectedTrackPointIndex);
+                this.part.generateWires();
+                this.part.recomputeAbsolutePath();
+                this.part.rebuildWireMeshes();
                 this.rebuildHandles();
             }
         });
         document.getElementById("active-trackpoint-delete").addEventListener("click", () => {
-            if (this.track) {
-                this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.deleteTrackPointAt(this.selectedTrackPointIndex);
+                this.part.generateWires();
+                this.part.recomputeAbsolutePath();
+                this.part.rebuildWireMeshes();
                 this.rebuildHandles();
             }
         });
@@ -2243,19 +2080,19 @@ class TrackEditor {
     }
     rebuildHandles() {
         this.removeHandles();
-        for (let i = 0; i < this.track.trackPoints.length; i++) {
-            let handle = new TrackPointHandle(this.track.trackPoints[0][i]);
+        for (let i = 0; i < this.part.tracks[0].trackpoints.length; i++) {
+            let handle = new TrackPointHandle(this.part.tracks[0].trackpoints[0][i]);
             this.trackPointhandles.push(handle);
-            let pPrev = this.track.trackPoints[0][i - 1] ? this.track.trackPoints[0][i - 1].position : undefined;
-            let p = this.track.trackPoints[0][i].position;
-            let pNext = this.track.trackPoints[0][i + 1] ? this.track.trackPoints[0][i + 1].position : undefined;
+            let pPrev = this.part.tracks[0].trackpoints[0][i - 1] ? this.part.tracks[0].trackpoints[0][i - 1].position : undefined;
+            let p = this.part.tracks[0].trackpoints[0][i].position;
+            let pNext = this.part.tracks[0].trackpoints[0][i + 1] ? this.part.tracks[0].trackpoints[0][i + 1].position : undefined;
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
             }
             if (!pNext) {
                 pNext = p.add(p.subtract(pPrev));
             }
-            Mummu.QuaternionFromYZAxisToRef(this.track.trackPoints[0][i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
+            Mummu.QuaternionFromYZAxisToRef(this.part.tracks[0].trackpoints[0][i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
         }
         this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.03, diameter: 0.0025, tessellation: 8 });
         this.normalHandle.rotationQuaternion = BABYLON.Quaternion.Identity();
@@ -2270,7 +2107,7 @@ class TrackEditor {
         if (this.selectedTrackPointHandle) {
             this.normalHandle.isVisible = true;
             this.normalHandle.parent = this.selectedTrackPointHandle;
-            this.normalHandle.position.copyFromFloats(0, 0.015 + 0.5 * this.track.wireGauge / 2, 0);
+            this.normalHandle.position.copyFromFloats(0, 0.015 + 0.5 * this.part.wireGauge / 2, 0);
             if (this.selectedTrackPointHandle.trackPoint.fixedNormal) {
                 this.normalHandle.material = this.game.handleMaterialActive;
             }
@@ -2283,9 +2120,9 @@ class TrackEditor {
         }
     }
     centerOnTrack() {
-        if (this.track) {
-            let center = this.track.getBarycenter();
-            center.x = this.track.position.x;
+        if (this.part) {
+            let center = this.part.getBarycenter();
+            center.x = this.part.position.x;
             this.game.setCameraTarget(center);
         }
     }
@@ -2360,63 +2197,172 @@ class Wire extends BABYLON.Mesh {
 }
 Wire.DEBUG_DISPLAY = false;
 Wire.Instances = new Nabu.UniqueList();
+class Machine {
+    constructor(game) {
+        this.game = game;
+        this.parts = [];
+        this.balls = [];
+        this.instantiated = false;
+        this.playing = false;
+        this.onStopCallbacks = new Nabu.UniqueList();
+        this.trackFactory = new MachinePartFactory(this);
+    }
+    async instantiate() {
+        for (let i = 0; i < this.balls.length; i++) {
+            await this.balls[i].instantiate();
+        }
+        for (let i = 0; i < this.parts.length; i++) {
+            await this.parts[i].instantiate();
+        }
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                for (let i = 0; i < this.parts.length; i++) {
+                    this.parts[i].recomputeAbsolutePath();
+                }
+                this.instantiated = true;
+                resolve();
+            });
+        });
+    }
+    dispose() {
+        while (this.balls.length > 0) {
+            this.balls[0].dispose();
+        }
+        while (this.parts.length > 0) {
+            this.parts[0].dispose();
+        }
+        this.instantiated = false;
+    }
+    update() {
+        if (!this.instantiated) {
+            return;
+        }
+        if (this.playing) {
+            let dt = this.game.scene.deltaTime / 1000;
+            if (isFinite(dt)) {
+                for (let i = 0; i < this.balls.length; i++) {
+                    this.balls[i].update(dt);
+                }
+                for (let i = 0; i < this.parts.length; i++) {
+                    this.parts[i].update(dt);
+                }
+            }
+        }
+        else {
+            for (let i = 0; i < this.balls.length; i++) {
+                if (this.balls[i].marbleLoopSound.volume > 0.01) {
+                    this.balls[i].marbleLoopSound.volume *= 0.9;
+                }
+                else {
+                    this.balls[i].marbleLoopSound.volume = 0;
+                }
+            }
+        }
+    }
+    play() {
+        this.playing = true;
+    }
+    stop() {
+        for (let i = 0; i < this.balls.length; i++) {
+            this.balls[i].reset();
+        }
+        this.onStopCallbacks.forEach(callback => {
+            callback();
+        });
+        this.playing = false;
+    }
+    async generateBaseMesh() {
+        let minX = -0.15;
+        let maxX = 0.15;
+        let minY = -0.15;
+        let maxY = 0.15;
+        for (let i = 0; i < this.parts.length; i++) {
+            let track = this.parts[i];
+            minX = Math.min(minX, track.position.x - tileWidth * 0.5);
+            maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
+            minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
+            maxY = Math.max(maxY, track.position.y);
+        }
+        let w = maxX - minX;
+        let h = maxY - minY;
+        let u = w * 4;
+        let v = h * 4;
+        if (this.baseWall) {
+            this.baseWall.dispose();
+        }
+        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+        this.baseWall.position.x = (maxX + minX) * 0.5;
+        this.baseWall.position.y = (maxY + minY) * 0.5;
+        this.baseWall.position.z += 0.016;
+        this.baseWall.rotation.z = Math.PI / 2;
+        this.baseWall.material = this.game.woodMaterial;
+        if (this.baseFrame) {
+            this.baseFrame.dispose();
+        }
+        this.baseFrame = new BABYLON.Mesh("base-frame");
+        this.baseFrame.position.copyFrom(this.baseWall.position);
+        this.baseFrame.material = this.game.steelMaterial;
+        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon");
+        let data = Mummu.CloneVertexData(vertexDatas[0]);
+        let positions = [...data.positions];
+        for (let i = 0; i < positions.length / 3; i++) {
+            let x = positions[3 * i];
+            let y = positions[3 * i + 1];
+            if (x > 0) {
+                positions[3 * i] += w * 0.5 - 0.01 + 0.1;
+            }
+            else if (x < 0) {
+                positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
+            }
+            if (y > 0) {
+                positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
+            }
+            else if (y < 0) {
+                positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
+            }
+        }
+        data.positions = positions;
+        data.applyToMesh(this.baseFrame);
+    }
+    serialize() {
+        let data = {
+            balls: [],
+            parts: []
+        };
+        for (let i = 0; i < this.balls.length; i++) {
+            data.balls.push({
+                x: this.balls[i].positionZero.x,
+                y: this.balls[i].positionZero.y,
+            });
+        }
+        for (let i = 0; i < this.parts.length; i++) {
+            data.parts.push({
+                name: this.parts[i].partName,
+                i: this.parts[i].i,
+                j: this.parts[i].j,
+                mirror: this.parts[i].mirror
+            });
+        }
+        return data;
+    }
+    deserialize(data) {
+        this.balls = [];
+        this.parts = [];
+        for (let i = 0; i < data.balls.length; i++) {
+            let ballData = data.balls[i];
+            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, 0), this);
+            this.balls.push(ball);
+        }
+        for (let i = 0; i < data.parts.length; i++) {
+            let part = data.parts[i];
+            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.mirror);
+            this.parts.push(track);
+        }
+    }
+}
 var baseRadius = 0.075;
 var tileWidth = 0.15;
 var tileHeight = 0.03;
-class TrackPoint {
-    constructor(track, position, normal, dir, tangentIn, tangentOut) {
-        this.track = track;
-        this.position = position;
-        this.normal = normal;
-        this.dir = dir;
-        this.tangentIn = tangentIn;
-        this.tangentOut = tangentOut;
-        this.fixedNormal = false;
-        this.fixedDir = false;
-        this.fixedTangentIn = false;
-        this.fixedTangentOut = false;
-        this.summedLength = 0;
-        if (normal) {
-            this.fixedNormal = true;
-        }
-        else {
-            this.fixedNormal = false;
-            this.normal = BABYLON.Vector3.Up();
-        }
-        this.normal = this.normal.clone();
-        if (dir) {
-            this.fixedDir = true;
-        }
-        else {
-            this.fixedDir = false;
-            this.dir = BABYLON.Vector3.Right();
-        }
-        this.dir = this.dir.clone();
-        if (tangentIn) {
-            this.fixedTangentIn = true;
-        }
-        else {
-            this.fixedTangentIn = false;
-            this.tangentIn = 1;
-        }
-        if (tangentOut) {
-            this.fixedTangentOut = true;
-        }
-        else {
-            this.fixedTangentOut = false;
-            this.tangentOut = 1;
-        }
-    }
-    isFirstOrLast() {
-        let index = this.track.trackPoints[0].indexOf(this);
-        if (index === 0 || index === this.track.trackPoints.length - 1) {
-            return true;
-        }
-        return false;
-    }
-}
-class Track {
-}
 class MachinePart extends BABYLON.Mesh {
     constructor(machine, _i, _j, w = 1, h = 1, mirror) {
         super("track", machine.game.scene);
@@ -2426,7 +2372,10 @@ class MachinePart extends BABYLON.Mesh {
         this.w = w;
         this.h = h;
         this.mirror = mirror;
-        this.partName = "track";
+        this.partName = "machine-part";
+        this.tracks = [];
+        this.wires = [];
+        this.allWires = [];
         this.wireSize = 0.0015;
         this.wireGauge = 0.013;
         this.renderOnlyPath = false;
@@ -2439,10 +2388,7 @@ class MachinePart extends BABYLON.Mesh {
         this.yExtendable = false;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
-        this.wires = [
-            new Wire(this),
-            new Wire(this)
-        ];
+        this.tracks = [new Track(this)];
     }
     get game() {
         return this.machine.game;
@@ -2474,214 +2420,47 @@ class MachinePart extends BABYLON.Mesh {
         this.selectedMesh.isVisible = false;
     }
     mirrorTrackPointsInPlace() {
-        for (let j = 0; j < this.trackPoints.length; j++) {
-            let trackpoints = this.trackPoints[j];
-            for (let i = 0; i < trackpoints.length; i++) {
-                trackpoints[i].position.x *= -1;
-                trackpoints[i].position.x += (this.w - 1) * tileWidth;
-                if (trackpoints[i].normal) {
-                    trackpoints[i].normal.x *= -1;
-                }
-                if (trackpoints[i].dir) {
-                    trackpoints[i].dir.x *= -1;
-                }
-            }
+        for (let i = 0; i < this.tracks.length; i++) {
+            this.tracks[i].mirrorTrackPointsInPlace();
         }
     }
     getSlopeAt(index, trackIndex = 0) {
-        let trackpoint = this.trackPoints[trackIndex][index];
-        let nextTrackPoint = this.trackPoints[trackIndex][index + 1];
-        if (trackpoint) {
-            if (nextTrackPoint) {
-                let dy = nextTrackPoint.position.y - trackpoint.position.y;
-                let dLength = nextTrackPoint.summedLength - trackpoint.summedLength;
-                return dy / dLength * 100;
-            }
-            else {
-                let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
-                let angleToHorizontal = Math.PI / 2 - angleToVertical;
-                return Math.tan(angleToHorizontal) * 100;
-            }
+        if (this.tracks[trackIndex]) {
+            return this.tracks[trackIndex].getSlopeAt(index);
         }
         return 0;
     }
     getBankAt(index, trackIndex = 0) {
-        let trackpoint = this.trackPoints[trackIndex][index];
-        if (trackpoint) {
-            let n = trackpoint.normal;
-            if (n.y < 0) {
-                n = n.scale(-1);
-            }
-            let angle = Mummu.AngleFromToAround(trackpoint.normal, BABYLON.Axis.Y, trackpoint.dir);
-            return angle / Math.PI * 180;
+        if (this.tracks[trackIndex]) {
+            return this.tracks[trackIndex].getBankAt(index);
         }
         return 0;
     }
     splitTrackPointAt(index, trackIndex = 0) {
-        if (index === 0) {
-            let trackPoint = this.trackPoints[trackIndex][0];
-            let nextTrackPoint = this.trackPoints[trackIndex][0 + 1];
-            let distA = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
-            let tanInA = trackPoint.dir.scale(distA * trackPoint.tangentOut);
-            let tanOutA = nextTrackPoint.dir.scale(distA * nextTrackPoint.tangentIn);
-            let pointA = BABYLON.Vector3.Hermite(trackPoint.position, tanInA, nextTrackPoint.position, tanOutA, 0.5);
-            let normalA = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 0.5);
-            let trackPointA = new TrackPoint(this, pointA, normalA);
-            this.trackPoints[trackIndex].splice(1, 0, trackPointA);
-        }
-        if (index > 0 && index < this.trackPoints[trackIndex].length - 1) {
-            let prevTrackPoint = this.trackPoints[trackIndex][index - 1];
-            let trackPoint = this.trackPoints[trackIndex][index];
-            let nextTrackPoint = this.trackPoints[trackIndex][index + 1];
-            let distA = BABYLON.Vector3.Distance(trackPoint.position, prevTrackPoint.position);
-            let tanInA = prevTrackPoint.dir.scale(distA * prevTrackPoint.tangentOut);
-            let tanOutA = trackPoint.dir.scale(distA * trackPoint.tangentIn);
-            let pointA = BABYLON.Vector3.Hermite(prevTrackPoint.position, tanInA, trackPoint.position, tanOutA, 2 / 3);
-            let normalA = BABYLON.Vector3.Lerp(prevTrackPoint.normal, trackPoint.normal, 2 / 3);
-            let distB = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
-            let tanInB = trackPoint.dir.scale(distB * trackPoint.tangentOut);
-            let tanOutB = nextTrackPoint.dir.scale(distB * nextTrackPoint.tangentIn);
-            let pointB = BABYLON.Vector3.Hermite(trackPoint.position, tanInB, nextTrackPoint.position, tanOutB, 1 / 3);
-            let normalB = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 1 / 3);
-            let trackPointA = new TrackPoint(this, pointA, normalA);
-            let trackPointB = new TrackPoint(this, pointB, normalB);
-            this.trackPoints[trackIndex].splice(index, 1, trackPointA, trackPointB);
+        if (this.tracks[trackIndex]) {
+            this.tracks[trackIndex].splitTrackPointAt(index);
         }
     }
     deleteTrackPointAt(index, trackIndex = 0) {
-        if (index > 0 && index < this.trackPoints[trackIndex].length - 1) {
-            this.trackPoints[trackIndex].splice(index, 1);
+        if (this.tracks[trackIndex]) {
+            this.tracks[trackIndex].deleteTrackPointAt(index);
         }
     }
     getBarycenter() {
-        if (this.trackPoints.length < 2) {
+        if (this.tracks[0].trackpoints.length < 2) {
             return this.position.clone();
         }
-        let barycenter = this.trackPoints[0].map(trackpoint => {
+        let barycenter = this.tracks[0].trackpoints.map(trackpoint => {
             return trackpoint.position;
         }).reduce((pos1, pos2) => {
             return pos1.add(pos2);
-        }).scaleInPlace(1 / this.trackPoints.length);
+        }).scaleInPlace(1 / this.tracks[0].trackpoints.length);
         return BABYLON.Vector3.TransformCoordinates(barycenter, this.getWorldMatrix());
     }
-    generateWires() {
-        this.interpolatedPoints = [];
-        this.interpolatedNormals = [];
-        // Update normals and tangents
-        for (let j = 0; j < this.trackPoints.length; j++) {
-            let trackPoints = this.trackPoints[j];
-            let interpolatedPoints = [];
-            this.interpolatedPoints[j] = interpolatedPoints;
-            let interpolatedNormals = [];
-            this.interpolatedNormals[j] = interpolatedNormals;
-            for (let i = 1; i < trackPoints.length - 1; i++) {
-                let prevTrackPoint = trackPoints[i - 1];
-                let trackPoint = trackPoints[i];
-                let nextTrackPoint = trackPoints[i + 1];
-                if (!trackPoint.fixedDir) {
-                    trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
-                }
-                if (!trackPoint.fixedTangentIn) {
-                    trackPoint.tangentIn = 1;
-                }
-                if (!trackPoint.fixedTangentOut) {
-                    trackPoint.tangentOut = 1;
-                }
-                if (!trackPoint.fixedNormal) {
-                    let n = 0;
-                    let nextTrackPointWithFixedNormal;
-                    while (!nextTrackPointWithFixedNormal) {
-                        n++;
-                        let tmpTrackPoint = trackPoints[i + n];
-                        if (tmpTrackPoint.fixedNormal) {
-                            nextTrackPointWithFixedNormal = tmpTrackPoint;
-                        }
-                    }
-                    trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
-                }
-                let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
-                trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
-            }
-            this.wires[2 * j].path = [];
-            this.wires[2 * j + 1].path = [];
-            trackPoints[0].summedLength = 0;
-            for (let i = 0; i < trackPoints.length - 1; i++) {
-                let trackPoint = trackPoints[i];
-                let nextTrackPoint = trackPoints[i + 1];
-                let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
-                let tanIn = trackPoints[i].dir.scale(dist * trackPoint.tangentOut);
-                let tanOut = trackPoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
-                let count = Math.round(dist / 0.003);
-                count = Math.max(0, count);
-                interpolatedPoints.push(trackPoint.position);
-                interpolatedNormals.push(trackPoint.normal);
-                nextTrackPoint.summedLength = trackPoint.summedLength;
-                for (let k = 1; k < count; k++) {
-                    let amount = k / count;
-                    let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
-                    let normal = BABYLON.Vector3.CatmullRom(trackPoint.normal, trackPoint.normal, nextTrackPoint.normal, nextTrackPoint.normal, amount);
-                    interpolatedPoints.push(point);
-                    interpolatedNormals.push(normal);
-                    nextTrackPoint.summedLength += BABYLON.Vector3.Distance(interpolatedPoints[interpolatedPoints.length - 2], interpolatedPoints[interpolatedPoints.length - 1]);
-                }
-                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, interpolatedPoints[interpolatedPoints.length - 1]);
-            }
-            interpolatedPoints.push(trackPoints[trackPoints.length - 1].position);
-            interpolatedNormals.push(trackPoints[trackPoints.length - 1].normal);
-            let N = interpolatedPoints.length;
-            this.summedLength = [0];
-            this.totalLength = 0;
-            for (let i = 0; i < N - 1; i++) {
-                let p = interpolatedPoints[i];
-                let pNext = interpolatedPoints[i + 1];
-                let dir = pNext.subtract(p);
-                let d = dir.length();
-                dir.scaleInPlace(1 / d);
-                let right = BABYLON.Vector3.Cross(interpolatedNormals[i], dir);
-                interpolatedNormals[i] = BABYLON.Vector3.Cross(dir, right).normalize();
-                this.summedLength[i + 1] = this.summedLength[i] + d;
-            }
-            this.totalLength = this.summedLength[N - 1];
-            let dh = interpolatedPoints[interpolatedPoints.length - 1].y - interpolatedPoints[0].y;
-            this.globalSlope = dh / this.totalLength * 100;
-            // Compute wire path and Update AABB values.
-            this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
-            this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
-            for (let i = 0; i < N; i++) {
-                let pPrev = interpolatedPoints[i - 1] ? interpolatedPoints[i - 1] : undefined;
-                let p = interpolatedPoints[i];
-                let pNext = interpolatedPoints[i + 1] ? interpolatedPoints[i + 1] : undefined;
-                if (!pPrev) {
-                    pPrev = p.subtract(pNext.subtract(p));
-                }
-                if (!pNext) {
-                    pNext = p.add(p.subtract(pPrev));
-                }
-                let dir = pNext.subtract(pPrev).normalize();
-                let up = interpolatedNormals[i];
-                let rotation = BABYLON.Quaternion.Identity();
-                Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
-                let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
-                this.wires[2 * j].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.wireGauge * 0.5, 0, 0), matrix);
-                this.wires[2 * j + 1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.wireGauge * 0.5, 0, 0), matrix);
-                this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
-                this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
-                this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
-                this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
-            }
-            Mummu.DecimatePathInPlace(this.wires[2 * j].path, 2 / 180 * Math.PI);
-            Mummu.DecimatePathInPlace(this.wires[2 * j + 1].path, 2 / 180 * Math.PI);
-            this.AABBMin.x -= this.wireSize * 0.5;
-            this.AABBMin.y -= this.wireSize * 0.5;
-            this.AABBMin.z -= this.wireSize * 0.5;
-            this.AABBMax.x += this.wireSize * 0.5;
-            this.AABBMax.y += this.wireSize * 0.5;
-            this.AABBMax.z += this.wireSize * 0.5;
-            BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.getWorldMatrix(), this.AABBMin);
-            BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.getWorldMatrix(), this.AABBMax);
-        }
-    }
     recomputeAbsolutePath() {
+        this.tracks.forEach(track => {
+            track.recomputeAbsolutePath();
+        });
         this.wires.forEach(wire => {
             wire.recomputeAbsolutePath();
         });
@@ -2712,10 +2491,22 @@ class MachinePart extends BABYLON.Mesh {
     }
     dispose() {
         super.dispose();
-        let index = this.machine.tracks.indexOf(this);
+        let index = this.machine.parts.indexOf(this);
         if (index > -1) {
-            this.machine.tracks.splice(index, 1);
+            this.machine.parts.splice(index, 1);
         }
+    }
+    generateWires() {
+        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
+        this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
+        this.allWires = [...this.wires];
+        this.tracks.forEach(track => {
+            track.generateWires();
+            this.AABBMin.minimizeInPlace(track.AABBMin);
+            this.AABBMax.maximizeInPlace(track.AABBMax);
+            this.allWires.push(track.wires[0], track.wires[1]);
+        });
+        console.log("AllWires " + this.allWires.length);
     }
     update(dt) { }
     rebuildWireMeshes() {
@@ -2728,19 +2519,24 @@ class MachinePart extends BABYLON.Mesh {
                 let sina = Math.sin(a);
                 shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
             }
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.interpolatedPoints[0], closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
-            this.wires.forEach(wire => {
+            this.allWires.forEach(wire => {
                 wire.hide();
             });
         }
         else {
-            this.wires.forEach(wire => {
+            this.allWires.forEach(wire => {
                 wire.show();
             });
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+            this.tracks.forEach(track => {
+                track.wires.forEach(wire => {
+                    wire.instantiate();
+                });
+            });
             this.wires.forEach(wire => {
                 wire.instantiate();
             });
@@ -2748,27 +2544,27 @@ class MachinePart extends BABYLON.Mesh {
     }
     serialize() {
         let data = { points: [] };
-        for (let i = 0; i < this.trackPoints[0].length; i++) {
+        for (let i = 0; i < this.tracks[0].trackpoints.length; i++) {
             data.points[i] = {
-                position: { x: this.trackPoints[0][i].position.x, y: this.trackPoints[0][i].position.y, z: this.trackPoints[0][i].position.z }
+                position: { x: this.tracks[0].trackpoints[i].position.x, y: this.tracks[0].trackpoints[i].position.y, z: this.tracks[0].trackpoints[i].position.z }
             };
-            if (this.trackPoints[0][i].fixedNormal) {
-                data.points[i].normal = { x: this.trackPoints[0][i].normal.x, y: this.trackPoints[0][i].normal.y, z: this.trackPoints[0][i].normal.z };
+            if (this.tracks[0].trackpoints[i].fixedNormal) {
+                data.points[i].normal = { x: this.tracks[0].trackpoints[i].normal.x, y: this.tracks[0].trackpoints[i].normal.y, z: this.tracks[0].trackpoints[i].normal.z };
             }
-            if (this.trackPoints[0][i].fixedDir) {
-                data.points[i].dir = { x: this.trackPoints[0][i].dir.x, y: this.trackPoints[0][i].dir.y, z: this.trackPoints[0][i].dir.z };
+            if (this.tracks[0].trackpoints[i].fixedDir) {
+                data.points[i].dir = { x: this.tracks[0].trackpoints[i].dir.x, y: this.tracks[0].trackpoints[i].dir.y, z: this.tracks[0].trackpoints[i].dir.z };
             }
-            if (this.trackPoints[0][i].fixedTangentIn) {
-                data.points[i].tangentIn = this.trackPoints[0][i].tangentIn;
+            if (this.tracks[0].trackpoints[i].fixedTangentIn) {
+                data.points[i].tangentIn = this.tracks[0].trackpoints[i].tangentIn;
             }
-            if (this.trackPoints[0][i].fixedTangentOut) {
-                data.points[i].tangentOut = this.trackPoints[0][i].tangentOut;
+            if (this.tracks[0].trackpoints[i].fixedTangentOut) {
+                data.points[i].tangentOut = this.tracks[0].trackpoints[i].tangentOut;
             }
         }
         return data;
     }
     deserialize(data) {
-        this.trackPoints = [[]];
+        this.tracks = [new Track(this)];
         for (let i = 0; i < data.points.length; i++) {
             let pointData = data.points[i];
             let normal;
@@ -2779,310 +2575,9 @@ class MachinePart extends BABYLON.Mesh {
             if (pointData.dir) {
                 direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
             }
-            let trackPoint = new TrackPoint(this, new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), normal, direction, pointData.tangentIn, pointData.tangentOut);
-            this.trackPoints[0][i] = trackPoint;
+            let trackPoint = new TrackPoint(this.tracks[0], new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), normal, direction, pointData.tangentIn, pointData.tangentOut);
+            this.tracks[0].trackpoints[i] = trackPoint;
         }
-    }
-}
-/// <reference path="./MachinePart.ts"/>
-class DoubleLoop extends MachinePart {
-    constructor(machine, i, j) {
-        super(machine, i, j);
-        this.deserialize({
-            points: [
-                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-                { position: { x: 0.007831128515433633, y: 0.02686866956826861, z: -0.001512586438867734 }, normal: { x: -0.02088401000702746, y: 0.9212766316260701, z: -0.38834678593461935 } },
-                { position: { x: 0.0445, y: 0.0238, z: -0.026 }, normal: { x: -0.4220582199178856, y: 0.863269455131674, z: -0.27682613105776016 }, tangentIn: 1 },
-                { position: { x: 0.0441, y: 0.0194, z: -0.0801 }, normal: { x: -0.5105506548736694, y: 0.8362861901986887, z: 0.19990857132957118 } },
-                { position: { x: -0.00022584437025674475, y: 0.015373584470800367, z: -0.10497567416976264 }, normal: { x: -0.062210177432127416, y: 0.8376674210294907, z: 0.5426261932211393 } },
-                { position: { x: -0.04682594399162551, y: 0.00993486974904878, z: -0.07591274887481546 }, normal: { x: 0.4338049924054248, y: 0.8392539115358117, z: 0.3278202259409408 } },
-                { position: { x: -0.044, y: 0.0068, z: -0.0251 }, normal: { x: 0.47274782333094034, y: 0.8547500410127304, z: -0.21427053676274183 } },
-                { position: { x: 0.0003, y: 0.0028, z: -0.0004 }, normal: { x: 0.06925374833311816, y: 0.8415192755510988, z: -0.5357697520556448 } },
-                { position: { x: 0.0447, y: -0.0012, z: -0.0262 }, normal: { x: -0.4385316126958126, y: 0.8367050678252934, z: -0.32804672554665304 } },
-                { position: { x: 0.0442, y: -0.0054, z: -0.08 }, normal: { x: -0.5105423049408571, y: 0.8358650802407707, z: 0.2016832231489942 } },
-                { position: { x: -0.00019998794117725982, y: -0.009649497176356298, z: -0.10484166117713693 }, normal: { x: -0.05328804359581278, y: 0.839859833513831, z: 0.5401813070255678 } },
-                { position: { x: -0.04678172451684687, y: -0.014002588861738838, z: -0.07560012404016887 }, normal: { x: 0.4340370522882042, y: 0.8399407589318226, z: 0.3257473848337093 }, tangentIn: 1 },
-                { position: { x: -0.0438, y: -0.0182, z: -0.0247 }, normal: { x: 0.49613685449256684, y: 0.8445355495674358, z: -0.20151408668143006 } },
-                { position: { x: -0.0017, y: -0.0224, z: 0.0002 }, normal: { x: 0.21464241308702953, y: 0.9154904403092122, z: -0.3403026420799902 } },
-                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
-            ],
-        });
-        this.generateWires();
-    }
-}
-class Elevator extends MachinePart {
-    constructor(machine, i, j, h = 1, mirror) {
-        super(machine, i, j, 1, h, mirror);
-        this.h = h;
-        this.boxesCount = 4;
-        this.rWheel = 0.015;
-        this.boxX = [];
-        this.boxes = [];
-        this.wheels = [];
-        this.reset = () => {
-            for (let i = 0; i < this.boxesCount; i++) {
-                this.boxX[i] = i / this.boxesCount * this.chainLength;
-                this.update(0);
-            }
-        };
-        this.l = 0;
-        this.p = 0;
-        this.chainLength = 0;
-        this.speed = 0.04; // in m/s
-        this.boxesCount;
-        this.yExtendable = true;
-        this.partName = "elevator-" + h.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let dirLeft = new BABYLON.Vector3(1, 0, 0);
-        dirLeft.normalize();
-        let nLeft = new BABYLON.Vector3(0, 1, 0);
-        nLeft.normalize();
-        let dirRight = new BABYLON.Vector3(1, 1, 0);
-        dirRight.normalize();
-        let nRight = new BABYLON.Vector3(-1, 1, 0);
-        nRight.normalize();
-        this.trackPoints = [
-            [
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.1), 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.h + 0.25), 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.25) + 0.01, 0), dir.scale(-1), n),
-                new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
-                new TrackPoint(this, new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
-            ],
-            [
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), nLeft, dirLeft),
-                new TrackPoint(this, new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), nRight, dirRight)
-            ]
-        ];
-        this.wires.push(new Wire(this), new Wire(this));
-        let x = 1;
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-            x = -1;
-        }
-        this.generateWires();
-        this.wheels = [
-            new BABYLON.Mesh("wheel-0"),
-            new BABYLON.Mesh("wheel-1")
-        ];
-        this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.25), 0);
-        this.wheels[0].parent = this;
-        this.wheels[0].material = this.game.steelMaterial;
-        this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
-        this.wheels[1].parent = this;
-        this.wheels[1].material = this.game.steelMaterial;
-        this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
-            let vertexData = vertexDatas[0];
-            if (vertexData) {
-                vertexData.applyToMesh(this.wheels[0]);
-                vertexData.applyToMesh(this.wheels[1]);
-            }
-        });
-        this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
-        this.p = 2 * Math.PI * this.rWheel;
-        this.chainLength = 2 * this.l + this.p;
-        this.boxesCount = Math.round(this.chainLength / 0.08);
-        for (let i = 0; i < this.boxesCount; i++) {
-            let box = new BABYLON.Mesh("box");
-            box.rotationQuaternion = BABYLON.Quaternion.Identity();
-            box.parent = this;
-            let rampWire0 = new Wire(this);
-            let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.019 * x, 0.001, rRamp)];
-            let nRamp = 12;
-            for (let i = 0; i <= nRamp; i++) {
-                let a = i / nRamp * Math.PI;
-                let cosa = Math.cos(a);
-                let sina = Math.sin(a);
-                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
-            }
-            rampWire0.path.push(new BABYLON.Vector3(-0.019 * x, 0.001, -rRamp));
-            rampWire0.parent = box;
-            this.boxes.push(box);
-            this.wires.push(rampWire0);
-        }
-        let rCable = 0.00075;
-        let nCable = 8;
-        let cableShape = [];
-        for (let i = 0; i < nCable; i++) {
-            let a = i / nCable * 2 * Math.PI;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            cableShape[i] = new BABYLON.Vector3(cosa * rCable, sina * rCable, 0);
-        }
-        let x0 = this.wheels[0].position.x;
-        let y0 = this.wheels[0].position.y;
-        let pathCable = [];
-        for (let i = 0; i <= 16; i++) {
-            let a = i / 16 * Math.PI;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            pathCable.push(new BABYLON.Vector3(x0 + cosa * this.rWheel, y0 - sina * this.rWheel));
-        }
-        x0 = this.wheels[1].position.x;
-        y0 = this.wheels[1].position.y;
-        for (let i = 0; i <= 16; i++) {
-            let a = i / 16 * Math.PI;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            pathCable.push(new BABYLON.Vector3(x0 - cosa * this.rWheel, y0 + sina * this.rWheel));
-        }
-        this.cable = BABYLON.ExtrudeShape("wire", { shape: cableShape, path: pathCable, closeShape: true, closePath: true });
-        this.cable.material = this.game.leatherMaterial;
-        this.cable.parent = this;
-        this.machine.onStopCallbacks.push(this.reset);
-        this.reset();
-    }
-    dispose() {
-        super.dispose();
-        this.machine.onStopCallbacks.remove(this.reset);
-    }
-    update(dt) {
-        let dx = this.speed * dt * this.game.timeFactor;
-        let x = 1;
-        if (this.mirror) {
-            x = -1;
-        }
-        for (let i = 0; i < this.boxesCount; i++) {
-            this.boxX[i] += dx;
-            while (this.boxX[i] > this.chainLength) {
-                this.boxX[i] -= this.chainLength;
-            }
-            if (this.boxX[i] < this.l) {
-                this.boxes[i].position.x = this.wheels[0].position.x - this.rWheel * x;
-                this.boxes[i].position.y = this.wheels[0].position.y + this.boxX[i];
-                Mummu.QuaternionFromXZAxisToRef(BABYLON.Axis.X, BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
-            }
-            else if (this.boxX[i] < this.l + 0.5 * this.p) {
-                let a = (this.boxX[i] - this.l) / (0.5 * this.p) * Math.PI;
-                this.boxes[i].position.x = this.wheels[1].position.x - Math.cos(a) * this.rWheel * x;
-                this.boxes[i].position.y = this.wheels[1].position.y + Math.sin(a) * this.rWheel;
-                let right = this.wheels[1].position.subtract(this.boxes[i].position).normalize();
-                Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
-            }
-            else if (this.boxX[i] < 2 * this.l + 0.5 * this.p) {
-                this.boxes[i].position.x = this.wheels[0].position.x + this.rWheel * x;
-                this.boxes[i].position.y = this.wheels[1].position.y - (this.boxX[i] - (this.l + 0.5 * this.p));
-                Mummu.QuaternionFromXZAxisToRef(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
-            }
-            else {
-                let a = (this.boxX[i] - (2 * this.l + 0.5 * this.p)) / (0.5 * this.p) * Math.PI;
-                this.boxes[i].position.x = this.wheels[0].position.x + Math.cos(a) * this.rWheel * x;
-                this.boxes[i].position.y = this.wheels[0].position.y - Math.sin(a) * this.rWheel;
-                let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
-                Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
-            }
-            this.wires[4 + i].recomputeAbsolutePath();
-        }
-        let deltaAngle = dx / this.p * 2 * Math.PI * x;
-        this.wheels[0].rotation.z -= deltaAngle;
-        this.wheels[1].rotation.z -= deltaAngle;
-    }
-}
-/*
-class Flat extends Track {
-
-    constructor(machine: Machine, i: number, j: number, public w: number = 1) {
-        super(machine, i, j);
-        this.xExtendable = true;
-        this.trackName = "flat-" + w.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        
-        this.deltaI = w - 1;
-
-        this.trackPoints = [[
-            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir)
-        ]];
-
-        this.generateWires();
-    }
-}
-
-class CrossingFlat extends Track {
-
-    constructor(machine: Machine, i: number, j: number, public w: number = 1) {
-        super(machine, i, j);
-        this.xExtendable = true;
-        this.trackName = "flatX-" + w.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let nBank = new BABYLON.Vector3(0, Math.cos(10 / 180 * Math.PI), Math.sin(10 / 180 * Math.PI));
-        
-        this.deltaI = w - 1;
-
-        this.trackPoints = [[
-            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5)- tileWidth * 0.5) * 0.5, 0, - 0.03), nBank, dir, 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir, 1.4, 1.4)
-        ]];
-
-        this.generateWires();
-    }
-}
-*/ 
-/// <reference path="./MachinePart.ts"/>
-class FlatLoop extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j);
-        this.deserialize({
-            points: [
-                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: 0.0002, y: -0.004, z: -0.0004 }, normal: { x: 0.019861618966497012, y: 0.9751749757297097, z: -0.22054315405967592 } },
-                { position: { x: 0.0438, y: -0.0064, z: -0.0176 }, normal: { x: -0.22558304612591473, y: 0.9269655818421536, z: -0.29974505730802486 } },
-                { position: { x: 0.0656, y: -0.0092, z: -0.0657 }, normal: { x: -0.36624766795617253, y: 0.9272115297672086, z: -0.07836724305102492 } },
-                { position: { x: 0.05, y: -0.0116, z: -0.1081 }, normal: { x: -0.28899453151103105, y: 0.9331762009279609, z: 0.21369215890710064 } },
-                { position: { x: 0.0001, y: -0.0146, z: -0.1307 }, normal: { x: -0.06591259754365662, y: 0.9234801060022608, z: 0.3779418252894237 } },
-                { position: { x: -0.0463, y: -0.017, z: -0.1117 }, normal: { x: 0.21142849593782587, y: 0.9373586814752951, z: 0.27686945185116646 } },
-                { position: { x: -0.064, y: -0.0194, z: -0.0655 }, normal: { x: 0.3862942302916957, y: 0.9210759814896877, z: 0.0489469505296813 } },
-                { position: { x: -0.0462, y: -0.022, z: -0.0184 }, normal: { x: 0.2824107521306146, y: 0.937604682593982, z: -0.20283398694217641 } },
-                { position: { x: -0.0005, y: -0.0244, z: -0.0002 }, normal: { x: 0.09320082689165142, y: 0.9775672574755118, z: -0.18888055214478572 } },
-                { position: { x: 0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-/// <reference path="./MachinePart.ts"/>
-class Loop extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 2, 3, mirror);
-        this.partName = "loop";
-        this.deserialize({
-            points: [
-                { position: { x: -0.07499999999999998, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: -0.021400000000000002, y: -0.0158, z: 0 }, normal: { x: 0.4396275545392263, y: 0.8981638211016448, z: -0.0054188332648665 } },
-                { position: { x: 0.01999999999999999, y: -0.0465, z: 0 }, normal: { x: 0.5982436505113027, y: 0.8012971523271827, z: -0.005235293235149783 } },
-                { position: { x: 0.05199999999999999, y: -0.0706, z: 0 }, normal: { x: 0.4741604675908546, y: 0.878895570768095, z: -0.05210015986776756 } },
-                { position: { x: 0.0795, y: -0.0786, z: 0 }, normal: { x: 0.09449201595693026, y: 0.9944340313908211, z: -0.0466070395133045 } },
-                { position: { x: 0.10065375229916038, y: -0.07522312329722819, z: 1.1529110999219938e-11 }, normal: { x: -0.5164966685450393, y: 0.8544407592437108, z: -0.05623326706592006 } },
-                { position: { x: 0.11519302709514871, y: -0.05708879183907972, z: -0.0009829866651905254 }, normal: { x: -0.9589534906617966, y: 0.25476375646906013, z: -0.12451357812435228 } },
-                { position: { x: 0.11218277110706124, y: -0.03280312921665407, z: -0.0019974993144583333 }, normal: { x: -0.8687142251904587, y: -0.4874405932158047, z: -0.08796171347333712 } },
-                { position: { x: 0.09431741317667067, y: -0.018836421903859007, z: -0.006790230548899395 }, normal: { x: -0.2827692887364913, y: -0.9591460712007929, z: -0.008963450649307923 } },
-                { position: { x: 0.0715028480454771, y: -0.02070606642307432, z: -0.013133538933271394 }, normal: { x: 0.44191323501249113, y: -0.8959028193766404, z: 0.045506383659676526 } },
-                { position: { x: 0.05679978340718872, y: -0.03791636105629381, z: -0.018090494323189286 }, normal: { x: 0.9547976002539688, y: -0.29720598940938536, z: -0.005490210237409393 } },
-                { position: { x: 0.05785498312066663, y: -0.06445088096471263, z: -0.01854822983510782 }, normal: { x: 0.8764619011291043, y: 0.452593339877206, z: 0.16423703774713058 } },
-                { position: { x: 0.08849293866937, y: -0.10093496548854738, z: -0.013560714982744127 }, normal: { x: 0.4579284797457813, y: 0.879998331714446, z: 0.12611282098783305 } },
-                { position: { x: 0.1453843264203472, y: -0.11222087303501635, z: -0.003043587228636343 }, normal: { x: -0.0774630913932069, y: 0.99670764505399, z: -0.023944514251439668 } },
-                { position: { x: 0.225, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        this.generateWires();
     }
 }
 var TrackNames = [
@@ -3155,57 +2650,11 @@ class MachinePartFactory {
         }
     }
 }
-class Ramp extends MachinePart {
-    constructor(machine, i, j, w = 1, h = 1, mirror) {
-        super(machine, i, j, w, h, mirror);
-        this.w = w;
-        this.h = h;
-        this.xExtendable = true;
-        this.yExtendable = true;
-        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        this.trackPoints = [[
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n, dir)
-            ]];
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-class CrossingRamp extends MachinePart {
-    constructor(machine, i, j, w = 1, h = 1, mirror) {
-        super(machine, i, j, w, h, mirror);
-        this.w = w;
-        this.h = h;
-        this.xExtendable = true;
-        this.yExtendable = true;
-        this.partName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let nBank = new BABYLON.Vector3(0, Math.cos(15 / 180 * Math.PI), Math.sin(15 / 180 * Math.PI));
-        this.trackPoints = [[
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
-                new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.w - 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * this.h * 0.5, -0.03), nBank, dir.clone(), 1.4, 1.4),
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n.clone(), dir.clone(), 1.4, 1.4)
-            ]];
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
 class SleeperMeshBuilder {
-    static GenerateSleepersVertexData(track, spacing) {
+    static GenerateSleepersVertexData(part, spacing) {
         let partialsDatas = [];
-        for (let j = 0; j < track.interpolatedPoints.length; j++) {
-            let interpolatedPoints = track.interpolatedPoints[j];
+        for (let j = 0; j < part.tracks.length; j++) {
+            let interpolatedPoints = part.tracks[j].interpolatedPoints;
             let summedLength = [0];
             for (let i = 1; i < interpolatedPoints.length; i++) {
                 let prev = interpolatedPoints[i - 1];
@@ -3215,7 +2664,7 @@ class SleeperMeshBuilder {
             }
             let count = Math.round(summedLength[summedLength.length - 1] / spacing / 3) * 3;
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
-            let radius = track.wireSize * 0.5 * 0.75;
+            let radius = part.wireSize * 0.5 * 0.75;
             let nShape = 6;
             let shape = [];
             for (let i = 0; i < nShape; i++) {
@@ -3231,7 +2680,7 @@ class SleeperMeshBuilder {
                 let sina = Math.sin(a);
                 shapeSmall[i] = new BABYLON.Vector3(cosa * radius * 0.75, sina * radius * 0.75, 0);
             }
-            let radiusPath = track.wireGauge * 0.5;
+            let radiusPath = part.wireGauge * 0.5;
             let nPath = 12;
             let basePath = [];
             for (let i = 0; i <= nPath; i++) {
@@ -3264,7 +2713,7 @@ class SleeperMeshBuilder {
                     let path = basePath.map(v => { return v.clone(); });
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(track.interpolatedNormals[j][i], dir, q);
+                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, q);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), q, t);
                     for (let j = 0; j < path.length; j++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
@@ -3313,7 +2762,612 @@ class SleeperMeshBuilder {
         return Mummu.MergeVertexDatas(...partialsDatas);
     }
 }
-/// <reference path="./MachinePart.ts"/>
+class Track {
+    constructor(part) {
+        this.part = part;
+        this.trackpoints = [];
+        this.summedLength = [0];
+        this.totalLength = 0;
+        this.globalSlope = 0;
+        this.AABBMin = BABYLON.Vector3.Zero();
+        this.AABBMax = BABYLON.Vector3.Zero();
+        this.wires = [
+            new Wire(this.part),
+            new Wire(this.part)
+        ];
+    }
+    mirrorTrackPointsInPlace() {
+        for (let i = 0; i < this.trackpoints.length; i++) {
+            this.trackpoints[i].position.x *= -1;
+            this.trackpoints[i].position.x += (this.part.w - 1) * tileWidth;
+            if (this.trackpoints[i].normal) {
+                this.trackpoints[i].normal.x *= -1;
+            }
+            if (this.trackpoints[i].dir) {
+                this.trackpoints[i].dir.x *= -1;
+            }
+        }
+    }
+    getSlopeAt(index) {
+        let trackpoint = this.trackpoints[index];
+        let nextTrackPoint = this.trackpoints[index + 1];
+        if (trackpoint) {
+            if (nextTrackPoint) {
+                let dy = nextTrackPoint.position.y - trackpoint.position.y;
+                let dLength = nextTrackPoint.summedLength - trackpoint.summedLength;
+                return dy / dLength * 100;
+            }
+            else {
+                let angleToVertical = Mummu.Angle(BABYLON.Axis.Y, trackpoint.dir);
+                let angleToHorizontal = Math.PI / 2 - angleToVertical;
+                return Math.tan(angleToHorizontal) * 100;
+            }
+        }
+        return 0;
+    }
+    getBankAt(index) {
+        let trackpoint = this.trackpoints[index];
+        if (trackpoint) {
+            let n = trackpoint.normal;
+            if (n.y < 0) {
+                n = n.scale(-1);
+            }
+            let angle = Mummu.AngleFromToAround(trackpoint.normal, BABYLON.Axis.Y, trackpoint.dir);
+            return angle / Math.PI * 180;
+        }
+        return 0;
+    }
+    splitTrackPointAt(index) {
+        if (index === 0) {
+            let trackPoint = this.trackpoints[0];
+            let nextTrackPoint = this.trackpoints[0 + 1];
+            let distA = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanInA = trackPoint.dir.scale(distA * trackPoint.tangentOut);
+            let tanOutA = nextTrackPoint.dir.scale(distA * nextTrackPoint.tangentIn);
+            let pointA = BABYLON.Vector3.Hermite(trackPoint.position, tanInA, nextTrackPoint.position, tanOutA, 0.5);
+            let normalA = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 0.5);
+            let trackPointA = new TrackPoint(this, pointA, normalA);
+            this.trackpoints.splice(1, 0, trackPointA);
+        }
+        if (index > 0 && index < this.trackpoints.length - 1) {
+            let prevTrackPoint = this.trackpoints[index - 1];
+            let trackPoint = this.trackpoints[index];
+            let nextTrackPoint = this.trackpoints[index + 1];
+            let distA = BABYLON.Vector3.Distance(trackPoint.position, prevTrackPoint.position);
+            let tanInA = prevTrackPoint.dir.scale(distA * prevTrackPoint.tangentOut);
+            let tanOutA = trackPoint.dir.scale(distA * trackPoint.tangentIn);
+            let pointA = BABYLON.Vector3.Hermite(prevTrackPoint.position, tanInA, trackPoint.position, tanOutA, 2 / 3);
+            let normalA = BABYLON.Vector3.Lerp(prevTrackPoint.normal, trackPoint.normal, 2 / 3);
+            let distB = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanInB = trackPoint.dir.scale(distB * trackPoint.tangentOut);
+            let tanOutB = nextTrackPoint.dir.scale(distB * nextTrackPoint.tangentIn);
+            let pointB = BABYLON.Vector3.Hermite(trackPoint.position, tanInB, nextTrackPoint.position, tanOutB, 1 / 3);
+            let normalB = BABYLON.Vector3.Lerp(trackPoint.normal, nextTrackPoint.normal, 1 / 3);
+            let trackPointA = new TrackPoint(this, pointA, normalA);
+            let trackPointB = new TrackPoint(this, pointB, normalB);
+            this.trackpoints.splice(index, 1, trackPointA, trackPointB);
+        }
+    }
+    deleteTrackPointAt(index) {
+        if (index > 0 && index < this.trackpoints.length - 1) {
+            this.trackpoints.splice(index, 1);
+        }
+    }
+    generateWires() {
+        this.interpolatedPoints = [];
+        this.interpolatedNormals = [];
+        // Update normals and tangents
+        for (let i = 1; i < this.trackpoints.length - 1; i++) {
+            let prevTrackPoint = this.trackpoints[i - 1];
+            let trackPoint = this.trackpoints[i];
+            let nextTrackPoint = this.trackpoints[i + 1];
+            if (!trackPoint.fixedDir) {
+                trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
+            }
+            if (!trackPoint.fixedTangentIn) {
+                trackPoint.tangentIn = 1;
+            }
+            if (!trackPoint.fixedTangentOut) {
+                trackPoint.tangentOut = 1;
+            }
+            if (!trackPoint.fixedNormal) {
+                let n = 0;
+                let nextTrackPointWithFixedNormal;
+                while (!nextTrackPointWithFixedNormal) {
+                    n++;
+                    let tmpTrackPoint = this.trackpoints[i + n];
+                    if (tmpTrackPoint.fixedNormal) {
+                        nextTrackPointWithFixedNormal = tmpTrackPoint;
+                    }
+                }
+                trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
+            }
+            let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
+            trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
+        }
+        this.wires[0].path = [];
+        this.wires[1].path = [];
+        this.trackpoints[0].summedLength = 0;
+        for (let i = 0; i < this.trackpoints.length - 1; i++) {
+            let trackPoint = this.trackpoints[i];
+            let nextTrackPoint = this.trackpoints[i + 1];
+            let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
+            let tanIn = this.trackpoints[i].dir.scale(dist * trackPoint.tangentOut);
+            let tanOut = this.trackpoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
+            let count = Math.round(dist / 0.003);
+            count = Math.max(0, count);
+            this.interpolatedPoints.push(trackPoint.position);
+            this.interpolatedNormals.push(trackPoint.normal);
+            nextTrackPoint.summedLength = trackPoint.summedLength;
+            for (let k = 1; k < count; k++) {
+                let amount = k / count;
+                let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
+                let normal = BABYLON.Vector3.CatmullRom(trackPoint.normal, trackPoint.normal, nextTrackPoint.normal, nextTrackPoint.normal, amount);
+                this.interpolatedPoints.push(point);
+                this.interpolatedNormals.push(normal);
+                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(this.interpolatedPoints[this.interpolatedPoints.length - 2], this.interpolatedPoints[this.interpolatedPoints.length - 1]);
+            }
+            nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, this.interpolatedPoints[this.interpolatedPoints.length - 1]);
+        }
+        this.interpolatedPoints.push(this.trackpoints[this.trackpoints.length - 1].position);
+        this.interpolatedNormals.push(this.trackpoints[this.trackpoints.length - 1].normal);
+        let N = this.interpolatedPoints.length;
+        this.summedLength = [0];
+        this.totalLength = 0;
+        for (let i = 0; i < N - 1; i++) {
+            let p = this.interpolatedPoints[i];
+            let pNext = this.interpolatedPoints[i + 1];
+            let dir = pNext.subtract(p);
+            let d = dir.length();
+            dir.scaleInPlace(1 / d);
+            let right = BABYLON.Vector3.Cross(this.interpolatedNormals[i], dir);
+            this.interpolatedNormals[i] = BABYLON.Vector3.Cross(dir, right).normalize();
+            this.summedLength[i + 1] = this.summedLength[i] + d;
+        }
+        this.totalLength = this.summedLength[N - 1];
+        let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
+        this.globalSlope = dh / this.totalLength * 100;
+        // Compute wire path and Update AABB values.
+        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
+        this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
+        for (let i = 0; i < N; i++) {
+            let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
+            let p = this.interpolatedPoints[i];
+            let pNext = this.interpolatedPoints[i + 1] ? this.interpolatedPoints[i + 1] : undefined;
+            if (!pPrev) {
+                pPrev = p.subtract(pNext.subtract(p));
+            }
+            if (!pNext) {
+                pNext = p.add(p.subtract(pPrev));
+            }
+            let dir = pNext.subtract(pPrev).normalize();
+            let up = this.interpolatedNormals[i];
+            let rotation = BABYLON.Quaternion.Identity();
+            Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
+            let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
+            this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.part.wireGauge * 0.5, 0, 0), matrix);
+            this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.part.wireGauge * 0.5, 0, 0), matrix);
+            this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
+            this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
+            this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
+            this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
+        }
+        Mummu.DecimatePathInPlace(this.wires[0].path, 2 / 180 * Math.PI);
+        Mummu.DecimatePathInPlace(this.wires[1].path, 2 / 180 * Math.PI);
+        this.AABBMin.x -= this.part.wireSize * 0.5;
+        this.AABBMin.y -= this.part.wireSize * 0.5;
+        this.AABBMin.z -= this.part.wireSize * 0.5;
+        this.AABBMax.x += this.part.wireSize * 0.5;
+        this.AABBMax.y += this.part.wireSize * 0.5;
+        this.AABBMax.z += this.part.wireSize * 0.5;
+        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.part.getWorldMatrix(), this.AABBMin);
+        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.part.getWorldMatrix(), this.AABBMax);
+    }
+    recomputeAbsolutePath() {
+        this.wires.forEach(wire => {
+            wire.recomputeAbsolutePath();
+        });
+    }
+}
+class TrackPoint {
+    constructor(track, position, normal, dir, tangentIn, tangentOut) {
+        this.track = track;
+        this.position = position;
+        this.normal = normal;
+        this.dir = dir;
+        this.tangentIn = tangentIn;
+        this.tangentOut = tangentOut;
+        this.fixedNormal = false;
+        this.fixedDir = false;
+        this.fixedTangentIn = false;
+        this.fixedTangentOut = false;
+        this.summedLength = 0;
+        if (normal) {
+            this.fixedNormal = true;
+        }
+        else {
+            this.fixedNormal = false;
+            this.normal = BABYLON.Vector3.Up();
+        }
+        this.normal = this.normal.clone();
+        if (dir) {
+            this.fixedDir = true;
+        }
+        else {
+            this.fixedDir = false;
+            this.dir = BABYLON.Vector3.Right();
+        }
+        this.dir = this.dir.clone();
+        if (tangentIn) {
+            this.fixedTangentIn = true;
+        }
+        else {
+            this.fixedTangentIn = false;
+            this.tangentIn = 1;
+        }
+        if (tangentOut) {
+            this.fixedTangentOut = true;
+        }
+        else {
+            this.fixedTangentOut = false;
+            this.tangentOut = 1;
+        }
+    }
+    isFirstOrLast() {
+        let index = this.track.trackpoints.indexOf(this);
+        if (index === 0 || index === this.track.trackpoints.length - 1) {
+            return true;
+        }
+        return false;
+    }
+}
+/// <reference path="../machine/MachinePart.ts"/>
+class DoubleLoop extends MachinePart {
+    constructor(machine, i, j) {
+        super(machine, i, j);
+        this.deserialize({
+            points: [
+                { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+                { position: { x: 0.007831128515433633, y: 0.02686866956826861, z: -0.001512586438867734 }, normal: { x: -0.02088401000702746, y: 0.9212766316260701, z: -0.38834678593461935 } },
+                { position: { x: 0.0445, y: 0.0238, z: -0.026 }, normal: { x: -0.4220582199178856, y: 0.863269455131674, z: -0.27682613105776016 }, tangentIn: 1 },
+                { position: { x: 0.0441, y: 0.0194, z: -0.0801 }, normal: { x: -0.5105506548736694, y: 0.8362861901986887, z: 0.19990857132957118 } },
+                { position: { x: -0.00022584437025674475, y: 0.015373584470800367, z: -0.10497567416976264 }, normal: { x: -0.062210177432127416, y: 0.8376674210294907, z: 0.5426261932211393 } },
+                { position: { x: -0.04682594399162551, y: 0.00993486974904878, z: -0.07591274887481546 }, normal: { x: 0.4338049924054248, y: 0.8392539115358117, z: 0.3278202259409408 } },
+                { position: { x: -0.044, y: 0.0068, z: -0.0251 }, normal: { x: 0.47274782333094034, y: 0.8547500410127304, z: -0.21427053676274183 } },
+                { position: { x: 0.0003, y: 0.0028, z: -0.0004 }, normal: { x: 0.06925374833311816, y: 0.8415192755510988, z: -0.5357697520556448 } },
+                { position: { x: 0.0447, y: -0.0012, z: -0.0262 }, normal: { x: -0.4385316126958126, y: 0.8367050678252934, z: -0.32804672554665304 } },
+                { position: { x: 0.0442, y: -0.0054, z: -0.08 }, normal: { x: -0.5105423049408571, y: 0.8358650802407707, z: 0.2016832231489942 } },
+                { position: { x: -0.00019998794117725982, y: -0.009649497176356298, z: -0.10484166117713693 }, normal: { x: -0.05328804359581278, y: 0.839859833513831, z: 0.5401813070255678 } },
+                { position: { x: -0.04678172451684687, y: -0.014002588861738838, z: -0.07560012404016887 }, normal: { x: 0.4340370522882042, y: 0.8399407589318226, z: 0.3257473848337093 }, tangentIn: 1 },
+                { position: { x: -0.0438, y: -0.0182, z: -0.0247 }, normal: { x: 0.49613685449256684, y: 0.8445355495674358, z: -0.20151408668143006 } },
+                { position: { x: -0.0017, y: -0.0224, z: 0.0002 }, normal: { x: 0.21464241308702953, y: 0.9154904403092122, z: -0.3403026420799902 } },
+                { position: { x: 0.056249999999999994, y: -0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
+            ],
+        });
+        this.generateWires();
+    }
+}
+class Elevator extends MachinePart {
+    constructor(machine, i, j, h = 1, mirror) {
+        super(machine, i, j, 1, h, mirror);
+        this.h = h;
+        this.boxesCount = 4;
+        this.rWheel = 0.015;
+        this.boxX = [];
+        this.boxes = [];
+        this.wheels = [];
+        this.reset = () => {
+            for (let i = 0; i < this.boxesCount; i++) {
+                this.boxX[i] = i / this.boxesCount * this.chainLength;
+                this.update(0);
+            }
+        };
+        this.l = 0;
+        this.p = 0;
+        this.chainLength = 0;
+        this.speed = 0.04; // in m/s
+        this.boxesCount;
+        this.yExtendable = true;
+        this.partName = "elevator-" + h.toFixed(0);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(-1, 1, 0);
+        nRight.normalize();
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.1), 0), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.25), 0), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.25) + 0.01, 0), dir.scale(-1), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+        ];
+        this.tracks[1] = new Track(this);
+        this.tracks[1].trackpoints = [
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), nLeft, dirLeft),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), nRight, dirRight)
+        ];
+        let x = 1;
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+            x = -1;
+        }
+        this.wheels = [
+            new BABYLON.Mesh("wheel-0"),
+            new BABYLON.Mesh("wheel-1")
+        ];
+        this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.25), 0);
+        this.wheels[0].parent = this;
+        this.wheels[0].material = this.game.steelMaterial;
+        this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
+        this.wheels[1].parent = this;
+        this.wheels[1].material = this.game.steelMaterial;
+        this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
+            let vertexData = vertexDatas[0];
+            if (vertexData) {
+                vertexData.applyToMesh(this.wheels[0]);
+                vertexData.applyToMesh(this.wheels[1]);
+            }
+        });
+        this.wires = [];
+        this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
+        this.p = 2 * Math.PI * this.rWheel;
+        this.chainLength = 2 * this.l + this.p;
+        this.boxesCount = Math.round(this.chainLength / 0.08);
+        for (let i = 0; i < this.boxesCount; i++) {
+            let box = new BABYLON.Mesh("box");
+            box.rotationQuaternion = BABYLON.Quaternion.Identity();
+            box.parent = this;
+            let rampWire0 = new Wire(this);
+            let rRamp = this.wireGauge * 0.35;
+            rampWire0.path = [new BABYLON.Vector3(-0.019 * x, 0.001, rRamp)];
+            let nRamp = 12;
+            for (let i = 0; i <= nRamp; i++) {
+                let a = i / nRamp * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
+            }
+            rampWire0.path.push(new BABYLON.Vector3(-0.019 * x, 0.001, -rRamp));
+            rampWire0.parent = box;
+            this.boxes.push(box);
+            this.wires.push(rampWire0);
+        }
+        let rCable = 0.00075;
+        let nCable = 8;
+        let cableShape = [];
+        for (let i = 0; i < nCable; i++) {
+            let a = i / nCable * 2 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            cableShape[i] = new BABYLON.Vector3(cosa * rCable, sina * rCable, 0);
+        }
+        let x0 = this.wheels[0].position.x;
+        let y0 = this.wheels[0].position.y;
+        let pathCable = [];
+        for (let i = 0; i <= 16; i++) {
+            let a = i / 16 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            pathCable.push(new BABYLON.Vector3(x0 + cosa * this.rWheel, y0 - sina * this.rWheel));
+        }
+        x0 = this.wheels[1].position.x;
+        y0 = this.wheels[1].position.y;
+        for (let i = 0; i <= 16; i++) {
+            let a = i / 16 * Math.PI;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            pathCable.push(new BABYLON.Vector3(x0 - cosa * this.rWheel, y0 + sina * this.rWheel));
+        }
+        this.cable = BABYLON.ExtrudeShape("wire", { shape: cableShape, path: pathCable, closeShape: true, closePath: true });
+        this.cable.material = this.game.leatherMaterial;
+        this.cable.parent = this;
+        this.generateWires();
+        this.machine.onStopCallbacks.push(this.reset);
+        this.reset();
+    }
+    dispose() {
+        super.dispose();
+        this.machine.onStopCallbacks.remove(this.reset);
+    }
+    update(dt) {
+        let dx = this.speed * dt * this.game.timeFactor;
+        let x = 1;
+        if (this.mirror) {
+            x = -1;
+        }
+        for (let i = 0; i < this.boxesCount; i++) {
+            this.boxX[i] += dx;
+            while (this.boxX[i] > this.chainLength) {
+                this.boxX[i] -= this.chainLength;
+            }
+            if (this.boxX[i] < this.l) {
+                this.boxes[i].position.x = this.wheels[0].position.x - this.rWheel * x;
+                this.boxes[i].position.y = this.wheels[0].position.y + this.boxX[i];
+                Mummu.QuaternionFromXZAxisToRef(BABYLON.Axis.X, BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
+            }
+            else if (this.boxX[i] < this.l + 0.5 * this.p) {
+                let a = (this.boxX[i] - this.l) / (0.5 * this.p) * Math.PI;
+                this.boxes[i].position.x = this.wheels[1].position.x - Math.cos(a) * this.rWheel * x;
+                this.boxes[i].position.y = this.wheels[1].position.y + Math.sin(a) * this.rWheel;
+                let right = this.wheels[1].position.subtract(this.boxes[i].position).normalize();
+                Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
+            }
+            else if (this.boxX[i] < 2 * this.l + 0.5 * this.p) {
+                this.boxes[i].position.x = this.wheels[0].position.x + this.rWheel * x;
+                this.boxes[i].position.y = this.wheels[1].position.y - (this.boxX[i] - (this.l + 0.5 * this.p));
+                Mummu.QuaternionFromXZAxisToRef(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
+            }
+            else {
+                let a = (this.boxX[i] - (2 * this.l + 0.5 * this.p)) / (0.5 * this.p) * Math.PI;
+                this.boxes[i].position.x = this.wheels[0].position.x + Math.cos(a) * this.rWheel * x;
+                this.boxes[i].position.y = this.wheels[0].position.y - Math.sin(a) * this.rWheel;
+                let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
+                Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
+            }
+            this.wires[i].recomputeAbsolutePath();
+        }
+        let deltaAngle = dx / this.p * 2 * Math.PI * x;
+        this.wheels[0].rotation.z -= deltaAngle;
+        this.wheels[1].rotation.z -= deltaAngle;
+    }
+}
+/*
+class Flat extends Track {
+
+    constructor(machine: Machine, i: number, j: number, public w: number = 1) {
+        super(machine, i, j);
+        this.xExtendable = true;
+        this.trackName = "flat-" + w.toFixed(0);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        
+        this.deltaI = w - 1;
+
+        this.trackPoints = [[
+            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir)
+        ]];
+
+        this.generateWires();
+    }
+}
+
+class CrossingFlat extends Track {
+
+    constructor(machine: Machine, i: number, j: number, public w: number = 1) {
+        super(machine, i, j);
+        this.xExtendable = true;
+        this.trackName = "flatX-" + w.toFixed(0);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let nBank = new BABYLON.Vector3(0, Math.cos(10 / 180 * Math.PI), Math.sin(10 / 180 * Math.PI));
+        
+        this.deltaI = w - 1;
+
+        this.trackPoints = [[
+            new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5)- tileWidth * 0.5) * 0.5, 0, - 0.03), nBank, dir, 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), 0, 0), n, dir, 1.4, 1.4)
+        ]];
+
+        this.generateWires();
+    }
+}
+*/ 
+/// <reference path="../machine/MachinePart.ts"/>
+class FlatLoop extends MachinePart {
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j);
+        this.deserialize({
+            points: [
+                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+                { position: { x: 0.0002, y: -0.004, z: -0.0004 }, normal: { x: 0.019861618966497012, y: 0.9751749757297097, z: -0.22054315405967592 } },
+                { position: { x: 0.0438, y: -0.0064, z: -0.0176 }, normal: { x: -0.22558304612591473, y: 0.9269655818421536, z: -0.29974505730802486 } },
+                { position: { x: 0.0656, y: -0.0092, z: -0.0657 }, normal: { x: -0.36624766795617253, y: 0.9272115297672086, z: -0.07836724305102492 } },
+                { position: { x: 0.05, y: -0.0116, z: -0.1081 }, normal: { x: -0.28899453151103105, y: 0.9331762009279609, z: 0.21369215890710064 } },
+                { position: { x: 0.0001, y: -0.0146, z: -0.1307 }, normal: { x: -0.06591259754365662, y: 0.9234801060022608, z: 0.3779418252894237 } },
+                { position: { x: -0.0463, y: -0.017, z: -0.1117 }, normal: { x: 0.21142849593782587, y: 0.9373586814752951, z: 0.27686945185116646 } },
+                { position: { x: -0.064, y: -0.0194, z: -0.0655 }, normal: { x: 0.3862942302916957, y: 0.9210759814896877, z: 0.0489469505296813 } },
+                { position: { x: -0.0462, y: -0.022, z: -0.0184 }, normal: { x: 0.2824107521306146, y: 0.937604682593982, z: -0.20283398694217641 } },
+                { position: { x: -0.0005, y: -0.0244, z: -0.0002 }, normal: { x: 0.09320082689165142, y: 0.9775672574755118, z: -0.18888055214478572 } },
+                { position: { x: 0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+            ],
+        });
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
+}
+/// <reference path="../machine/MachinePart.ts"/>
+class Loop extends MachinePart {
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j, 2, 3, mirror);
+        this.partName = "loop";
+        this.deserialize({
+            points: [
+                { position: { x: -0.07499999999999998, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+                { position: { x: -0.021400000000000002, y: -0.0158, z: 0 }, normal: { x: 0.4396275545392263, y: 0.8981638211016448, z: -0.0054188332648665 } },
+                { position: { x: 0.01999999999999999, y: -0.0465, z: 0 }, normal: { x: 0.5982436505113027, y: 0.8012971523271827, z: -0.005235293235149783 } },
+                { position: { x: 0.05199999999999999, y: -0.0706, z: 0 }, normal: { x: 0.4741604675908546, y: 0.878895570768095, z: -0.05210015986776756 } },
+                { position: { x: 0.0795, y: -0.0786, z: 0 }, normal: { x: 0.09449201595693026, y: 0.9944340313908211, z: -0.0466070395133045 } },
+                { position: { x: 0.10065375229916038, y: -0.07522312329722819, z: 1.1529110999219938e-11 }, normal: { x: -0.5164966685450393, y: 0.8544407592437108, z: -0.05623326706592006 } },
+                { position: { x: 0.11519302709514871, y: -0.05708879183907972, z: -0.0009829866651905254 }, normal: { x: -0.9589534906617966, y: 0.25476375646906013, z: -0.12451357812435228 } },
+                { position: { x: 0.11218277110706124, y: -0.03280312921665407, z: -0.0019974993144583333 }, normal: { x: -0.8687142251904587, y: -0.4874405932158047, z: -0.08796171347333712 } },
+                { position: { x: 0.09431741317667067, y: -0.018836421903859007, z: -0.006790230548899395 }, normal: { x: -0.2827692887364913, y: -0.9591460712007929, z: -0.008963450649307923 } },
+                { position: { x: 0.0715028480454771, y: -0.02070606642307432, z: -0.013133538933271394 }, normal: { x: 0.44191323501249113, y: -0.8959028193766404, z: 0.045506383659676526 } },
+                { position: { x: 0.05679978340718872, y: -0.03791636105629381, z: -0.018090494323189286 }, normal: { x: 0.9547976002539688, y: -0.29720598940938536, z: -0.005490210237409393 } },
+                { position: { x: 0.05785498312066663, y: -0.06445088096471263, z: -0.01854822983510782 }, normal: { x: 0.8764619011291043, y: 0.452593339877206, z: 0.16423703774713058 } },
+                { position: { x: 0.08849293866937, y: -0.10093496548854738, z: -0.013560714982744127 }, normal: { x: 0.4579284797457813, y: 0.879998331714446, z: 0.12611282098783305 } },
+                { position: { x: 0.1453843264203472, y: -0.11222087303501635, z: -0.003043587228636343 }, normal: { x: -0.0774630913932069, y: 0.99670764505399, z: -0.023944514251439668 } },
+                { position: { x: 0.225, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
+            ],
+        });
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
+}
+class Ramp extends MachinePart {
+    constructor(machine, i, j, w = 1, h = 1, mirror) {
+        super(machine, i, j, w, h, mirror);
+        this.w = w;
+        this.h = h;
+        this.xExtendable = true;
+        this.yExtendable = true;
+        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n, dir)
+        ];
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
+}
+class CrossingRamp extends MachinePart {
+    constructor(machine, i, j, w = 1, h = 1, mirror) {
+        super(machine, i, j, w, h, mirror);
+        this.w = w;
+        this.h = h;
+        this.xExtendable = true;
+        this.yExtendable = true;
+        this.partName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let nBank = new BABYLON.Vector3(0, Math.cos(15 / 180 * Math.PI), Math.sin(15 / 180 * Math.PI));
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3((tileWidth * (this.w - 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * this.h * 0.5, -0.03), nBank, dir.clone(), 1.4, 1.4),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n.clone(), dir.clone(), 1.4, 1.4)
+        ];
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
+}
+/// <reference path="../machine/MachinePart.ts"/>
 class Snake extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, 2, 1, mirror);
@@ -3330,7 +3384,7 @@ class Snake extends MachinePart {
         this.generateWires();
     }
 }
-/// <reference path="./MachinePart.ts"/>
+/// <reference path="../machine/MachinePart.ts"/>
 class Spiral extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, 1, 3, mirror);
@@ -3423,7 +3477,7 @@ class UTurn extends MachinePart {
         this.generateWires();
     }
 }
-/// <reference path="./MachinePart.ts"/>
+/// <reference path="../machine/MachinePart.ts"/>
 class Wave extends MachinePart {
     constructor(machine, i, j, mirror) {
         super(machine, i, j, 2, 1, mirror);

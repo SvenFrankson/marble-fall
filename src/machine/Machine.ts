@@ -19,7 +19,7 @@ class Machine {
 
     public baseWall: BABYLON.Mesh;
     public baseFrame: BABYLON.Mesh;
-    public tracks: MachinePart[] = [];
+    public parts: MachinePart[] = [];
     public balls: Ball[] = [];
 
     public trackFactory: MachinePartFactory;
@@ -36,14 +36,14 @@ class Machine {
         for (let i = 0; i < this.balls.length; i++) {
             await this.balls[i].instantiate();
         }
-        for (let i = 0; i < this.tracks.length; i++) {
-            await this.tracks[i].instantiate();
+        for (let i = 0; i < this.parts.length; i++) {
+            await this.parts[i].instantiate();
         }
 
         return new Promise<void>(resolve => {
             requestAnimationFrame(() => {
-                for (let i = 0; i < this.tracks.length; i++) {
-                    this.tracks[i].recomputeAbsolutePath();
+                for (let i = 0; i < this.parts.length; i++) {
+                    this.parts[i].recomputeAbsolutePath();
                 }
                 this.instantiated = true;
                 resolve();
@@ -55,8 +55,8 @@ class Machine {
         while (this.balls.length > 0) {
             this.balls[0].dispose();
         }
-        while (this.tracks.length > 0) {
-            this.tracks[0].dispose();
+        while (this.parts.length > 0) {
+            this.parts[0].dispose();
         }
         this.instantiated = false;
     }
@@ -71,8 +71,8 @@ class Machine {
                 for (let i = 0; i < this.balls.length; i++) {
                     this.balls[i].update(dt);
                 }
-                for (let i = 0; i < this.tracks.length; i++) {
-                    this.tracks[i].update(dt);
+                for (let i = 0; i < this.parts.length; i++) {
+                    this.parts[i].update(dt);
                 }
             }
         }
@@ -109,8 +109,8 @@ class Machine {
         let maxX = 0.15;
         let minY = - 0.15;
         let maxY = 0.15;
-        for (let i = 0; i < this.tracks.length; i++) {
-            let track = this.tracks[i];
+        for (let i = 0; i < this.parts.length; i++) {
+            let track = this.parts[i];
             minX = Math.min(minX, track.position.x - tileWidth * 0.5);
             maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
             minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
@@ -176,12 +176,12 @@ class Machine {
             })
         }
 
-        for (let i = 0; i < this.tracks.length; i++) {
+        for (let i = 0; i < this.parts.length; i++) {
             data.parts.push({
-                name: this.tracks[i].partName,
-                i: this.tracks[i].i,
-                j: this.tracks[i].j,
-                mirror: this.tracks[i].mirror
+                name: this.parts[i].partName,
+                i: this.parts[i].i,
+                j: this.parts[i].j,
+                mirror: this.parts[i].mirror
             })
         }
 
@@ -190,7 +190,7 @@ class Machine {
 
     public deserialize(data: IMachineData): void {
         this.balls = [];
-        this.tracks = [];
+        this.parts = [];
 
         for (let i = 0; i < data.balls.length; i++) {
             let ballData = data.balls[i];
@@ -201,7 +201,7 @@ class Machine {
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
             let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.mirror);
-            this.tracks.push(track);
+            this.parts.push(track);
         }
     }
 }

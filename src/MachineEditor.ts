@@ -353,7 +353,7 @@ class MachineEditor {
                 else {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    pickedObject = this.machine.tracks.find(track => {
+                    pickedObject = this.machine.parts.find(track => {
                         if (track.i <= i) {
                             if ((track.i + track.w - 1) >= i) {
                                 if (track.j <= j) {
@@ -454,8 +454,8 @@ class MachineEditor {
                 let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
                 draggedTrack.setI(i);
                 draggedTrack.setJ(j);
-                if (this.machine.tracks.indexOf(draggedTrack) === -1) {
-                    this.machine.tracks.push(draggedTrack);
+                if (this.machine.parts.indexOf(draggedTrack) === -1) {
+                    this.machine.parts.push(draggedTrack);
                 }
                 draggedTrack.setIsVisible(true);
                 draggedTrack.generateWires();
@@ -490,7 +490,7 @@ class MachineEditor {
                     else if (pick.pickedMesh === this.machine.baseWall) {
                         let i = Math.round(pick.pickedPoint.x / tileWidth);
                         let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                        let pickedTrack = this.machine.tracks.find(track => {
+                        let pickedTrack = this.machine.parts.find(track => {
                             if (track.i <= i) {
                                 if ((track.i + track.w - 1) >= i) {
                                     if (track.j <= j) {
@@ -521,7 +521,7 @@ class MachineEditor {
 
         let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, w, h, mirror);
         track.dispose();
-        this.machine.tracks.push(editedTrack);
+        this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
         editedTrack.generateWires();
         await editedTrack.instantiate();
@@ -533,7 +533,7 @@ class MachineEditor {
     public async mirrorTrackInPlace(track: MachinePart): Promise<MachinePart> {
         let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, !track.mirror);
         track.dispose();
-        this.machine.tracks.push(mirroredTrack);
+        this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
         await mirroredTrack.instantiate();

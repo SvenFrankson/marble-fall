@@ -562,7 +562,7 @@ class Game {
                 }
 
                 if (track) {
-                    this.machine.tracks = [track];
+                    this.machine.parts = [track];
                 }
                 if (ball) {
                     this.machine.balls = [ball];

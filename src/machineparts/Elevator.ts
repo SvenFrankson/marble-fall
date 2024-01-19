@@ -27,54 +27,49 @@ class Elevator extends MachinePart {
         let nRight = new BABYLON.Vector3(- 1, 1, 0);
         nRight.normalize();
 
-        this.trackPoints = [
-            [
-                new TrackPoint(this, new BABYLON.Vector3(
-                    - tileWidth * 0.5,
-                    - tileHeight * this.h,
-                    0
-                ), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(
-                    - tileWidth * 0.1,
-                    - tileHeight * (this.h + 0.1),
-                    0
-                ), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(
-                    0,
-                    - tileHeight * (this.h + 0.25),
-                    0
-                ), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(
-                    0 + 0.01,
-                    - tileHeight * (this.h + 0.25) + 0.01,
-                    0
-                ), dir.scale(-1), n),
-                new TrackPoint(this, new BABYLON.Vector3(
-                    0 + 0.01,
-                    0 - tileHeight,
-                    0
-                ), dir.scale(-1), n),
-                new TrackPoint(this, new BABYLON.Vector3(
-                    -0.005,
-                    0.035 - tileHeight,
-                    0
-                ), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
-            ],
-            [
-                new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), nLeft, dirLeft),
-                new TrackPoint(this, new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), nRight, dirRight)
-            ]
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
+                - tileWidth * 0.5,
+                - tileHeight * this.h,
+                0
+            ), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
+                - tileWidth * 0.1,
+                - tileHeight * (this.h + 0.1),
+                0
+            ), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
+                0,
+                - tileHeight * (this.h + 0.25),
+                0
+            ), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
+                0 + 0.01,
+                - tileHeight * (this.h + 0.25) + 0.01,
+                0
+            ), dir.scale(-1), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
+                0 + 0.01,
+                0 - tileHeight,
+                0
+            ), dir.scale(-1), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
+                -0.005,
+                0.035 - tileHeight,
+                0
+            ), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+        ];
+        this.tracks[1] = new Track(this);
+        this.tracks[1].trackpoints = [
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), nLeft, dirLeft),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), nRight, dirRight)
         ];
         
-        this.wires.push(new Wire(this), new Wire(this));
-
         let x = 1;
         if (mirror) {
             this.mirrorTrackPointsInPlace();
             x = - 1;
         }
-
-        this.generateWires();
 
         this.wheels = [
             new BABYLON.Mesh("wheel-0"),
@@ -96,6 +91,7 @@ class Elevator extends MachinePart {
             }
         })
 
+        this.wires = [];
         this.l = Math.abs(this.wheels[1].position.y - this.wheels[0].position.y);
         this.p = 2 * Math.PI * this.rWheel;
         this.chainLength = 2 * this.l + this.p;
@@ -154,6 +150,8 @@ class Elevator extends MachinePart {
         this.cable.material = this.game.leatherMaterial;
         this.cable.parent = this;
 
+        this.generateWires();
+        
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
     }
@@ -212,7 +210,7 @@ class Elevator extends MachinePart {
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
-            this.wires[4 + i].recomputeAbsolutePath();
+            this.wires[i].recomputeAbsolutePath();
         }
         
         let deltaAngle = dx / this.p * 2 * Math.PI * x;

@@ -11,18 +11,18 @@ class TrackPointHandle extends BABYLON.Mesh {
 
     constructor(public trackPoint: TrackPoint) {
         super("trackpoint-handle");
-        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.wireGauge });
+        let data = BABYLON.CreateSphereVertexData({ diameter: 0.6 * this.trackPoint.track.part.wireGauge });
         data.applyToMesh(this);
         this.position.copyFrom(this.trackPoint.position);
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.setNormal(trackPoint.normal);
-        this.parent = trackPoint.track;
+        this.parent = trackPoint.track.part;
 
-        let normalIndicator = BABYLON.MeshBuilder.CreateCylinder("normal", { height: this.trackPoint.track.wireGauge, diameter: 0.0005, tessellation: 8 });
+        let normalIndicator = BABYLON.MeshBuilder.CreateCylinder("normal", { height: this.trackPoint.track.part.wireGauge, diameter: 0.0005, tessellation: 8 });
         normalIndicator.parent = this;
-        normalIndicator.position.copyFromFloats(0, 0.6 * this.trackPoint.track.wireGauge * 0.5 + this.trackPoint.track.wireGauge * 0.5, 0);
+        normalIndicator.position.copyFromFloats(0, 0.6 * this.trackPoint.track.part.wireGauge * 0.5 + this.trackPoint.track.part.wireGauge * 0.5, 0);
 
-        this.setMaterial(this.trackPoint.track.game.handleMaterial);
+        this.setMaterial(this.trackPoint.track.part.game.handleMaterial);
     }
 
     public setMaterial(material: BABYLON.Material) {
@@ -36,11 +36,11 @@ class TrackPointHandle extends BABYLON.Mesh {
 class TrackEditor {
 
     private _track: MachinePart;
-    public get track(): MachinePart {
+    public get part(): MachinePart {
         return this._track;
     }
     public setTrack(t: MachinePart): void {
-        if (t != this.track) {
+        if (t != this.part) {
             if (this._track) {
                 
             }
@@ -62,7 +62,7 @@ class TrackEditor {
     public helperShape: HelperShape;
 
     constructor(public game: Game) {
-        this.setTrack(this.game.machine.tracks[0]);
+        this.setTrack(this.game.machine.parts[0]);
         this.helperShape = new HelperShape();
     }
 
@@ -72,36 +72,36 @@ class TrackEditor {
         this.pointerPlane.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         document.getElementById("prev-track").addEventListener("click", () => {
-            let trackIndex = this.game.machine.tracks.indexOf(this._track);
+            let trackIndex = this.game.machine.parts.indexOf(this._track);
             if (trackIndex > 0) {
-                this.setTrack(this.game.machine.tracks[trackIndex - 1]);
+                this.setTrack(this.game.machine.parts[trackIndex - 1]);
                 this.centerOnTrack();
             }
         });
         document.getElementById("next-track").addEventListener("click", () => {
-            let trackIndex = this.game.machine.tracks.indexOf(this._track);
-            if (trackIndex < this.game.machine.tracks.length - 1) {
-                this.setTrack(this.game.machine.tracks[trackIndex + 1]);
+            let trackIndex = this.game.machine.parts.indexOf(this._track);
+            if (trackIndex < this.game.machine.parts.length - 1) {
+                this.setTrack(this.game.machine.parts[trackIndex + 1]);
                 this.centerOnTrack();
             }
         });
 
         document.getElementById("load").addEventListener("click", () => {
-            if (this.track) {
+            if (this.part) {
                 let s = window.localStorage.getItem("last-saved-track");
                 if (s) {
                     let data = JSON.parse(s);
-                    this.track.deserialize(data);
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.deserialize(data);
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                 }
             }
         });
 
         document.getElementById("save").addEventListener("click", () => {
-            if (this.track) {
-                let data = this.track.serialize();
+            if (this.part) {
+                let data = this.part.serialize();
                 window.localStorage.setItem("last-saved-track", JSON.stringify(data));
                 Nabu.download("track.json", JSON.stringify(data));
             }
@@ -138,8 +138,8 @@ class TrackEditor {
         });
 
         document.getElementById("btn-focus-point").addEventListener("click", () => {
-            if (this.track && this.selectedTrackPoint) {
-                let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.track.getWorldMatrix());
+            if (this.part && this.selectedTrackPoint) {
+                let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.part.getWorldMatrix());
                 this.game.setCameraTarget(target);
             }
         });
@@ -149,17 +149,17 @@ class TrackEditor {
         });
 
         document.getElementById("btn-display-wire").addEventListener("click", () => {
-            if (this.track) {
-                this.track.renderOnlyPath = false;
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.renderOnlyPath = false;
+                this.part.rebuildWireMeshes();
                 this.updateHandles();
             }
         });
 
         document.getElementById("btn-display-path").addEventListener("click", () => {
-            if (this.track) {
-                this.track.renderOnlyPath = true;
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.renderOnlyPath = true;
+                this.part.rebuildWireMeshes();
                 this.updateHandles();
             }
         });
@@ -183,25 +183,25 @@ class TrackEditor {
         }
 
         document.getElementById("prev-trackpoint").addEventListener("click", () => {
-            if (this.track) {
-                let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.track.trackPoints.length) % this.track.trackPoints.length;
+            if (this.part) {
+                let newTrackIndex = (this.selectedTrackPointIndex - 1 + this.part.tracks[0].trackpoints.length) % this.part.tracks[0].trackpoints.length;
                 this.setSelectedTrackPointIndex(newTrackIndex);
             }
         });
         document.getElementById("next-trackpoint").addEventListener("click", () => {
-            if (this.track) {
-                let newTrackIndex = (this.selectedTrackPointIndex + 1) % this.track.trackPoints.length;
+            if (this.part) {
+                let newTrackIndex = (this.selectedTrackPointIndex + 1) % this.part.tracks[0].trackpoints.length;
                 this.setSelectedTrackPointIndex(newTrackIndex);
             }
         });
 
         this.activeTrackpointPositionInput = document.getElementById("active-trackpoint-pos") as Nabu.InputVector3;
         this.activeTrackpointPositionInput.onInputXYZCallback = (xyz: Nabu.IVector3XYZValue) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -209,11 +209,11 @@ class TrackEditor {
 
         this.activeTrackpointNormalInput = document.getElementById("active-trackpoint-normal") as Nabu.InputVector3;
         this.activeTrackpointNormalInput.onInputXYZCallback = (xyz: Nabu.IVector3XYZValue) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -221,13 +221,13 @@ class TrackEditor {
 
         this.activeTrackpointTangentIn = document.getElementById("active-trackpoint-tan-in") as Nabu.InputNumber;
         this.activeTrackpointTangentIn.onInputNCallback = (n: number) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.selectedTrackPoint.tangentIn = n;
                     this.selectedTrackPoint.fixedTangentIn = true;
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -235,34 +235,34 @@ class TrackEditor {
 
         this.activeTrackpointTangentOut = document.getElementById("active-trackpoint-tan-out") as Nabu.InputNumber;
         this.activeTrackpointTangentOut.onInputNCallback = (n: number) => {
-            if (this.track) {
+            if (this.part) {
                 if (this.selectedTrackPoint && !this.selectedTrackPoint.isFirstOrLast()) {
                     this.selectedTrackPoint.tangentOut = n;
                     this.selectedTrackPoint.fixedTangentOut = true;
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
         }
 
         document.getElementById("active-trackpoint-split").addEventListener("click", () => {
-            if (this.track) {
-                this.track.splitTrackPointAt(this.selectedTrackPointIndex);
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.splitTrackPointAt(this.selectedTrackPointIndex);
+                this.part.generateWires();
+                this.part.recomputeAbsolutePath();
+                this.part.rebuildWireMeshes();
                 this.rebuildHandles();
             }
         });
 
         document.getElementById("active-trackpoint-delete").addEventListener("click", () => {
-            if (this.track) {
-                this.track.deleteTrackPointAt(this.selectedTrackPointIndex);
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.rebuildWireMeshes();
+            if (this.part) {
+                this.part.deleteTrackPointAt(this.selectedTrackPointIndex);
+                this.part.generateWires();
+                this.part.recomputeAbsolutePath();
+                this.part.rebuildWireMeshes();
                 this.rebuildHandles();
             }
         });
@@ -344,13 +344,13 @@ class TrackEditor {
     public rebuildHandles(): void {
         this.removeHandles();
 
-        for (let i = 0; i < this.track.trackPoints.length; i++) {
-            let handle = new TrackPointHandle(this.track.trackPoints[0][i]);
+        for (let i = 0; i < this.part.tracks[0].trackpoints.length; i++) {
+            let handle = new TrackPointHandle(this.part.tracks[0].trackpoints[0][i]);
             this.trackPointhandles.push(handle);
 
-            let pPrev = this.track.trackPoints[0][i - 1] ? this.track.trackPoints[0][i - 1].position : undefined;
-            let p = this.track.trackPoints[0][i].position;
-            let pNext = this.track.trackPoints[0][i + 1] ? this.track.trackPoints[0][i + 1].position : undefined;
+            let pPrev = this.part.tracks[0].trackpoints[0][i - 1] ? this.part.tracks[0].trackpoints[0][i - 1].position : undefined;
+            let p = this.part.tracks[0].trackpoints[0][i].position;
+            let pNext = this.part.tracks[0].trackpoints[0][i + 1] ? this.part.tracks[0].trackpoints[0][i + 1].position : undefined;
 
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
@@ -359,7 +359,7 @@ class TrackEditor {
                 pNext = p.add(p.subtract(pPrev));
             }
 
-            Mummu.QuaternionFromYZAxisToRef(this.track.trackPoints[0][i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
+            Mummu.QuaternionFromYZAxisToRef(this.part.tracks[0].trackpoints[0][i].normal, pNext.subtract(pPrev), handle.rotationQuaternion);
         }
 
         this.normalHandle = BABYLON.MeshBuilder.CreateCylinder("normal-handle", { height: 0.03, diameter: 0.0025, tessellation: 8 });
@@ -377,7 +377,7 @@ class TrackEditor {
         if (this.selectedTrackPointHandle) {
             this.normalHandle.isVisible = true;
             this.normalHandle.parent = this.selectedTrackPointHandle;
-            this.normalHandle.position.copyFromFloats(0, 0.015 + 0.5 * this.track.wireGauge / 2, 0);
+            this.normalHandle.position.copyFromFloats(0, 0.015 + 0.5 * this.part.wireGauge / 2, 0);
             if (this.selectedTrackPointHandle.trackPoint.fixedNormal) {
                 this.normalHandle.material = this.game.handleMaterialActive;
             }
@@ -495,17 +495,17 @@ class TrackEditor {
                 this.dragNormal = false;
                 this.selectedTrackPoint.normal.copyFrom(this.selectedTrackPointHandle.normal);
                 this.selectedTrackPoint.fixedNormal = true;
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.rebuildWireMeshes();
+                this.part.generateWires();
+                this.part.recomputeAbsolutePath();
+                this.part.rebuildWireMeshes();
                 this.updateHandles();
             }
             else if (this.dragTrackPoint && this.hoveredTrackPoint && !this.hoveredTrackPoint.isFirstOrLast()) {
                 this.dragTrackPoint = false;
                 this.hoveredTrackPoint.position.copyFrom(this.hoveredTrackPointHandle.position);
-                this.track.generateWires();
-                this.track.recomputeAbsolutePath();
-                this.track.rebuildWireMeshes();
+                this.part.generateWires();
+                this.part.recomputeAbsolutePath();
+                this.part.rebuildWireMeshes();
                 this.updateHandles();
             }
             else {
@@ -537,9 +537,9 @@ class TrackEditor {
                     let dA = 3 * (eventData.event.deltaY / 100) / 180 * Math.PI;
                     Mummu.RotateInPlace(this.hoveredTrackPoint.normal, this.hoveredTrackPoint.dir, dA);
                     this.hoveredTrackPoint.fixedNormal = true;
-                    this.track.generateWires();
-                    this.track.recomputeAbsolutePath();
-                    this.track.rebuildWireMeshes();
+                    this.part.generateWires();
+                    this.part.recomputeAbsolutePath();
+                    this.part.rebuildWireMeshes();
                     this.updateHandles();
                 }
             }
@@ -547,9 +547,9 @@ class TrackEditor {
     }
 
     public centerOnTrack(): void {
-        if (this.track) {
-            let center = this.track.getBarycenter();
-            center.x = this.track.position.x;
+        if (this.part) {
+            let center = this.part.getBarycenter();
+            center.x = this.part.position.x;
             this.game.setCameraTarget(center);
         }
     }
@@ -565,21 +565,21 @@ class TrackEditor {
                 this.activeTrackpointNormalInput.targetXYZ = this.selectedTrackPoint.normal;
             }
 
-            let slopePrev = this.track.getSlopeAt(this.selectedTrackPointIndex - 1);
+            let slopePrev = this.part.getSlopeAt(this.selectedTrackPointIndex - 1);
             document.getElementById("slope-prev").innerText = slopePrev.toFixed(1) + "%";
-            let slopeCurr = this.track.getSlopeAt(this.selectedTrackPointIndex);
+            let slopeCurr = this.part.getSlopeAt(this.selectedTrackPointIndex);
             document.getElementById("slope-curr").innerText = slopeCurr.toFixed(1) + "%";
-            let slopeNext = this.track.getSlopeAt(this.selectedTrackPointIndex + 1);
+            let slopeNext = this.part.getSlopeAt(this.selectedTrackPointIndex + 1);
             document.getElementById("slope-next").innerText = slopeNext.toFixed(1) + "%";
 
             this.activeTrackpointTangentIn.setValue(this.selectedTrackPoint.tangentIn);
             this.activeTrackpointTangentOut.setValue(this.selectedTrackPoint.tangentOut);
             
-            let bankCurr = this.track.getBankAt(this.selectedTrackPointIndex);
+            let bankCurr = this.part.getBankAt(this.selectedTrackPointIndex);
             document.getElementById("active-trackpoint-bank").innerText = bankCurr.toFixed(1) + "°";
         }
-        if (this.track) {
-            document.getElementById("slope-global").innerText = this.track.globalSlope.toFixed(1) + "%";
+        if (this.part) {
+            document.getElementById("slope-global").innerText = this.part.globalSlope.toFixed(1) + "%";
         }
         this.helperCircleRadius.setValue(this.helperShape.circleRadius);
         this.helperGridSize.setValue(this.helperShape.gridSize);
