@@ -150,12 +150,12 @@ input-number {
 
 
 :root {
-    --button-xs-size: 4vh;
+    --button-xs-size: 3vh;
     --half-button-xs-size: calc(var(--button-xs-size) * 0.5);
-    --button-s-size: 5vh;
-    --button-m-size: 10vh;
-    --button-l-size: 20vh;
-    --button-height: 5vh;
+    --button-s-size: 4vh;
+    --button-m-size: 8vh;
+    --button-l-size: 12vh;
+    --button-height: 4vh;
     --half-button-height: calc(var(--button-height) * 0.5);
 }
 
@@ -163,7 +163,7 @@ input-number {
     position: fixed;
     bottom: 10px;
     left: 50px;
-    z-index: 2;
+    z-index: 3;
 }
 
 .btn {
@@ -175,8 +175,8 @@ input-number {
     outline: 1px solid white;
     color: white;
     font-weight: bold;
-    margin-left: 3px;
-    margin-right: 3px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 .btn.xs {
@@ -245,20 +245,27 @@ input-number {
     background-color: #272b2e;
     border-radius: var(--half-button-height);
     color: white;
-    padding: 1vh;
+    padding: calc(var(--half-button-height) * 0.4);
     outline: 1px solid white;
 }
 
 #time-factor-value {
     display: block;
     width: var(--half-button-height);
-    height: var(--half-button-m-size);
+    height: var(--button-l-size);
     appearance: slider-vertical;
 }
 
 #sound-value {
     display: block;
     width: var(--half-button-height);
-    height: var(--half-button-m-size);
+    height: var(--button-l-size);
+    appearance: slider-vertical;
+}
+
+#zoom-value {
+    display: block;
+    width: var(--half-button-height);
+    height: var(--button-l-size);
     appearance: slider-vertical;
 }

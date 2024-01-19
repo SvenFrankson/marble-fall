@@ -1316,7 +1316,8 @@ class Game {
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
-        this.camera.panningSensibility = 10000;
+        this.camera.panningSensibility = 2000;
+        this.camera.panningInertia *= 0.1;
         this.camera.lowerRadiusLimit = 0.05;
         this.camera.upperRadiusLimit = 2;
         this.camera.angularSensibilityX = 2000;
@@ -3559,6 +3560,7 @@ class Toolbar {
         this.timeFactorInputShown = false;
         this.loadInputShown = false;
         this.soundInputShown = false;
+        this.zoomInputShown = false;
         this._udpate = () => {
             if (this.game.machine) {
                 if (this.game.machine.playing != this._lastPlaying) {
@@ -3627,14 +3629,22 @@ class Toolbar {
         this.onSoundInput = (e) => {
             this.game.mainSound = parseFloat(e.target.value);
         };
+        this.onZoomButton = () => {
+            this.zoomInputShown = !this.zoomInputShown;
+            this.resize();
+        };
+        this.onZoomInput = (e) => {
+            this.game.camera.radius = parseFloat(e.target.value);
+        };
         this.onBack = () => {
             this.game.setContext(GameMode.MainMenu);
         };
         this.closeAllDropdowns = () => {
-            if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown) {
+            if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {
                 this.timeFactorInputShown = false;
                 this.loadInputShown = false;
                 this.soundInputShown = false;
+                this.zoomInputShown = false;
                 this.resize();
             }
         };
@@ -3667,6 +3677,12 @@ class Toolbar {
         this.soundInput.value = this.game.mainSound.toFixed(2);
         this.soundInput.addEventListener("input", this.onSoundInput);
         this.soundInputContainer = this.soundInput.parentElement;
+        this.zoomButton = document.querySelector("#toolbar-zoom");
+        this.zoomButton.addEventListener("click", this.onZoomButton);
+        this.zoomInput = document.querySelector("#zoom-value");
+        this.zoomInput.value = this.game.camera.radius.toFixed(1);
+        this.zoomInput.addEventListener("input", this.onZoomInput);
+        this.zoomInputContainer = this.zoomInput.parentElement;
         this.backButton = document.querySelector("#toolbar-back");
         this.backButton.addEventListener("click", this.onBack);
         this.resize();
@@ -3728,5 +3744,10 @@ class Toolbar {
         rectContainer = this.soundInputContainer.getBoundingClientRect();
         this.soundInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
         this.soundInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.zoomInputContainer.style.display = this.zoomInputShown ? "" : "none";
+        rectButton = this.zoomButton.getBoundingClientRect();
+        rectContainer = this.zoomInputContainer.getBoundingClientRect();
+        this.zoomInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
+        this.zoomInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
     }
 }

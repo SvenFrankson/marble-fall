@@ -15,11 +15,15 @@ class Toolbar {
     public soundButton: HTMLButtonElement;
     public soundInputContainer: HTMLDivElement;
     public soundInput: HTMLInputElement;
+    public zoomButton: HTMLButtonElement;
+    public zoomInputContainer: HTMLDivElement;
+    public zoomInput: HTMLInputElement;
     public backButton: HTMLButtonElement;
 
     public timeFactorInputShown: boolean = false;
     public loadInputShown: boolean = false;
     public soundInputShown: boolean = false;
+    public zoomInputShown: boolean = false;
 
     constructor(public game: Game) {
 
@@ -67,6 +71,15 @@ class Toolbar {
         this.soundInput.addEventListener("input", this.onSoundInput);
 
         this.soundInputContainer = this.soundInput.parentElement as HTMLDivElement;
+
+        this.zoomButton = document.querySelector("#toolbar-zoom") as HTMLButtonElement;
+        this.zoomButton.addEventListener("click", this.onZoomButton);
+
+        this.zoomInput = document.querySelector("#zoom-value") as HTMLInputElement;
+        this.zoomInput.value = this.game.camera.radius.toFixed(1);
+        this.zoomInput.addEventListener("input", this.onZoomInput);
+
+        this.zoomInputContainer = this.zoomInput.parentElement as HTMLDivElement;
 
         this.backButton = document.querySelector("#toolbar-back") as HTMLButtonElement;
         this.backButton.addEventListener("click", this.onBack);
@@ -137,6 +150,12 @@ class Toolbar {
         rectContainer = this.soundInputContainer.getBoundingClientRect();
         this.soundInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
         this.soundInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        
+        this.zoomInputContainer.style.display = this.zoomInputShown ? "" : "none";
+        rectButton = this.zoomButton.getBoundingClientRect();
+        rectContainer = this.zoomInputContainer.getBoundingClientRect();
+        this.zoomInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
+        this.zoomInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
     }
 
     private _lastPlaying: boolean;
@@ -219,15 +238,25 @@ class Toolbar {
         this.game.mainSound = parseFloat((e.target as HTMLInputElement).value);
     }
 
+    public onZoomButton = () => {
+        this.zoomInputShown = !this.zoomInputShown;
+        this.resize();
+    }
+
+    public onZoomInput = (e: InputEvent) => {
+        this.game.camera.radius = parseFloat((e.target as HTMLInputElement).value);
+    }
+
     public onBack = () => {
         this.game.setContext(GameMode.MainMenu);
     }
 
     public closeAllDropdowns = () => {
-        if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown) {
+        if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {
             this.timeFactorInputShown = false;
             this.loadInputShown = false;
             this.soundInputShown = false;
+            this.zoomInputShown = false;
             this.resize();
         }        
     }

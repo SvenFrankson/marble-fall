@@ -147,7 +147,8 @@ class Game {
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
-        this.camera.panningSensibility = 10000;
+        this.camera.panningSensibility = 2000;
+        this.camera.panningInertia *= 0.1;
         this.camera.lowerRadiusLimit = 0.05;
         this.camera.upperRadiusLimit = 2;
         this.camera.angularSensibilityX = 2000;
