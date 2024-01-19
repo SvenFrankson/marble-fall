@@ -1,7 +1,7 @@
 class Ramp extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -11,13 +11,10 @@ class Ramp extends MachinePart {
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
-        
-        this.deltaI = w - 1;
-        this.deltaJ = h;
 
         this.trackPoints = [[
             new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ), 0), n, dir)
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.w - 0.5), - tileHeight * this.h, 0), n, dir)
         ]];
 
         if (mirror) {
@@ -31,7 +28,7 @@ class Ramp extends MachinePart {
 class CrossingRamp extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -42,14 +39,11 @@ class CrossingRamp extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         let nBank = new BABYLON.Vector3(0, Math.cos(15 / 180 * Math.PI), Math.sin(15 / 180 * Math.PI));
-        
-        this.deltaI = w - 1;
-        this.deltaJ = h;
-
+    
         this.trackPoints = [[
             new TrackPoint(this, new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5)- tileWidth * 0.5) * 0.5, - tileHeight * (this.deltaJ) * 0.5, - 0.03), nBank, dir.clone(), 1.4, 1.4),
-            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), - tileHeight * (this.deltaJ), 0), n.clone(), dir.clone(), 1.4, 1.4)
+            new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.w - 0.5)- tileWidth * 0.5) * 0.5, - tileHeight * this.h * 0.5, - 0.03), nBank, dir.clone(), 1.4, 1.4),
+            new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.w - 0.5), - tileHeight * this.h, 0), n.clone(), dir.clone(), 1.4, 1.4)
         ]];
 
         if (mirror) {

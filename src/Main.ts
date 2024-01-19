@@ -551,8 +551,8 @@ class Game {
                 }
                 else {
                     track = this.machine.trackFactory.createTrack(objectName, 0, 0);
-                    this.camera.radius = 0.25 + Math.max(0.15 * track.deltaI, 0);
-                    this.camera.target.copyFromFloats(tileWidth * (track.deltaI * 0.55), - tileHeight * (track.deltaJ) * 0.5, 0);
+                    this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
+                    this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), - tileHeight * (track.h) * 0.5, 0);
                 }
 
                 if (objectName === "spiral") {

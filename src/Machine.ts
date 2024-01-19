@@ -112,8 +112,8 @@ class Machine {
         for (let i = 0; i < this.tracks.length; i++) {
             let track = this.tracks[i];
             minX = Math.min(minX, track.position.x - tileWidth * 0.5);
-            maxX = Math.max(maxX, track.position.x + tileWidth * (track.deltaI + 0.5));
-            minY = Math.min(minY, track.position.y - tileHeight * (track.deltaJ + 1));
+            maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
+            minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
             maxY = Math.max(maxY, track.position.y);
         }
         

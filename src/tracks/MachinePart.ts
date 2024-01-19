@@ -86,11 +86,6 @@ class MachinePart extends BABYLON.Mesh {
         return this.machine.game;
     }
     
-    public w: number = 1;
-    public h: number = 1;
-    public deltaI: number = 0;
-    public deltaJ: number = 0;
-
     public trackPoints: TrackPoint[][];
     public wires: Wire[];
     public interpolatedPoints: BABYLON.Vector3[][];
@@ -112,7 +107,7 @@ class MachinePart extends BABYLON.Mesh {
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
 
-    constructor(public machine: Machine, private _i: number, private _j: number, public mirror?: boolean) {
+    constructor(public machine: Machine, private _i: number, private _j: number, public w: number = 1, public h: number = 1, public mirror?: boolean) {
         super("track", machine.game.scene);
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
@@ -159,7 +154,7 @@ class MachinePart extends BABYLON.Mesh {
             let trackpoints = this.trackPoints[j];
             for (let i = 0; i < trackpoints.length; i++) {
                 trackpoints[i].position.x *= - 1;
-                trackpoints[i].position.x += this.deltaI * tileWidth;
+                trackpoints[i].position.x += (this.w - 1) * tileWidth;
                 if (trackpoints[i].normal) {
                     trackpoints[i].normal.x *= - 1;
                 }
@@ -410,9 +405,9 @@ class MachinePart extends BABYLON.Mesh {
             this.selectedMesh.dispose();
         }
         let xLeft = - tileWidth * 0.5;
-        let xRight = tileWidth * (this.deltaI + 0.5);
+        let xRight = tileWidth * (this.w - 0.5);
         let yTop = tileHeight * 0.25;
-        let yBottom = - tileHeight * (this.deltaJ + 0.75);
+        let yBottom = - tileHeight * (this.h + 0.75);
         this.selectedMesh = BABYLON.MeshBuilder.CreateLines("select-mesh", {
             points: [
                 new BABYLON.Vector3(xLeft, yTop, 0),

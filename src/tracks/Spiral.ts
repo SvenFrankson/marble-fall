@@ -2,10 +2,8 @@
 
 class Spiral extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 1, 3, mirror);
         this.partName = "spiral";
-
-        this.deltaJ = 3;
 
         this.deserialize({
             points: [

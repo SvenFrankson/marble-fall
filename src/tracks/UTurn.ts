@@ -1,6 +1,6 @@
 class UTurnLarge extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 1, mirror);
         this.partName = "uturn-l";
 
         this.deserialize({
@@ -22,9 +22,6 @@ class UTurnLarge extends MachinePart {
             ],
         });
 
-        this.deltaI = 1;
-        this.deltaJ = 1;
-
         if (mirror) {
             this.mirrorTrackPointsInPlace();
         }
@@ -35,7 +32,7 @@ class UTurnLarge extends MachinePart {
 
 class UTurn extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 1, 1, mirror);
         this.partName = "uturn-s";
 
         this.deserialize({
@@ -51,8 +48,6 @@ class UTurn extends MachinePart {
                 { position: { x: -0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: -1, y: 0, z: 0 } },
             ],
         });
-
-        this.deltaJ = 1;
 
         if (mirror) {
             this.mirrorTrackPointsInPlace();

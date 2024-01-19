@@ -355,9 +355,9 @@ class MachineEditor {
                     let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                     pickedObject = this.machine.tracks.find(track => {
                         if (track.i <= i) {
-                            if ((track.i + track.deltaI) >= i) {
+                            if ((track.i + track.w - 1) >= i) {
                                 if (track.j <= j) {
-                                    if ((track.j + track.deltaJ) >= j) {
+                                    if ((track.j + track.h) >= j) {
                                         return true;
                                     }
                                 }
@@ -492,9 +492,9 @@ class MachineEditor {
                         let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                         let pickedTrack = this.machine.tracks.find(track => {
                             if (track.i <= i) {
-                                if ((track.i + track.deltaI) >= i) {
+                                if ((track.i + track.w - 1) >= i) {
                                     if (track.j <= j) {
-                                        if ((track.j + track.deltaJ) >= j) {
+                                        if ((track.j + track.h) >= j) {
                                             return true;
                                         }
                                     }
@@ -565,10 +565,10 @@ class MachineEditor {
             else if (this.selectedObject instanceof MachinePart) {
                 let s34 = 3 * s / 4;
                 let xLeft = - tileWidth * 0.5;
-                let xRight = tileWidth * (this.selectedObject.deltaI + 0.5);
+                let xRight = tileWidth * (this.selectedObject.w - 0.5);
                 let xCenter = (xLeft + xRight) * 0.5;
                 let yTop = tileHeight * 0.25;
-                let yBottom = - tileHeight * (this.selectedObject.deltaJ + 0.75);
+                let yBottom = - tileHeight * (this.selectedObject.h + 0.75);
                 let yCenter = (yTop + yBottom) * 0.5;
 
                 this.floatingElementTop.setTarget(new BABYLON.Vector3(

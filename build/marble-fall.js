@@ -409,7 +409,7 @@ class Machine {
         this.instantiated = false;
         this.playing = false;
         this.onStopCallbacks = new Nabu.UniqueList();
-        this.trackFactory = new TrackFactory(this);
+        this.trackFactory = new MachinePartFactory(this);
     }
     async instantiate() {
         for (let i = 0; i < this.balls.length; i++) {
@@ -483,8 +483,8 @@ class Machine {
         for (let i = 0; i < this.tracks.length; i++) {
             let track = this.tracks[i];
             minX = Math.min(minX, track.position.x - tileWidth * 0.5);
-            maxX = Math.max(maxX, track.position.x + tileWidth * (track.deltaI + 0.5));
-            minY = Math.min(minY, track.position.y - tileHeight * (track.deltaJ + 1));
+            maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
+            minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
             maxY = Math.max(maxY, track.position.y);
         }
         let w = maxX - minX;
@@ -595,9 +595,9 @@ class MachineEditor {
                         let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                         pickedObject = this.machine.tracks.find(track => {
                             if (track.i <= i) {
-                                if ((track.i + track.deltaI) >= i) {
+                                if ((track.i + track.w - 1) >= i) {
                                     if (track.j <= j) {
-                                        if ((track.j + track.deltaJ) >= j) {
+                                        if ((track.j + track.h) >= j) {
                                             return true;
                                         }
                                     }
@@ -716,9 +716,9 @@ class MachineEditor {
                             let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                             let pickedTrack = this.machine.tracks.find(track => {
                                 if (track.i <= i) {
-                                    if ((track.i + track.deltaI) >= i) {
+                                    if ((track.i + track.w - 1) >= i) {
                                         if (track.j <= j) {
-                                            if ((track.j + track.deltaJ) >= j) {
+                                            if ((track.j + track.h) >= j) {
                                                 return true;
                                             }
                                         }
@@ -1139,10 +1139,10 @@ class MachineEditor {
             else if (this.selectedObject instanceof MachinePart) {
                 let s34 = 3 * s / 4;
                 let xLeft = -tileWidth * 0.5;
-                let xRight = tileWidth * (this.selectedObject.deltaI + 0.5);
+                let xRight = tileWidth * (this.selectedObject.w - 0.5);
                 let xCenter = (xLeft + xRight) * 0.5;
                 let yTop = tileHeight * 0.25;
-                let yBottom = -tileHeight * (this.selectedObject.deltaJ + 0.75);
+                let yBottom = -tileHeight * (this.selectedObject.h + 0.75);
                 let yCenter = (yTop + yBottom) * 0.5;
                 this.floatingElementTop.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yTop, this.selectedObject.position.z + 0));
                 this.floatingElementRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yCenter, this.selectedObject.position.z + 0));
@@ -1608,8 +1608,8 @@ class Game {
                 }
                 else {
                     track = this.machine.trackFactory.createTrack(objectName, 0, 0);
-                    this.camera.radius = 0.25 + Math.max(0.15 * track.deltaI, 0);
-                    this.camera.target.copyFromFloats(tileWidth * (track.deltaI * 0.55), -tileHeight * (track.deltaJ) * 0.5, 0);
+                    this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
+                    this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), -tileHeight * (track.h) * 0.5, 0);
                 }
                 if (objectName === "spiral") {
                     this.camera.target.x -= tileWidth * 0.1;
@@ -2418,15 +2418,15 @@ class TrackPoint {
 class Track {
 }
 class MachinePart extends BABYLON.Mesh {
-    constructor(machine, _i, _j, mirror) {
+    constructor(machine, _i, _j, w = 1, h = 1, mirror) {
         super("track", machine.game.scene);
         this.machine = machine;
         this._i = _i;
         this._j = _j;
+        this.w = w;
+        this.h = h;
         this.mirror = mirror;
         this.partName = "track";
-        this.deltaI = 0;
-        this.deltaJ = 0;
         this.wireSize = 0.0015;
         this.wireGauge = 0.013;
         this.renderOnlyPath = false;
@@ -2478,7 +2478,7 @@ class MachinePart extends BABYLON.Mesh {
             let trackpoints = this.trackPoints[j];
             for (let i = 0; i < trackpoints.length; i++) {
                 trackpoints[i].position.x *= -1;
-                trackpoints[i].position.x += this.deltaI * tileWidth;
+                trackpoints[i].position.x += (this.w - 1) * tileWidth;
                 if (trackpoints[i].normal) {
                     trackpoints[i].normal.x *= -1;
                 }
@@ -2694,9 +2694,9 @@ class MachinePart extends BABYLON.Mesh {
             this.selectedMesh.dispose();
         }
         let xLeft = -tileWidth * 0.5;
-        let xRight = tileWidth * (this.deltaI + 0.5);
+        let xRight = tileWidth * (this.w - 0.5);
         let yTop = tileHeight * 0.25;
-        let yBottom = -tileHeight * (this.deltaJ + 0.75);
+        let yBottom = -tileHeight * (this.h + 0.75);
         this.selectedMesh = BABYLON.MeshBuilder.CreateLines("select-mesh", {
             points: [
                 new BABYLON.Vector3(xLeft, yTop, 0),
@@ -2812,7 +2812,7 @@ class DoubleLoop extends MachinePart {
 }
 class Elevator extends MachinePart {
     constructor(machine, i, j, h = 1, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 1, h, mirror);
         this.h = h;
         this.boxesCount = 4;
         this.rWheel = 0.015;
@@ -2844,13 +2844,12 @@ class Elevator extends MachinePart {
         dirRight.normalize();
         let nRight = new BABYLON.Vector3(-1, 1, 0);
         nRight.normalize();
-        this.deltaJ = h;
         this.trackPoints = [
             [
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.deltaJ, 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.deltaJ + 0.1), 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.deltaJ + 0.25), 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.deltaJ + 0.25) + 0.01, 0), dir.scale(-1), n),
+                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.1), 0), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(0, -tileHeight * (this.h + 0.25), 0), n, dir),
+                new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.25) + 0.01, 0), dir.scale(-1), n),
                 new TrackPoint(this, new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
                 new TrackPoint(this, new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
             ],
@@ -2870,7 +2869,7 @@ class Elevator extends MachinePart {
             new BABYLON.Mesh("wheel-0"),
             new BABYLON.Mesh("wheel-1")
         ];
-        this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.deltaJ + 0.25), 0);
+        this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.25), 0);
         this.wheels[0].parent = this;
         this.wheels[0].material = this.game.steelMaterial;
         this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
@@ -3050,7 +3049,6 @@ class FlatLoop extends MachinePart {
                 { position: { x: 0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
             ],
         });
-        this.deltaJ = 1;
         if (mirror) {
             this.mirrorTrackPointsInPlace();
         }
@@ -3060,10 +3058,8 @@ class FlatLoop extends MachinePart {
 /// <reference path="./MachinePart.ts"/>
 class Loop extends MachinePart {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 3, mirror);
         this.partName = "loop";
-        this.deltaI = 1;
-        this.deltaJ = 3;
         this.deserialize({
             points: [
                 { position: { x: -0.07499999999999998, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -3089,9 +3085,79 @@ class Loop extends MachinePart {
         this.generateWires();
     }
 }
+var TrackNames = [
+    "ramp-1.1",
+    "rampX-1.1",
+    "uturn-s",
+    "uturn-l",
+    "loop",
+    "wave",
+    "snake",
+    "spiral",
+    "elevator-4"
+];
+class MachinePartFactory {
+    constructor(machine) {
+        this.machine = machine;
+    }
+    createTrackWH(trackname, i, j, w, h, mirror) {
+        trackname = trackname.split("-")[0];
+        let wh = "";
+        if (isFinite(w)) {
+            wh += w.toFixed(0) + ".";
+        }
+        if (isFinite(h)) {
+            wh += h.toFixed(0);
+        }
+        trackname += "-" + wh;
+        return this.createTrack(trackname, i, j, mirror);
+    }
+    createTrack(trackname, i, j, mirror) {
+        if (trackname.startsWith("flat-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            return new Ramp(this.machine, i, j, w, 0, mirror);
+        }
+        if (trackname.startsWith("flatX-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            return new CrossingRamp(this.machine, i, j, w, 0, mirror);
+        }
+        if (trackname.startsWith("ramp-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Ramp(this.machine, i, j, w, h, mirror);
+        }
+        if (trackname.startsWith("rampX-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new CrossingRamp(this.machine, i, j, w, h, mirror);
+        }
+        if (trackname === "uturn-s") {
+            return new UTurn(this.machine, i, j, mirror);
+        }
+        if (trackname === "uturn-l") {
+            return new UTurnLarge(this.machine, i, j, mirror);
+        }
+        if (trackname === "loop") {
+            return new Loop(this.machine, i, j, mirror);
+        }
+        if (trackname === "wave") {
+            return new Wave(this.machine, i, j, mirror);
+        }
+        if (trackname === "snake") {
+            return new Snake(this.machine, i, j, mirror);
+        }
+        if (trackname === "spiral") {
+            return new Spiral(this.machine, i, j, mirror);
+        }
+        if (trackname.startsWith("elevator-")) {
+            let h = parseInt(trackname.split("-")[1]);
+            return new Elevator(this.machine, i, j, h, mirror);
+        }
+    }
+}
 class Ramp extends MachinePart {
     constructor(machine, i, j, w = 1, h = 1, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -3101,11 +3167,9 @@ class Ramp extends MachinePart {
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
-        this.deltaI = w - 1;
-        this.deltaJ = h;
         this.trackPoints = [[
                 new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ), 0), n, dir)
+                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n, dir)
             ]];
         if (mirror) {
             this.mirrorTrackPointsInPlace();
@@ -3115,7 +3179,7 @@ class Ramp extends MachinePart {
 }
 class CrossingRamp extends MachinePart {
     constructor(machine, i, j, w = 1, h = 1, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -3126,12 +3190,10 @@ class CrossingRamp extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         let nBank = new BABYLON.Vector3(0, Math.cos(15 / 180 * Math.PI), Math.sin(15 / 180 * Math.PI));
-        this.deltaI = w - 1;
-        this.deltaJ = h;
         this.trackPoints = [[
                 new TrackPoint(this, new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
-                new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.deltaI + 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * (this.deltaJ) * 0.5, -0.03), nBank, dir.clone(), 1.4, 1.4),
-                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.deltaI + 0.5), -tileHeight * (this.deltaJ), 0), n.clone(), dir.clone(), 1.4, 1.4)
+                new TrackPoint(this, new BABYLON.Vector3((tileWidth * (this.w - 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * this.h * 0.5, -0.03), nBank, dir.clone(), 1.4, 1.4),
+                new TrackPoint(this, new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n.clone(), dir.clone(), 1.4, 1.4)
             ]];
         if (mirror) {
             this.mirrorTrackPointsInPlace();
@@ -3254,10 +3316,8 @@ class SleeperMeshBuilder {
 /// <reference path="./MachinePart.ts"/>
 class Snake extends MachinePart {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 1, mirror);
         this.partName = "snake";
-        this.deltaI = 1;
-        this.deltaJ = 0;
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -3273,9 +3333,8 @@ class Snake extends MachinePart {
 /// <reference path="./MachinePart.ts"/>
 class Spiral extends MachinePart {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 1, 3, mirror);
         this.partName = "spiral";
-        this.deltaJ = 3;
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -3313,79 +3372,9 @@ class Spiral extends MachinePart {
         this.generateWires();
     }
 }
-var TrackNames = [
-    "ramp-1.1",
-    "rampX-1.1",
-    "uturn-s",
-    "uturn-l",
-    "loop",
-    "wave",
-    "snake",
-    "spiral",
-    "elevator-4"
-];
-class TrackFactory {
-    constructor(machine) {
-        this.machine = machine;
-    }
-    createTrackWH(trackname, i, j, w, h, mirror) {
-        trackname = trackname.split("-")[0];
-        let wh = "";
-        if (isFinite(w)) {
-            wh += w.toFixed(0) + ".";
-        }
-        if (isFinite(h)) {
-            wh += h.toFixed(0);
-        }
-        trackname += "-" + wh;
-        return this.createTrack(trackname, i, j, mirror);
-    }
-    createTrack(trackname, i, j, mirror) {
-        if (trackname.startsWith("flat-")) {
-            let w = parseInt(trackname.split("-")[1]);
-            return new Ramp(this.machine, i, j, w, 0, mirror);
-        }
-        if (trackname.startsWith("flatX-")) {
-            let w = parseInt(trackname.split("-")[1]);
-            return new CrossingRamp(this.machine, i, j, w, 0, mirror);
-        }
-        if (trackname.startsWith("ramp-")) {
-            let w = parseInt(trackname.split("-")[1].split(".")[0]);
-            let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Ramp(this.machine, i, j, w, h, mirror);
-        }
-        if (trackname.startsWith("rampX-")) {
-            let w = parseInt(trackname.split("-")[1].split(".")[0]);
-            let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new CrossingRamp(this.machine, i, j, w, h, mirror);
-        }
-        if (trackname === "uturn-s") {
-            return new UTurn(this.machine, i, j, mirror);
-        }
-        if (trackname === "uturn-l") {
-            return new UTurnLarge(this.machine, i, j, mirror);
-        }
-        if (trackname === "loop") {
-            return new Loop(this.machine, i, j, mirror);
-        }
-        if (trackname === "wave") {
-            return new Wave(this.machine, i, j, mirror);
-        }
-        if (trackname === "snake") {
-            return new Snake(this.machine, i, j, mirror);
-        }
-        if (trackname === "spiral") {
-            return new Spiral(this.machine, i, j, mirror);
-        }
-        if (trackname.startsWith("elevator-")) {
-            let h = parseInt(trackname.split("-")[1]);
-            return new Elevator(this.machine, i, j, h, mirror);
-        }
-    }
-}
 class UTurnLarge extends MachinePart {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 1, mirror);
         this.partName = "uturn-l";
         this.deserialize({
             points: [
@@ -3405,8 +3394,6 @@ class UTurnLarge extends MachinePart {
                 { position: { x: -0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: -1, y: 0, z: 0 } },
             ],
         });
-        this.deltaI = 1;
-        this.deltaJ = 1;
         if (mirror) {
             this.mirrorTrackPointsInPlace();
         }
@@ -3415,7 +3402,7 @@ class UTurnLarge extends MachinePart {
 }
 class UTurn extends MachinePart {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 1, 1, mirror);
         this.partName = "uturn-s";
         this.deserialize({
             points: [
@@ -3430,7 +3417,6 @@ class UTurn extends MachinePart {
                 { position: { x: -0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: -1, y: 0, z: 0 } },
             ],
         });
-        this.deltaJ = 1;
         if (mirror) {
             this.mirrorTrackPointsInPlace();
         }
@@ -3440,10 +3426,8 @@ class UTurn extends MachinePart {
 /// <reference path="./MachinePart.ts"/>
 class Wave extends MachinePart {
     constructor(machine, i, j, mirror) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 1, mirror);
         this.partName = "wave";
-        this.deltaI = 1;
-        this.deltaJ = 1;
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },

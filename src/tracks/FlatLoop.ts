@@ -20,8 +20,6 @@ class FlatLoop extends MachinePart {
             ],
         });
 
-        this.deltaJ = 1;
-
         if (mirror) {
             this.mirrorTrackPointsInPlace();
         }

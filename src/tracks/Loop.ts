@@ -2,11 +2,8 @@
 
 class Loop extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 3, mirror);
         this.partName = "loop";
-
-        this.deltaI = 1;
-        this.deltaJ = 3;
 
         this.deserialize({
             points: [

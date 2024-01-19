@@ -2,11 +2,8 @@
 
 class Snake extends MachinePart {
     constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, mirror);
+        super(machine, i, j, 2, 1, mirror);
         this.partName = "snake";
-
-        this.deltaI = 1;
-        this.deltaJ = 0;
 
         this.deserialize({
             points: [
