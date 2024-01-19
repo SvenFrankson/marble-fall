@@ -14,8 +14,8 @@ class SleeperMeshBuilder {
             }
 
             let count = Math.round(summedLength[summedLength.length - 1] / spacing / 3) * 3;
+            count = Math.max(1, count);
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
-
 
             let radius = part.wireSize * 0.5 * 0.75;
             let nShape = 6;
