@@ -557,7 +557,7 @@ class MachineEditor {
                 
                 this.floatingElementDelete.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x,
-                    this.selectedObject.position.y + - this.selectedObject.radius - 1.2 * s,
+                    this.selectedObject.position.y - this.selectedObject.radius - 0.005,
                     this.selectedObject.position.z + 0,
                 ));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;

@@ -53,7 +53,7 @@
 }
 
 .machine-editor-item.selected {
-    outline: 1px solid white;
+    outline: 3px solid white;
 }
 
 .machine-editor-item-container {

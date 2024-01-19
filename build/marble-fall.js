@@ -641,7 +641,7 @@ class MachineEditor {
                             this.draggedObject.setI(i);
                             this.draggedObject.setJ(j);
                             this.draggedObject.setIsVisible(true);
-                            this.updateActionTile();
+                            this.updateFloatingElements();
                         }
                     }
                     else if (this.draggedObject instanceof Ball) {
@@ -649,7 +649,7 @@ class MachineEditor {
                         p.z = 0;
                         this.draggedObject.setPositionZero(p);
                         this.draggedObject.setIsVisible(true);
-                        this.updateActionTile();
+                        this.updateFloatingElements();
                         if (!this.machine.playing) {
                             this.draggedObject.reset();
                         }
@@ -871,7 +871,7 @@ class MachineEditor {
         if (this._selectedObject) {
             this._selectedObject.select();
         }
-        this.updateActionTile();
+        this.updateFloatingElements();
     }
     async instantiate() {
         document.getElementById("machine-editor-objects").style.display = "block";
@@ -1053,7 +1053,7 @@ class MachineEditor {
             this.deletebutton,
             this.tileMirrorButton
         ];
-        this.updateActionTile();
+        this.updateFloatingElements();
     }
     _createButton(id, parent) {
         let button = document.createElement("button");
@@ -1125,7 +1125,7 @@ class MachineEditor {
     getCurrentItemElement() {
         return this.items.get(this._selectedItem);
     }
-    updateActionTile() {
+    updateFloatingElements() {
         this.floatingButtons.forEach(button => {
             button.style.display = "none";
         });
@@ -1133,7 +1133,7 @@ class MachineEditor {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
                 this.deletebutton.style.display = "";
-                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x, this.selectedObject.position.y + -this.selectedObject.radius - 1.2 * s, this.selectedObject.position.z + 0));
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x, this.selectedObject.position.y - this.selectedObject.radius - 0.005, this.selectedObject.position.z + 0));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
             }
             else if (this.selectedObject instanceof Track) {
