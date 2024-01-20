@@ -32,6 +32,8 @@ class Join extends MachinePart {
 
 class Splitter extends MachinePart {
 
+    private _animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
+
     public pivot: BABYLON.Mesh;
     public pivotL: number = 0.025;
 
@@ -43,7 +45,7 @@ class Splitter extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
 
-        let rCurb = this.pivotL * 0.5;
+        let rCurb = this.pivotL * 0.3;
         let pEnd = new BABYLON.Vector3(0, - tileHeight, 0);
         pEnd.x -= this.pivotL / Math.SQRT2;
         pEnd.y += this.pivotL / Math.SQRT2;
@@ -58,7 +60,8 @@ class Splitter extends MachinePart {
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight * this.h, 0), n, dir),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(0, - tileHeight * (this.h - 0.1), 0), n, dir),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd.multiplyByFloats(1, -1, 1)),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd),
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight * this.h, 0), n, dir)
         ];
 
@@ -72,7 +75,7 @@ class Splitter extends MachinePart {
             this.mirrorTrackPointsInPlace();
         }
 
-        this.pivot = BABYLON.MeshBuilder.CreateBox("pivot", { width: 0.005, height: 0.005, depth: this.wireGauge * 1.2 });
+        this.pivot = BABYLON.MeshBuilder.CreateBox("pivot", { width: 0.0005, height: 0.0005, depth: this.wireGauge * 1.2 });
         this.pivot.position.copyFromFloats(0, - tileHeight, 0);
         this.pivot.parent = this;
         this.pivot.rotation.z = Math.PI / 4;
@@ -149,31 +152,39 @@ class Splitter extends MachinePart {
         this.wires = [wireLeft0, wireLeft1, curbLeft0, curbLeft1, wireUp0, wireUp1, wireRight0, wireRight1, curbRight0, curbRight1];
 
         this.generateWires();
-    }
 
-    public update(dt: number): void {
-        let hasMoved = false;
-        this.machine.balls.forEach(ball => {
-            if (BABYLON.Vector3.Distance(ball.position, this.pivot.absolutePosition) < 0.05) {
-                let local = BABYLON.Vector3.TransformCoordinates(ball.position, this.pivot.getWorldMatrix().clone().invert());
-                if (local.y < ball.radius * 1.2) {
-                    if (local.x > 0 && local.x < this.pivotL) {
-                        this.pivot.rotation.z -= 0.1;
-                        this.pivot.rotation.z = Math.max(Math.min(this.pivot.rotation.z, Math.PI / 4), - Math.PI / 4)
-                        hasMoved = true;
-                    }
-                    else if (local.x > - this.pivotL && local.x < 0) {
-                        this.pivot.rotation.z += 0.1;
-                        this.pivot.rotation.z = Math.max(Math.min(this.pivot.rotation.z, Math.PI / 4), - Math.PI / 4)
-                        hasMoved = true;
-                    }
-                }
-            }
-        });
-        if (hasMoved) {
+        this._animatePivot = Mummu.AnimationFactory.CreateNumber(this, this.pivot.rotation, "z", () => {
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             })
+        }, false, Nabu.Easing.easeInCubic);
+    }
+
+    private _moving: boolean = false;
+    public update(dt: number): void {
+        if (!this._moving) {
+            for (let i = 0; i < this.machine.balls.length; i++) {
+                let ball = this.machine.balls[i];
+                if (BABYLON.Vector3.Distance(ball.position, this.pivot.absolutePosition) < 0.05) {
+                    let local = BABYLON.Vector3.TransformCoordinates(ball.position, this.pivot.getWorldMatrix().clone().invert());
+                    if (local.y < ball.radius * 0.9) {
+                        if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
+                            this._moving = true;
+                            this._animatePivot(- Math.PI / 4, 0.2 / this.game.timeFactor).then(() => {
+                                this._moving = false;
+                            });
+                            return;
+                        }
+                        else if (local.x > - this.pivotL && local.x < - ball.radius * 0.5) {
+                            this._moving = true;
+                            this._animatePivot(Math.PI / 4, 0.2 / this.game.timeFactor).then(() => {
+                                this._moving = false;
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
         }
     }
 }

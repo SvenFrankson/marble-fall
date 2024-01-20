@@ -91,4 +91,55 @@ var demo3: IMachineData = {
     ],
 };
 
-var demoTest: IMachineData = { balls: [{ x: -0.07132832801864454, y: 0.04718919067427145 }], parts: [{ name: "splitter", i: 0, j: -1 }] };
+var demoTest: IMachineData = {
+    balls: [{ x: -0.19965407373238375, y: 0.06913964667829861 }],
+    parts: [
+        { name: "splitter", i: 0, j: -1 },
+        { name: "ramp-1.1", i: -1, j: -2 },
+        { name: "uturn-l", i: 1, j: 1 },
+        { name: "uturn-s", i: -1, j: 1, mirror: true },
+        { name: "ramp-1.0", i: 0, j: 2 },
+    ],
+};
+
+var largeDemoSplit: IMachineData = {
+    balls: [
+        { x: -0.7530147841347994, y: -0.1675156765971257 },
+        { x: -0.7520832866868002, y: -0.08676789487205938 },
+        { x: -0.7496645108449065, y: -0.3241807397155625 },
+        { x: -0.7523308107285296, y: -0.2447694311086762 },
+        { x: -0.7500584528467474, y: -0.009553628029316905 },
+        { x: -0.7310100370603176, y: 0.07895531360830525 },
+    ],
+    parts: [
+        { name: "splitter", i: 0, j: -1 },
+        { name: "splitter", i: -2, j: 1 },
+        { name: "splitter", i: 2, j: 1 },
+        { name: "ramp-1.0", i: -1, j: 1 },
+        { name: "ramp-1.0", i: 1, j: 1 },
+        { name: "uturn-l", i: -4, j: 3, mirror: true },
+        { name: "spiral", i: -1, j: 3 },
+        { name: "loop", i: 3, j: 3 },
+        { name: "uturn-s", i: 5, j: 6 },
+        { name: "uturn-l", i: 0, j: 3, mirror: true },
+        { name: "uturn-s", i: -2, j: 4 },
+        { name: "uturn-s", i: 2, j: 4 },
+        { name: "ramp-1.1", i: 4, j: 7, mirror: true },
+        { name: "uturn-s", i: 1, j: 5, mirror: true },
+        { name: "uturn-l", i: -4, j: 5, mirror: true },
+        { name: "join", i: 1, j: 9, mirror: true },
+        { name: "join", i: 3, j: 8, mirror: true },
+        { name: "ramp-1.2", i: 2, j: 6 },
+        { name: "ramp-1.3", i: 0, j: 6 },
+        { name: "ramp-1.0", i: 2, j: 9 },
+        { name: "uturn-s", i: -2, j: 6 },
+        { name: "uturn-l", i: -4, j: 7, mirror: true },
+        { name: "uturn-s", i: -2, j: 8 },
+        { name: "uturn-l", i: -4, j: 9, mirror: true },
+        { name: "join", i: -2, j: 10, mirror: true },
+        { name: "ramp-2.0", i: -1, j: 10 },
+        { name: "ramp-2.0", i: -4, j: 11 },
+        { name: "ramp-4.1", i: -4, j: -2 },
+        { name: "elevator-14", i: -5, j: -3, mirror: true },
+    ],
+};
