@@ -91,14 +91,4 @@ var demo3: IMachineData = {
     ],
 };
 
-var demoTest: IMachineData = {
-    balls: [
-        { x: 0.36380596703031465, y: 0.14012798650690336 },
-        { x: -0.07132832801864454, y: 0.04718919067427145 },
-    ],
-    parts: [
-        { name: "join", i: 0, j: -1 },
-        { name: "uturn-l", i: 1, j: 0 },
-        { name: "ramp-2.3", i: 1, j: -4, mirror: true },
-    ],
-};
+var demoTest: IMachineData = { balls: [{ x: -0.07132832801864454, y: 0.04718919067427145 }], parts: [{ name: "splitter", i: 0, j: -1 }] };

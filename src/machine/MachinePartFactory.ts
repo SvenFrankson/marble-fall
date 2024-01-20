@@ -1,6 +1,7 @@
 var TrackNames = [
     "ramp-1.1",
     "join",
+    "splitter",
     "rampX-1.1",
     "uturn-s",
     "uturn-l",
@@ -69,6 +70,9 @@ class MachinePartFactory {
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, mirror);
+        }
+        if (trackname === "splitter") {
+            return new Splitter(this.machine, i, j, mirror);
         }
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
