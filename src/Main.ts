@@ -402,7 +402,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(demo1);
+                this.machine.deserialize(createDefault);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -424,7 +424,7 @@ class Game {
                     this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
                 }
                 else if (demoIndex === 3) {
-                    this.setCameraTarget(new BABYLON.Vector3(0.22, 0.15, 0));
+                    this.setCameraTarget(new BABYLON.Vector3(-0.33, -0.17, 0));
                 }
                 else {
                     this.setCameraTarget(BABYLON.Vector3.Zero());

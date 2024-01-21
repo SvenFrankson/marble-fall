@@ -319,6 +319,22 @@ var demo3 = {
         { name: "elevator-13", i: -5, j: -2, mirror: true },
     ],
 };
+var createDefault = {
+    balls: [
+        { x: 0.42531514018827754, y: -0.04840511502662046 },
+        { x: 0.4025330286177473, y: -0.048624483332179405 },
+        { x: 0.3799147747766348, y: -0.047314622188705205 },
+        { x: 0.35788764058897626, y: -0.04672729838009122 },
+        { x: 0.3351445547662884, y: -0.045358694798261004 },
+    ],
+    parts: [
+        { name: "loop", i: 1, j: -6, mirror: true },
+        { name: "spiral", i: 0, j: -3, mirror: true },
+        { name: "uturn-l", i: -2, j: 0, mirror: true },
+        { name: "ramp-3.1", i: 0, j: 1 },
+        { name: "elevator-9", i: 3, j: -7 },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1012,7 +1028,7 @@ class MachineEditor {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
                 this.deletebutton.style.display = "";
-                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x, this.selectedObject.position.y - this.selectedObject.radius - 0.005, this.selectedObject.position.z + 0));
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.positionZeroGhost.position.x, this.selectedObject.positionZeroGhost.position.y - this.selectedObject.radius - 0.005, this.selectedObject.positionZeroGhost.position.z + 0));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
             }
             else if (this.selectedObject instanceof MachinePart) {
@@ -1410,7 +1426,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(demo1);
+                this.machine.deserialize(createDefault);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -1430,7 +1446,7 @@ class Game {
                     this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
                 }
                 else if (demoIndex === 3) {
-                    this.setCameraTarget(new BABYLON.Vector3(0.22, 0.15, 0));
+                    this.setCameraTarget(new BABYLON.Vector3(-0.33, -0.17, 0));
                 }
                 else {
                     this.setCameraTarget(BABYLON.Vector3.Zero());

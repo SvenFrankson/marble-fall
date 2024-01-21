@@ -126,3 +126,20 @@ var demo3: IMachineData = {
         { name: "elevator-13", i: -5, j: -2, mirror: true },
     ],
 };
+
+var createDefault: IMachineData = {
+    balls: [
+        { x: 0.42531514018827754, y: -0.04840511502662046 },
+        { x: 0.4025330286177473, y: -0.048624483332179405 },
+        { x: 0.3799147747766348, y: -0.047314622188705205 },
+        { x: 0.35788764058897626, y: -0.04672729838009122 },
+        { x: 0.3351445547662884, y: -0.045358694798261004 },
+    ],
+    parts: [
+        { name: "loop", i: 1, j: -6, mirror: true },
+        { name: "spiral", i: 0, j: -3, mirror: true },
+        { name: "uturn-l", i: -2, j: 0, mirror: true },
+        { name: "ramp-3.1", i: 0, j: 1 },
+        { name: "elevator-9", i: 3, j: -7 },
+    ],
+};
