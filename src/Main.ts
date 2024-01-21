@@ -52,6 +52,7 @@ class Game {
     public skybox: BABYLON.Mesh;
 
     public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
+    public copperMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public woodMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
     public deepBlackMaterial: BABYLON.StandardMaterial;
@@ -110,9 +111,15 @@ class Game {
 
         this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
         this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
-        this.steelMaterial.metallic = 1.0; // set to 1 to only use it from the metallicRoughnessTexture
-        this.steelMaterial.roughness = 0.15; // set to 1 to only use it from the metallicRoughnessTexture
+        this.steelMaterial.metallic = 1.0;
+        this.steelMaterial.roughness = 0.15;
         this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        
+        this.copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        this.copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
+        this.copperMaterial.metallic = 1.0;
+        this.copperMaterial.roughness = 0.15;
+        this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
 
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
@@ -294,7 +301,7 @@ class Game {
 
         document.getElementById("track-editor-menu").style.display = "none";
 
-        //this.makeScreenshot("splitter");
+        //this.makeScreenshot("split");
         //return;
 
         this.toolbar = new Toolbar(this);

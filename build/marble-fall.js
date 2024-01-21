@@ -288,7 +288,7 @@ var demo4 = {
 var demoTest = {
     balls: [{ x: -0.19965407373238375, y: 0.06913964667829861 }],
     parts: [
-        { name: "splitter", i: 0, j: -1 },
+        { name: "split", i: 0, j: -1 },
         { name: "ramp-1.1", i: -1, j: -2 },
         { name: "uturn-l", i: 1, j: 1 },
         { name: "uturn-s", i: -1, j: 1, mirror: true },
@@ -304,9 +304,9 @@ var demo3 = {
         { x: -0.7521042373550704, y: -0.0019488102905312332 },
     ],
     parts: [
-        { name: "splitter", i: -2, j: 0 },
-        { name: "splitter", i: -2, j: 3 },
-        { name: "splitter", i: -2, j: 6 },
+        { name: "split", i: -2, j: 0 },
+        { name: "split", i: -2, j: 3 },
+        { name: "split", i: -2, j: 6 },
         { name: "join", i: -2, j: 9, mirror: true },
         { name: "ramp-2.1", i: -4, j: 10, mirror: true },
         { name: "uturn-l", i: -1, j: 2 },
@@ -1181,9 +1181,14 @@ class Game {
         this.ghostMaterial.alpha = 0.3;
         this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
         this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
-        this.steelMaterial.metallic = 1.0; // set to 1 to only use it from the metallicRoughnessTexture
-        this.steelMaterial.roughness = 0.15; // set to 1 to only use it from the metallicRoughnessTexture
+        this.steelMaterial.metallic = 1.0;
+        this.steelMaterial.roughness = 0.15;
         this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        this.copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        this.copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
+        this.copperMaterial.metallic = 1.0;
+        this.copperMaterial.roughness = 0.15;
+        this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
         this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
@@ -1336,7 +1341,7 @@ class Game {
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         document.getElementById("track-editor-menu").style.display = "none";
-        //this.makeScreenshot("splitter");
+        //this.makeScreenshot("split");
         //return;
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
@@ -2661,7 +2666,7 @@ class MachinePart extends BABYLON.Mesh {
 var TrackNames = [
     "ramp-1.1",
     "join",
-    "splitter",
+    "split",
     "rampX-1.1",
     "uturn-s",
     "uturn-l",
@@ -2727,8 +2732,8 @@ class MachinePartFactory {
         if (trackname === "join") {
             return new Join(this.machine, i, j, mirror);
         }
-        if (trackname === "splitter") {
-            return new Splitter(this.machine, i, j, mirror);
+        if (trackname === "split") {
+            return new Split(this.machine, i, j, mirror);
         }
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
@@ -3403,161 +3408,6 @@ class Join extends MachinePart {
         this.generateWires();
     }
 }
-class Splitter extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 1, 2, mirror);
-        this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
-        this.pivotL = 0.025;
-        this._moving = false;
-        this.partName = "splitter";
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let rCurb = this.pivotL * 0.3;
-        let pEnd = new BABYLON.Vector3(0, -tileHeight, 0);
-        pEnd.x -= this.pivotL / Math.SQRT2;
-        pEnd.y += this.pivotL / Math.SQRT2;
-        let dirEnd = (new BABYLON.Vector3(1, -1, 0)).normalize();
-        let nEnd = (new BABYLON.Vector3(1, 1, 0)).normalize();
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), nEnd, dirEnd)
-        ];
-        this.tracks[1] = new Track(this);
-        this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd.multiplyByFloats(1, -1, 1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * this.h, 0), n, dir)
-        ];
-        this.tracks[2] = new Track(this);
-        this.tracks[2].trackpoints = [
-            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), n.multiplyByFloats(-1, 1, 1), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), nEnd.multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
-        ];
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        let anchorDatas = [];
-        let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
-        let q = BABYLON.Quaternion.Identity();
-        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
-        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
-        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, 0.015));
-        anchorDatas.push(tmpVertexData);
-        let axisZMin = -this.wireGauge * 0.6;
-        let axisZMax = 0.015 - 0.001 * 0.5;
-        tmpVertexData = BABYLON.CreateCylinderVertexData({ height: axisZMax - axisZMin, diameter: 0.001 });
-        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
-        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
-        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, (axisZMax + axisZMin) * 0.5));
-        anchorDatas.push(tmpVertexData);
-        let anchor = new BABYLON.Mesh("anchor");
-        anchor.position.copyFromFloats(0, -tileHeight, 0);
-        anchor.parent = this;
-        anchor.material = this.game.steelMaterial;
-        Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
-        this.pivot = new BABYLON.Mesh("pivot");
-        this.pivot.position.copyFromFloats(0, -tileHeight, 0);
-        this.pivot.material = this.game.steelMaterial;
-        this.pivot.parent = this;
-        this.pivot.rotation.z = Math.PI / 4;
-        let dz = this.wireGauge * 0.5;
-        this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
-            if (datas[0]) {
-                let data = Mummu.CloneVertexData(datas[0]);
-                Mummu.TranslateVertexDataInPlace(data, new BABYLON.Vector3(0, 0, axisZMin));
-                data.applyToMesh(this.pivot);
-            }
-        });
-        let wireHorizontal0 = new Wire(this);
-        wireHorizontal0.parent = this.pivot;
-        wireHorizontal0.path = [new BABYLON.Vector3(-this.pivotL, 0, -dz), new BABYLON.Vector3(this.pivotL, 0, -dz)];
-        let wireHorizontal1 = new Wire(this);
-        wireHorizontal1.parent = this.pivot;
-        wireHorizontal1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(this.pivotL, 0, dz)];
-        let wireVertical0 = new Wire(this);
-        wireVertical0.parent = this.pivot;
-        wireVertical0.path = [new BABYLON.Vector3(0, this.pivotL, -dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
-        let wireVertical1 = new Wire(this);
-        wireVertical1.parent = this.pivot;
-        wireVertical1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
-        let curbLeft0 = new Wire(this);
-        curbLeft0.wireSize = this.wireSize * 0.8;
-        curbLeft0.parent = this.pivot;
-        curbLeft0.path = [];
-        for (let i = 0; i <= 8; i++) {
-            let a = Math.PI / 2 * i / 8;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            curbLeft0.path.push(new BABYLON.Vector3(-rCurb + cosa * rCurb, rCurb - sina * rCurb, -dz));
-        }
-        let curbLeft1 = new Wire(this);
-        curbLeft1.wireSize = this.wireSize * 0.8;
-        curbLeft1.parent = this.pivot;
-        curbLeft1.path = [];
-        for (let i = 0; i <= 8; i++) {
-            let a = Math.PI / 2 * i / 8;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            curbLeft1.path.push(new BABYLON.Vector3(-rCurb + cosa * rCurb, rCurb - sina * rCurb, dz));
-        }
-        let curbRight0 = new Wire(this);
-        curbRight0.wireSize = this.wireSize * 0.8;
-        curbRight0.parent = this.pivot;
-        curbRight0.path = [];
-        for (let i = 0; i <= 8; i++) {
-            let a = Math.PI / 2 * i / 8;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            curbRight0.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, -dz));
-        }
-        let curbRight1 = new Wire(this);
-        curbRight1.wireSize = this.wireSize * 0.8;
-        curbRight1.parent = this.pivot;
-        curbRight1.path = [];
-        for (let i = 0; i <= 8; i++) {
-            let a = Math.PI / 2 * i / 8;
-            let cosa = Math.cos(a);
-            let sina = Math.sin(a);
-            curbRight1.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, dz));
-        }
-        this.wires = [wireHorizontal0, wireHorizontal1, curbLeft0, curbLeft1, wireVertical0, wireVertical1, curbRight0, curbRight1];
-        this.generateWires();
-        this._animatePivot = Mummu.AnimationFactory.CreateNumber(this, this.pivot.rotation, "z", () => {
-            this.wires.forEach(wire => {
-                wire.recomputeAbsolutePath();
-            });
-        }, false, Nabu.Easing.easeInSquare);
-    }
-    update(dt) {
-        if (!this._moving) {
-            for (let i = 0; i < this.machine.balls.length; i++) {
-                let ball = this.machine.balls[i];
-                if (BABYLON.Vector3.Distance(ball.position, this.pivot.absolutePosition) < 0.05) {
-                    let local = BABYLON.Vector3.TransformCoordinates(ball.position, this.pivot.getWorldMatrix().clone().invert());
-                    if (local.y < ball.radius * 0.9) {
-                        if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
-                            this._moving = true;
-                            this._animatePivot(-Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
-                                this._moving = false;
-                            });
-                            return;
-                        }
-                        else if (local.x > -this.pivotL && local.x < -ball.radius * 0.5) {
-                            this._moving = true;
-                            this._animatePivot(Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
-                                this._moving = false;
-                            });
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
     constructor(machine, i, j, mirror) {
@@ -3691,6 +3541,161 @@ class Spiral extends MachinePart {
             this.mirrorTrackPointsInPlace();
         }
         this.generateWires();
+    }
+}
+class Split extends MachinePart {
+    constructor(machine, i, j, mirror) {
+        super(machine, i, j, 1, 2, mirror);
+        this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
+        this.pivotL = 0.025;
+        this._moving = false;
+        this.partName = "split";
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let rCurb = this.pivotL * 0.3;
+        let pEnd = new BABYLON.Vector3(0, -tileHeight, 0);
+        pEnd.x -= this.pivotL / Math.SQRT2;
+        pEnd.y += this.pivotL / Math.SQRT2;
+        let dirEnd = (new BABYLON.Vector3(1, -1, 0)).normalize();
+        let nEnd = (new BABYLON.Vector3(1, 1, 0)).normalize();
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
+            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), nEnd, dirEnd)
+        ];
+        this.tracks[1] = new Track(this);
+        this.tracks[1].trackpoints = [
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd.multiplyByFloats(1, -1, 1)),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * this.h, 0), n, dir)
+        ];
+        this.tracks[2] = new Track(this);
+        this.tracks[2].trackpoints = [
+            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), n.multiplyByFloats(-1, 1, 1), dir.multiplyByFloats(-1, 1, 1)),
+            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), nEnd.multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+        ];
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        let anchorDatas = [];
+        let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
+        let q = BABYLON.Quaternion.Identity();
+        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, 0.015));
+        anchorDatas.push(tmpVertexData);
+        let axisZMin = -this.wireGauge * 0.6;
+        let axisZMax = 0.015 - 0.001 * 0.5;
+        tmpVertexData = BABYLON.CreateCylinderVertexData({ height: axisZMax - axisZMin, diameter: 0.001 });
+        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, (axisZMax + axisZMin) * 0.5));
+        anchorDatas.push(tmpVertexData);
+        let anchor = new BABYLON.Mesh("anchor");
+        anchor.position.copyFromFloats(0, -tileHeight, 0);
+        anchor.parent = this;
+        anchor.material = this.game.steelMaterial;
+        Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
+        this.pivot = new BABYLON.Mesh("pivot");
+        this.pivot.position.copyFromFloats(0, -tileHeight, 0);
+        this.pivot.material = this.game.copperMaterial;
+        this.pivot.parent = this;
+        this.pivot.rotation.z = Math.PI / 4;
+        let dz = this.wireGauge * 0.5;
+        this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
+            if (datas[0]) {
+                let data = Mummu.CloneVertexData(datas[0]);
+                Mummu.TranslateVertexDataInPlace(data, new BABYLON.Vector3(0, 0, axisZMin));
+                data.applyToMesh(this.pivot);
+            }
+        });
+        let wireHorizontal0 = new Wire(this);
+        wireHorizontal0.parent = this.pivot;
+        wireHorizontal0.path = [new BABYLON.Vector3(-this.pivotL, 0, -dz), new BABYLON.Vector3(this.pivotL, 0, -dz)];
+        let wireHorizontal1 = new Wire(this);
+        wireHorizontal1.parent = this.pivot;
+        wireHorizontal1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(this.pivotL, 0, dz)];
+        let wireVertical0 = new Wire(this);
+        wireVertical0.parent = this.pivot;
+        wireVertical0.path = [new BABYLON.Vector3(0, this.pivotL, -dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
+        let wireVertical1 = new Wire(this);
+        wireVertical1.parent = this.pivot;
+        wireVertical1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
+        let curbLeft0 = new Wire(this);
+        curbLeft0.wireSize = this.wireSize * 0.8;
+        curbLeft0.parent = this.pivot;
+        curbLeft0.path = [];
+        for (let i = 0; i <= 8; i++) {
+            let a = Math.PI / 2 * i / 8;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            curbLeft0.path.push(new BABYLON.Vector3(-rCurb + cosa * rCurb, rCurb - sina * rCurb, -dz));
+        }
+        let curbLeft1 = new Wire(this);
+        curbLeft1.wireSize = this.wireSize * 0.8;
+        curbLeft1.parent = this.pivot;
+        curbLeft1.path = [];
+        for (let i = 0; i <= 8; i++) {
+            let a = Math.PI / 2 * i / 8;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            curbLeft1.path.push(new BABYLON.Vector3(-rCurb + cosa * rCurb, rCurb - sina * rCurb, dz));
+        }
+        let curbRight0 = new Wire(this);
+        curbRight0.wireSize = this.wireSize * 0.8;
+        curbRight0.parent = this.pivot;
+        curbRight0.path = [];
+        for (let i = 0; i <= 8; i++) {
+            let a = Math.PI / 2 * i / 8;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            curbRight0.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, -dz));
+        }
+        let curbRight1 = new Wire(this);
+        curbRight1.wireSize = this.wireSize * 0.8;
+        curbRight1.parent = this.pivot;
+        curbRight1.path = [];
+        for (let i = 0; i <= 8; i++) {
+            let a = Math.PI / 2 * i / 8;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            curbRight1.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, dz));
+        }
+        this.wires = [wireHorizontal0, wireHorizontal1, curbLeft0, curbLeft1, wireVertical0, wireVertical1, curbRight0, curbRight1];
+        this.generateWires();
+        this._animatePivot = Mummu.AnimationFactory.CreateNumber(this, this.pivot.rotation, "z", () => {
+            this.wires.forEach(wire => {
+                wire.recomputeAbsolutePath();
+            });
+        }, false, Nabu.Easing.easeInSquare);
+    }
+    update(dt) {
+        if (!this._moving) {
+            for (let i = 0; i < this.machine.balls.length; i++) {
+                let ball = this.machine.balls[i];
+                if (BABYLON.Vector3.Distance(ball.position, this.pivot.absolutePosition) < 0.05) {
+                    let local = BABYLON.Vector3.TransformCoordinates(ball.position, this.pivot.getWorldMatrix().clone().invert());
+                    if (local.y < ball.radius * 0.9) {
+                        if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
+                            this._moving = true;
+                            this._animatePivot(-Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
+                                this._moving = false;
+                            });
+                            return;
+                        }
+                        else if (local.x > -this.pivotL && local.x < -ball.radius * 0.5) {
+                            this._moving = true;
+                            this._animatePivot(Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
+                                this._moving = false;
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 class UTurnLarge extends MachinePart {

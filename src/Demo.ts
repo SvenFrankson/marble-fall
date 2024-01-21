@@ -94,7 +94,7 @@ var demo4: IMachineData = {
 var demoTest: IMachineData = {
     balls: [{ x: -0.19965407373238375, y: 0.06913964667829861 }],
     parts: [
-        { name: "splitter", i: 0, j: -1 },
+        { name: "split", i: 0, j: -1 },
         { name: "ramp-1.1", i: -1, j: -2 },
         { name: "uturn-l", i: 1, j: 1 },
         { name: "uturn-s", i: -1, j: 1, mirror: true },
@@ -111,9 +111,9 @@ var demo3: IMachineData = {
         { x: -0.7521042373550704, y: -0.0019488102905312332 },
     ],
     parts: [
-        { name: "splitter", i: -2, j: 0 },
-        { name: "splitter", i: -2, j: 3 },
-        { name: "splitter", i: -2, j: 6 },
+        { name: "split", i: -2, j: 0 },
+        { name: "split", i: -2, j: 3 },
+        { name: "split", i: -2, j: 6 },
         { name: "join", i: -2, j: 9, mirror: true },
         { name: "ramp-2.1", i: -4, j: 10, mirror: true },
         { name: "uturn-l", i: -1, j: 2 },
