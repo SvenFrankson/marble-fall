@@ -77,6 +77,13 @@ class MenuTile extends BABYLON.Mesh {
         this.texture = new BABYLON.DynamicTexture(this.name + "-texture", { width: this.texW, height: this.texH });
     }
 
+    public setIsVisible(isVisible: boolean): void {
+        this.isVisible = isVisible;
+        this.getChildMeshes().forEach(m => {
+            m.isVisible = isVisible;
+        })
+    }
+
     public async instantiate(): Promise<void> {
         let button = BABYLON.MeshBuilder.CreateSphere("center", { diameter: 0.001 });
         this.game.vertexDataLoader.get("./meshes/button.babylon").then(vertexData => {

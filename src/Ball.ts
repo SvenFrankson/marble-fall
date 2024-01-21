@@ -75,7 +75,7 @@ class Ball extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-        this.marbleLoopSound.volume = 0 * this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainSound;
         this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -113,7 +113,7 @@ class Ball extends BABYLON.Mesh {
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
-        this.marbleLoopSound.volume = 0 * this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainSound;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -128,11 +128,12 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = 0 * this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainSound;
     }
 
     private _timer: number = 0;
     public strReaction: number = 0;
+    private static _maxSpeed: number = 0;
     public update(dt: number): void {
         if (this.position.y < - 10) {
             return;
@@ -140,11 +141,18 @@ class Ball extends BABYLON.Mesh {
 
         this._timer += dt * this.game.timeFactor;
         this._timer = Math.min(this._timer, 1);
+        let v = this.velocity.length();
+        if (v > Ball._maxSpeed) {
+            Ball._maxSpeed = v;
+            console.log(v);
+        }
 
         while (this._timer > 0) {
             let m = this.mass;
             let dt = this.game.physicDT;
-            this._timer -= dt;
+            let f = this.velocity.length();
+            f = Math.max(Math.min(f, 1), 0.4);
+            this._timer -= dt / f;
     
             let weight = new BABYLON.Vector3(0, -9 * m, 0);
             let reactions = BABYLON.Vector3.Zero();
@@ -203,8 +211,8 @@ class Ball extends BABYLON.Mesh {
                             this.marbleChocSound.play();
                         }
 
-                        this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
-                        ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
+                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
+                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         

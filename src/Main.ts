@@ -46,6 +46,7 @@ class Game {
     public tileDemo3: MenuTile;
     public tileCreate: MenuTile;
     public tileCredit: MenuTile;
+    public creditPlaque: MenuTile;
     public tiles: MenuTile[];
 
     public skybox: BABYLON.Mesh;
@@ -225,13 +226,13 @@ class Game {
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
         
-        let creditPlaque = new MenuTile("credit-plaque", 0.2, 0.15, this);
-        await creditPlaque.instantiate();
-        (creditPlaque.material as BABYLON.StandardMaterial).emissiveColor.copyFromFloats(1, 1, 1);
-        creditPlaque.position.x = 0;
-        creditPlaque.position.y = 0;
-        creditPlaque.position.z = 0.13;
-        creditPlaque.rotation.y = Math.PI;
+        this.creditPlaque = new MenuTile("credit-plaque", 0.2, 0.15, this);
+        await this.creditPlaque.instantiate();
+        (this.creditPlaque.material as BABYLON.StandardMaterial).emissiveColor.copyFromFloats(1, 1, 1);
+        this.creditPlaque.position.x = 0;
+        this.creditPlaque.position.y = 0;
+        this.creditPlaque.position.z = 0.13;
+        this.creditPlaque.rotation.y = Math.PI;
 
         this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileCredit];
 
@@ -270,16 +271,16 @@ class Game {
             ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
             this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", null);
             
-            ctx = creditPlaque.texture.getContext();
-            w = creditPlaque.texW;
-            h = creditPlaque.texH;
+            ctx = this.creditPlaque.texture.getContext();
+            w = this.creditPlaque.texW;
+            h = this.creditPlaque.texH;
             ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
-            creditPlaque.texture.drawText("DESIGN, ART & CODE", 140, 200, "70px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Sven Frankson", 70, 300, "70px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Powered by BABYLONJS", 70, 450, "50px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Blackboard texture from FREEPIK", 70, 550, "50px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("CC0 Wood material from TEXTURECAN", 70, 650, "50px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Find license file on GitHub for related urls", 70, 750, "40px 'Serif'", "#8a8674", null);
+            this.creditPlaque.texture.drawText("DESIGN, ART & CODE", 140, 200, "70px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Sven Frankson", 70, 300, "70px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Powered by BABYLONJS", 70, 450, "50px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Blackboard texture from FREEPIK", 70, 550, "50px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("CC0 Wood material from TEXTURECAN", 70, 650, "50px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Find license file on GitHub for related urls", 70, 750, "40px 'Serif'", "#8a8674", null);
         }
         if (blackboardTex.complete) {
             doDrawTileMenuTextures();
@@ -292,6 +293,9 @@ class Game {
         await this.machine.generateBaseMesh();
 
         document.getElementById("track-editor-menu").style.display = "none";
+
+        //this.makeScreenshot("splitter");
+        //return;
 
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
@@ -398,7 +402,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(largeDemoSplit);
+                this.machine.deserialize(demo1);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -532,6 +536,7 @@ class Game {
     }
 
     public async makeScreenshot(objectName: string): Promise<void> {
+        this.creditPlaque.setIsVisible(false);
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;

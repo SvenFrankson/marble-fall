@@ -64,7 +64,7 @@ class Ball extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        this.marbleLoopSound.volume = 0 * this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainSound;
         this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -96,7 +96,7 @@ class Ball extends BABYLON.Mesh {
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-        this.marbleLoopSound.volume = 0 * this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainSound;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -110,7 +110,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = 0 * this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainSound;
     }
     update(dt) {
         if (this.position.y < -10) {
@@ -118,10 +118,17 @@ class Ball extends BABYLON.Mesh {
         }
         this._timer += dt * this.game.timeFactor;
         this._timer = Math.min(this._timer, 1);
+        let v = this.velocity.length();
+        if (v > Ball._maxSpeed) {
+            Ball._maxSpeed = v;
+            console.log(v);
+        }
         while (this._timer > 0) {
             let m = this.mass;
             let dt = this.game.physicDT;
-            this._timer -= dt;
+            let f = this.velocity.length();
+            f = Math.max(Math.min(f, 1), 0.4);
+            this._timer -= dt / f;
             let weight = new BABYLON.Vector3(0, -9 * m, 0);
             let reactions = BABYLON.Vector3.Zero();
             let reactionsCount = 0;
@@ -161,8 +168,8 @@ class Ball extends BABYLON.Mesh {
                             this.marbleChocSound.volume = v / 5 * this.game.mainSound;
                             this.marbleChocSound.play();
                         }
-                        this.velocity.scaleInPlace(-0.1).addInPlace(otherSpeed.scale(0.8));
-                        ball.velocity.scaleInPlace(-0.1).addInPlace(mySpeed.scale(0.8));
+                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
+                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         let dir = this.position.subtract(ball.position).normalize();
@@ -187,6 +194,7 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainSound;
     }
 }
+Ball._maxSpeed = 0;
 var demo1 = {
     balls: [
         { x: 0.45223644798326457, y: -0.14555925508040052 },
@@ -239,7 +247,7 @@ var demo2 = {
         { name: "ramp-1.1", i: 2, j: 4 },
     ],
 };
-var demo3 = {
+var demo4 = {
     balls: [
         { x: 0.7063794660954964, y: -0.017640293121974498 },
         { x: -0.2545074285696747, y: 0.011180937689018683 },
@@ -287,45 +295,28 @@ var demoTest = {
         { name: "ramp-1.0", i: 0, j: 2 },
     ],
 };
-var largeDemoSplit = {
+var demo3 = {
     balls: [
-        { x: -0.7530147841347994, y: -0.1675156765971257 },
-        { x: -0.7520832866868002, y: -0.08676789487205938 },
-        { x: -0.7496645108449065, y: -0.3241807397155625 },
-        { x: -0.7523308107285296, y: -0.2447694311086762 },
-        { x: -0.7500584528467474, y: -0.009553628029316905 },
-        { x: -0.7310100370603176, y: 0.07895531360830525 },
+        { x: -0.7529580212020577, y: -0.1654427630682682 },
+        { x: -0.7513297912847231, y: -0.32829114967876044 },
+        { x: -0.7517784289994465, y: -0.2470864404297073 },
+        { x: -0.7522482200985597, y: -0.08369699812598332 },
+        { x: -0.7521042373550704, y: -0.0019488102905312332 },
     ],
     parts: [
-        { name: "splitter", i: 0, j: -1 },
-        { name: "splitter", i: -2, j: 1 },
-        { name: "splitter", i: 2, j: 1 },
-        { name: "ramp-1.0", i: -1, j: 1 },
-        { name: "ramp-1.0", i: 1, j: 1 },
-        { name: "uturn-l", i: -4, j: 3, mirror: true },
-        { name: "spiral", i: -1, j: 3 },
-        { name: "loop", i: 3, j: 3 },
-        { name: "uturn-s", i: 5, j: 6 },
-        { name: "uturn-l", i: 0, j: 3, mirror: true },
-        { name: "uturn-s", i: -2, j: 4 },
-        { name: "uturn-s", i: 2, j: 4 },
-        { name: "ramp-1.1", i: 4, j: 7, mirror: true },
-        { name: "uturn-s", i: 1, j: 5, mirror: true },
+        { name: "splitter", i: -2, j: 0 },
+        { name: "splitter", i: -2, j: 3 },
+        { name: "splitter", i: -2, j: 6 },
+        { name: "join", i: -2, j: 9, mirror: true },
+        { name: "ramp-2.1", i: -4, j: 10, mirror: true },
+        { name: "uturn-l", i: -1, j: 2 },
+        { name: "uturn-l", i: -4, j: 2, mirror: true },
+        { name: "uturn-l", i: -1, j: 5 },
+        { name: "uturn-l", i: -1, j: 8 },
         { name: "uturn-l", i: -4, j: 5, mirror: true },
-        { name: "join", i: 1, j: 9, mirror: true },
-        { name: "join", i: 3, j: 8, mirror: true },
-        { name: "ramp-1.2", i: 2, j: 6 },
-        { name: "ramp-1.3", i: 0, j: 6 },
-        { name: "ramp-1.0", i: 2, j: 9 },
-        { name: "uturn-s", i: -2, j: 6 },
-        { name: "uturn-l", i: -4, j: 7, mirror: true },
-        { name: "uturn-s", i: -2, j: 8 },
-        { name: "uturn-l", i: -4, j: 9, mirror: true },
-        { name: "join", i: -2, j: 10, mirror: true },
-        { name: "ramp-2.0", i: -1, j: 10 },
-        { name: "ramp-2.0", i: -4, j: 11 },
-        { name: "ramp-4.1", i: -4, j: -2 },
-        { name: "elevator-14", i: -5, j: -3, mirror: true },
+        { name: "uturn-l", i: -4, j: 8, mirror: true },
+        { name: "ramp-2.1", i: -4, j: -1 },
+        { name: "elevator-13", i: -5, j: -2, mirror: true },
     ],
 };
 class HelperShape {
@@ -1271,13 +1262,13 @@ class Game {
         this.tileCredit.position.x = 0.07;
         this.tileCredit.position.y = -0.09;
         this.tileCredit.parent = this.tileMenuContainer;
-        let creditPlaque = new MenuTile("credit-plaque", 0.2, 0.15, this);
-        await creditPlaque.instantiate();
-        creditPlaque.material.emissiveColor.copyFromFloats(1, 1, 1);
-        creditPlaque.position.x = 0;
-        creditPlaque.position.y = 0;
-        creditPlaque.position.z = 0.13;
-        creditPlaque.rotation.y = Math.PI;
+        this.creditPlaque = new MenuTile("credit-plaque", 0.2, 0.15, this);
+        await this.creditPlaque.instantiate();
+        this.creditPlaque.material.emissiveColor.copyFromFloats(1, 1, 1);
+        this.creditPlaque.position.x = 0;
+        this.creditPlaque.position.y = 0;
+        this.creditPlaque.position.z = 0.13;
+        this.creditPlaque.rotation.y = Math.PI;
         this.tiles = [this.tileDemo1, this.tileDemo2, this.tileDemo3, this.tileCreate, this.tileCredit];
         let doDrawTileMenuTextures = () => {
             let ctx = this.tileDemo1.texture.getContext();
@@ -1309,16 +1300,16 @@ class Game {
             h = this.tileCredit.texH;
             ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
             this.tileCredit.texture.drawText("CREDIT", 70, 100, "70px 'Serif'", "white", null);
-            ctx = creditPlaque.texture.getContext();
-            w = creditPlaque.texW;
-            h = creditPlaque.texH;
+            ctx = this.creditPlaque.texture.getContext();
+            w = this.creditPlaque.texW;
+            h = this.creditPlaque.texH;
             ctx.drawImage(blackboardTex, 80, 200, w, h, 0, 0, w, h);
-            creditPlaque.texture.drawText("DESIGN, ART & CODE", 140, 200, "70px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Sven Frankson", 70, 300, "70px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Powered by BABYLONJS", 70, 450, "50px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Blackboard texture from FREEPIK", 70, 550, "50px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("CC0 Wood material from TEXTURECAN", 70, 650, "50px 'Serif'", "white", null);
-            creditPlaque.texture.drawText("Find license file on GitHub for related urls", 70, 750, "40px 'Serif'", "#8a8674", null);
+            this.creditPlaque.texture.drawText("DESIGN, ART & CODE", 140, 200, "70px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Sven Frankson", 70, 300, "70px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Powered by BABYLONJS", 70, 450, "50px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Blackboard texture from FREEPIK", 70, 550, "50px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("CC0 Wood material from TEXTURECAN", 70, 650, "50px 'Serif'", "white", null);
+            this.creditPlaque.texture.drawText("Find license file on GitHub for related urls", 70, 750, "40px 'Serif'", "#8a8674", null);
         };
         if (blackboardTex.complete) {
             doDrawTileMenuTextures();
@@ -1329,6 +1320,8 @@ class Game {
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         document.getElementById("track-editor-menu").style.display = "none";
+        //this.makeScreenshot("splitter");
+        //return;
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.setContext(GameMode.CreateMode);
@@ -1417,7 +1410,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(largeDemoSplit);
+                this.machine.deserialize(demo1);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -1479,6 +1472,7 @@ class Game {
         await anim(0, 0.6);
     }
     async makeScreenshot(objectName) {
+        this.creditPlaque.setIsVisible(false);
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
@@ -1603,6 +1597,12 @@ class MenuTile extends BABYLON.Mesh {
     }
     get ppm() {
         return MenuTile.ppc * 100;
+    }
+    setIsVisible(isVisible) {
+        this.isVisible = isVisible;
+        this.getChildMeshes().forEach(m => {
+            m.isVisible = isVisible;
+        });
     }
     async instantiate() {
         let button = BABYLON.MeshBuilder.CreateSphere("center", { diameter: 0.001 });
@@ -3198,7 +3198,7 @@ class Elevator extends MachinePart {
             box.parent = this;
             let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.019 * x, 0.001, rRamp)];
+            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
             let nRamp = 12;
             for (let i = 0; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
@@ -3206,7 +3206,7 @@ class Elevator extends MachinePart {
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.019 * x, 0.001, -rRamp));
+            rampWire0.path.push(new BABYLON.Vector3(-0.02 * x, 0.0015, -rRamp));
             rampWire0.parent = box;
             this.boxes.push(box);
             this.wires.push(rampWire0);
@@ -3423,14 +3423,50 @@ class Splitter extends MachinePart {
         if (mirror) {
             this.mirrorTrackPointsInPlace();
         }
-        this.pivot = BABYLON.MeshBuilder.CreateBox("pivot", { width: 0.0005, height: 0.0005, depth: this.wireGauge * 1.2 });
+        let anchorDatas = [];
+        let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
+        let q = BABYLON.Quaternion.Identity();
+        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, 0.015));
+        anchorDatas.push(tmpVertexData);
+        let axisZMin = -this.wireGauge * 0.6;
+        let axisZMax = 0.015 - 0.001 * 0.5;
+        tmpVertexData = BABYLON.CreateCylinderVertexData({ height: axisZMax - axisZMin, diameter: 0.001 });
+        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, (axisZMax + axisZMin) * 0.5));
+        anchorDatas.push(tmpVertexData);
+        let anchor = new BABYLON.Mesh("anchor");
+        anchor.position.copyFromFloats(0, -tileHeight, 0);
+        anchor.parent = this;
+        anchor.material = this.game.steelMaterial;
+        Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
+        this.pivot = new BABYLON.Mesh("pivot");
         this.pivot.position.copyFromFloats(0, -tileHeight, 0);
+        this.pivot.material = this.game.steelMaterial;
         this.pivot.parent = this;
         this.pivot.rotation.z = Math.PI / 4;
         let dz = this.wireGauge * 0.5;
-        let wireLeft0 = new Wire(this);
-        wireLeft0.parent = this.pivot;
-        wireLeft0.path = [new BABYLON.Vector3(-this.pivotL, 0, -dz), new BABYLON.Vector3(0, 0, -dz)];
+        this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
+            if (datas[0]) {
+                let data = Mummu.CloneVertexData(datas[0]);
+                Mummu.TranslateVertexDataInPlace(data, new BABYLON.Vector3(0, 0, axisZMin));
+                data.applyToMesh(this.pivot);
+            }
+        });
+        let wireHorizontal0 = new Wire(this);
+        wireHorizontal0.parent = this.pivot;
+        wireHorizontal0.path = [new BABYLON.Vector3(-this.pivotL, 0, -dz), new BABYLON.Vector3(this.pivotL, 0, -dz)];
+        let wireHorizontal1 = new Wire(this);
+        wireHorizontal1.parent = this.pivot;
+        wireHorizontal1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(this.pivotL, 0, dz)];
+        let wireVertical0 = new Wire(this);
+        wireVertical0.parent = this.pivot;
+        wireVertical0.path = [new BABYLON.Vector3(0, this.pivotL, -dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
+        let wireVertical1 = new Wire(this);
+        wireVertical1.parent = this.pivot;
+        wireVertical1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
         let curbLeft0 = new Wire(this);
         curbLeft0.wireSize = this.wireSize * 0.8;
         curbLeft0.parent = this.pivot;
@@ -3441,9 +3477,6 @@ class Splitter extends MachinePart {
             let sina = Math.sin(a);
             curbLeft0.path.push(new BABYLON.Vector3(-rCurb + cosa * rCurb, rCurb - sina * rCurb, -dz));
         }
-        let wireLeft1 = new Wire(this);
-        wireLeft1.parent = this.pivot;
-        wireLeft1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(0, 0, dz)];
         let curbLeft1 = new Wire(this);
         curbLeft1.wireSize = this.wireSize * 0.8;
         curbLeft1.parent = this.pivot;
@@ -3454,15 +3487,6 @@ class Splitter extends MachinePart {
             let sina = Math.sin(a);
             curbLeft1.path.push(new BABYLON.Vector3(-rCurb + cosa * rCurb, rCurb - sina * rCurb, dz));
         }
-        let wireUp0 = new Wire(this);
-        wireUp0.parent = this.pivot;
-        wireUp0.path = [new BABYLON.Vector3(0, this.pivotL, -dz), new BABYLON.Vector3(0, 0, -dz)];
-        let wireUp1 = new Wire(this);
-        wireUp1.parent = this.pivot;
-        wireUp1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, 0, dz)];
-        let wireRight0 = new Wire(this);
-        wireRight0.parent = this.pivot;
-        wireRight0.path = [new BABYLON.Vector3(this.pivotL, 0, -dz), new BABYLON.Vector3(0, 0, -dz)];
         let curbRight0 = new Wire(this);
         curbRight0.wireSize = this.wireSize * 0.8;
         curbRight0.parent = this.pivot;
@@ -3473,9 +3497,6 @@ class Splitter extends MachinePart {
             let sina = Math.sin(a);
             curbRight0.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, -dz));
         }
-        let wireRight1 = new Wire(this);
-        wireRight1.parent = this.pivot;
-        wireRight1.path = [new BABYLON.Vector3(this.pivotL, 0, dz), new BABYLON.Vector3(0, 0, dz)];
         let curbRight1 = new Wire(this);
         curbRight1.wireSize = this.wireSize * 0.8;
         curbRight1.parent = this.pivot;
@@ -3486,13 +3507,13 @@ class Splitter extends MachinePart {
             let sina = Math.sin(a);
             curbRight1.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, dz));
         }
-        this.wires = [wireLeft0, wireLeft1, curbLeft0, curbLeft1, wireUp0, wireUp1, wireRight0, wireRight1, curbRight0, curbRight1];
+        this.wires = [wireHorizontal0, wireHorizontal1, curbLeft0, curbLeft1, wireVertical0, wireVertical1, curbRight0, curbRight1];
         this.generateWires();
         this._animatePivot = Mummu.AnimationFactory.CreateNumber(this, this.pivot.rotation, "z", () => {
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             });
-        }, false, Nabu.Easing.easeInCubic);
+        }, false, Nabu.Easing.easeInSquare);
     }
     update(dt) {
         if (!this._moving) {
@@ -3503,14 +3524,14 @@ class Splitter extends MachinePart {
                     if (local.y < ball.radius * 0.9) {
                         if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
                             this._moving = true;
-                            this._animatePivot(-Math.PI / 4, 0.2 / this.game.timeFactor).then(() => {
+                            this._animatePivot(-Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
                         }
                         else if (local.x > -this.pivotL && local.x < -ball.radius * 0.5) {
                             this._moving = true;
-                            this._animatePivot(Math.PI / 4, 0.2 / this.game.timeFactor).then(() => {
+                            this._animatePivot(Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
@@ -3924,6 +3945,7 @@ class Toolbar {
     }
     initialize() {
         this.container = document.querySelector("#toolbar");
+        this.container.style.display = "block";
         this.playButton = document.querySelector("#toolbar-play");
         this.playButton.addEventListener("click", this.onPlay);
         this.pauseButton = document.querySelector("#toolbar-pause");

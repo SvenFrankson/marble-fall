@@ -52,7 +52,7 @@ var demo2: IMachineData = {
     ],
 };
 
-var demo3: IMachineData = {
+var demo4: IMachineData = {
     balls: [
         { x: 0.7063794660954964, y: -0.017640293121974498 },
         { x: -0.2545074285696747, y: 0.011180937689018683 },
@@ -102,44 +102,27 @@ var demoTest: IMachineData = {
     ],
 };
 
-var largeDemoSplit: IMachineData = {
+var demo3: IMachineData = {
     balls: [
-        { x: -0.7530147841347994, y: -0.1675156765971257 },
-        { x: -0.7520832866868002, y: -0.08676789487205938 },
-        { x: -0.7496645108449065, y: -0.3241807397155625 },
-        { x: -0.7523308107285296, y: -0.2447694311086762 },
-        { x: -0.7500584528467474, y: -0.009553628029316905 },
-        { x: -0.7310100370603176, y: 0.07895531360830525 },
+        { x: -0.7529580212020577, y: -0.1654427630682682 },
+        { x: -0.7513297912847231, y: -0.32829114967876044 },
+        { x: -0.7517784289994465, y: -0.2470864404297073 },
+        { x: -0.7522482200985597, y: -0.08369699812598332 },
+        { x: -0.7521042373550704, y: -0.0019488102905312332 },
     ],
     parts: [
-        { name: "splitter", i: 0, j: -1 },
-        { name: "splitter", i: -2, j: 1 },
-        { name: "splitter", i: 2, j: 1 },
-        { name: "ramp-1.0", i: -1, j: 1 },
-        { name: "ramp-1.0", i: 1, j: 1 },
-        { name: "uturn-l", i: -4, j: 3, mirror: true },
-        { name: "spiral", i: -1, j: 3 },
-        { name: "loop", i: 3, j: 3 },
-        { name: "uturn-s", i: 5, j: 6 },
-        { name: "uturn-l", i: 0, j: 3, mirror: true },
-        { name: "uturn-s", i: -2, j: 4 },
-        { name: "uturn-s", i: 2, j: 4 },
-        { name: "ramp-1.1", i: 4, j: 7, mirror: true },
-        { name: "uturn-s", i: 1, j: 5, mirror: true },
+        { name: "splitter", i: -2, j: 0 },
+        { name: "splitter", i: -2, j: 3 },
+        { name: "splitter", i: -2, j: 6 },
+        { name: "join", i: -2, j: 9, mirror: true },
+        { name: "ramp-2.1", i: -4, j: 10, mirror: true },
+        { name: "uturn-l", i: -1, j: 2 },
+        { name: "uturn-l", i: -4, j: 2, mirror: true },
+        { name: "uturn-l", i: -1, j: 5 },
+        { name: "uturn-l", i: -1, j: 8 },
         { name: "uturn-l", i: -4, j: 5, mirror: true },
-        { name: "join", i: 1, j: 9, mirror: true },
-        { name: "join", i: 3, j: 8, mirror: true },
-        { name: "ramp-1.2", i: 2, j: 6 },
-        { name: "ramp-1.3", i: 0, j: 6 },
-        { name: "ramp-1.0", i: 2, j: 9 },
-        { name: "uturn-s", i: -2, j: 6 },
-        { name: "uturn-l", i: -4, j: 7, mirror: true },
-        { name: "uturn-s", i: -2, j: 8 },
-        { name: "uturn-l", i: -4, j: 9, mirror: true },
-        { name: "join", i: -2, j: 10, mirror: true },
-        { name: "ramp-2.0", i: -1, j: 10 },
-        { name: "ramp-2.0", i: -4, j: 11 },
-        { name: "ramp-4.1", i: -4, j: -2 },
-        { name: "elevator-14", i: -5, j: -3, mirror: true },
+        { name: "uturn-l", i: -4, j: 8, mirror: true },
+        { name: "ramp-2.1", i: -4, j: -1 },
+        { name: "elevator-13", i: -5, j: -2, mirror: true },
     ],
 };

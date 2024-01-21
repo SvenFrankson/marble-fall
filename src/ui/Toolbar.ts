@@ -31,6 +31,7 @@ class Toolbar {
 
     public initialize(): void {
         this.container = document.querySelector("#toolbar") as HTMLDivElement;
+        this.container.style.display = "block";
 
         this.playButton = document.querySelector("#toolbar-play") as HTMLButtonElement;
         this.playButton.addEventListener("click", this.onPlay);

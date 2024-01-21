@@ -75,15 +75,57 @@ class Splitter extends MachinePart {
             this.mirrorTrackPointsInPlace();
         }
 
-        this.pivot = BABYLON.MeshBuilder.CreateBox("pivot", { width: 0.0005, height: 0.0005, depth: this.wireGauge * 1.2 });
+        let anchorDatas: BABYLON.VertexData[] = [];
+        let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
+        let q = BABYLON.Quaternion.Identity();
+        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, 0.015));
+        anchorDatas.push(tmpVertexData);
+
+        let axisZMin = - this.wireGauge * 0.6;
+        let axisZMax = 0.015 - 0.001 * 0.5;
+        tmpVertexData = BABYLON.CreateCylinderVertexData({ height: axisZMax - axisZMin, diameter: 0.001 });
+        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
+        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+        Mummu.TranslateVertexDataInPlace(tmpVertexData, new BABYLON.Vector3(0, 0, (axisZMax + axisZMin) * 0.5));
+        anchorDatas.push(tmpVertexData);
+
+        let anchor = new BABYLON.Mesh("anchor");
+        anchor.position.copyFromFloats(0, - tileHeight, 0);
+        anchor.parent = this;
+        anchor.material = this.game.steelMaterial;
+        Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
+
+        this.pivot = new BABYLON.Mesh("pivot");
         this.pivot.position.copyFromFloats(0, - tileHeight, 0);
+        this.pivot.material = this.game.steelMaterial;
         this.pivot.parent = this;
         this.pivot.rotation.z = Math.PI / 4;
         let dz = this.wireGauge * 0.5;
+        this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
+            if (datas[0]) {
+                let data = Mummu.CloneVertexData(datas[0]);
+                Mummu.TranslateVertexDataInPlace(data, new BABYLON.Vector3(0, 0, axisZMin));
+                data.applyToMesh(this.pivot);
+            }
+        })
 
-        let wireLeft0 = new Wire(this);
-        wireLeft0.parent = this.pivot;
-        wireLeft0.path = [new BABYLON.Vector3(-this.pivotL, 0, - dz), new BABYLON.Vector3(0, 0, -dz)];
+        let wireHorizontal0 = new Wire(this);
+        wireHorizontal0.parent = this.pivot;
+        wireHorizontal0.path = [new BABYLON.Vector3(-this.pivotL, 0, - dz), new BABYLON.Vector3(this.pivotL, 0, -dz)];
+
+        let wireHorizontal1 = new Wire(this);
+        wireHorizontal1.parent = this.pivot;
+        wireHorizontal1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(this.pivotL, 0, dz)];
+
+        let wireVertical0 = new Wire(this);
+        wireVertical0.parent = this.pivot;
+        wireVertical0.path = [new BABYLON.Vector3(0, this.pivotL, - dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
+
+        let wireVertical1 = new Wire(this);
+        wireVertical1.parent = this.pivot;
+        wireVertical1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
 
         let curbLeft0 = new Wire(this);
         curbLeft0.wireSize = this.wireSize * 0.8;
@@ -96,10 +138,6 @@ class Splitter extends MachinePart {
             curbLeft0.path.push(new BABYLON.Vector3(- rCurb + cosa * rCurb, rCurb - sina * rCurb, - dz));
         }
 
-        let wireLeft1 = new Wire(this);
-        wireLeft1.parent = this.pivot;
-        wireLeft1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(0, 0, dz)];
-
         let curbLeft1 = new Wire(this);
         curbLeft1.wireSize = this.wireSize * 0.8;
         curbLeft1.parent = this.pivot;
@@ -110,18 +148,6 @@ class Splitter extends MachinePart {
             let sina = Math.sin(a);
             curbLeft1.path.push(new BABYLON.Vector3(- rCurb + cosa * rCurb, rCurb - sina * rCurb, dz));
         }
-
-        let wireUp0 = new Wire(this);
-        wireUp0.parent = this.pivot;
-        wireUp0.path = [new BABYLON.Vector3(0, this.pivotL, - dz), new BABYLON.Vector3(0, 0, -dz)];
-
-        let wireUp1 = new Wire(this);
-        wireUp1.parent = this.pivot;
-        wireUp1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, 0, dz)];
-
-        let wireRight0 = new Wire(this);
-        wireRight0.parent = this.pivot;
-        wireRight0.path = [new BABYLON.Vector3(this.pivotL, 0, - dz), new BABYLON.Vector3(0, 0, -dz)];
         
         let curbRight0 = new Wire(this);
         curbRight0.wireSize = this.wireSize * 0.8;
@@ -134,10 +160,6 @@ class Splitter extends MachinePart {
             curbRight0.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, -dz));
         }
 
-        let wireRight1 = new Wire(this);
-        wireRight1.parent = this.pivot;
-        wireRight1.path = [new BABYLON.Vector3(this.pivotL, 0, dz), new BABYLON.Vector3(0, 0, dz)];
-
         let curbRight1 = new Wire(this);
         curbRight1.wireSize = this.wireSize * 0.8;
         curbRight1.parent = this.pivot;
@@ -149,7 +171,7 @@ class Splitter extends MachinePart {
             curbRight1.path.push(new BABYLON.Vector3(rCurb - cosa * rCurb, rCurb - sina * rCurb, dz));
         }
 
-        this.wires = [wireLeft0, wireLeft1, curbLeft0, curbLeft1, wireUp0, wireUp1, wireRight0, wireRight1, curbRight0, curbRight1];
+        this.wires = [wireHorizontal0, wireHorizontal1, curbLeft0, curbLeft1, wireVertical0, wireVertical1, curbRight0, curbRight1];
 
         this.generateWires();
 
@@ -157,7 +179,7 @@ class Splitter extends MachinePart {
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             })
-        }, false, Nabu.Easing.easeInCubic);
+        }, false, Nabu.Easing.easeInSquare);
     }
 
     private _moving: boolean = false;
@@ -170,14 +192,14 @@ class Splitter extends MachinePart {
                     if (local.y < ball.radius * 0.9) {
                         if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
                             this._moving = true;
-                            this._animatePivot(- Math.PI / 4, 0.2 / this.game.timeFactor).then(() => {
+                            this._animatePivot(- Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
                         }
                         else if (local.x > - this.pivotL && local.x < - ball.radius * 0.5) {
                             this._moving = true;
-                            this._animatePivot(Math.PI / 4, 0.2 / this.game.timeFactor).then(() => {
+                            this._animatePivot(Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
