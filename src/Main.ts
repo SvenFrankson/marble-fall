@@ -77,11 +77,8 @@ class Game {
 
         let savedMainSound = window.localStorage.getItem("saved-main-volume");
         if (savedMainSound) {
-            console.log("a");
             let v = parseFloat(savedMainSound);
             if (isFinite(v)) {
-                console.log("b");
-                console.log(v);
                 this.mainVolume = Math.max(Math.min(v, 1), 0);
             }
         }
@@ -325,7 +322,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
 
-        this.setContext(GameMode.CreateMode);
+        this.setContext(GameMode.MainMenu);
 	}
 
 	public animate(): void {

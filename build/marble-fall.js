@@ -64,7 +64,7 @@ class Ball extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        this.marbleLoopSound.volume = this.game.mainVolume;
+        this.marbleLoopSound.volume = 0;
         this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -96,7 +96,7 @@ class Ball extends BABYLON.Mesh {
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-        this.marbleLoopSound.volume = this.game.mainVolume;
+        this.marbleLoopSound.volume = 0;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -110,7 +110,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = this.game.mainVolume;
+        this.marbleLoopSound.volume = 0;
     }
     update(dt) {
         if (this.position.y < -10) {
@@ -118,11 +118,6 @@ class Ball extends BABYLON.Mesh {
         }
         this._timer += dt * this.game.timeFactor;
         this._timer = Math.min(this._timer, 1);
-        let v = this.velocity.length();
-        if (v > Ball._maxSpeed) {
-            Ball._maxSpeed = v;
-            console.log(v);
-        }
         while (this._timer > 0) {
             let m = this.mass;
             let dt = this.game.physicDT;
@@ -194,7 +189,6 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainVolume;
     }
 }
-Ball._maxSpeed = 0;
 var demo1 = {
     balls: [
         { x: 0.45223644798326457, y: -0.14555925508040052 },
@@ -1155,11 +1149,8 @@ class Game {
         BABYLON.Engine.ShadersRepository = "./shaders/";
         let savedMainSound = window.localStorage.getItem("saved-main-volume");
         if (savedMainSound) {
-            console.log("a");
             let v = parseFloat(savedMainSound);
             if (isFinite(v)) {
-                console.log("b");
-                console.log(v);
                 this.mainVolume = Math.max(Math.min(v, 1), 0);
             }
         }
@@ -1362,7 +1353,7 @@ class Game {
         //return;
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
-        this.setContext(GameMode.CreateMode);
+        this.setContext(GameMode.MainMenu);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2608,7 +2599,6 @@ class MachinePart extends BABYLON.Mesh {
             this.AABBMax.maximizeInPlace(track.AABBMax);
             this.allWires.push(track.wires[0], track.wires[1]);
         });
-        console.log("AllWires " + this.allWires.length);
     }
     update(dt) { }
     rebuildWireMeshes() {

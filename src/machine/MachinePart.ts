@@ -184,7 +184,6 @@ class MachinePart extends BABYLON.Mesh {
             this.AABBMax.maximizeInPlace(track.AABBMax);
             this.allWires.push(track.wires[0], track.wires[1]);
         });
-        console.log("AllWires " + this.allWires.length);
     }
 
     public update(dt: number): void {}
