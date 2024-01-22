@@ -18,6 +18,7 @@ class Toolbar {
     public zoomButton: HTMLButtonElement;
     public zoomInputContainer: HTMLDivElement;
     public zoomInput: HTMLInputElement;
+    public layerButton: HTMLButtonElement;
     public backButton: HTMLButtonElement;
 
     public timeFactorInputShown: boolean = false;
@@ -81,6 +82,9 @@ class Toolbar {
         this.zoomInput.addEventListener("input", this.onZoomInput);
 
         this.zoomInputContainer = this.zoomInput.parentElement as HTMLDivElement;
+
+        this.layerButton = document.querySelector("#toolbar-layer") as HTMLButtonElement;
+        this.layerButton.addEventListener("click", this.onLayer);
 
         this.backButton = document.querySelector("#toolbar-back") as HTMLButtonElement;
         this.backButton.addEventListener("click", this.onBack);
@@ -251,6 +255,17 @@ class Toolbar {
 
     public onZoomInput = (e: InputEvent) => {
         this.game.setCameraZoomFactor(parseFloat((e.target as HTMLInputElement).value));
+    }
+
+    public onLayer = (e: PointerEvent) => {
+        let rect = this.layerButton.getBoundingClientRect();
+        let centerY = rect.top + rect.height * 0.5;
+        if (e.y > centerY) {
+            this.game.machineEditor.currentLayer--;
+        }
+        else {
+            this.game.machineEditor.currentLayer++;
+        }
     }
 
     public onBack = () => {

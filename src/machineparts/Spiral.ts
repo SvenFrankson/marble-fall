@@ -1,8 +1,8 @@
 /// <reference path="../machine/MachinePart.ts"/>
 
 class Spiral extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, 1, 3, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
+        super(machine, i, j, k, 1, 3, mirror);
         this.partName = "spiral";
 
         this.deserialize({

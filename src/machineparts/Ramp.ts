@@ -1,7 +1,7 @@
 class Ramp extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
-        super(machine, i, j, w, h, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, mirror?: boolean) {
+        super(machine, i, j, k, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -27,8 +27,8 @@ class Ramp extends MachinePart {
 
 class CrossingRamp extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, w: number = 1, h: number = 1, mirror?: boolean) {
-        super(machine, i, j, w, h, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, mirror?: boolean) {
+        super(machine, i, j, k, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;

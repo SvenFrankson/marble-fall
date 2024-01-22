@@ -1,6 +1,6 @@
 class UTurnLarge extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, 2, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
+        super(machine, i, j, k, 2, 1, mirror);
         this.partName = "uturn-l";
 
         this.deserialize({
@@ -31,8 +31,8 @@ class UTurnLarge extends MachinePart {
 }
 
 class UTurn extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, 1, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
+        super(machine, i, j, k, 1, 1, mirror);
         this.partName = "uturn-s";
 
         this.deserialize({

@@ -27,6 +27,8 @@ class MachineEditor {
     public deletebutton: HTMLButtonElement;
     public tileMirrorButton: HTMLButtonElement;
 
+    public currentLayer: number = 0;
+
     private _selectedItem: string = "";
     public get selectedItem(): string {
         return this._selectedItem;
@@ -136,7 +138,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10, this.currentLayer);
                     track.instantiate().then(() => {
                         track.setIsVisible(false);
                     });
@@ -508,18 +510,21 @@ class MachineEditor {
         }
     }
 
-    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, w?: number, h?: number, mirror?: boolean): Promise<MachinePart> {
+    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, k?: number, w?: number, h?: number, mirror?: boolean): Promise<MachinePart> {
         if (!isFinite(i)) {
             i = track.i;
         }
         if (!isFinite(j)) {
             j = track.j;
         }
+        if (!isFinite(k)) {
+            k = track.k;
+        }
         if (!mirror) {
             mirror = track.mirror;
         }
 
-        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, w, h, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, k, w, h, mirror);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -531,7 +536,7 @@ class MachineEditor {
     }
 
     public async mirrorTrackInPlace(track: MachinePart): Promise<MachinePart> {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, !track.mirror);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirror);
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);

@@ -1,8 +1,8 @@
 /// <reference path="../machine/MachinePart.ts"/>
 
 class Snake extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, mirror?: boolean) {
-        super(machine, i, j, 2, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
+        super(machine, i, j, k, 2, 1, mirror);
         this.partName = "snake";
 
         this.deserialize({

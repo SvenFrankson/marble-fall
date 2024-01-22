@@ -7,6 +7,7 @@ interface IMachinePartData {
     name: string;
     i: number;
     j: number;
+    k?: number;
     mirror?: boolean;
 }
 
@@ -181,6 +182,7 @@ class Machine {
                 name: this.parts[i].partName,
                 i: this.parts[i].i,
                 j: this.parts[i].j,
+                k: this.parts[i].k,
                 mirror: this.parts[i].mirror
             })
         }
@@ -200,7 +202,7 @@ class Machine {
 
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.mirror);
+            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror);
             this.parts.push(track);
         }
     }

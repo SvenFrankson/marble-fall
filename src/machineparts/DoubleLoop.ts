@@ -1,8 +1,8 @@
 /// <reference path="../machine/MachinePart.ts"/>
 
 class DoubleLoop extends MachinePart {
-    constructor(machine: Machine, i: number, j: number) {
-        super(machine, i, j);
+    constructor(machine: Machine, i: number, j: number, k: number) {
+        super(machine, i, j, k);
 
         this.deserialize({
             points: [

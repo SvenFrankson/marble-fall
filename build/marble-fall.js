@@ -457,6 +457,7 @@ class MachineEditor {
     constructor(game) {
         this.game = game;
         this.items = new Map();
+        this.currentLayer = 0;
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
         this._pointerDownX = 0;
@@ -810,7 +811,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10, this.currentLayer);
                     track.instantiate().then(() => {
                         track.setIsVisible(false);
                     });
@@ -981,17 +982,20 @@ class MachineEditor {
             this.container.classList.remove("left");
         }
     }
-    async editTrackInPlace(track, i, j, w, h, mirror) {
+    async editTrackInPlace(track, i, j, k, w, h, mirror) {
         if (!isFinite(i)) {
             i = track.i;
         }
         if (!isFinite(j)) {
             j = track.j;
         }
+        if (!isFinite(k)) {
+            k = track.k;
+        }
         if (!mirror) {
             mirror = track.mirror;
         }
-        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, w, h, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, k, w, h, mirror);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -1002,7 +1006,7 @@ class MachineEditor {
         return editedTrack;
     }
     async mirrorTrackInPlace(track) {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, !track.mirror);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirror);
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -2435,6 +2439,7 @@ class Machine {
                 name: this.parts[i].partName,
                 i: this.parts[i].i,
                 j: this.parts[i].j,
+                k: this.parts[i].k,
                 mirror: this.parts[i].mirror
             });
         }
@@ -2450,7 +2455,7 @@ class Machine {
         }
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.mirror);
+            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror);
             this.parts.push(track);
         }
     }
@@ -2459,11 +2464,12 @@ var baseRadius = 0.075;
 var tileWidth = 0.15;
 var tileHeight = 0.03;
 class MachinePart extends BABYLON.Mesh {
-    constructor(machine, _i, _j, w = 1, h = 1, mirror) {
+    constructor(machine, _i, _j, _k, w = 1, h = 1, mirror) {
         super("track", machine.game.scene);
         this.machine = machine;
         this._i = _i;
         this._j = _j;
+        this._k = _k;
         this.w = w;
         this.h = h;
         this.mirror = mirror;
@@ -2483,6 +2489,7 @@ class MachinePart extends BABYLON.Mesh {
         this.yExtendable = false;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
+        this.position.z = -this._k * tileHeight;
         this.tracks = [new Track(this)];
     }
     get game() {
@@ -2501,6 +2508,13 @@ class MachinePart extends BABYLON.Mesh {
     setJ(v) {
         this._j = v;
         this.position.y = -this._j * tileHeight;
+    }
+    get k() {
+        return this._k;
+    }
+    setK(v) {
+        this._k = v;
+        this.position.z = -this._k * tileHeight;
     }
     setIsVisible(isVisible) {
         this.isVisible = isVisible;
@@ -2691,7 +2705,7 @@ class MachinePartFactory {
     constructor(machine) {
         this.machine = machine;
     }
-    createTrackWH(trackname, i, j, w, h, mirror) {
+    createTrackWH(trackname, i, j, k = 0, w, h, mirror) {
         trackname = trackname.split("-")[0];
         let wh = "";
         if (isFinite(w)) {
@@ -2701,54 +2715,54 @@ class MachinePartFactory {
             wh += h.toFixed(0);
         }
         trackname += "-" + wh;
-        return this.createTrack(trackname, i, j, mirror);
+        return this.createTrack(trackname, i, j, k, mirror);
     }
-    createTrack(trackname, i, j, mirror) {
+    createTrack(trackname, i, j, k = 0, mirror) {
         if (trackname.startsWith("flat-")) {
             let w = parseInt(trackname.split("-")[1]);
-            return new Ramp(this.machine, i, j, w, 0, mirror);
+            return new Ramp(this.machine, i, j, k, w, 0, mirror);
         }
         if (trackname.startsWith("flatX-")) {
             let w = parseInt(trackname.split("-")[1]);
-            return new CrossingRamp(this.machine, i, j, w, 0, mirror);
+            return new CrossingRamp(this.machine, i, j, k, w, 0, mirror);
         }
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Ramp(this.machine, i, j, w, h, mirror);
+            return new Ramp(this.machine, i, j, k, w, h, mirror);
         }
         if (trackname.startsWith("rampX-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new CrossingRamp(this.machine, i, j, w, h, mirror);
+            return new CrossingRamp(this.machine, i, j, k, w, h, mirror);
         }
         if (trackname === "uturn-s") {
-            return new UTurn(this.machine, i, j, mirror);
+            return new UTurn(this.machine, i, j, k, mirror);
         }
         if (trackname === "uturn-l") {
-            return new UTurnLarge(this.machine, i, j, mirror);
+            return new UTurnLarge(this.machine, i, j, k, mirror);
         }
         if (trackname === "loop") {
-            return new Loop(this.machine, i, j, mirror);
+            return new Loop(this.machine, i, j, k, mirror);
         }
         if (trackname === "wave") {
-            return new Wave(this.machine, i, j, mirror);
+            return new Wave(this.machine, i, j, k, mirror);
         }
         if (trackname === "snake") {
-            return new Snake(this.machine, i, j, mirror);
+            return new Snake(this.machine, i, j, k, mirror);
         }
         if (trackname === "spiral") {
-            return new Spiral(this.machine, i, j, mirror);
+            return new Spiral(this.machine, i, j, k, mirror);
         }
         if (trackname === "join") {
-            return new Join(this.machine, i, j, mirror);
+            return new Join(this.machine, i, j, k, mirror);
         }
         if (trackname === "split") {
-            return new Split(this.machine, i, j, mirror);
+            return new Split(this.machine, i, j, k, mirror);
         }
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
-            return new Elevator(this.machine, i, j, h, mirror);
+            return new Elevator(this.machine, i, j, k, h, mirror);
         }
     }
 }
@@ -3126,8 +3140,8 @@ class TrackPoint {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class DoubleLoop extends MachinePart {
-    constructor(machine, i, j) {
-        super(machine, i, j);
+    constructor(machine, i, j, k) {
+        super(machine, i, j, k);
         this.deserialize({
             points: [
                 { position: { x: -0.056249999999999994, y: 0.032475952641916446, z: 0 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: 0 }, dir: { x: 0.9950371902099892, y: -0.09950371902099892, z: 0 } },
@@ -3151,8 +3165,8 @@ class DoubleLoop extends MachinePart {
     }
 }
 class Elevator extends MachinePart {
-    constructor(machine, i, j, h = 1, mirror) {
-        super(machine, i, j, 1, h, mirror);
+    constructor(machine, i, j, k, h = 1, mirror) {
+        super(machine, i, j, k, 1, h, mirror);
         this.h = h;
         this.boxesCount = 4;
         this.rWheel = 0.015;
@@ -3371,8 +3385,8 @@ class CrossingFlat extends Track {
 */ 
 /// <reference path="../machine/MachinePart.ts"/>
 class FlatLoop extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k);
         this.deserialize({
             points: [
                 { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
@@ -3395,8 +3409,8 @@ class FlatLoop extends MachinePart {
     }
 }
 class Join extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 1, 1, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 1, 1, mirror);
         this.partName = "join";
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -3421,8 +3435,8 @@ class Join extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 2, 3, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 2, 3, mirror);
         this.partName = "loop";
         this.deserialize({
             points: [
@@ -3450,8 +3464,8 @@ class Loop extends MachinePart {
     }
 }
 class Ramp extends MachinePart {
-    constructor(machine, i, j, w = 1, h = 1, mirror) {
-        super(machine, i, j, w, h, mirror);
+    constructor(machine, i, j, k, w = 1, h = 1, mirror) {
+        super(machine, i, j, k, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -3472,8 +3486,8 @@ class Ramp extends MachinePart {
     }
 }
 class CrossingRamp extends MachinePart {
-    constructor(machine, i, j, w = 1, h = 1, mirror) {
-        super(machine, i, j, w, h, mirror);
+    constructor(machine, i, j, k, w = 1, h = 1, mirror) {
+        super(machine, i, j, k, w, h, mirror);
         this.w = w;
         this.h = h;
         this.xExtendable = true;
@@ -3497,8 +3511,8 @@ class CrossingRamp extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Snake extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 2, 1, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 2, 1, mirror);
         this.partName = "snake";
         this.deserialize({
             points: [
@@ -3514,8 +3528,8 @@ class Snake extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Spiral extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 1, 3, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 1, 3, mirror);
         this.partName = "spiral";
         this.deserialize({
             points: [
@@ -3555,8 +3569,8 @@ class Spiral extends MachinePart {
     }
 }
 class Split extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 1, 2, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 1, 2, mirror);
         this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
         this.pivotL = 0.025;
         this.reset = () => {
@@ -3723,8 +3737,8 @@ class Split extends MachinePart {
     }
 }
 class UTurnLarge extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 2, 1, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 2, 1, mirror);
         this.partName = "uturn-l";
         this.deserialize({
             points: [
@@ -3751,8 +3765,8 @@ class UTurnLarge extends MachinePart {
     }
 }
 class UTurn extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 1, 1, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 1, 1, mirror);
         this.partName = "uturn-s";
         this.deserialize({
             points: [
@@ -3775,8 +3789,8 @@ class UTurn extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Wave extends MachinePart {
-    constructor(machine, i, j, mirror) {
-        super(machine, i, j, 2, 1, mirror);
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 2, 1, mirror);
         this.partName = "wave";
         this.deserialize({
             points: [
@@ -4033,6 +4047,16 @@ class Toolbar {
         this.onZoomInput = (e) => {
             this.game.setCameraZoomFactor(parseFloat(e.target.value));
         };
+        this.onLayer = (e) => {
+            let rect = this.layerButton.getBoundingClientRect();
+            let centerY = rect.top + rect.height * 0.5;
+            if (e.y > centerY) {
+                this.game.machineEditor.currentLayer--;
+            }
+            else {
+                this.game.machineEditor.currentLayer++;
+            }
+        };
         this.onBack = () => {
             this.game.setContext(GameMode.MainMenu);
         };
@@ -4081,6 +4105,8 @@ class Toolbar {
         this.zoomInput.value = this.game.getCameraZoomFactor().toFixed(3);
         this.zoomInput.addEventListener("input", this.onZoomInput);
         this.zoomInputContainer = this.zoomInput.parentElement;
+        this.layerButton = document.querySelector("#toolbar-layer");
+        this.layerButton.addEventListener("click", this.onLayer);
         this.backButton = document.querySelector("#toolbar-back");
         this.backButton.addEventListener("click", this.onBack);
         this.resize();

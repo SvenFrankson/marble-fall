@@ -264,7 +264,7 @@ input-number {
     position: absolute;
     top: var(--half-button-height);
     left: var(--half-button-height);
-    transform: translate(-50%, -50%);
+    transform: translate(calc(var(--half-button-height) * -0.5), -50%);
 }
 
 .btn .value {

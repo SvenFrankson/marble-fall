@@ -7,8 +7,8 @@ class Elevator extends MachinePart {
     public wheels: BABYLON.Mesh[] = [];
     public cable: BABYLON.Mesh;
 
-    constructor(machine: Machine, i: number, j: number, public h: number = 1, mirror?: boolean) {
-        super(machine, i, j, 1, h, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, public h: number = 1, mirror?: boolean) {
+        super(machine, i, j, k, 1, h, mirror);
         this.boxesCount
         this.yExtendable = true;
         this.partName = "elevator-" + h.toFixed(0);

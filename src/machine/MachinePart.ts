@@ -42,10 +42,11 @@ class MachinePart extends BABYLON.Mesh {
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
 
-    constructor(public machine: Machine, private _i: number, private _j: number, public w: number = 1, public h: number = 1, public mirror?: boolean) {
+    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, public w: number = 1, public h: number = 1, public mirror?: boolean) {
         super("track", machine.game.scene);
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
+        this.position.z = - this._k * tileHeight;
 
         this.tracks = [new Track(this)];
     }
@@ -64,6 +65,14 @@ class MachinePart extends BABYLON.Mesh {
     public setJ(v: number) {
         this._j = v;
         this.position.y = - this._j * tileHeight;
+    }
+
+    public get k(): number {
+        return this._k;
+    }
+    public setK(v: number) {
+        this._k = v;
+        this.position.z = - this._k * tileHeight;
     }
 
     public setIsVisible(isVisible: boolean): void {
