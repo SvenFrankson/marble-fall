@@ -27,7 +27,17 @@ class MachineEditor {
     public deletebutton: HTMLButtonElement;
     public tileMirrorButton: HTMLButtonElement;
 
-    public currentLayer: number = 0;
+    private _currentLayer: number = 0;
+    public get currentLayer(): number {
+        return this._currentLayer;
+    }
+    public set currentLayer(v: number) {
+        if (v >= 0) {
+            this._currentLayer = Math.round(v);
+            this.layerMesh.position.z = - this._currentLayer * tileDepth;
+        }
+    }
+    public layerMesh: BABYLON.Mesh;
 
     private _selectedItem: string = "";
     public get selectedItem(): string {
@@ -84,6 +94,8 @@ class MachineEditor {
     constructor(public game: Game) {
         this.container = document.getElementById("machine-menu") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
+        this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 2 });
+        this.layerMesh.material = this.game.ghostMaterial;
     }
 
     public async instantiate(): Promise<void> {
@@ -340,7 +352,7 @@ class MachineEditor {
                     if (mesh instanceof BallGhost) {
                         return true;
                     }
-                    else if (mesh === this.machine.baseWall) {
+                    else if (mesh === this.layerMesh) {
                         return true;
                     }
                     return false;
@@ -356,11 +368,13 @@ class MachineEditor {
                     let i = Math.round(pick.pickedPoint.x / tileWidth);
                     let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                     pickedObject = this.machine.parts.find(track => {
-                        if (track.i <= i) {
-                            if ((track.i + track.w - 1) >= i) {
-                                if (track.j <= j) {
-                                    if ((track.j + track.h) >= j) {
-                                        return true;
+                        if (track.k === this.currentLayer) {
+                            if (track.i <= i) {
+                                if ((track.i + track.w - 1) >= i) {
+                                    if (track.j <= j) {
+                                        if ((track.j + track.h) >= j) {
+                                            return true;
+                                        }
                                     }
                                 }
                             }
@@ -372,7 +386,7 @@ class MachineEditor {
                         this.game.scene.pointerX,
                         this.game.scene.pointerY,
                         (mesh) => {
-                            if (mesh === this.machine.baseWall) {
+                            if (mesh === this.layerMesh) {
                                 return true;
                             }
                         }
@@ -400,7 +414,7 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    return mesh === this.machine.baseWall;
+                    return mesh === this.layerMesh;
                 }
             )
     
@@ -441,7 +455,7 @@ class MachineEditor {
                 if (!this.draggedObject && mesh instanceof BallGhost) {
                     return true;
                 }
-                else if (mesh === this.machine.baseWall) {
+                else if (mesh === this.layerMesh) {
                     return true;
                 }
                 return false;
@@ -489,15 +503,17 @@ class MachineEditor {
                     if (pick.pickedMesh instanceof BallGhost) {
                         this.setSelectedObject(pick.pickedMesh.ball);
                     }
-                    else if (pick.pickedMesh === this.machine.baseWall) {
+                    else if (pick.pickedMesh === this.layerMesh) {
                         let i = Math.round(pick.pickedPoint.x / tileWidth);
                         let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
                         let pickedTrack = this.machine.parts.find(track => {
-                            if (track.i <= i) {
-                                if ((track.i + track.w - 1) >= i) {
-                                    if (track.j <= j) {
-                                        if ((track.j + track.h) >= j) {
-                                            return true;
+                            if (track.k === this.currentLayer) {
+                                if (track.i <= i) {
+                                    if ((track.i + track.w - 1) >= i) {
+                                        if (track.j <= j) {
+                                            if ((track.j + track.h) >= j) {
+                                                return true;
+                                            }
                                         }
                                     }
                                 }
@@ -637,7 +653,7 @@ class MachineEditor {
             let h = track.h + 1;
             let j = track.j - 1;
 
-            let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
+            let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -649,7 +665,7 @@ class MachineEditor {
             let j = track.j + 1;
 
             if (h >= 0) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, j, track.xExtendable ? track.w : undefined, h);
+                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h);
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -660,7 +676,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.xExtendable) {
             let w = track.w + 1;
 
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -671,7 +687,7 @@ class MachineEditor {
             let w = track.w - 1;
 
             if (w >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined);
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -682,7 +698,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h + 1;
             
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -692,7 +708,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h - 1;
             if (h >= 0) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h);
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -704,7 +720,7 @@ class MachineEditor {
             let i = track.i - 1;
             let w = track.w + 1;
 
-            let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+            let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -716,7 +732,7 @@ class MachineEditor {
             let w = track.w - 1;
 
             if (w >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, i, undefined, w, track.yExtendable ? track.h : undefined);
+                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined);
                 this.setSelectedObject(editedTrack);
             }
         }

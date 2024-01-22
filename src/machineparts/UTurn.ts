@@ -56,3 +56,7 @@ class UTurn extends MachinePart {
         this.generateWires();
     }
 }
+
+class UTurnLayer extends MachinePart {
+
+}

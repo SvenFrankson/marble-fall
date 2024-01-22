@@ -1,6 +1,7 @@
 var baseRadius = 0.075;
 var tileWidth = 0.15;
 var tileHeight = 0.03;
+var tileDepth = 0.06;
 
 interface ITrackPointData {
     position: { x: number, y: number, z: number};
@@ -46,7 +47,7 @@ class MachinePart extends BABYLON.Mesh {
         super("track", machine.game.scene);
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
-        this.position.z = - this._k * tileHeight;
+        this.position.z = - this._k * tileDepth;
 
         this.tracks = [new Track(this)];
     }
@@ -72,7 +73,7 @@ class MachinePart extends BABYLON.Mesh {
     }
     public setK(v: number) {
         this._k = v;
-        this.position.z = - this._k * tileHeight;
+        this.position.z = - this._k * tileDepth;
     }
 
     public setIsVisible(isVisible: boolean): void {

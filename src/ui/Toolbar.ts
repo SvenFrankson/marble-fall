@@ -261,10 +261,10 @@ class Toolbar {
         let rect = this.layerButton.getBoundingClientRect();
         let centerY = rect.top + rect.height * 0.5;
         if (e.y > centerY) {
-            this.game.machineEditor.currentLayer--;
+            this.game.machineEditor.currentLayer++;
         }
         else {
-            this.game.machineEditor.currentLayer++;
+            this.game.machineEditor.currentLayer--;
         }
     }
 

@@ -325,7 +325,7 @@ class Game {
         //let logo = new Logo();
         //logo.initialize();
 
-        this.setContext(GameMode.DemoMode);
+        this.setContext(GameMode.CreateMode);
 	}
 
 	public animate(): void {
