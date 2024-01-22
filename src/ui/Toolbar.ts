@@ -68,7 +68,7 @@ class Toolbar {
         this.soundButton.addEventListener("click", this.onSoundButton);
 
         this.soundInput = document.querySelector("#sound-value") as HTMLInputElement;
-        this.soundInput.value = this.game.mainSound.toFixed(2);
+        this.soundInput.value = this.game.mainVolume.toFixed(2);
         this.soundInput.addEventListener("input", this.onSoundInput);
 
         this.soundInputContainer = this.soundInput.parentElement as HTMLDivElement;
@@ -241,7 +241,7 @@ class Toolbar {
     }
 
     public onSoundInput = (e: InputEvent) => {
-        this.game.mainSound = parseFloat((e.target as HTMLInputElement).value);
+        this.game.mainVolume = parseFloat((e.target as HTMLInputElement).value);
     }
 
     public onZoomButton = () => {

@@ -64,7 +64,7 @@ class Ball extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        this.marbleLoopSound.volume = this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainVolume;
         this.marbleLoopSound.play(true);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
@@ -96,7 +96,7 @@ class Ball extends BABYLON.Mesh {
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-        this.marbleLoopSound.volume = this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainVolume;
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -110,7 +110,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = this.game.mainSound;
+        this.marbleLoopSound.volume = this.game.mainVolume;
     }
     update(dt) {
         if (this.position.y < -10) {
@@ -165,7 +165,7 @@ class Ball extends BABYLON.Mesh {
                         let mySpeed = this.velocity.clone();
                         let v = this.velocity.length();
                         if (v > 0.1) {
-                            this.marbleChocSound.volume = v / 5 * this.game.mainSound;
+                            this.marbleChocSound.volume = v / 5 * this.game.mainVolume;
                             this.marbleChocSound.play();
                         }
                         this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
@@ -191,7 +191,7 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainSound;
+        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainVolume;
     }
 }
 Ball._maxSpeed = 0;
@@ -1083,7 +1083,7 @@ var GameMode;
 class Game {
     constructor(canvasElement) {
         this.cameraOrtho = false;
-        this.mainSound = 0;
+        this.mainVolume = 0;
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
         this.physicDT = 0.001;
@@ -1153,6 +1153,23 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
         this.engine = new BABYLON.Engine(this.canvas, true);
         BABYLON.Engine.ShadersRepository = "./shaders/";
+        let savedMainSound = window.localStorage.getItem("saved-main-volume");
+        if (savedMainSound) {
+            console.log("a");
+            let v = parseFloat(savedMainSound);
+            if (isFinite(v)) {
+                console.log("b");
+                console.log(v);
+                this.mainVolume = Math.max(Math.min(v, 1), 0);
+            }
+        }
+        let savedTimeFactor = window.localStorage.getItem("saved-time-factor");
+        if (savedTimeFactor) {
+            let v = parseFloat(savedTimeFactor);
+            if (isFinite(v)) {
+                this.targetTimeFactor = Math.max(Math.min(v, 1), 0);
+            }
+        }
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
@@ -1367,6 +1384,8 @@ class Game {
         let target = this.camera.target;
         window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
         window.localStorage.setItem("saved-cam-ortho", this.cameraOrtho ? "true" : "false");
+        window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
+        window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
         let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         if (this.cameraOrtho) {
             let f = this.camera.radius / 4;
@@ -3955,7 +3974,7 @@ class Toolbar {
             this.resize();
         };
         this.onSoundInput = (e) => {
-            this.game.mainSound = parseFloat(e.target.value);
+            this.game.mainVolume = parseFloat(e.target.value);
         };
         this.onZoomButton = () => {
             this.zoomInputShown = !this.zoomInputShown;
@@ -4003,7 +4022,7 @@ class Toolbar {
         this.soundButton = document.querySelector("#toolbar-sound");
         this.soundButton.addEventListener("click", this.onSoundButton);
         this.soundInput = document.querySelector("#sound-value");
-        this.soundInput.value = this.game.mainSound.toFixed(2);
+        this.soundInput.value = this.game.mainVolume.toFixed(2);
         this.soundInput.addEventListener("input", this.onSoundInput);
         this.soundInputContainer = this.soundInput.parentElement;
         this.zoomButton = document.querySelector("#toolbar-zoom");

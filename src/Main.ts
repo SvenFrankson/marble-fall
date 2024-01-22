@@ -31,7 +31,7 @@ class Game {
 
     public cameraOrtho: boolean = false;
 
-    public mainSound: number = 0;
+    public mainVolume: number = 0;
     public targetTimeFactor: number = 0.8;
     public timeFactor: number = 0.1;
     public physicDT: number = 0.001;
@@ -74,6 +74,24 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 		this.engine = new BABYLON.Engine(this.canvas, true);
 		BABYLON.Engine.ShadersRepository = "./shaders/";
+
+        let savedMainSound = window.localStorage.getItem("saved-main-volume");
+        if (savedMainSound) {
+            console.log("a");
+            let v = parseFloat(savedMainSound);
+            if (isFinite(v)) {
+                console.log("b");
+                console.log(v);
+                this.mainVolume = Math.max(Math.min(v, 1), 0);
+            }
+        }
+        let savedTimeFactor = window.localStorage.getItem("saved-time-factor");
+        if (savedTimeFactor) {
+            let v = parseFloat(savedTimeFactor);
+            if (isFinite(v)) {
+                this.targetTimeFactor = Math.max(Math.min(v, 1), 0);
+            }
+        }
 	}
 
     public async createScene(): Promise<void> {
@@ -334,6 +352,9 @@ class Game {
         let target = this.camera.target;
         window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
         window.localStorage.setItem("saved-cam-ortho", this.cameraOrtho ? "true" : "false");
+
+        window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
+        window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
 
         let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         if (this.cameraOrtho) {
