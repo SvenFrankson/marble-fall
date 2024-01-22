@@ -322,7 +322,10 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
 
-        this.setContext(GameMode.MainMenu);
+        //let logo = new Logo();
+        //logo.initialize();
+
+        this.setContext(GameMode.DemoMode);
 	}
 
 	public animate(): void {
