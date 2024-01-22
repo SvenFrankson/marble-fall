@@ -3175,9 +3175,9 @@ class Elevator extends MachinePart {
         nRight.normalize();
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.1), 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.25), 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.25) + 0.01, 0), dir.scale(-1), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.15), 0), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.35), 0), n, dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.35) + 0.01, 0), dir.scale(-1), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
         ];
@@ -3195,7 +3195,7 @@ class Elevator extends MachinePart {
             new BABYLON.Mesh("wheel-0"),
             new BABYLON.Mesh("wheel-1")
         ];
-        this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.25), 0);
+        this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.35), 0);
         this.wheels[0].parent = this;
         this.wheels[0].material = this.game.steelMaterial;
         this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
@@ -3548,6 +3548,10 @@ class Split extends MachinePart {
         super(machine, i, j, 1, 2, mirror);
         this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
         this.pivotL = 0.025;
+        this.reset = () => {
+            this._moving = false;
+            this.pivot.rotation.z = Math.PI / 4;
+        };
         this._moving = false;
         this.partName = "split";
         let dir = new BABYLON.Vector3(1, 0, 0);
@@ -3666,10 +3670,19 @@ class Split extends MachinePart {
         this.wires = [wireHorizontal0, wireHorizontal1, curbLeft0, curbLeft1, wireVertical0, wireVertical1, curbRight0, curbRight1];
         this.generateWires();
         this._animatePivot = Mummu.AnimationFactory.CreateNumber(this, this.pivot.rotation, "z", () => {
+            if (!this.machine.playing) {
+                this.pivot.rotation.z = Math.PI / 4;
+            }
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             });
         }, false, Nabu.Easing.easeInSquare);
+        this.machine.onStopCallbacks.push(this.reset);
+        this.reset();
+    }
+    dispose() {
+        super.dispose();
+        this.machine.onStopCallbacks.remove(this.reset);
     }
     update(dt) {
         if (!this._moving) {

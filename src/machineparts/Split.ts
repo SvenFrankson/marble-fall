@@ -144,10 +144,25 @@ class Split extends MachinePart {
         this.generateWires();
 
         this._animatePivot = Mummu.AnimationFactory.CreateNumber(this, this.pivot.rotation, "z", () => {
+            if (!this.machine.playing) {
+                this.pivot.rotation.z = Math.PI / 4;
+            }
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             })
         }, false, Nabu.Easing.easeInSquare);
+        this.machine.onStopCallbacks.push(this.reset);
+        this.reset();
+    }
+        
+    public dispose(): void {
+        super.dispose();
+        this.machine.onStopCallbacks.remove(this.reset);
+    }
+
+    public reset = () => {
+        this._moving = false;
+        this.pivot.rotation.z = Math.PI / 4;
     }
 
     private _moving: boolean = false;

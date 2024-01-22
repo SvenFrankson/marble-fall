@@ -35,17 +35,17 @@ class Elevator extends MachinePart {
             ), n, dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 - tileWidth * 0.1,
-                - tileHeight * (this.h + 0.1),
+                - tileHeight * (this.h + 0.15),
                 0
             ), n, dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 0,
-                - tileHeight * (this.h + 0.25),
+                - tileHeight * (this.h + 0.35),
                 0
             ), n, dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 0 + 0.01,
-                - tileHeight * (this.h + 0.25) + 0.01,
+                - tileHeight * (this.h + 0.35) + 0.01,
                 0
             ), dir.scale(-1), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
@@ -75,7 +75,7 @@ class Elevator extends MachinePart {
             new BABYLON.Mesh("wheel-0"),
             new BABYLON.Mesh("wheel-1")
         ]
-        this.wheels[0].position.copyFromFloats(0.030 * x, - tileHeight * (this.h + 0.25), 0);
+        this.wheels[0].position.copyFromFloats(0.030 * x, - tileHeight * (this.h + 0.35), 0);
         this.wheels[0].parent = this;
         this.wheels[0].material = this.game.steelMaterial;
 
