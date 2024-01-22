@@ -5,6 +5,8 @@ var TrackNames = [
     "rampX-1.1",
     "uturn-s",
     "uturn-l",
+    "uturn-layer",
+    "uturn-2layer",
     "loop",
     "wave",
     "snake",
@@ -55,6 +57,12 @@ class MachinePartFactory {
         }
         if (trackname === "uturn-l") {
             return new UTurnLarge(this.machine, i, j, k, mirror);
+        }
+        if (trackname === "uturn-layer") {
+            return new UTurnLayer(this.machine, i, j, k, mirror);
+        }
+        if (trackname === "uturn-2layer") {
+            return new UTurn2Layer(this.machine, i, j, k, mirror);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirror);

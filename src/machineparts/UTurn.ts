@@ -59,4 +59,62 @@ class UTurn extends MachinePart {
 
 class UTurnLayer extends MachinePart {
 
+    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
+        super(machine, i, j, k, 1, 1, mirror);
+        this.partName = "uturn-layer";
+
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+
+        let r = tileDepth * 0.5;
+        let r2 = r / Math.SQRT2;
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r + r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, - r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, - 1)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r - r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, - tileDepth), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(- 1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, - tileDepth), BABYLON.Vector3.Up(), new BABYLON.Vector3(- 1, 0, 0)),
+        ];
+
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+
+        this.generateWires();
+    }
+}
+
+class UTurn2Layer extends MachinePart {
+
+    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
+        super(machine, i, j, k, 1, 1, mirror);
+        this.partName = "uturn-2layer";
+
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+
+        let r = tileDepth;
+        let r2 = r / Math.SQRT2;
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r + r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, - r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, - 1)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r - r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, - 2 * r), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(- 1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, - 2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(- 1, 0, 0)),
+        ];
+
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+
+        this.generateWires();
+    }
 }

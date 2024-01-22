@@ -28,7 +28,7 @@ class MachinePart extends BABYLON.Mesh {
     public allWires: Wire[] = [];
 
     public wireSize: number = 0.0015;
-    public wireGauge: number = 0.013;
+    public wireGauge: number = 0.014;
     public renderOnlyPath: boolean = false;
 
     public sleepersMesh: BABYLON.Mesh;

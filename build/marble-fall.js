@@ -181,7 +181,7 @@ class Ball extends BABYLON.Mesh {
             this.strReaction += reactions.length() * 0.02;
             this.velocity.subtractInPlace(canceledSpeed);
             this.position.addInPlace(forcedDisplacement);
-            let friction = this.velocity.scale(-1).scaleInPlace(0.005);
+            let friction = this.velocity.scale(-1).scaleInPlace(0.001);
             let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
@@ -329,6 +329,7 @@ var createDefault = {
         { name: "elevator-9", i: 3, j: -7 },
     ],
 };
+var demo3D = { "balls": [{ "x": 0.39808697121492503, "y": 0.041276811477638765 }, { "x": 0.42178813750112076, "y": 0.03490450521423004 }, { "x": 0.4479109908664016, "y": 0.030144576207480372 }, { "x": 0.4517646375114052, "y": 0.1889057010405344 }], "parts": [{ "name": "ramp-1.0", "i": 2, "j": -6, "k": 0 }, { "name": "uturn-layer", "i": 1, "j": -6, "k": 0, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -5, "k": 1 }, { "name": "uturn-layer", "i": 1, "j": -5, "k": 1, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -4, "k": 1 }, { "name": "uturn-layer", "i": 1, "j": -4, "k": 1, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -3, "k": 1 }, { "name": "uturn-layer", "i": 1, "j": -3, "k": 1, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -2, "k": 1 }, { "name": "uturn-2layer", "i": 1, "j": -2, "k": 0, "mirror": true }, { "name": "ramp-4.1", "i": 2, "j": -5, "k": 1 }, { "name": "ramp-4.1", "i": 2, "j": -4, "k": 1 }, { "name": "ramp-4.1", "i": 2, "j": -3, "k": 1 }, { "name": "ramp-4.1", "i": 2, "j": -6, "k": 1 }, { "name": "ramp-4.0", "i": 2, "j": -5, "k": 2, "mirror": true }, { "name": "ramp-4.0", "i": 2, "j": -4, "k": 2, "mirror": true }, { "name": "ramp-4.0", "i": 2, "j": -3, "k": 2, "mirror": true }, { "name": "ramp-4.0", "i": 2, "j": -2, "k": 2, "mirror": true }, { "name": "ramp-1.1", "i": 2, "j": -2, "k": 0 }, { "name": "elevator-6", "i": 3, "j": -7, "k": 0 }] };
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1462,7 +1463,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(createDefault);
+                this.machine.deserialize(demo3D);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -2494,7 +2495,7 @@ class MachinePart extends BABYLON.Mesh {
         this.wires = [];
         this.allWires = [];
         this.wireSize = 0.0015;
-        this.wireGauge = 0.013;
+        this.wireGauge = 0.014;
         this.renderOnlyPath = false;
         this.summedLength = [0];
         this.totalLength = 0;
@@ -2711,6 +2712,8 @@ var TrackNames = [
     "rampX-1.1",
     "uturn-s",
     "uturn-l",
+    "uturn-layer",
+    "uturn-2layer",
     "loop",
     "wave",
     "snake",
@@ -2757,6 +2760,12 @@ class MachinePartFactory {
         }
         if (trackname === "uturn-l") {
             return new UTurnLarge(this.machine, i, j, k, mirror);
+        }
+        if (trackname === "uturn-layer") {
+            return new UTurnLayer(this.machine, i, j, k, mirror);
+        }
+        if (trackname === "uturn-2layer") {
+            return new UTurn2Layer(this.machine, i, j, k, mirror);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirror);
@@ -3804,6 +3813,54 @@ class UTurn extends MachinePart {
     }
 }
 class UTurnLayer extends MachinePart {
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 1, 1, mirror);
+        this.partName = "uturn-layer";
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let r = tileDepth * 0.5;
+        let r2 = r / Math.SQRT2;
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r + r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, -r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, -1)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r - r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, -tileDepth), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -tileDepth), BABYLON.Vector3.Up(), new BABYLON.Vector3(-1, 0, 0)),
+        ];
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
+}
+class UTurn2Layer extends MachinePart {
+    constructor(machine, i, j, k, mirror) {
+        super(machine, i, j, k, 1, 1, mirror);
+        this.partName = "uturn-2layer";
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let r = tileDepth;
+        let r2 = r / Math.SQRT2;
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r + r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, -r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, -1)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r - r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, -2 * r), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(-1, 0, 0)),
+        ];
+        if (mirror) {
+            this.mirrorTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Wave extends MachinePart {
