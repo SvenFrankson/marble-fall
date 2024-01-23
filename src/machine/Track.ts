@@ -204,9 +204,6 @@ class Track {
             this.interpolatedNormals.push(BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize());
         }
 
-        let radiusFlat = 0.5;
-        let curbRadiuses: number[] = [radiusFlat];
-        let signs: number[] = [0];
         let angles: number[] = [0];
         for (let i = 1; i < N - 1; i++) {
             let n = this.interpolatedNormals[i];
@@ -229,42 +226,20 @@ class Track {
                 let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
                 let r = (rPrev + rNext) * 0.5;
 
-                curbRadiuses.push(r);
-                signs.push(sign);
+                angles[i] = Math.PI / 4 * sign * 0.03 / r;
             }
             else {
-                curbRadiuses.push(radiusFlat);
-                signs.push(0);
+                angles[i] = 0;
             }
-            let angle = Math.PI / 4 * signs[i] * 0.03 / curbRadiuses[i];
-            angles[i] = angle;
         }
-        curbRadiuses.push(radiusFlat);
-        signs.push(0);
         angles.push(0);
 
         for (let n = 0; n < 100; n++) {
-            let newCurbRadiuses = [...curbRadiuses];
-            let newSigns = [...signs];
             let newAngles = [...angles];
             for (let i = 1; i < N - 1; i++) {
-                let r = curbRadiuses[i - 1] * 2 + curbRadiuses[i] + curbRadiuses[i + 1] * 2;
-                newCurbRadiuses[i] = r / 5;
-                let s = signs[i - 1] + signs[i] + signs[i + 1];
-                if (s > 0) {
-                    newSigns[i] = 1;
-                }
-                else if (s < 0) {
-                    newSigns[i] = - 1;
-                }
-                else {
-                    newSigns[i] = 0;
-                }
-                let a = angles[i - 1] + angles[i] + angles[i + 1];
-                newAngles[i] = a / 3;
+                let a = angles[i - 1] * 2 + angles[i] + angles[i + 1] * 2;
+                newAngles[i] = a / 5;
             }
-            curbRadiuses = newCurbRadiuses;
-            signs = newSigns;
             angles = newAngles;
         }
 
@@ -272,7 +247,6 @@ class Track {
             let point = this.interpolatedPoints[i];
             let nextPoint = this.interpolatedPoints[i + 1];
             let dirNext = nextPoint.subtract(point);
-            let angle = Math.PI / 4 * signs[i] * 0.03 / curbRadiuses[i];
     
             Mummu.RotateInPlace(this.interpolatedNormals[i], dirNext, angles[i]);
         }

@@ -82,7 +82,7 @@ class SleeperMeshBuilder {
                     tmp.dispose();
 
                     let addAnchor = false;
-                    if ((n - 1.5) % 3 === 0) {
+                    if (part.k === 0 && (n - 1.5) % 3 === 0) {
                         let anchor = path[nPath / 2 - 1];
                         if (anchor.z > - 0.01) {
                             addAnchor = true;
