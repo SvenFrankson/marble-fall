@@ -339,17 +339,17 @@ var demo3D = {
         { x: 0.3756430183403636, y: 0.044253335357509804 },
     ],
     parts: [
-        { name: "uturnlayer-1.1", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.1", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.1", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
         { name: "elevator-8", i: 3, j: -9, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirrorX: true, mirrorZ: false },
         { name: "ramp-4.4.1", i: 1, j: -4, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.2.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.2", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.3", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-3.0.2", i: 2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
     ],
 };
@@ -4017,7 +4017,7 @@ class UTurnLayer extends MachinePart {
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
-        let r = tileDepth * d * 0.5;
+        let r = tileDepth * (d - 1) * 0.5;
         let r2 = r / Math.SQRT2;
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
@@ -4034,6 +4034,9 @@ class UTurnLayer extends MachinePart {
         }
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            this.mirrorZTrackPointsInPlace();
         }
         this.generateWires();
     }

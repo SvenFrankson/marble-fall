@@ -85,7 +85,7 @@ class UTurnLayer extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
 
-        let r = tileDepth * d * 0.5;
+        let r = tileDepth * (d - 1) * 0.5;
         let r2 = r / Math.SQRT2; 
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
@@ -104,6 +104,9 @@ class UTurnLayer extends MachinePart {
 
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            this.mirrorZTrackPointsInPlace();
         }
 
         this.generateWires();
