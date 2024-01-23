@@ -51,9 +51,9 @@ class MachinePartFactory {
             return new UTurnLarge(this.machine, i, j, k, mirrorX);
         }
         if (trackname.startsWith("uturnlayer-")) {
-            console.log(trackname);
-            let d = parseInt(trackname.split("-")[1]);
-            return new UTurnLayer(this.machine, i, j, k, d, mirrorX, mirrorZ);
+            let h = parseInt(trackname.split("-")[1].split(".")[0]);
+            let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirrorX);

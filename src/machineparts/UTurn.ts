@@ -66,17 +66,19 @@ class UTurn extends MachinePart {
 
 class UTurnLayer extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
+    constructor(machine: Machine, i: number, j: number, k: number, h: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
         console.log("- " + mirrorX);
         super(machine, i, j, k, {
+            h: h,
             d: d,
             mirrorX: mirrorX,
             mirrorZ: mirrorZ
         });
+        this.yExtendable = true;
         this.zExtendable = true;
         this.xMirrorable = true;
         this.zMirrorable = true;
-        this.partName = "uturnlayer-" + d.toFixed(0);
+        this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
 
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -84,16 +86,21 @@ class UTurnLayer extends MachinePart {
         n.normalize();
 
         let r = tileDepth * d * 0.5;
-        let r2 = r / Math.SQRT2;
+        let r2 = r / Math.SQRT2; 
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r + r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, - r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, - 1)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, - r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r - r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, - 2 * r), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(- 1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, - 2 * r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, - 2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(- 1, 0, 0)),
         ];
+
+        for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {
+            let f = n / (this.tracks[0].trackpoints.length - 1)
+            this.tracks[0].trackpoints[n].position.y = - f * (this.h - 1) * tileHeight;
+        }
 
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();

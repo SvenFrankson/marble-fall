@@ -339,18 +339,18 @@ var demo3D = {
         { x: 0.3756430183403636, y: 0.044253335357509804 },
     ],
     parts: [
-        { name: "uturnlayer-1", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-2", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.1", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.1", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.1", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
         { name: "elevator-8", i: 3, j: -9, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.1.1", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-4.4.1", i: 1, j: -4, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.2.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.2", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.0.2", i: 2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -2927,9 +2927,9 @@ class MachinePartFactory {
             return new UTurnLarge(this.machine, i, j, k, mirrorX);
         }
         if (trackname.startsWith("uturnlayer-")) {
-            console.log(trackname);
-            let d = parseInt(trackname.split("-")[1]);
-            return new UTurnLayer(this.machine, i, j, k, d, mirrorX, mirrorZ);
+            let h = parseInt(trackname.split("-")[1].split(".")[0]);
+            let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirrorX);
@@ -4000,17 +4000,19 @@ class UTurn extends MachinePart {
     }
 }
 class UTurnLayer extends MachinePart {
-    constructor(machine, i, j, k, d, mirrorX, mirrorZ) {
+    constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
         console.log("- " + mirrorX);
         super(machine, i, j, k, {
+            h: h,
             d: d,
             mirrorX: mirrorX,
             mirrorZ: mirrorZ
         });
+        this.yExtendable = true;
         this.zExtendable = true;
         this.xMirrorable = true;
         this.zMirrorable = true;
-        this.partName = "uturnlayer-" + d.toFixed(0);
+        this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -4019,13 +4021,17 @@ class UTurnLayer extends MachinePart {
         let r2 = r / Math.SQRT2;
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r + r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, -r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, -1)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, -r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r - r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, -2 * r), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, -2 * r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(-1, 0, 0)),
         ];
+        for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {
+            let f = n / (this.tracks[0].trackpoints.length - 1);
+            this.tracks[0].trackpoints[n].position.y = -f * (this.h - 1) * tileHeight;
+        }
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
         }
