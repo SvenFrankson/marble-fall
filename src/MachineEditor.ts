@@ -343,6 +343,7 @@ class MachineEditor {
             this.WMinusLeftButton,
             this.deletebutton,
             this.tileMirrorXButton,
+            this.tileMirrorZButton,
             this.DPlusButton,
             this.DMinusButton
         ];
@@ -693,6 +694,9 @@ class MachineEditor {
                 this.deletebutton.style.display = "";
                 if (this.selectedObject.xMirrorable) {
                     this.tileMirrorXButton.style.display = "";
+                }
+                if (this.selectedObject.zMirrorable) {
+                    this.tileMirrorZButton.style.display = "";
                 }
             }
         }

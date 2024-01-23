@@ -66,55 +66,24 @@ class UTurn extends MachinePart {
 
 class UTurnLayer extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
+    constructor(machine: Machine, i: number, j: number, k: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
         console.log("- " + mirrorX);
         super(machine, i, j, k, {
-            mirrorX: mirrorX
+            d: d,
+            mirrorX: mirrorX,
+            mirrorZ: mirrorZ
         });
+        this.zExtendable = true;
         this.xMirrorable = true;
-        this.partName = "uturn-layer";
+        this.zMirrorable = true;
+        this.partName = "uturnlayer-" + d.toFixed(0);
 
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
 
-        let r = tileDepth * 0.5;
-        let r2 = r / Math.SQRT2;
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0), (new BABYLON.Vector3(0, 2, -1)).normalize(), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r + r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, - r), (new BABYLON.Vector3(-1, 1.5, 0)).normalize(), new BABYLON.Vector3(0, 0, - 1)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r - r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, - tileDepth), (new BABYLON.Vector3(0, 2, 1)).normalize(), new BABYLON.Vector3(- 1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, - tileDepth), BABYLON.Vector3.Up(), new BABYLON.Vector3(- 1, 0, 0)),
-        ];
-
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-
-        this.generateWires();
-    }
-}
-
-class UTurn2Layer extends MachinePart {
-
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
-        super(machine, i, j, k, {
-            d: 2,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "uturn-2layer";
-
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-
-        let r = tileDepth;
+        let r = tileDepth * d * 0.5;
         let r2 = r / Math.SQRT2;
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),

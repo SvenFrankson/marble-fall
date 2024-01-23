@@ -5,7 +5,7 @@ var TrackNames = [
     "split",
     "uturn-s",
     "uturn-l",
-    "uturn-layer",
+    "uturnlayer",
     "uturn-2layer",
     "loop",
     "wave",
@@ -50,11 +50,10 @@ class MachinePartFactory {
         if (trackname === "uturn-l") {
             return new UTurnLarge(this.machine, i, j, k, mirrorX);
         }
-        if (trackname === "uturn-layer") {
-            return new UTurnLayer(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname === "uturn-2layer") {
-            return new UTurn2Layer(this.machine, i, j, k, mirrorX);
+        if (trackname.startsWith("uturnlayer-")) {
+            console.log(trackname);
+            let d = parseInt(trackname.split("-")[1]);
+            return new UTurnLayer(this.machine, i, j, k, d, mirrorX, mirrorZ);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirrorX);
