@@ -733,6 +733,21 @@ class MachineEditor {
             this.layerMesh.position.z = -this._currentLayer * tileDepth;
         }
     }
+    showCurrentLayer() {
+        this.machine.parts.forEach(part => {
+            if (part.k === this.currentLayer) {
+                part.partVisibilityMode = PartVisibilityMode.Default;
+            }
+            else {
+                part.partVisibilityMode = PartVisibilityMode.Ghost;
+            }
+        });
+    }
+    hideCurrentLayer() {
+        this.machine.parts.forEach(part => {
+            part.partVisibilityMode = PartVisibilityMode.Default;
+        });
+    }
     get selectedItem() {
         return this._selectedItem;
     }
@@ -750,16 +765,18 @@ class MachineEditor {
         }
     }
     get draggedObject() {
-        return this._draggedTrack;
+        return this._draggedObject;
     }
     setDraggedObject(s) {
-        if (s != this._draggedTrack) {
-            this._draggedTrack = s;
-            if (this._draggedTrack) {
+        if (s != this._draggedObject) {
+            this._draggedObject = s;
+            if (this._draggedObject) {
                 this.game.camera.detachControl();
+                this.showCurrentLayer();
             }
             else {
                 this.game.camera.attachControl();
+                this.hideCurrentLayer();
             }
         }
     }
@@ -1209,6 +1226,9 @@ class Game {
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.ghostMaterial.alpha = 0.3;
+        this.blueMaterial = new BABYLON.StandardMaterial("ghost-material");
+        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
         this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
         this.steelMaterial.metallic = 1.0;
@@ -2482,6 +2502,12 @@ var baseRadius = 0.075;
 var tileWidth = 0.15;
 var tileHeight = 0.03;
 var tileDepth = 0.06;
+var PartVisibilityMode;
+(function (PartVisibilityMode) {
+    PartVisibilityMode[PartVisibilityMode["Default"] = 0] = "Default";
+    PartVisibilityMode[PartVisibilityMode["Selected"] = 1] = "Selected";
+    PartVisibilityMode[PartVisibilityMode["Ghost"] = 2] = "Ghost";
+})(PartVisibilityMode || (PartVisibilityMode = {}));
 var radius = 0.014 * 1.2 / 2;
 var selectorHullShape = [];
 for (let i = 0; i < 6; i++) {
@@ -2522,6 +2548,7 @@ class MachinePart extends BABYLON.Mesh {
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
+        this._partVisibilityMode = PartVisibilityMode.Default;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.position.z = -this._k * tileDepth;
@@ -2553,15 +2580,37 @@ class MachinePart extends BABYLON.Mesh {
     }
     setIsVisible(isVisible) {
         this.isVisible = isVisible;
-        this.getChildMeshes().forEach(m => {
-            m.isVisible = isVisible;
+        this.getChildren(undefined, false).forEach(m => {
+            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                m.isVisible = isVisible;
+            }
         });
     }
+    get partVisilibityMode() {
+        return this._partVisibilityMode;
+    }
+    set partVisibilityMode(v) {
+        this._partVisibilityMode = v;
+        if (this._partVisibilityMode === PartVisibilityMode.Default) {
+            this.getChildren(undefined, false).forEach(m => {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                    m.visibility = 1;
+                }
+            });
+        }
+        if (this._partVisibilityMode === PartVisibilityMode.Ghost) {
+            this.getChildren(undefined, false).forEach(m => {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                    m.visibility = 0.3;
+                }
+            });
+        }
+    }
     select() {
-        this.selectedMesh.isVisible = true;
+        this.selectorMesh.visibility = 0.2;
     }
     unselect() {
-        this.selectedMesh.isVisible = false;
+        this.selectorMesh.visibility = 0;
     }
     mirrorTrackPointsInPlace() {
         for (let i = 0; i < this.tracks.length; i++) {
@@ -2610,35 +2659,30 @@ class MachinePart extends BABYLON.Mesh {
         });
     }
     async instantiate() {
+        if (this.sleepersMesh) {
+            this.sleepersMesh.dispose();
+        }
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
-        if (this.selectedMesh) {
-            this.selectedMesh.dispose();
-        }
-        let xLeft = -tileWidth * 0.5;
-        let xRight = tileWidth * (this.w - 0.5);
-        let yTop = tileHeight * 0.25;
-        let yBottom = -tileHeight * (this.h + 0.75);
-        this.selectedMesh = BABYLON.MeshBuilder.CreateLines("select-mesh", {
-            points: [
-                new BABYLON.Vector3(xLeft, yTop, 0),
-                new BABYLON.Vector3(xRight, yTop, 0),
-                new BABYLON.Vector3(xRight, yBottom, 0),
-                new BABYLON.Vector3(xLeft, yBottom, 0),
-                new BABYLON.Vector3(xLeft, yTop, 0)
-            ]
-        });
-        this.selectedMesh.parent = this;
-        this.selectedMesh.isVisible = false;
         let datas = [];
         for (let n = 0; n < this.tracks.length; n++) {
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].trackpoints.map(p => { return p.position; }), closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let points = [...this.tracks[n].interpolatedPoints].map(p => { return p.clone(); });
+            Mummu.DecimatePathInPlace(points, 10 / 180 * Math.PI);
+            let dirStart = points[1].subtract(points[0]).normalize();
+            let dirEnd = points[points.length - 1].subtract(points[points.length - 2]).normalize();
+            points[0].subtractInPlace(dirStart.scale(this.wireGauge * 0.5));
+            points[points.length - 1].addInPlace(dirEnd.scale(this.wireGauge * 0.5));
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let data = BABYLON.VertexData.ExtractFromMesh(tmp);
             datas.push(data);
             tmp.dispose();
         }
+        if (this.selectorMesh) {
+            this.selectorMesh.dispose();
+        }
         this.selectorMesh = new MachinePartSelectorMesh(this);
+        this.selectorMesh.material = this.game.blueMaterial;
         this.selectorMesh.parent = this;
         if (datas.length) {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);

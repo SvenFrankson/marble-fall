@@ -3,6 +3,12 @@ var tileWidth = 0.15;
 var tileHeight = 0.03;
 var tileDepth = 0.06;
 
+enum PartVisibilityMode {
+    Default,
+    Selected,
+    Ghost
+}
+
 interface ITrackPointData {
     position: { x: number, y: number, z: number};
     normal?: { x: number, y: number, z: number};
@@ -48,7 +54,6 @@ class MachinePart extends BABYLON.Mesh {
     public renderOnlyPath: boolean = false;
 
     public sleepersMesh: BABYLON.Mesh;
-    public selectedMesh: BABYLON.Mesh;
     public selectorMesh: MachinePartSelectorMesh;
 
     public summedLength: number[] = [0];
@@ -96,17 +101,41 @@ class MachinePart extends BABYLON.Mesh {
 
     public setIsVisible(isVisible: boolean): void {
         this.isVisible = isVisible;
-        this.getChildMeshes().forEach(m => {
-            m.isVisible = isVisible;
+        this.getChildren(undefined, false).forEach(m => {
+            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                m.isVisible = isVisible;
+            }
         })
     }
 
+    private _partVisibilityMode: PartVisibilityMode = PartVisibilityMode.Default;
+    public get partVisilibityMode(): PartVisibilityMode {
+        return this._partVisibilityMode;
+    }
+    public set partVisibilityMode(v: PartVisibilityMode) {
+        this._partVisibilityMode = v;
+        if (this._partVisibilityMode === PartVisibilityMode.Default) {
+            this.getChildren(undefined, false).forEach(m => {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                    m.visibility = 1;
+                }
+            })
+        }
+        if (this._partVisibilityMode === PartVisibilityMode.Ghost) {
+            this.getChildren(undefined, false).forEach(m => {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                    m.visibility = 0.3;
+                }
+            })
+        }
+    }
+
     public select(): void {
-        this.selectedMesh.isVisible = true;
+        this.selectorMesh.visibility = 0.2;
     }
 
     public unselect(): void {
-        this.selectedMesh.isVisible = false;
+        this.selectorMesh.visibility = 0;
     }
 
     protected mirrorTrackPointsInPlace(): void {
@@ -167,37 +196,32 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
+        if (this.sleepersMesh) {
+            this.sleepersMesh.dispose();
+        }
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
         this.sleepersMesh.material = this.game.steelMaterial;
         this.sleepersMesh.parent = this;
 
-        if (this.selectedMesh) {
-            this.selectedMesh.dispose();
-        }
-        let xLeft = - tileWidth * 0.5;
-        let xRight = tileWidth * (this.w - 0.5);
-        let yTop = tileHeight * 0.25;
-        let yBottom = - tileHeight * (this.h + 0.75);
-        this.selectedMesh = BABYLON.MeshBuilder.CreateLines("select-mesh", {
-            points: [
-                new BABYLON.Vector3(xLeft, yTop, 0),
-                new BABYLON.Vector3(xRight, yTop, 0),
-                new BABYLON.Vector3(xRight, yBottom, 0),
-                new BABYLON.Vector3(xLeft, yBottom, 0),
-                new BABYLON.Vector3(xLeft, yTop, 0)
-            ]
-        });
-        this.selectedMesh.parent = this;
-        this.selectedMesh.isVisible = false;
-
         let datas: BABYLON.VertexData[] = [];
         for (let n = 0; n < this.tracks.length; n++) {
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].trackpoints.map(p => { return p.position; }), closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let points = [...this.tracks[n].interpolatedPoints].map(p => { return p.clone()});
+            Mummu.DecimatePathInPlace(points, 10 / 180 * Math.PI);
+            let dirStart = points[1].subtract(points[0]).normalize();
+            let dirEnd = points[points.length - 1].subtract(points[points.length - 2]).normalize();
+            points[0].subtractInPlace(dirStart.scale(this.wireGauge * 0.5));
+            points[points.length - 1].addInPlace(dirEnd.scale(this.wireGauge * 0.5));
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let data = BABYLON.VertexData.ExtractFromMesh(tmp);
             datas.push(data);
             tmp.dispose();
         }
+
+        if (this.selectorMesh) {
+            this.selectorMesh.dispose();
+        }
         this.selectorMesh = new MachinePartSelectorMesh(this);
+        this.selectorMesh.material = this.game.blueMaterial;
         this.selectorMesh.parent = this;
         if (datas.length) {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);

@@ -61,6 +61,7 @@ class Game {
     public handleMaterialHover: BABYLON.StandardMaterial;
     public insertHandleMaterial: BABYLON.StandardMaterial;
     public ghostMaterial: BABYLON.StandardMaterial;
+    public blueMaterial: BABYLON.StandardMaterial;
 
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
     private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
@@ -123,6 +124,10 @@ class Game {
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.ghostMaterial.alpha = 0.3;
+
+        this.blueMaterial = new BABYLON.StandardMaterial("ghost-material");
+        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
 
         this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
         this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);

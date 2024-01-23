@@ -38,6 +38,21 @@ class MachineEditor {
         }
     }
     public layerMesh: BABYLON.Mesh;
+    public showCurrentLayer(): void {
+        this.machine.parts.forEach(part => {
+            if (part.k === this.currentLayer) {
+                part.partVisibilityMode = PartVisibilityMode.Default;
+            }
+            else {
+                part.partVisibilityMode = PartVisibilityMode.Ghost;
+            }
+        })
+    }
+    public hideCurrentLayer(): void {
+        this.machine.parts.forEach(part => {
+            part.partVisibilityMode = PartVisibilityMode.Default;
+        })
+    }
 
     private _selectedItem: string = "";
     public get selectedItem(): string {
@@ -58,18 +73,20 @@ class MachineEditor {
     }
 
     private _dragOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _draggedTrack: MachinePart | Ball;
+    private _draggedObject: MachinePart | Ball;
     public get draggedObject(): MachinePart | Ball {
-        return this._draggedTrack;
+        return this._draggedObject;
     }
     public setDraggedObject(s: MachinePart | Ball): void {
-        if (s != this._draggedTrack) {
-            this._draggedTrack = s;
-            if (this._draggedTrack) {
+        if (s != this._draggedObject) {
+            this._draggedObject = s;
+            if (this._draggedObject) {
                 this.game.camera.detachControl();
+                this.showCurrentLayer();
             }
             else {
                 this.game.camera.attachControl();
+                this.hideCurrentLayer();
             }
         }
     }
