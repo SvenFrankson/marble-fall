@@ -3273,7 +3273,9 @@ class Track {
                 let rPrev = Math.tan(Math.abs(a) / 2) * (dPrev * 0.5);
                 let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
                 let r = (rPrev + rNext) * 0.5;
-                angles[i] = Math.PI / 4 * sign * 0.03 / r;
+                let f = 0.06 / r;
+                f = Math.max(Math.min(f, 1), 0);
+                angles[i] = Math.PI / 4 * sign * f;
             }
             else {
                 angles[i] = 0;
