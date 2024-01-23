@@ -533,7 +533,7 @@ class MachineEditor {
             k = track.k;
         }
         if (!mirror) {
-            mirror = track.mirror;
+            mirror = track.mirrorX;
         }
 
         let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, mirror);
@@ -548,7 +548,7 @@ class MachineEditor {
     }
 
     public async mirrorTrackInPlace(track: MachinePart): Promise<MachinePart> {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirror);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -638,7 +638,9 @@ class MachineEditor {
                     this.HMinusBottomButton.style.display = "";
                 }
                 this.deletebutton.style.display = "";
-                this.tileMirrorButton.style.display = "";
+                if (this.selectedObject.xMirrorable) {
+                    this.tileMirrorButton.style.display = "";
+                }
             }
         }
     }

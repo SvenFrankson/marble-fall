@@ -7,10 +7,14 @@ class Elevator extends MachinePart {
     public wheels: BABYLON.Mesh[] = [];
     public cable: BABYLON.Mesh;
 
-    constructor(machine: Machine, i: number, j: number, k: number, public h: number = 1, mirror?: boolean) {
-        super(machine, i, j, k, 1, h, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, public h: number = 1, mirrorX?: boolean) {
+        super(machine, i, j, k, {
+            h: 1,
+            mirrorX: mirrorX
+        })
         this.boxesCount
         this.yExtendable = true;
+        this.xMirrorable = true;
         this.partName = "elevator-" + h.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -66,7 +70,7 @@ class Elevator extends MachinePart {
         ];
         
         let x = 1;
-        if (mirror) {
+        if (mirrorX) {
             this.mirrorTrackPointsInPlace();
             x = - 1;
         }
@@ -176,7 +180,7 @@ class Elevator extends MachinePart {
     public update(dt: number): void {
         let dx = this.speed * dt * this.game.timeFactor;
         let x = 1;
-        if (this.mirror) {
+        if (this.mirrorX) {
             x = - 1;
         }
 

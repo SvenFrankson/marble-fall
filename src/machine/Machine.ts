@@ -9,6 +9,8 @@ interface IMachinePartData {
     j: number;
     k?: number;
     mirror?: boolean;
+    mirrorX?: boolean;
+    mirrorZ?: boolean;
 }
 
 interface IMachineData {
@@ -183,7 +185,8 @@ class Machine {
                 i: this.parts[i].i,
                 j: this.parts[i].j,
                 k: this.parts[i].k,
-                mirror: this.parts[i].mirror
+                mirrorX: this.parts[i].mirrorX,
+                mirrorZ: this.parts[i].mirrorZ
             })
         }
 

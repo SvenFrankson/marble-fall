@@ -1,8 +1,14 @@
 /// <reference path="../machine/MachinePart.ts"/>
 
 class Loop extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 2, 3, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
+        super(machine, i, j, k, {
+            w: 2, 
+            h: 3, 
+            d: 1,
+            mirrorX: mirrorX
+        });
+        this.xMirrorable = true;
         this.partName = "loop";
 
         this.deserialize({
@@ -25,7 +31,7 @@ class Loop extends MachinePart {
             ],
         });
 
-        if (mirror) {
+        if (mirrorX) {
             this.mirrorTrackPointsInPlace();
         }
 

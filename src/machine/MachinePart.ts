@@ -37,6 +37,14 @@ class MachinePartSelectorMesh extends BABYLON.Mesh {
     }
 }
 
+interface IMachinePartProp {
+    w?: number;
+    h?: number;
+    d?: number;
+    mirrorX?: boolean;
+    mirrorZ?: boolean;
+}
+
 class MachinePart extends BABYLON.Mesh {
 
     public partName: string = "machine-part";
@@ -62,15 +70,41 @@ class MachinePart extends BABYLON.Mesh {
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
+    public w: number = 1;
+    public h: number = 1;
+    public d: number = 1;
+    public mirrorX: boolean = false;
+    public mirrorZ: boolean = false;
+
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
     public zExtendable: boolean = false;
+    public xMirrorable: boolean = false;
+    public zMirrorable: boolean = false;
 
-    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, public w: number = 1, public h: number = 1, public d: number = 1, public mirror?: boolean) {
+    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, prop?: IMachinePartProp) {
         super("track", machine.game.scene);
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
         this.position.z = - this._k * tileDepth;
+
+        if (prop) {
+            if (isFinite(prop.w)) {
+                this.w = prop.w
+            }
+            if (isFinite(prop.h)) {
+                this.h = prop.h
+            }
+            if (isFinite(prop.d)) {
+                this.d = prop.d
+            }
+            if (prop.mirrorX) {
+                this.mirrorX = true;
+            }
+            if (prop.mirrorZ) {
+                this.mirrorZ = true;
+            }
+        }
 
         this.tracks = [new Track(this)];
     }

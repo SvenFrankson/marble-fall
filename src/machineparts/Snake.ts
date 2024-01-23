@@ -1,8 +1,12 @@
 /// <reference path="../machine/MachinePart.ts"/>
 
 class Snake extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 2, 1, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
+        super(machine, i, j, k, {
+            w: 2,
+            mirrorX: mirrorX
+        });
+        this.xMirrorable = true;
         this.partName = "snake";
 
         this.deserialize({

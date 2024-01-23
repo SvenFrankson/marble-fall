@@ -1,7 +1,10 @@
 class Join extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 1, 1, 1, mirror);
+    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
+        super(machine, i, j, k, {
+            mirrorX: mirrorX
+        });
+        this.xMirrorable = true;
         this.partName = "join";
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -22,7 +25,7 @@ class Join extends MachinePart {
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, - tileHeight * 0.25, 0), nJoin, dirJoin)
         ];
 
-        if (mirror) {
+        if (mirrorX) {
             this.mirrorTrackPointsInPlace();
         }
 
