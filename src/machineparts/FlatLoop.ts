@@ -21,7 +21,7 @@ class FlatLoop extends MachinePart {
         });
 
         if (mirror) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         
         this.generateWires();

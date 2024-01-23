@@ -205,7 +205,7 @@ class Machine {
 
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror);
+            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirrorX);
             this.parts.push(track);
         }
     }

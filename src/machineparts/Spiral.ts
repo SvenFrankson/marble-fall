@@ -42,7 +42,7 @@ class Spiral extends MachinePart {
         });
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();

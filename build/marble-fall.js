@@ -339,18 +339,18 @@ var demo3D = {
         { x: 0.3756430183403636, y: 0.044253335357509804 },
     ],
     parts: [
-        { name: "uturn-layer", i: 1, j: -6, k: 0, mirror: true },
-        { name: "uturn-layer", i: 0, j: -4, k: 1, mirror: true },
-        { name: "uturn-layer", i: 5, j: 0, k: 1 },
-        { name: "uturn-2layer", i: 1, j: -2, k: 0, mirror: true },
-        { name: "ramp-1.1.1", i: 2, j: -2, k: 0 },
-        { name: "uturn-layer", i: 5, j: -5, k: 1 },
-        { name: "ramp-1.2.1", i: 2, j: -8, k: 0, mirror: true },
-        { name: "elevator-8", i: 3, j: -9, k: 0 },
-        { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirror: true },
-        { name: "ramp-3.1.1", i: 2, j: -6, k: 1 },
-        { name: "ramp-4.4.1", i: 1, j: -4, k: 1 },
-        { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirror: false },
+        { name: "uturn-layer", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-layer", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-layer", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-2layer", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-layer", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "elevator-8", i: 3, j: -9, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.1.1", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-4.4.1", i: 1, j: -4, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.2.2", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: true },
     ],
 };
 class HelperShape {
@@ -702,6 +702,24 @@ class MachineEditor {
                 }
             }
         };
+        this._onDPlus = async () => {
+            let track = this.selectedObject;
+            if (track instanceof MachinePart && track.zExtendable) {
+                let d = track.d + 1;
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+                this.setSelectedObject(editedTrack);
+            }
+        };
+        this._onDMinus = async () => {
+            let track = this.selectedObject;
+            if (track instanceof MachinePart && track.zExtendable) {
+                let d = track.d - 1;
+                if (d >= 1) {
+                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+                    this.setSelectedObject(editedTrack);
+                }
+            }
+        };
         this._onDelete = async () => {
             if (this.selectedObject) {
                 this.selectedObject.dispose();
@@ -709,11 +727,18 @@ class MachineEditor {
                 this.setDraggedObject(undefined);
             }
         };
-        this._onMirror = async () => {
+        this._onMirrorX = async () => {
             let track = this.selectedObject;
             if (track instanceof MachinePart) {
-                track = await this.mirrorTrackInPlace(track);
-                this.setSelectedObject(track);
+                let editedTrack = await this.mirrorXTrackInPlace(track);
+                this.setSelectedObject(editedTrack);
+            }
+        };
+        this._onMirrorZ = async () => {
+            let track = this.selectedObject;
+            if (track instanceof MachinePart) {
+                let editedTrack = await this.mirrorZTrackInPlace(track);
+                this.setSelectedObject(editedTrack);
             }
         };
         this.container = document.getElementById("machine-menu");
@@ -865,12 +890,12 @@ class MachineEditor {
             }
             else if (event.key === "m") {
                 if (this.draggedObject && this.draggedObject instanceof MachinePart) {
-                    this.mirrorTrackInPlace(this.draggedObject).then(track => {
+                    this.mirrorXTrackInPlace(this.draggedObject).then(track => {
                         this.setDraggedObject(track);
                     });
                 }
                 else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
-                    this.mirrorTrackInPlace(this.selectedObject).then(track => {
+                    this.mirrorXTrackInPlace(this.selectedObject).then(track => {
                         this.setSelectedObject(track);
                     });
                 }
@@ -957,15 +982,41 @@ class MachineEditor {
         this.deletebutton.onclick = this._onDelete;
         this.floatingElementBottomRight = FloatingElement.Create(this.game);
         this.floatingElementBottomRight.anchor = FloatingElementAnchor.LeftTop;
-        this.tileMirrorButton = this._createButton("machine-editor-mirror", this.floatingElementBottomRight);
-        this.tileMirrorButton.innerHTML = `
+        this.tileMirrorXButton = this._createButton("machine-editor-mirror-x", this.floatingElementBottomRight);
+        this.tileMirrorXButton.innerHTML = `
             <svg class="label" viewBox="0 0 100 100">
                 <path d="M25 30 L10 50 L25 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
                 <path d="M75 30 L90 50 L75 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
                 <path d="M15 50 L85 50" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
         `;
-        this.tileMirrorButton.onclick = this._onMirror;
+        this.tileMirrorXButton.onclick = this._onMirrorX;
+        this.tileMirrorZButton = this._createButton("machine-editor-mirror-z", this.floatingElementBottomRight);
+        this.tileMirrorZButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M30 25 L50 10 L70 25 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M30 75 L50 90 L70 75 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M50 15 L50 85"  fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.tileMirrorZButton.onclick = this._onMirrorZ;
+        this.floatingElementBottomLeft = FloatingElement.Create(this.game);
+        this.floatingElementBottomLeft.style.width = "10px";
+        this.floatingElementBottomLeft.anchor = FloatingElementAnchor.RightTop;
+        this.DMinusButton = this._createButton("machine-editor-d-minus", this.floatingElementBottomLeft);
+        this.DMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+            <path d="M10 70 L50 20 L90 70 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.DMinusButton.onclick = this._onDMinus;
+        this.DPlusButton = this._createButton("machine-editor-d-plus", this.floatingElementBottomLeft);
+        this.DPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M10 30 L50 80 L90 30 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.DPlusButton.onclick = this._onDPlus;
         this.floatingButtons = [
             this.HPlusTopButton,
             this.HMinusTopButton,
@@ -976,7 +1027,9 @@ class MachineEditor {
             this.WPlusLeftButton,
             this.WMinusLeftButton,
             this.deletebutton,
-            this.tileMirrorButton
+            this.tileMirrorXButton,
+            this.DPlusButton,
+            this.DMinusButton
         ];
         this.updateFloatingElements();
     }
@@ -997,6 +1050,7 @@ class MachineEditor {
         this.floatingElementLeft.dispose();
         this.floatingElementDelete.dispose();
         this.floatingElementBottomRight.dispose();
+        this.floatingElementBottomLeft.dispose();
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
@@ -1017,7 +1071,7 @@ class MachineEditor {
             this.container.classList.remove("left");
         }
     }
-    async editTrackInPlace(track, i, j, k, w, h, d, mirror) {
+    async editTrackInPlace(track, i, j, k, w, h, d) {
         if (!isFinite(i)) {
             i = track.i;
         }
@@ -1027,10 +1081,7 @@ class MachineEditor {
         if (!isFinite(k)) {
             k = track.k;
         }
-        if (!mirror) {
-            mirror = track.mirrorX;
-        }
-        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, track.mirrorX, track.mirrorZ);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -1040,8 +1091,18 @@ class MachineEditor {
         this.machine.generateBaseMesh();
         return editedTrack;
     }
-    async mirrorTrackInPlace(track) {
+    async mirrorXTrackInPlace(track) {
         let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
+        track.dispose();
+        this.machine.parts.push(mirroredTrack);
+        mirroredTrack.setIsVisible(true);
+        mirroredTrack.generateWires();
+        await mirroredTrack.instantiate();
+        mirroredTrack.recomputeAbsolutePath();
+        return mirroredTrack;
+    }
+    async mirrorZTrackInPlace(track) {
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, track.mirrorX, !track.mirrorZ);
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -1072,13 +1133,14 @@ class MachineEditor {
                 let yTop = tileHeight * 0.25;
                 let yBottom = -tileHeight * (this.selectedObject.h + 0.75);
                 let yCenter = (yTop + yBottom) * 0.5;
-                this.floatingElementTop.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yTop, this.selectedObject.position.z + 0));
-                this.floatingElementRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yCenter, this.selectedObject.position.z + 0));
-                this.floatingElementBottom.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yBottom, this.selectedObject.position.z + 0));
-                this.floatingElementLeft.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xLeft, this.selectedObject.position.y + yCenter, this.selectedObject.position.z + 0));
-                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yTop, this.selectedObject.position.z + 0));
+                this.floatingElementTop.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yTop, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                this.floatingElementRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yCenter, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                this.floatingElementBottom.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                this.floatingElementLeft.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xLeft, this.selectedObject.position.y + yCenter, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yTop, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
-                this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yBottom, this.selectedObject.position.z + 0));
+                this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                this.floatingElementBottomLeft.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xLeft, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
                 if (this.selectedObject.xExtendable) {
                     this.WMinusRightButton.style.display = "";
                     this.WPlusRightButton.style.display = "";
@@ -1091,9 +1153,13 @@ class MachineEditor {
                     this.HPlusBottomButton.style.display = "";
                     this.HMinusBottomButton.style.display = "";
                 }
+                if (this.selectedObject.zExtendable) {
+                    this.DPlusButton.style.display = "";
+                    this.DMinusButton.style.display = "";
+                }
                 this.deletebutton.style.display = "";
                 if (this.selectedObject.xMirrorable) {
-                    this.tileMirrorButton.style.display = "";
+                    this.tileMirrorXButton.style.display = "";
                 }
             }
         }
@@ -2496,7 +2562,7 @@ class Machine {
         }
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror);
+            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirrorX);
             this.parts.push(track);
         }
     }
@@ -2635,9 +2701,14 @@ class MachinePart extends BABYLON.Mesh {
     unselect() {
         this.selectorMesh.visibility = 0;
     }
-    mirrorTrackPointsInPlace() {
+    mirrorXTrackPointsInPlace() {
         for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].mirrorTrackPointsInPlace();
+            this.tracks[i].mirrorXTrackPointsInPlace();
+        }
+    }
+    mirrorZTrackPointsInPlace() {
+        for (let i = 0; i < this.tracks.length; i++) {
+            this.tracks[i].mirrorZTrackPointsInPlace();
         }
     }
     getSlopeAt(index, trackIndex = 0) {
@@ -2822,7 +2893,7 @@ class MachinePartFactory {
     constructor(machine) {
         this.machine = machine;
     }
-    createTrackWHD(trackname, i, j, k = 0, w, h, d, mirrorX, mirrorY) {
+    createTrackWHD(trackname, i, j, k = 0, w, h, d, mirrorX, mirrorZ) {
         trackname = trackname.split("-")[0];
         let whd = "";
         if (isFinite(w)) {
@@ -2836,14 +2907,14 @@ class MachinePartFactory {
         }
         whd = whd.substring(0, whd.length - 1);
         trackname += "-" + whd;
-        return this.createTrack(trackname, i, j, k, mirrorX);
+        return this.createTrack(trackname, i, j, k, mirrorX, mirrorZ);
     }
-    createTrack(trackname, i, j, k = 0, mirrorX, mirrorY) {
+    createTrack(trackname, i, j, k = 0, mirrorX, mirrorZ) {
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX);
+            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, k, mirrorX);
@@ -3008,7 +3079,7 @@ class Track {
             new Wire(this.part)
         ];
     }
-    mirrorTrackPointsInPlace() {
+    mirrorXTrackPointsInPlace() {
         for (let i = 0; i < this.trackpoints.length; i++) {
             this.trackpoints[i].position.x *= -1;
             this.trackpoints[i].position.x += (this.part.w - 1) * tileWidth;
@@ -3017,6 +3088,19 @@ class Track {
             }
             if (this.trackpoints[i].dir) {
                 this.trackpoints[i].dir.x *= -1;
+            }
+        }
+    }
+    mirrorZTrackPointsInPlace() {
+        for (let i = 0; i < this.trackpoints.length; i++) {
+            this.trackpoints[i].position.z += (this.part.d - 1) * tileDepth * 0.5;
+            this.trackpoints[i].position.z *= -1;
+            this.trackpoints[i].position.z -= (this.part.d - 1) * tileDepth * 0.5;
+            if (this.trackpoints[i].normal) {
+                this.trackpoints[i].normal.z *= -1;
+            }
+            if (this.trackpoints[i].dir) {
+                this.trackpoints[i].dir.z *= -1;
             }
         }
     }
@@ -3369,7 +3453,7 @@ class Elevator extends MachinePart {
         ];
         let x = 1;
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
             x = -1;
         }
         this.wheels = [
@@ -3512,7 +3596,7 @@ class FlatLoop extends MachinePart {
             ],
         });
         if (mirror) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3540,7 +3624,7 @@ class Join extends MachinePart {
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, -tileHeight * 0.25, 0), nJoin, dirJoin)
         ];
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3576,7 +3660,7 @@ class Loop extends MachinePart {
             ],
         });
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3605,7 +3689,10 @@ class Ramp extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, -tileDepth * (this.d - 1)), n, dir)
         ];
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            this.mirrorZTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3672,7 +3759,7 @@ class Spiral extends MachinePart {
             ],
         });
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3719,7 +3806,7 @@ class Split extends MachinePart {
             new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), nEnd.multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         let anchorDatas = [];
         let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
@@ -3876,7 +3963,7 @@ class UTurnLarge extends MachinePart {
             ],
         });
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3902,13 +3989,14 @@ class UTurn extends MachinePart {
             ],
         });
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
 }
 class UTurnLayer extends MachinePart {
     constructor(machine, i, j, k, mirrorX) {
+        console.log("- " + mirrorX);
         super(machine, i, j, k, {
             mirrorX: mirrorX
         });
@@ -3930,7 +4018,7 @@ class UTurnLayer extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -tileDepth), BABYLON.Vector3.Up(), new BABYLON.Vector3(-1, 0, 0)),
         ];
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3959,7 +4047,7 @@ class UTurn2Layer extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(-1, 0, 0)),
         ];
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3985,7 +4073,7 @@ class Wave extends MachinePart {
             ],
         });
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -3998,6 +4086,7 @@ var FloatingElementAnchor;
     FloatingElementAnchor[FloatingElementAnchor["RightMiddle"] = 3] = "RightMiddle";
     FloatingElementAnchor[FloatingElementAnchor["LeftBottom"] = 4] = "LeftBottom";
     FloatingElementAnchor[FloatingElementAnchor["LeftTop"] = 5] = "LeftTop";
+    FloatingElementAnchor[FloatingElementAnchor["RightTop"] = 6] = "RightTop";
 })(FloatingElementAnchor || (FloatingElementAnchor = {}));
 class FloatingElement extends HTMLElement {
     constructor() {
@@ -4043,8 +4132,12 @@ class FloatingElement extends HTMLElement {
                 dLeft = this.anchorMargin;
                 dBottom = -this.clientHeight - this.anchorMargin;
             }
-            this.style.left = (screenPos.x * this.game.canvas.width + dLeft).toFixed(1) + "px";
-            this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height + dBottom).toFixed(1) + "px";
+            if (this.anchor === FloatingElementAnchor.RightTop) {
+                dLeft = -this.clientWidth - this.anchorMargin;
+                dBottom = -this.clientHeight - this.anchorMargin;
+            }
+            this.style.left = (screenPos.x * this.game.canvas.width + dLeft).toFixed(0) + "px";
+            this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height + dBottom).toFixed(0) + "px";
         };
     }
     static Create(game) {

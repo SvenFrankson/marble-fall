@@ -26,7 +26,7 @@ class Join extends MachinePart {
         ];
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();

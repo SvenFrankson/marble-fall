@@ -11,6 +11,8 @@ enum FloatingElementAnchor {
 
     LeftBottom,
     LeftTop,
+
+    RightTop,
 }
 
 class FloatingElement extends HTMLElement {
@@ -113,8 +115,12 @@ class FloatingElement extends HTMLElement {
             dLeft = this.anchorMargin;
             dBottom = - this.clientHeight - this.anchorMargin;
         }
-        this.style.left = (screenPos.x * this.game.canvas.width + dLeft).toFixed(1) + "px";
-        this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height + dBottom).toFixed(1) + "px";
+        if (this.anchor === FloatingElementAnchor.RightTop) {
+            dLeft = - this.clientWidth - this.anchorMargin;
+            dBottom = - this.clientHeight - this.anchorMargin;
+        }
+        this.style.left = (screenPos.x * this.game.canvas.width + dLeft).toFixed(0) + "px";
+        this.style.bottom = ((1 - screenPos.y) * this.game.canvas.height + dBottom).toFixed(0) + "px";
     }
 }
 

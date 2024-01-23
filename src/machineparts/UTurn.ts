@@ -27,7 +27,7 @@ class UTurnLarge extends MachinePart {
         });
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();
@@ -57,7 +57,7 @@ class UTurn extends MachinePart {
         });
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();
@@ -67,6 +67,7 @@ class UTurn extends MachinePart {
 class UTurnLayer extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
+        console.log("- " + mirrorX);
         super(machine, i, j, k, {
             mirrorX: mirrorX
         });
@@ -91,7 +92,7 @@ class UTurnLayer extends MachinePart {
         ];
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();
@@ -126,7 +127,7 @@ class UTurn2Layer extends MachinePart {
         ];
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();

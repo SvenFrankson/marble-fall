@@ -16,6 +16,7 @@ class MachineEditor {
     public floatingElementLeft: FloatingElement;
     public floatingElementDelete: FloatingElement;
     public floatingElementBottomRight: FloatingElement;
+    public floatingElementBottomLeft: FloatingElement;
     public HPlusTopButton: HTMLButtonElement;
     public HMinusTopButton: HTMLButtonElement;
     public WPlusRightButton: HTMLButtonElement;
@@ -25,7 +26,10 @@ class MachineEditor {
     public WPlusLeftButton: HTMLButtonElement;
     public WMinusLeftButton: HTMLButtonElement;
     public deletebutton: HTMLButtonElement;
-    public tileMirrorButton: HTMLButtonElement;
+    public tileMirrorXButton: HTMLButtonElement;
+    public tileMirrorZButton: HTMLButtonElement;
+    public DPlusButton: HTMLButtonElement;
+    public DMinusButton: HTMLButtonElement;
 
     private _currentLayer: number = 0;
     public get currentLayer(): number {
@@ -190,12 +194,12 @@ class MachineEditor {
             }
             else if (event.key === "m") {
                 if (this.draggedObject && this.draggedObject instanceof MachinePart) {
-                    this.mirrorTrackInPlace(this.draggedObject).then(track => {
+                    this.mirrorXTrackInPlace(this.draggedObject).then(track => {
                         this.setDraggedObject(track);
                     });
                 }
                 else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
-                    this.mirrorTrackInPlace(this.selectedObject).then(track => {
+                    this.mirrorXTrackInPlace(this.selectedObject).then(track => {
                         this.setSelectedObject(track);
                     });
                 }
@@ -290,15 +294,43 @@ class MachineEditor {
 
         this.floatingElementBottomRight = FloatingElement.Create(this.game);
         this.floatingElementBottomRight.anchor = FloatingElementAnchor.LeftTop;
-        this.tileMirrorButton = this._createButton("machine-editor-mirror", this.floatingElementBottomRight);
-        this.tileMirrorButton.innerHTML = `
+        this.tileMirrorXButton = this._createButton("machine-editor-mirror-x", this.floatingElementBottomRight);
+        this.tileMirrorXButton.innerHTML = `
             <svg class="label" viewBox="0 0 100 100">
                 <path d="M25 30 L10 50 L25 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
                 <path d="M75 30 L90 50 L75 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
                 <path d="M15 50 L85 50" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
         `;
-        this.tileMirrorButton.onclick = this._onMirror;
+        this.tileMirrorXButton.onclick = this._onMirrorX;
+        this.tileMirrorZButton = this._createButton("machine-editor-mirror-z", this.floatingElementBottomRight);
+        this.tileMirrorZButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M30 25 L50 10 L70 25 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M30 75 L50 90 L70 75 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M50 15 L50 85"  fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.tileMirrorZButton.onclick = this._onMirrorZ;
+        
+        this.floatingElementBottomLeft = FloatingElement.Create(this.game);
+        this.floatingElementBottomLeft.style.width = "10px";
+        this.floatingElementBottomLeft.anchor = FloatingElementAnchor.RightTop;
+        this.DMinusButton = this._createButton("machine-editor-d-minus", this.floatingElementBottomLeft);
+        this.DMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+            <path d="M10 70 L50 20 L90 70 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.DMinusButton.onclick = this._onDMinus;
+        this.DPlusButton = this._createButton("machine-editor-d-plus", this.floatingElementBottomLeft);
+        this.DPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M10 30 L50 80 L90 30 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.DPlusButton.onclick = this._onDPlus;
+
 
         this.floatingButtons = [
             this.HPlusTopButton,
@@ -310,7 +342,9 @@ class MachineEditor {
             this.WPlusLeftButton,
             this.WMinusLeftButton,
             this.deletebutton,
-            this.tileMirrorButton
+            this.tileMirrorXButton,
+            this.DPlusButton,
+            this.DMinusButton
         ];
 
         this.updateFloatingElements();
@@ -335,6 +369,7 @@ class MachineEditor {
         this.floatingElementLeft.dispose();
         this.floatingElementDelete.dispose();
         this.floatingElementBottomRight.dispose();
+        this.floatingElementBottomLeft.dispose();
 
         this.itemContainer.innerHTML = "";
         this.items = new Map<string, HTMLDivElement>();
@@ -522,7 +557,7 @@ class MachineEditor {
         }
     }
 
-    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, k?: number, w?: number, h?: number, d?: number, mirror?: boolean): Promise<MachinePart> {
+    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, k?: number, w?: number, h?: number, d?: number): Promise<MachinePart> {
         if (!isFinite(i)) {
             i = track.i;
         }
@@ -532,11 +567,8 @@ class MachineEditor {
         if (!isFinite(k)) {
             k = track.k;
         }
-        if (!mirror) {
-            mirror = track.mirrorX;
-        }
 
-        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, track.mirrorX, track.mirrorZ);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -547,8 +579,19 @@ class MachineEditor {
         return editedTrack;
     }
 
-    public async mirrorTrackInPlace(track: MachinePart): Promise<MachinePart> {
+    public async mirrorXTrackInPlace(track: MachinePart): Promise<MachinePart> {
         let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
+        track.dispose();
+        this.machine.parts.push(mirroredTrack);
+        mirroredTrack.setIsVisible(true);
+        mirroredTrack.generateWires();
+        await mirroredTrack.instantiate();
+        mirroredTrack.recomputeAbsolutePath();
+        return mirroredTrack;
+    }
+
+    public async mirrorZTrackInPlace(track: MachinePart): Promise<MachinePart> {
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, track.mirrorX, !track.mirrorZ);
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -591,38 +634,44 @@ class MachineEditor {
                 this.floatingElementTop.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x + xCenter,
                     this.selectedObject.position.y + yTop,
-                    this.selectedObject.position.z + 0,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
                 ));
                 
                 this.floatingElementRight.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x + xRight,
                     this.selectedObject.position.y + yCenter,
-                    this.selectedObject.position.z + 0,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
                 ));
 
                 this.floatingElementBottom.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x + xCenter,
                     this.selectedObject.position.y + yBottom,
-                    this.selectedObject.position.z + 0,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
                 ));
                 
                 this.floatingElementLeft.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x + xLeft,
                     this.selectedObject.position.y + yCenter,
-                    this.selectedObject.position.z + 0,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
                 ));
 
                 this.floatingElementDelete.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x + xRight,
                     this.selectedObject.position.y + yTop,
-                    this.selectedObject.position.z + 0,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
                 ));
                 this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
 
                 this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(
                     this.selectedObject.position.x + xRight,
                     this.selectedObject.position.y + yBottom,
-                    this.selectedObject.position.z + 0,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
+                ));
+
+                this.floatingElementBottomLeft.setTarget(new BABYLON.Vector3(
+                    this.selectedObject.position.x + xLeft,
+                    this.selectedObject.position.y + yBottom,
+                    this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
                 ));
 
                 if (this.selectedObject.xExtendable) {
@@ -637,9 +686,13 @@ class MachineEditor {
                     this.HPlusBottomButton.style.display = "";
                     this.HMinusBottomButton.style.display = "";
                 }
+                if (this.selectedObject.zExtendable) {
+                    this.DPlusButton.style.display = "";
+                    this.DMinusButton.style.display = "";
+                }
                 this.deletebutton.style.display = "";
                 if (this.selectedObject.xMirrorable) {
-                    this.tileMirrorButton.style.display = "";
+                    this.tileMirrorXButton.style.display = "";
                 }
             }
         }
@@ -736,6 +789,26 @@ class MachineEditor {
         }
     }
 
+    private _onDPlus = async () => {
+        let track = this.selectedObject;
+        if (track instanceof MachinePart && track.zExtendable) {
+            let d = track.d + 1;
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+            this.setSelectedObject(editedTrack);
+        }
+    }
+
+    private _onDMinus = async () => {
+        let track = this.selectedObject;
+        if (track instanceof MachinePart && track.zExtendable) {
+            let d = track.d - 1;
+            if (d >= 1) {
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+                this.setSelectedObject(editedTrack);
+            }
+        }
+    }
+
     private _onDelete = async () => {
         if (this.selectedObject) {
             this.selectedObject.dispose();
@@ -744,11 +817,19 @@ class MachineEditor {
         }
     }
 
-    private _onMirror = async () => {
+    private _onMirrorX = async () => {
         let track = this.selectedObject;
         if (track instanceof MachinePart) {
-            track = await this.mirrorTrackInPlace(track);
-            this.setSelectedObject(track);
+            let editedTrack = await this.mirrorXTrackInPlace(track);
+            this.setSelectedObject(editedTrack);
+        }
+    }
+
+    private _onMirrorZ = async () => {
+        let track = this.selectedObject;
+        if (track instanceof MachinePart) {
+            let editedTrack = await this.mirrorZTrackInPlace(track);
+            this.setSelectedObject(editedTrack);
         }
     }
 }

@@ -44,7 +44,7 @@ class Split extends MachinePart {
         ];
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         let anchorDatas: BABYLON.VertexData[] = [];

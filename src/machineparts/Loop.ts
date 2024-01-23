@@ -32,7 +32,7 @@ class Loop extends MachinePart {
         });
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
         }
 
         this.generateWires();

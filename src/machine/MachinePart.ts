@@ -172,9 +172,15 @@ class MachinePart extends BABYLON.Mesh {
         this.selectorMesh.visibility = 0;
     }
 
-    protected mirrorTrackPointsInPlace(): void {
+    protected mirrorXTrackPointsInPlace(): void {
         for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].mirrorTrackPointsInPlace();
+            this.tracks[i].mirrorXTrackPointsInPlace();
+        }
+    }
+
+    protected mirrorZTrackPointsInPlace(): void {
+        for (let i = 0; i < this.tracks.length; i++) {
+            this.tracks[i].mirrorZTrackPointsInPlace();
         }
     }
 

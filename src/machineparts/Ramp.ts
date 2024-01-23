@@ -26,7 +26,10 @@ class Ramp extends MachinePart {
         ];
 
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            this.mirrorZTrackPointsInPlace();
         }
 
         this.generateWires();

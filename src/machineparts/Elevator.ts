@@ -71,7 +71,7 @@ class Elevator extends MachinePart {
         
         let x = 1;
         if (mirrorX) {
-            this.mirrorTrackPointsInPlace();
+            this.mirrorXTrackPointsInPlace();
             x = - 1;
         }
 

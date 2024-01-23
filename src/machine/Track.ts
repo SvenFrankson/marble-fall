@@ -19,7 +19,7 @@ class Track {
         ];
     }
 
-    public mirrorTrackPointsInPlace(): void {
+    public mirrorXTrackPointsInPlace(): void {
         for (let i = 0; i < this.trackpoints.length; i++) {
             this.trackpoints[i].position.x *= - 1;
             this.trackpoints[i].position.x += (this.part.w - 1) * tileWidth;
@@ -28,6 +28,20 @@ class Track {
             }
             if (this.trackpoints[i].dir) {
                 this.trackpoints[i].dir.x *= - 1;
+            }
+        }
+    }
+
+    public mirrorZTrackPointsInPlace(): void {
+        for (let i = 0; i < this.trackpoints.length; i++) {
+            this.trackpoints[i].position.z += (this.part.d - 1) * tileDepth * 0.5;
+            this.trackpoints[i].position.z *= - 1;
+            this.trackpoints[i].position.z -= (this.part.d - 1) * tileDepth * 0.5;
+            if (this.trackpoints[i].normal) {
+                this.trackpoints[i].normal.z *= - 1;
+            }
+            if (this.trackpoints[i].dir) {
+                this.trackpoints[i].dir.z *= - 1;
             }
         }
     }

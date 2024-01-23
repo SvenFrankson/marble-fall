@@ -20,7 +20,7 @@ class MachinePartFactory {
 
     }
 
-    public createTrackWHD(trackname: string, i: number, j: number, k: number = 0, w?: number, h?: number, d?: number, mirrorX?: boolean, mirrorY?: boolean): MachinePart {
+    public createTrackWHD(trackname: string, i: number, j: number, k: number = 0, w?: number, h?: number, d?: number, mirrorX?: boolean, mirrorZ?: boolean): MachinePart {
         trackname = trackname.split("-")[0];
         let whd = "";
         if (isFinite(w)) {
@@ -34,15 +34,15 @@ class MachinePartFactory {
         }
         whd = whd.substring(0, whd.length - 1);
         trackname += "-" + whd;
-        return this.createTrack(trackname, i, j, k, mirrorX);
+        return this.createTrack(trackname, i, j, k, mirrorX, mirrorZ);
     }
 
-    public createTrack(trackname: string, i: number, j: number, k: number = 0, mirrorX?: boolean, mirrorY?: boolean): MachinePart {
+    public createTrack(trackname: string, i: number, j: number, k: number = 0, mirrorX?: boolean, mirrorZ?: boolean): MachinePart {
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX);
+            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, k, mirrorX);
