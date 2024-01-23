@@ -142,20 +142,6 @@ class Track {
             if (!trackPoint.fixedTangentOut) {
                 trackPoint.tangentOut = 1;
             }
-            if (!trackPoint.fixedNormal) {
-                let n = 0;
-                let nextTrackPointWithFixedNormal: TrackPoint;
-                while (!nextTrackPointWithFixedNormal) {
-                    n++;
-                    let tmpTrackPoint = this.trackpoints[i + n];
-                    if (tmpTrackPoint.fixedNormal) {
-                        nextTrackPointWithFixedNormal = tmpTrackPoint;
-                    }
-                }
-                trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
-            }
-            let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
-            trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
         }
 
         this.wires[0].path = [];

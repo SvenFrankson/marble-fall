@@ -36,37 +36,37 @@ class Elevator extends MachinePart {
                 - tileWidth * 0.5,
                 - tileHeight * this.h,
                 0
-            ), n, dir),
+            ), dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 - tileWidth * 0.1,
                 - tileHeight * (this.h + 0.15),
                 0
-            ), n, dir),
+            ), dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 0,
                 - tileHeight * (this.h + 0.35),
                 0
-            ), n, dir),
+            ), dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 0 + 0.01,
                 - tileHeight * (this.h + 0.35) + 0.01,
                 0
-            ), dir.scale(-1), n),
+            ), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 0 + 0.01,
                 0 - tileHeight,
                 0
-            ), dir.scale(-1), n),
+            ), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(
                 -0.005,
                 0.035 - tileHeight,
                 0
-            ), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+            ), (new BABYLON.Vector3(-1, 1, 0)).normalize())
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), nLeft, dirLeft),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), nRight, dirRight)
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), dirLeft),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), dirRight)
         ];
         
         let x = 1;

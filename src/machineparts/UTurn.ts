@@ -88,13 +88,13 @@ class UTurnLayer extends MachinePart {
         let r = tileDepth * (d - 1) * 0.5;
         let r2 = r / Math.SQRT2; 
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), new BABYLON.Vector3(1, 0, 0)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r + r2)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, - r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, - r - r2)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, - 2 * r)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, - 2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(- 1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, - 2 * r), new BABYLON.Vector3(- 1, 0, 0)),
         ];
 
         for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {

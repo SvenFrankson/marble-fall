@@ -25,22 +25,22 @@ class Split extends MachinePart {
         let nEnd = (new BABYLON.Vector3(1, 1, 0)).normalize();
 
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), nEnd, dirEnd)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), dirEnd)
         ];
 
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight * this.h, 0), n, dir),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd.multiplyByFloats(1, -1, 1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight * this.h, 0), n, dir)
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight * this.h, 0), dir),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd.multiplyByFloats(1, -1, 1)),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight * this.h, 0), dir)
         ];
 
         this.tracks[2] = new Track(this);
         this.tracks[2].trackpoints = [
-            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), n.multiplyByFloats(-1, 1, 1), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), nEnd.multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
+            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
 
         if (mirrorX) {

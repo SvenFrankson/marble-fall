@@ -360,11 +360,7 @@ class MachinePart extends BABYLON.Mesh {
         this.tracks = [new Track(this)];
         for (let i = 0; i < data.points.length; i++) {
             let pointData = data.points[i];
-            let normal: BABYLON.Vector3;
             let direction: BABYLON.Vector3;
-            if (pointData.normal) {
-                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
-            }
             if (pointData.dir) {
                 direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
             }
@@ -372,7 +368,6 @@ class MachinePart extends BABYLON.Mesh {
             let trackPoint = new TrackPoint(
                 this.tracks[0],
                 new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z),
-                normal,
                 direction,
                 pointData.tangentIn,
                 pointData.tangentOut

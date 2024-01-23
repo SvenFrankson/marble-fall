@@ -2865,15 +2865,11 @@ class MachinePart extends BABYLON.Mesh {
         this.tracks = [new Track(this)];
         for (let i = 0; i < data.points.length; i++) {
             let pointData = data.points[i];
-            let normal;
             let direction;
-            if (pointData.normal) {
-                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
-            }
             if (pointData.dir) {
                 direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
             }
-            let trackPoint = new TrackPoint(this.tracks[0], new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), normal, direction, pointData.tangentIn, pointData.tangentOut);
+            let trackPoint = new TrackPoint(this.tracks[0], new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), direction, pointData.tangentIn, pointData.tangentOut);
             this.tracks[0].trackpoints[i] = trackPoint;
         }
     }
@@ -3189,20 +3185,6 @@ class Track {
             if (!trackPoint.fixedTangentOut) {
                 trackPoint.tangentOut = 1;
             }
-            if (!trackPoint.fixedNormal) {
-                let n = 0;
-                let nextTrackPointWithFixedNormal;
-                while (!nextTrackPointWithFixedNormal) {
-                    n++;
-                    let tmpTrackPoint = this.trackpoints[i + n];
-                    if (tmpTrackPoint.fixedNormal) {
-                        nextTrackPointWithFixedNormal = tmpTrackPoint;
-                    }
-                }
-                trackPoint.normal = BABYLON.Vector3.Lerp(prevTrackPoint.normal, nextTrackPointWithFixedNormal.normal, 1 / (1 + n));
-            }
-            let right = BABYLON.Vector3.Cross(trackPoint.normal, trackPoint.dir);
-            trackPoint.normal = BABYLON.Vector3.Cross(trackPoint.dir, right).normalize();
         }
         this.wires[0].path = [];
         this.wires[1].path = [];
@@ -3354,26 +3336,18 @@ class Track {
     }
 }
 class TrackPoint {
-    constructor(track, position, normal, dir, tangentIn, tangentOut) {
+    constructor(track, position, dir, tangentIn, tangentOut) {
         this.track = track;
         this.position = position;
-        this.normal = normal;
         this.dir = dir;
         this.tangentIn = tangentIn;
         this.tangentOut = tangentOut;
+        this.normal = BABYLON.Vector3.Up();
         this.fixedNormal = false;
         this.fixedDir = false;
         this.fixedTangentIn = false;
         this.fixedTangentOut = false;
         this.summedLength = 0;
-        if (normal) {
-            this.fixedNormal = true;
-        }
-        else {
-            this.fixedNormal = false;
-            this.normal = BABYLON.Vector3.Up();
-        }
-        this.normal = this.normal.clone();
         if (dir) {
             this.fixedDir = true;
         }
@@ -3396,6 +3370,9 @@ class TrackPoint {
             this.fixedTangentOut = false;
             this.tangentOut = 1;
         }
+        let right = BABYLON.Vector3.Cross(this.normal, this.dir).normalize();
+        BABYLON.Vector3.CrossToRef(this.dir, right, this.normal);
+        this.normal.normalize();
     }
     isFirstOrLast() {
         let index = this.track.trackpoints.indexOf(this);
@@ -3444,17 +3421,17 @@ class Elevator extends MachinePart {
         let nRight = new BABYLON.Vector3(-1, 1, 0);
         nRight.normalize();
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.15), 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.35), 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.35) + 0.01, 0), dir.scale(-1), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), dir.scale(-1), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, -1, 0)).normalize(), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.15), 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.35), 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.35) + 0.01, 0), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), n),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, 1, 0)).normalize())
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), nLeft, dirLeft),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), nRight, dirRight)
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), dirLeft),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), dirRight)
         ];
         let x = 1;
         if (mirrorX) {
@@ -3620,13 +3597,13 @@ class Join extends MachinePart {
         let dirJoin = (new BABYLON.Vector3(-2, -1, 0)).normalize();
         let nJoin = (new BABYLON.Vector3(-1, 2, 0)).normalize();
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n, dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), dir)
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), n, dir.scale(-1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, -tileHeight * 0.25, 0), nJoin, dirJoin)
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.scale(-1)),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, -tileHeight * 0.25, 0), dirJoin)
         ];
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
@@ -3690,8 +3667,8 @@ class Ramp extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, -tileDepth * (this.d - 1)), n, dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, -tileDepth * (this.d - 1)), dir)
         ];
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
@@ -3795,20 +3772,20 @@ class Split extends MachinePart {
         let dirEnd = (new BABYLON.Vector3(1, -1, 0)).normalize();
         let nEnd = (new BABYLON.Vector3(1, 1, 0)).normalize();
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), nEnd, dirEnd)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), dirEnd)
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), n, dir),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd.multiplyByFloats(1, -1, 1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), BABYLON.Vector3.Up(), dirEnd),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * this.h, 0), n, dir)
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), dir),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd.multiplyByFloats(1, -1, 1)),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * this.h, 0), dir)
         ];
         this.tracks[2] = new Track(this);
         this.tracks[2].trackpoints = [
-            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), n.multiplyByFloats(-1, 1, 1), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), nEnd.multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
+            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
@@ -4020,13 +3997,13 @@ class UTurnLayer extends MachinePart {
         let r = tileDepth * (d - 1) * 0.5;
         let r2 = r / Math.SQRT2;
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), BABYLON.Vector3.Up(), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), new BABYLON.Vector3(1, 0, 0)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r + r2)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, -r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r - r2)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, -2 * r)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), BABYLON.Vector3.Up(), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), new BABYLON.Vector3(-1, 0, 0)),
         ];
         for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {
             let f = n / (this.tracks[0].trackpoints.length - 1);

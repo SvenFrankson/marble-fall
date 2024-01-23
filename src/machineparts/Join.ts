@@ -15,14 +15,14 @@ class Join extends MachinePart {
         let nJoin = (new BABYLON.Vector3(-1, 2, 0)).normalize();
 
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), - tileHeight * this.h, 0), n, dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), - tileHeight * this.h, 0), dir)
         ];
 
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), n, dir.scale(-1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, - tileHeight * 0.25, 0), nJoin, dirJoin)
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.scale(-1)),
+            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, - tileHeight * 0.25, 0), dirJoin)
         ];
 
         if (mirrorX) {
