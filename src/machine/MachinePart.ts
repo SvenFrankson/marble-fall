@@ -15,6 +15,22 @@ interface ITrackData {
     points: ITrackPointData[];
 }
 
+var radius = 0.014 * 1.2 / 2;
+var selectorHullShape: BABYLON.Vector3[] = [];
+for (let i = 0; i < 6; i++) {
+    let a = i / 6 * 2 * Math.PI;
+    let cosa = Math.cos(a);
+    let sina = Math.sin(a);
+    selectorHullShape[i] = new BABYLON.Vector3(cosa * radius, sina * radius, 0);
+}
+
+class MachinePartSelectorMesh extends BABYLON.Mesh {
+
+    constructor(public part: MachinePart) {
+        super("machine-part-selector");
+    }
+}
+
 class MachinePart extends BABYLON.Mesh {
 
     public partName: string = "machine-part";
@@ -33,6 +49,7 @@ class MachinePart extends BABYLON.Mesh {
 
     public sleepersMesh: BABYLON.Mesh;
     public selectedMesh: BABYLON.Mesh;
+    public selectorMesh: MachinePartSelectorMesh;
 
     public summedLength: number[] = [0];
     public totalLength: number = 0
@@ -42,8 +59,9 @@ class MachinePart extends BABYLON.Mesh {
 
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
+    public zExtendable: boolean = false;
 
-    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, public w: number = 1, public h: number = 1, public mirror?: boolean) {
+    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, public w: number = 1, public h: number = 1, public d: number = 1, public mirror?: boolean) {
         super("track", machine.game.scene);
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
@@ -171,6 +189,20 @@ class MachinePart extends BABYLON.Mesh {
         });
         this.selectedMesh.parent = this;
         this.selectedMesh.isVisible = false;
+
+        let datas: BABYLON.VertexData[] = [];
+        for (let n = 0; n < this.tracks.length; n++) {
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].trackpoints.map(p => { return p.position; }), closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let data = BABYLON.VertexData.ExtractFromMesh(tmp);
+            datas.push(data);
+            tmp.dispose();
+        }
+        this.selectorMesh = new MachinePartSelectorMesh(this);
+        this.selectorMesh.parent = this;
+        if (datas.length) {
+            Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
+        }
+        this.selectorMesh.visibility = 0;
 
         this.rebuildWireMeshes();
     }

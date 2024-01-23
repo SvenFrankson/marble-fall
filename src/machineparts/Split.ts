@@ -6,7 +6,7 @@ class Split extends MachinePart {
     public pivotL: number = 0.025;
 
     constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 1, 2, mirror);
+        super(machine, i, j, k, 1, 2, 1, mirror);
         this.partName = "split";
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

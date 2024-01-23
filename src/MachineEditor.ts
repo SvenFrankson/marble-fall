@@ -87,6 +87,9 @@ class MachineEditor {
         }
         if (this._selectedObject) {
             this._selectedObject.select();
+            if (this._selectedObject instanceof MachinePart) {
+                this.currentLayer = this._selectedObject.k;
+            }
         }
         this.updateFloatingElements();
     }
@@ -95,7 +98,7 @@ class MachineEditor {
         this.container = document.getElementById("machine-menu") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 2 });
-        this.layerMesh.material = this.game.ghostMaterial;
+        this.layerMesh.isVisible = false;
     }
 
     public async instantiate(): Promise<void> {
@@ -349,10 +352,7 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    if (mesh instanceof BallGhost) {
-                        return true;
-                    }
-                    else if (mesh === this.layerMesh) {
+                    if (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh) {
                         return true;
                     }
                     return false;
@@ -364,22 +364,9 @@ class MachineEditor {
                 if (pick.pickedMesh instanceof BallGhost) {
                     pickedObject = pick.pickedMesh.ball;
                 }
-                else {
-                    let i = Math.round(pick.pickedPoint.x / tileWidth);
-                    let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                    pickedObject = this.machine.parts.find(track => {
-                        if (track.k === this.currentLayer) {
-                            if (track.i <= i) {
-                                if ((track.i + track.w - 1) >= i) {
-                                    if (track.j <= j) {
-                                        if ((track.j + track.h) >= j) {
-                                            return true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
+                else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
+                    console.log("!");
+                    pickedObject = pick.pickedMesh.part;
                 }
                 if (pickedObject === this.selectedObject) {
                     pick = this.game.scene.pick(
@@ -452,10 +439,10 @@ class MachineEditor {
             this.game.scene.pointerX,
             this.game.scene.pointerY,
             (mesh) => {
-                if (!this.draggedObject && mesh instanceof BallGhost) {
+                if (!this.draggedObject && (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh)) {
                     return true;
                 }
-                else if (mesh === this.layerMesh) {
+                else if (this.draggedObject && mesh === this.layerMesh) {
                     return true;
                 }
                 return false;
@@ -503,30 +490,22 @@ class MachineEditor {
                     if (pick.pickedMesh instanceof BallGhost) {
                         this.setSelectedObject(pick.pickedMesh.ball);
                     }
-                    else if (pick.pickedMesh === this.layerMesh) {
-                        let i = Math.round(pick.pickedPoint.x / tileWidth);
-                        let j = Math.floor((- pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                        let pickedTrack = this.machine.parts.find(track => {
-                            if (track.k === this.currentLayer) {
-                                if (track.i <= i) {
-                                    if ((track.i + track.w - 1) >= i) {
-                                        if (track.j <= j) {
-                                            if ((track.j + track.h) >= j) {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                        this.setSelectedObject(pickedTrack);
+                    else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
+                        this.setSelectedObject(pick.pickedMesh.part);
                     }
                 }
             }
         }
+        else {
+            let dx = (this._pointerDownX - this.game.scene.pointerX);
+            let dy = (this._pointerDownY - this.game.scene.pointerY);
+            if (dx * dx + dy * dy < 10) {
+                this.setSelectedObject(undefined);
+            }
+        }
     }
 
-    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, k?: number, w?: number, h?: number, mirror?: boolean): Promise<MachinePart> {
+    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, k?: number, w?: number, h?: number, d?: number, mirror?: boolean): Promise<MachinePart> {
         if (!isFinite(i)) {
             i = track.i;
         }
@@ -540,7 +519,7 @@ class MachineEditor {
             mirror = track.mirror;
         }
 
-        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, k, w, h, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, mirror);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -653,7 +632,7 @@ class MachineEditor {
             let h = track.h + 1;
             let j = track.j - 1;
 
-            let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h);
+            let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -665,7 +644,7 @@ class MachineEditor {
             let j = track.j + 1;
 
             if (h >= 0) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h);
+                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -676,7 +655,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.xExtendable) {
             let w = track.w + 1;
 
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -687,7 +666,7 @@ class MachineEditor {
             let w = track.w - 1;
 
             if (w >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -698,7 +677,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h + 1;
             
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -708,7 +687,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h - 1;
             if (h >= 0) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -720,7 +699,7 @@ class MachineEditor {
             let i = track.i - 1;
             let w = track.w + 1;
 
-            let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+            let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
             this.setSelectedObject(editedTrack);
         }
     }
@@ -732,7 +711,7 @@ class MachineEditor {
             let w = track.w - 1;
 
             if (w >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         }

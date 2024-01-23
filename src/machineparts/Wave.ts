@@ -2,7 +2,7 @@
 
 class Wave extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 2, 1, mirror);
+        super(machine, i, j, k, 2, 1, 1, mirror);
         this.partName = "wave";
 
         this.deserialize({

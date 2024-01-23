@@ -1,6 +1,6 @@
 class UTurnLarge extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 2, 1, mirror);
+        super(machine, i, j, k, 2, 1, 1, mirror);
         this.partName = "uturn-l";
 
         this.deserialize({
@@ -32,7 +32,7 @@ class UTurnLarge extends MachinePart {
 
 class UTurn extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 1, mirror);
         this.partName = "uturn-s";
 
         this.deserialize({
@@ -60,7 +60,7 @@ class UTurn extends MachinePart {
 class UTurnLayer extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 1, mirror);
         this.partName = "uturn-layer";
 
         let dir = new BABYLON.Vector3(1, 0, 0);
@@ -91,7 +91,7 @@ class UTurnLayer extends MachinePart {
 class UTurn2Layer extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, mirror?: boolean) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 2, mirror);
         this.partName = "uturn-2layer";
 
         let dir = new BABYLON.Vector3(1, 0, 0);

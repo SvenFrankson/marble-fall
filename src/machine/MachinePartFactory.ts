@@ -1,8 +1,8 @@
 var TrackNames = [
-    "ramp-1.1",
+    "ramp-1.1.1",
+    "ramp-1.1.2",
     "join",
     "split",
-    "rampX-1.1",
     "uturn-s",
     "uturn-l",
     "uturn-layer",
@@ -20,37 +20,29 @@ class MachinePartFactory {
 
     }
 
-    public createTrackWH(trackname: string, i: number, j: number, k: number = 0, w?: number, h?: number, mirror?: boolean): MachinePart {
+    public createTrackWHD(trackname: string, i: number, j: number, k: number = 0, w?: number, h?: number, d?: number, mirror?: boolean): MachinePart {
         trackname = trackname.split("-")[0];
-        let wh = "";
+        let whd = "";
         if (isFinite(w)) {
-            wh += w.toFixed(0) + ".";
+            whd += w.toFixed(0) + ".";
         }
         if (isFinite(h)) {
-            wh += h.toFixed(0);
+            whd += h.toFixed(0) + ".";
         }
-        trackname += "-" + wh;
+        if (isFinite(d)) {
+            whd += d.toFixed(0) + ".";
+        }
+        whd = whd.substring(0, whd.length - 1);
+        trackname += "-" + whd;
         return this.createTrack(trackname, i, j, k, mirror);
     }
 
     public createTrack(trackname: string, i: number, j: number, k: number = 0, mirror?: boolean): MachinePart {
-        if (trackname.startsWith("flat-")) {
-            let w = parseInt(trackname.split("-")[1]);
-            return new Ramp(this.machine, i, j, k, w, 0, mirror);
-        }
-        if (trackname.startsWith("flatX-")) {
-            let w = parseInt(trackname.split("-")[1]);
-            return new CrossingRamp(this.machine, i, j, k, w, 0, mirror);
-        }
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Ramp(this.machine, i, j, k, w, h, mirror);
-        }
-        if (trackname.startsWith("rampX-")) {
-            let w = parseInt(trackname.split("-")[1].split(".")[0]);
-            let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new CrossingRamp(this.machine, i, j, k, w, h, mirror);
+            let d = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirror);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, k, mirror);

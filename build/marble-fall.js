@@ -329,7 +329,30 @@ var createDefault = {
         { name: "elevator-9", i: 3, j: -7 },
     ],
 };
-var demo3D = { "balls": [{ "x": 0.39808697121492503, "y": 0.041276811477638765 }, { "x": 0.42178813750112076, "y": 0.03490450521423004 }, { "x": 0.4479109908664016, "y": 0.030144576207480372 }, { "x": 0.4517646375114052, "y": 0.1889057010405344 }], "parts": [{ "name": "ramp-1.0", "i": 2, "j": -6, "k": 0 }, { "name": "uturn-layer", "i": 1, "j": -6, "k": 0, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -5, "k": 1 }, { "name": "uturn-layer", "i": 1, "j": -5, "k": 1, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -4, "k": 1 }, { "name": "uturn-layer", "i": 1, "j": -4, "k": 1, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -3, "k": 1 }, { "name": "uturn-layer", "i": 1, "j": -3, "k": 1, "mirror": true }, { "name": "uturn-layer", "i": 6, "j": -2, "k": 1 }, { "name": "uturn-2layer", "i": 1, "j": -2, "k": 0, "mirror": true }, { "name": "ramp-4.1", "i": 2, "j": -5, "k": 1 }, { "name": "ramp-4.1", "i": 2, "j": -4, "k": 1 }, { "name": "ramp-4.1", "i": 2, "j": -3, "k": 1 }, { "name": "ramp-4.1", "i": 2, "j": -6, "k": 1 }, { "name": "ramp-4.0", "i": 2, "j": -5, "k": 2, "mirror": true }, { "name": "ramp-4.0", "i": 2, "j": -4, "k": 2, "mirror": true }, { "name": "ramp-4.0", "i": 2, "j": -3, "k": 2, "mirror": true }, { "name": "ramp-4.0", "i": 2, "j": -2, "k": 2, "mirror": true }, { "name": "ramp-1.1", "i": 2, "j": -2, "k": 0 }, { "name": "elevator-6", "i": 3, "j": -7, "k": 0 }] };
+var demo3D = {
+    balls: [
+        { x: 0.39808697121492503, y: 0.041276811477638765 },
+        { x: 0.42178813750112076, y: 0.03490450521423004 },
+        { x: 0.4479109908664016, y: 0.030144576207480372 },
+        { x: 0.45307246397059453, y: 0.18084865692846974 },
+        { x: 0.422445081390991, y: 0.2655912743747426 },
+        { x: 0.3756430183403636, y: 0.044253335357509804 },
+    ],
+    parts: [
+        { name: "uturn-layer", i: 1, j: -6, k: 0, mirror: true },
+        { name: "uturn-layer", i: 0, j: -4, k: 1, mirror: true },
+        { name: "uturn-layer", i: 5, j: 0, k: 1 },
+        { name: "uturn-2layer", i: 1, j: -2, k: 0, mirror: true },
+        { name: "ramp-1.1.1", i: 2, j: -2, k: 0 },
+        { name: "uturn-layer", i: 5, j: -5, k: 1 },
+        { name: "ramp-1.2.1", i: 2, j: -8, k: 0, mirror: true },
+        { name: "elevator-8", i: 3, j: -9, k: 0 },
+        { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirror: true },
+        { name: "ramp-3.1.1", i: 2, j: -6, k: 1 },
+        { name: "ramp-4.4.1", i: 1, j: -4, k: 1 },
+        { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirror: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -468,10 +491,7 @@ class MachineEditor {
             this._pointerDownY = this.game.scene.pointerY;
             if (this.selectedObject) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    if (mesh instanceof BallGhost) {
-                        return true;
-                    }
-                    else if (mesh === this.layerMesh) {
+                    if (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh) {
                         return true;
                     }
                     return false;
@@ -481,22 +501,9 @@ class MachineEditor {
                     if (pick.pickedMesh instanceof BallGhost) {
                         pickedObject = pick.pickedMesh.ball;
                     }
-                    else {
-                        let i = Math.round(pick.pickedPoint.x / tileWidth);
-                        let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                        pickedObject = this.machine.parts.find(track => {
-                            if (track.k === this.currentLayer) {
-                                if (track.i <= i) {
-                                    if ((track.i + track.w - 1) >= i) {
-                                        if (track.j <= j) {
-                                            if ((track.j + track.h) >= j) {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
+                    else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
+                        console.log("!");
+                        pickedObject = pick.pickedMesh.part;
                     }
                     if (pickedObject === this.selectedObject) {
                         pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
@@ -555,10 +562,10 @@ class MachineEditor {
         };
         this.pointerUp = (event) => {
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                if (!this.draggedObject && mesh instanceof BallGhost) {
+                if (!this.draggedObject && (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh)) {
                     return true;
                 }
-                else if (mesh === this.layerMesh) {
+                else if (this.draggedObject && mesh === this.layerMesh) {
                     return true;
                 }
                 return false;
@@ -604,25 +611,17 @@ class MachineEditor {
                         if (pick.pickedMesh instanceof BallGhost) {
                             this.setSelectedObject(pick.pickedMesh.ball);
                         }
-                        else if (pick.pickedMesh === this.layerMesh) {
-                            let i = Math.round(pick.pickedPoint.x / tileWidth);
-                            let j = Math.floor((-pick.pickedPoint.y + 0.25 * tileHeight) / tileHeight);
-                            let pickedTrack = this.machine.parts.find(track => {
-                                if (track.k === this.currentLayer) {
-                                    if (track.i <= i) {
-                                        if ((track.i + track.w - 1) >= i) {
-                                            if (track.j <= j) {
-                                                if ((track.j + track.h) >= j) {
-                                                    return true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                            this.setSelectedObject(pickedTrack);
+                        else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
+                            this.setSelectedObject(pick.pickedMesh.part);
                         }
                     }
+                }
+            }
+            else {
+                let dx = (this._pointerDownX - this.game.scene.pointerX);
+                let dy = (this._pointerDownY - this.game.scene.pointerY);
+                if (dx * dx + dy * dy < 10) {
+                    this.setSelectedObject(undefined);
                 }
             }
         };
@@ -632,7 +631,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h + 1;
                 let j = track.j - 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h);
+                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -642,7 +641,7 @@ class MachineEditor {
                 let h = track.h - 1;
                 let j = track.j + 1;
                 if (h >= 0) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h);
+                    let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -651,7 +650,7 @@ class MachineEditor {
             let track = this.selectedObject;
             if (track instanceof MachinePart && track.xExtendable) {
                 let w = track.w + 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -660,7 +659,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.xExtendable) {
                 let w = track.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -669,7 +668,7 @@ class MachineEditor {
             let track = this.selectedObject;
             if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h + 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -678,7 +677,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h - 1;
                 if (h >= 0) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h);
+                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -688,7 +687,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.xExtendable) {
                 let i = track.i - 1;
                 let w = track.w + 1;
-                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -698,7 +697,7 @@ class MachineEditor {
                 let i = track.i + 1;
                 let w = track.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined);
+                    let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -720,7 +719,7 @@ class MachineEditor {
         this.container = document.getElementById("machine-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 2 });
-        this.layerMesh.material = this.game.ghostMaterial;
+        this.layerMesh.isVisible = false;
     }
     get machine() {
         return this.game.machine;
@@ -776,6 +775,9 @@ class MachineEditor {
         }
         if (this._selectedObject) {
             this._selectedObject.select();
+            if (this._selectedObject instanceof MachinePart) {
+                this.currentLayer = this._selectedObject.k;
+            }
         }
         this.updateFloatingElements();
     }
@@ -998,7 +1000,7 @@ class MachineEditor {
             this.container.classList.remove("left");
         }
     }
-    async editTrackInPlace(track, i, j, k, w, h, mirror) {
+    async editTrackInPlace(track, i, j, k, w, h, d, mirror) {
         if (!isFinite(i)) {
             i = track.i;
         }
@@ -1011,7 +1013,7 @@ class MachineEditor {
         if (!mirror) {
             mirror = track.mirror;
         }
-        let editedTrack = this.machine.trackFactory.createTrackWH(track.partName, i, j, k, w, h, mirror);
+        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, mirror);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -2480,8 +2482,22 @@ var baseRadius = 0.075;
 var tileWidth = 0.15;
 var tileHeight = 0.03;
 var tileDepth = 0.06;
+var radius = 0.014 * 1.2 / 2;
+var selectorHullShape = [];
+for (let i = 0; i < 6; i++) {
+    let a = i / 6 * 2 * Math.PI;
+    let cosa = Math.cos(a);
+    let sina = Math.sin(a);
+    selectorHullShape[i] = new BABYLON.Vector3(cosa * radius, sina * radius, 0);
+}
+class MachinePartSelectorMesh extends BABYLON.Mesh {
+    constructor(part) {
+        super("machine-part-selector");
+        this.part = part;
+    }
+}
 class MachinePart extends BABYLON.Mesh {
-    constructor(machine, _i, _j, _k, w = 1, h = 1, mirror) {
+    constructor(machine, _i, _j, _k, w = 1, h = 1, d = 1, mirror) {
         super("track", machine.game.scene);
         this.machine = machine;
         this._i = _i;
@@ -2489,6 +2505,7 @@ class MachinePart extends BABYLON.Mesh {
         this._k = _k;
         this.w = w;
         this.h = h;
+        this.d = d;
         this.mirror = mirror;
         this.partName = "machine-part";
         this.tracks = [];
@@ -2504,6 +2521,7 @@ class MachinePart extends BABYLON.Mesh {
         this.AABBMax = BABYLON.Vector3.Zero();
         this.xExtendable = false;
         this.yExtendable = false;
+        this.zExtendable = false;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.position.z = -this._k * tileDepth;
@@ -2613,6 +2631,19 @@ class MachinePart extends BABYLON.Mesh {
         });
         this.selectedMesh.parent = this;
         this.selectedMesh.isVisible = false;
+        let datas = [];
+        for (let n = 0; n < this.tracks.length; n++) {
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].trackpoints.map(p => { return p.position; }), closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let data = BABYLON.VertexData.ExtractFromMesh(tmp);
+            datas.push(data);
+            tmp.dispose();
+        }
+        this.selectorMesh = new MachinePartSelectorMesh(this);
+        this.selectorMesh.parent = this;
+        if (datas.length) {
+            Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
+        }
+        this.selectorMesh.visibility = 0;
         this.rebuildWireMeshes();
     }
     dispose() {
@@ -2706,10 +2737,10 @@ class MachinePart extends BABYLON.Mesh {
     }
 }
 var TrackNames = [
-    "ramp-1.1",
+    "ramp-1.1.1",
+    "ramp-1.1.2",
     "join",
     "split",
-    "rampX-1.1",
     "uturn-s",
     "uturn-l",
     "uturn-layer",
@@ -2724,36 +2755,28 @@ class MachinePartFactory {
     constructor(machine) {
         this.machine = machine;
     }
-    createTrackWH(trackname, i, j, k = 0, w, h, mirror) {
+    createTrackWHD(trackname, i, j, k = 0, w, h, d, mirror) {
         trackname = trackname.split("-")[0];
-        let wh = "";
+        let whd = "";
         if (isFinite(w)) {
-            wh += w.toFixed(0) + ".";
+            whd += w.toFixed(0) + ".";
         }
         if (isFinite(h)) {
-            wh += h.toFixed(0);
+            whd += h.toFixed(0) + ".";
         }
-        trackname += "-" + wh;
+        if (isFinite(d)) {
+            whd += d.toFixed(0) + ".";
+        }
+        whd = whd.substring(0, whd.length - 1);
+        trackname += "-" + whd;
         return this.createTrack(trackname, i, j, k, mirror);
     }
     createTrack(trackname, i, j, k = 0, mirror) {
-        if (trackname.startsWith("flat-")) {
-            let w = parseInt(trackname.split("-")[1]);
-            return new Ramp(this.machine, i, j, k, w, 0, mirror);
-        }
-        if (trackname.startsWith("flatX-")) {
-            let w = parseInt(trackname.split("-")[1]);
-            return new CrossingRamp(this.machine, i, j, k, w, 0, mirror);
-        }
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Ramp(this.machine, i, j, k, w, h, mirror);
-        }
-        if (trackname.startsWith("rampX-")) {
-            let w = parseInt(trackname.split("-")[1].split(".")[0]);
-            let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new CrossingRamp(this.machine, i, j, k, w, h, mirror);
+            let d = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirror);
         }
         if (trackname === "uturn-s") {
             return new UTurn(this.machine, i, j, k, mirror);
@@ -3254,7 +3277,7 @@ class DoubleLoop extends MachinePart {
 }
 class Elevator extends MachinePart {
     constructor(machine, i, j, k, h = 1, mirror) {
-        super(machine, i, j, k, 1, h, mirror);
+        super(machine, i, j, k, 1, h, 1, mirror);
         this.h = h;
         this.boxesCount = 4;
         this.rWheel = 0.015;
@@ -3498,7 +3521,7 @@ class FlatLoop extends MachinePart {
 }
 class Join extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 1, mirror);
         this.partName = "join";
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -3524,7 +3547,7 @@ class Join extends MachinePart {
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 2, 3, mirror);
+        super(machine, i, j, k, 2, 3, 1, mirror);
         this.partName = "loop";
         this.deserialize({
             points: [
@@ -3552,44 +3575,19 @@ class Loop extends MachinePart {
     }
 }
 class Ramp extends MachinePart {
-    constructor(machine, i, j, k, w = 1, h = 1, mirror) {
-        super(machine, i, j, k, w, h, mirror);
-        this.w = w;
-        this.h = h;
+    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirror) {
+        super(machine, i, j, k, w, h, d, mirror);
         this.xExtendable = true;
         this.yExtendable = true;
-        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0);
+        this.zExtendable = true;
+        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n, dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n, dir)
-        ];
-        if (mirror) {
-            this.mirrorTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-class CrossingRamp extends MachinePart {
-    constructor(machine, i, j, k, w = 1, h = 1, mirror) {
-        super(machine, i, j, k, w, h, mirror);
-        this.w = w;
-        this.h = h;
-        this.xExtendable = true;
-        this.yExtendable = true;
-        this.partName = "rampX-" + w.toFixed(0) + "." + h.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let nBank = new BABYLON.Vector3(0, Math.cos(15 / 180 * Math.PI), Math.sin(15 / 180 * Math.PI));
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), n.clone(), dir.clone(), 1.4, 1.4),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3((tileWidth * (this.w - 0.5) - tileWidth * 0.5) * 0.5, -tileHeight * this.h * 0.5, -0.03), nBank, dir.clone(), 1.4, 1.4),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), n.clone(), dir.clone(), 1.4, 1.4)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, -tileDepth * (this.d - 1)), n, dir)
         ];
         if (mirror) {
             this.mirrorTrackPointsInPlace();
@@ -3600,7 +3598,7 @@ class CrossingRamp extends MachinePart {
 /// <reference path="../machine/MachinePart.ts"/>
 class Snake extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 2, 1, mirror);
+        super(machine, i, j, k, 2, 1, 1, mirror);
         this.partName = "snake";
         this.deserialize({
             points: [
@@ -3617,7 +3615,7 @@ class Snake extends MachinePart {
 /// <reference path="../machine/MachinePart.ts"/>
 class Spiral extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 1, 3, mirror);
+        super(machine, i, j, k, 1, 3, 1, mirror);
         this.partName = "spiral";
         this.deserialize({
             points: [
@@ -3658,7 +3656,7 @@ class Spiral extends MachinePart {
 }
 class Split extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 1, 2, mirror);
+        super(machine, i, j, k, 1, 2, 1, mirror);
         this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
         this.pivotL = 0.025;
         this.reset = () => {
@@ -3826,7 +3824,7 @@ class Split extends MachinePart {
 }
 class UTurnLarge extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 2, 1, mirror);
+        super(machine, i, j, k, 2, 1, 1, mirror);
         this.partName = "uturn-l";
         this.deserialize({
             points: [
@@ -3854,7 +3852,7 @@ class UTurnLarge extends MachinePart {
 }
 class UTurn extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 1, mirror);
         this.partName = "uturn-s";
         this.deserialize({
             points: [
@@ -3877,7 +3875,7 @@ class UTurn extends MachinePart {
 }
 class UTurnLayer extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 1, mirror);
         this.partName = "uturn-layer";
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -3902,7 +3900,7 @@ class UTurnLayer extends MachinePart {
 }
 class UTurn2Layer extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 1, 1, mirror);
+        super(machine, i, j, k, 1, 1, 2, mirror);
         this.partName = "uturn-2layer";
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
@@ -3928,7 +3926,7 @@ class UTurn2Layer extends MachinePart {
 /// <reference path="../machine/MachinePart.ts"/>
 class Wave extends MachinePart {
     constructor(machine, i, j, k, mirror) {
-        super(machine, i, j, k, 2, 1, mirror);
+        super(machine, i, j, k, 2, 1, 1, mirror);
         this.partName = "wave";
         this.deserialize({
             points: [
