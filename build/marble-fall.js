@@ -3039,21 +3039,47 @@ class Track {
             let count = Math.round(dist / 0.003);
             count = Math.max(0, count);
             this.interpolatedPoints.push(trackPoint.position);
-            this.interpolatedNormals.push(trackPoint.normal);
             nextTrackPoint.summedLength = trackPoint.summedLength;
             for (let k = 1; k < count; k++) {
                 let amount = k / count;
                 let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
-                let normal = BABYLON.Vector3.CatmullRom(trackPoint.normal, trackPoint.normal, nextTrackPoint.normal, nextTrackPoint.normal, amount);
                 this.interpolatedPoints.push(point);
-                this.interpolatedNormals.push(normal);
                 nextTrackPoint.summedLength += BABYLON.Vector3.Distance(this.interpolatedPoints[this.interpolatedPoints.length - 2], this.interpolatedPoints[this.interpolatedPoints.length - 1]);
             }
             nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, this.interpolatedPoints[this.interpolatedPoints.length - 1]);
         }
         this.interpolatedPoints.push(this.trackpoints[this.trackpoints.length - 1].position);
-        this.interpolatedNormals.push(this.trackpoints[this.trackpoints.length - 1].normal);
         let N = this.interpolatedPoints.length;
+        let normalsForward = [];
+        let normalsBackward = [];
+        normalsForward.push(this.trackpoints[0].normal);
+        for (let i = 1; i < this.interpolatedPoints.length - 1; i++) {
+            let prevNormal = normalsForward[i - 1];
+            let point = this.interpolatedPoints[i];
+            let nextPoint = this.interpolatedPoints[i + 1];
+            let dir = nextPoint.subtract(point).normalize();
+            let n = prevNormal;
+            let right = BABYLON.Vector3.Cross(n, dir);
+            n = BABYLON.Vector3.Cross(dir, right).normalize();
+            normalsForward.push(n);
+        }
+        normalsForward.push(this.trackpoints[this.trackpoints.length - 1].normal);
+        normalsBackward[this.interpolatedPoints.length - 1] = this.trackpoints[this.trackpoints.length - 1].normal;
+        for (let i = this.interpolatedPoints.length - 2; i >= 1; i--) {
+            let prevNormal = normalsBackward[i + 1];
+            let point = this.interpolatedPoints[i];
+            let prevPoint = this.interpolatedPoints[i - 1];
+            let dir = prevPoint.subtract(point).normalize();
+            let n = prevNormal;
+            let right = BABYLON.Vector3.Cross(n, dir);
+            n = BABYLON.Vector3.Cross(dir, right).normalize();
+            normalsBackward[i] = n;
+        }
+        normalsBackward[0] = this.trackpoints[0].normal;
+        for (let i = 0; i < N; i++) {
+            let f = i / (N - 1);
+            this.interpolatedNormals.push(BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize());
+        }
         this.summedLength = [0];
         this.totalLength = 0;
         for (let i = 0; i < N - 1; i++) {
