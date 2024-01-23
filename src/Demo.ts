@@ -163,8 +163,8 @@ var demo3D: IMachineData = {
         { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirrorX: true, mirrorZ: false },
         { name: "ramp-4.4.1", i: 1, j: -4, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.3", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.0.2", i: 2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.3", i: 1, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.1.2", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: true },
     ],
 };

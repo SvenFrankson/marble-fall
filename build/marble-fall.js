@@ -348,9 +348,9 @@ var demo3D = {
         { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirrorX: true, mirrorZ: false },
         { name: "ramp-4.4.1", i: 1, j: -4, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.3", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.0.2", i: 2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.3", i: 1, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.1.2", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: true },
     ],
 };
 class HelperShape {
@@ -530,9 +530,16 @@ class MachineEditor {
         this.pointerMove = (event) => {
             if (this.draggedObject) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    return mesh === this.layerMesh;
+                    if (mesh instanceof MachinePartSelectorMesh) {
+                        if (mesh.part != this.draggedObject) {
+                            return true;
+                        }
+                    }
+                    if (mesh === this.layerMesh) {
+                        return true;
+                    }
                 });
-                if (pick.hit) {
+                if (pick.hit && pick.pickedMesh === this.layerMesh) {
                     let point = pick.pickedPoint.add(this._dragOffset);
                     if (this.draggedObject instanceof MachinePart) {
                         let i = Math.round(point.x / tileWidth);
@@ -555,6 +562,22 @@ class MachineEditor {
                         }
                     }
                 }
+                else if (pick.hit && pick.pickedMesh instanceof MachinePartSelectorMesh && this.draggedObject instanceof MachinePart) {
+                    // Not working
+                    let n = pick.getNormal(true);
+                    if (Math.abs(n.x) > 0) {
+                        let point = pick.pickedPoint;
+                        let i = Math.round(point.x / tileWidth);
+                        let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
+                        if (i != this.draggedObject.i || j != this.draggedObject.j) {
+                            this.draggedObject.setI(i);
+                            this.draggedObject.setJ(j);
+                            this.draggedObject.setK(pick.pickedMesh.part.k);
+                            this.draggedObject.setIsVisible(true);
+                            this.updateFloatingElements();
+                        }
+                    }
+                }
                 else {
                     this.draggedObject.setIsVisible(false);
                 }
@@ -574,10 +597,6 @@ class MachineEditor {
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof MachinePart) {
                     let draggedTrack = this.draggedObject;
-                    let i = Math.round(point.x / tileWidth);
-                    let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
-                    draggedTrack.setI(i);
-                    draggedTrack.setJ(j);
                     if (this.machine.parts.indexOf(draggedTrack) === -1) {
                         this.machine.parts.push(draggedTrack);
                     }
@@ -819,6 +838,23 @@ class MachineEditor {
             this._selectedObject.select();
             if (this._selectedObject instanceof MachinePart) {
                 this.currentLayer = this._selectedObject.k;
+                if (this._selectedObject instanceof Ramp) {
+                    console.log("Ramp " + this._selectedObject.i + " " + this._selectedObject.j + " " + this._selectedObject.k);
+                    console.log("origin");
+                    console.log(this._selectedObject.getOrigin());
+                    let origin = BABYLON.MeshBuilder.CreateBox("test", { size: 0.02 });
+                    origin.position.x = this._selectedObject.getOrigin().i * tileWidth - 0.5 * tileWidth;
+                    origin.position.y = -this._selectedObject.getOrigin().j * tileHeight;
+                    origin.position.z = -this._selectedObject.getOrigin().k * tileDepth;
+                    setTimeout(() => { origin.dispose(); }, 3000);
+                    console.log("destination");
+                    console.log(this._selectedObject.getDestination());
+                    let destination = BABYLON.MeshBuilder.CreateBox("test", { size: 0.02 });
+                    destination.position.x = this._selectedObject.getDestination().i * tileWidth - 0.5 * tileWidth;
+                    destination.position.y = -this._selectedObject.getDestination().j * tileHeight;
+                    destination.position.z = -this._selectedObject.getDestination().k * tileDepth;
+                    setTimeout(() => { destination.dispose(); }, 3000);
+                }
             }
         }
         this.updateFloatingElements();
@@ -3677,6 +3713,22 @@ class Ramp extends MachinePart {
             this.mirrorZTrackPointsInPlace();
         }
         this.generateWires();
+    }
+    static CreateFromOriginDestination(origin, dest) {
+    }
+    getOrigin() {
+        return {
+            i: this.i,
+            j: this.mirrorX ? this.j + this.h : this.j,
+            k: this.mirrorZ ? this.k + (this.d - 1) : this.k
+        };
+    }
+    getDestination() {
+        return {
+            i: this.i + this.w,
+            j: this.mirrorX ? this.j : this.j + this.h,
+            k: this.mirrorZ ? this.k : this.k + (this.d - 1)
+        };
     }
 }
 /// <reference path="../machine/MachinePart.ts"/>

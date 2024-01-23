@@ -34,4 +34,24 @@ class Ramp extends MachinePart {
 
         this.generateWires();
     }
+
+    public static CreateFromOriginDestination(origin: Nabu.IJK, dest: Nabu.IJK) {
+
+    }
+
+    public getOrigin(): Nabu.IJK {
+        return {
+            i: this.i,
+            j: this.mirrorX ? this.j + this.h : this.j,
+            k: this.mirrorZ ? this.k + (this.d - 1) : this.k
+        }
+    }
+
+    public getDestination(): Nabu.IJK {
+        return {
+            i: this.i + this.w,
+            j: this.mirrorX ? this.j : this.j + this.h,
+            k: this.mirrorZ ? this.k : this.k + (this.d - 1)
+        }
+    }
 }

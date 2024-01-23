@@ -110,6 +110,23 @@ class MachineEditor {
             this._selectedObject.select();
             if (this._selectedObject instanceof MachinePart) {
                 this.currentLayer = this._selectedObject.k;
+                if (this._selectedObject instanceof Ramp) {
+                    console.log("Ramp " + this._selectedObject.i + " " + this._selectedObject.j + " " + this._selectedObject.k)
+                    console.log("origin");
+                    console.log(this._selectedObject.getOrigin());
+                    let origin = BABYLON.MeshBuilder.CreateBox("test", { size: 0.02 });
+                    origin.position.x = this._selectedObject.getOrigin().i * tileWidth - 0.5 * tileWidth;
+                    origin.position.y = - this._selectedObject.getOrigin().j * tileHeight;
+                    origin.position.z = - this._selectedObject.getOrigin().k * tileDepth;
+                    setTimeout(() => { origin.dispose() }, 3000);
+                    console.log("destination");
+                    console.log(this._selectedObject.getDestination());
+                    let destination = BABYLON.MeshBuilder.CreateBox("test", { size: 0.02 });
+                    destination.position.x = this._selectedObject.getDestination().i * tileWidth - 0.5 * tileWidth;
+                    destination.position.y = - this._selectedObject.getDestination().j * tileHeight;
+                    destination.position.z = - this._selectedObject.getDestination().k * tileDepth;
+                    setTimeout(() => { destination.dispose() }, 3000);
+                }
             }
         }
         this.updateFloatingElements();
@@ -454,11 +471,18 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    return mesh === this.layerMesh;
+                    if (mesh instanceof MachinePartSelectorMesh) {
+                        if (mesh.part != this.draggedObject) {
+                            return true;
+                        }
+                    }
+                    if (mesh === this.layerMesh) {
+                        return true;
+                    }
                 }
             )
     
-            if (pick.hit) {
+            if (pick.hit && pick.pickedMesh === this.layerMesh) {
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);
@@ -478,6 +502,22 @@ class MachineEditor {
                     this.updateFloatingElements();
                     if (!this.machine.playing) {
                         this.draggedObject.reset();
+                    }
+                }
+            }
+            else if (pick.hit && pick.pickedMesh instanceof MachinePartSelectorMesh && this.draggedObject instanceof MachinePart) {
+                // Not working
+                let n = pick.getNormal(true);
+                if (Math.abs(n.x) > 0) {
+                    let point = pick.pickedPoint
+                    let i = Math.round(point.x / tileWidth);
+                    let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
+                    if (i != this.draggedObject.i || j != this.draggedObject.j) {
+                        this.draggedObject.setI(i);
+                        this.draggedObject.setJ(j);
+                        this.draggedObject.setK(pick.pickedMesh.part.k);
+                        this.draggedObject.setIsVisible(true);
+                        this.updateFloatingElements();
                     }
                 }
             }
@@ -506,10 +546,6 @@ class MachineEditor {
             let point = pick.pickedPoint.add(this._dragOffset);
             if (this.draggedObject instanceof MachinePart) {
                 let draggedTrack = this.draggedObject as MachinePart;
-                let i = Math.round(point.x / tileWidth);
-                let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
-                draggedTrack.setI(i);
-                draggedTrack.setJ(j);
                 if (this.machine.parts.indexOf(draggedTrack) === -1) {
                     this.machine.parts.push(draggedTrack);
                 }
