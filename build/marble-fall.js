@@ -181,7 +181,7 @@ class Ball extends BABYLON.Mesh {
             this.strReaction += reactions.length() * 0.02;
             this.velocity.subtractInPlace(canceledSpeed);
             this.position.addInPlace(forcedDisplacement);
-            let friction = this.velocity.scale(-1).scaleInPlace(0.001);
+            let friction = this.velocity.scale(-1).scaleInPlace(0.002);
             let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
@@ -1735,6 +1735,10 @@ class Game {
         this.blueMaterial = new BABYLON.StandardMaterial("ghost-material");
         this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
+        this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.uiMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.uiMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
         this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
         this.steelMaterial.metallic = 1.0;
@@ -1904,6 +1908,13 @@ class Game {
         //let logo = new Logo();
         //logo.initialize();
         this.setContext(GameMode.CreateMode);
+        // test
+        let up = new Arrow("test-arrow", this, 0.05, BABYLON.Vector3.Up());
+        up.position.y = 0.05;
+        up.instantiate();
+        let right = new Arrow("test-arrow", this, 0.05, BABYLON.Vector3.Right());
+        right.position.x = 0.05;
+        right.instantiate();
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -4655,6 +4666,33 @@ class Wave extends MachinePart {
             this.mirrorXTrackPointsInPlace();
         }
         this.generateWires();
+    }
+}
+class Arrow extends BABYLON.Mesh {
+    constructor(name, game, size = 0.1, dir) {
+        super(name);
+        this.game = game;
+        this.size = size;
+        this.dir = dir;
+        this._update = () => {
+            let z = this.position.subtract(this.game.camera.globalPosition);
+            Mummu.QuaternionFromYZAxisToRef(this.dir, z, this.rotationQuaternion);
+        };
+        this.scaling.copyFromFloats(this.size, this.size, this.size);
+        this.material = this.game.uiMaterial;
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+    }
+    async instantiate() {
+        let datas = await this.game.vertexDataLoader.get("./meshes/arrow.babylon");
+        if (datas && datas[0]) {
+            let data = datas[0];
+            data.applyToMesh(this);
+        }
+        this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+    dispose() {
+        super.dispose();
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 }
 var FloatingElementAnchor;
