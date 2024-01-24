@@ -353,6 +353,26 @@ var demo3D = {
         { name: "ramp-3.1.2", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: true },
     ],
 };
+var demoLoop = {
+    balls: [
+        { x: 0.39808697121492503, y: 0.041276811477638765 },
+        { x: 0.42178813750112076, y: 0.03490450521423004 },
+        { x: 0.4479109908664016, y: 0.030144576207480372 },
+        { x: 0.4319101875212412, y: 0.35092749838770887 },
+        { x: 0.37699677269433557, y: 0.04633268053343625 },
+    ],
+    parts: [
+        { name: "uturnlayer-1.3", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-2.2", i: 1, j: -10, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.1.2", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 2, j: -11, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "elevator-11", i: 3, j: -12, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop-2.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.10.1", i: 2, j: -9, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 6, j: -5, k: 1, mirrorX: true, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -822,7 +842,7 @@ class MachineEditor {
         };
         this.container = document.getElementById("machine-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
-        this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 2 });
+        this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
     }
     get machine() {
@@ -1819,7 +1839,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(demo3D);
+                this.machine.deserialize(demoLoop);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -3143,8 +3163,8 @@ var TrackNames = [
     "split",
     "uturn-s",
     "uturn-l",
-    "uturnlayer",
-    "uturn-2layer",
+    "uturnlayer-1.2",
+    "loop-1.2",
     "loop",
     "wave",
     "snake",
@@ -3188,6 +3208,11 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("loop-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Loop2(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirrorX);
@@ -3526,11 +3551,13 @@ class Track {
             }
         }
         angles.push(0);
-        for (let n = 0; n < 100; n++) {
+        for (let n = 0; n < 50; n++) {
             let newAngles = [...angles];
             for (let i = 1; i < N - 1; i++) {
-                let a = angles[i - 1] * 2 + angles[i] + angles[i + 1] * 2;
-                newAngles[i] = a / 5;
+                let aPrev = angles[i - 1];
+                let a = angles[i];
+                let aNext = angles[i + 1];
+                newAngles[i] = (aPrev + a + aNext) / 3;
             }
             angles = newAngles;
         }
@@ -3905,6 +3932,55 @@ class Loop extends MachinePart {
         });
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
+        }
+        this.generateWires();
+    }
+}
+class Loop2 extends MachinePart {
+    constructor(machine, i, j, k, w = 1, d = 1, mirrorX, mirrorZ) {
+        super(machine, i, j, k, {
+            w: w,
+            d: d,
+            mirrorX: mirrorX,
+            mirrorZ: mirrorZ,
+        });
+        this.xExtendable = true;
+        this.zExtendable = true;
+        this.xMirrorable = true;
+        this.zMirrorable = true;
+        this.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        this.tracks[0].trackpoints = [
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir)
+        ];
+        let r = tileWidth * 0.5 * w * 0.9;
+        for (let n = 0; n <= 8; n++) {
+            let a = 2 * Math.PI * n / 8;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r * 0.9, r - cosa * r, -tileDepth * (this.d - 1) * (n + 1) / 10)));
+        }
+        this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), 0, -tileDepth * (this.d - 1)), dir));
+        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone(); });
+        let f = 3;
+        for (let n = 0; n < 3; n++) {
+            let smoothedPoints = [...points].map(p => { return p.clone(); });
+            for (let i = 1; i < smoothedPoints.length - 1; i++) {
+                smoothedPoints[i].copyFrom(points[i - 1]).addInPlace(points[i].scale(f)).addInPlace(points[i + 1]).scaleInPlace(1 / (2 + f));
+            }
+            points = smoothedPoints;
+        }
+        for (let i = 0; i < points.length; i++) {
+            this.tracks[0].trackpoints[i].position.copyFrom(points[i]);
+        }
+        if (mirrorX) {
+            this.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            this.mirrorZTrackPointsInPlace();
         }
         this.generateWires();
     }
@@ -4325,7 +4401,6 @@ class UTurn extends MachinePart {
 }
 class UTurnLayer extends MachinePart {
     constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
-        console.log("- " + mirrorX);
         super(machine, i, j, k, {
             h: h,
             d: d,
@@ -4342,14 +4417,15 @@ class UTurnLayer extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         let r = tileDepth * (d - 1) * 0.5;
+        let x0 = -tileWidth * 0.5 + 2 * Math.PI * r / 6;
         let r2 = r / Math.SQRT2;
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r + r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r, 0, -r)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(r2, 0, -r - r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, 0, -2 * r)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + 0, 0, 0)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + r2, 0, -r + r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + r, 0, -r)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + r2, 0, -r - r2)),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + 0, 0, -2 * r)),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), new BABYLON.Vector3(-1, 0, 0)),
         ];
         for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {

@@ -135,7 +135,7 @@ class MachineEditor {
     constructor(public game: Game) {
         this.container = document.getElementById("machine-menu") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
-        this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 2 });
+        this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
     }
 

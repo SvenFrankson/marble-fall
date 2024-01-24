@@ -5,8 +5,8 @@ var TrackNames = [
     "split",
     "uturn-s",
     "uturn-l",
-    "uturnlayer",
-    "uturn-2layer",
+    "uturnlayer-1.2",
+    "loop-1.2",
     "loop",
     "wave",
     "snake",
@@ -54,6 +54,11 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("loop-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Loop2(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
         }
         if (trackname === "loop") {
             return new Loop(this.machine, i, j, k, mirrorX);

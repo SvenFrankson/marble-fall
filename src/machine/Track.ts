@@ -236,11 +236,14 @@ class Track {
         }
         angles.push(0);
 
-        for (let n = 0; n < 100; n++) {
+        for (let n = 0; n < 50; n++) {
             let newAngles = [...angles];
             for (let i = 1; i < N - 1; i++) {
-                let a = angles[i - 1] * 2 + angles[i] + angles[i + 1] * 2;
-                newAngles[i] = a / 5;
+                let aPrev = angles[i - 1];
+                let a = angles[i];
+                let aNext = angles[i + 1];
+
+                newAngles[i] = (aPrev + a + aNext) / 3;
             }
             angles = newAngles;
         }
