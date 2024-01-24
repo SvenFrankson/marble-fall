@@ -760,6 +760,66 @@ class MachineEditor {
                 this.setSelectedObject(editedTrack);
             }
         };
+        this._onOriginIPlus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
+            }
+        };
+        this._onOriginIMinus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: -1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
+            }
+        };
+        this._onOriginJPlus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 1, k: 0 }, { i: 0, j: 0, k: 0 }));
+            }
+        };
+        this._onOriginJMinus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: -1, k: 0 }, { i: 0, j: 0, k: 0 }));
+            }
+        };
+        this._onOriginKPlus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 1 }, { i: 0, j: 0, k: 0 }));
+            }
+        };
+        this._onOriginKMinus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: -1 }, { i: 0, j: 0, k: 0 }));
+            }
+        };
+        this._onDestinationIPlus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 1, j: 0, k: 0 }));
+            }
+        };
+        this._onDestinationIMinus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: -1, j: 0, k: 0 }));
+            }
+        };
+        this._onDestinationJPlus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 1, k: 0 }));
+            }
+        };
+        this._onDestinationJMinus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: -1, k: 0 }));
+            }
+        };
+        this._onDestinationKPlus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: 1 }));
+            }
+        };
+        this._onDestinationKMinus = async () => {
+            if (this.selectedObject instanceof Ramp) {
+                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: -1 }));
+            }
+        };
         this.container = document.getElementById("machine-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 2 });
@@ -838,23 +898,6 @@ class MachineEditor {
             this._selectedObject.select();
             if (this._selectedObject instanceof MachinePart) {
                 this.currentLayer = this._selectedObject.k;
-                if (this._selectedObject instanceof Ramp) {
-                    console.log("Ramp " + this._selectedObject.i + " " + this._selectedObject.j + " " + this._selectedObject.k);
-                    console.log("origin");
-                    console.log(this._selectedObject.getOrigin());
-                    let origin = BABYLON.MeshBuilder.CreateBox("test", { size: 0.02 });
-                    origin.position.x = this._selectedObject.getOrigin().i * tileWidth - 0.5 * tileWidth;
-                    origin.position.y = -this._selectedObject.getOrigin().j * tileHeight;
-                    origin.position.z = -this._selectedObject.getOrigin().k * tileDepth;
-                    setTimeout(() => { origin.dispose(); }, 3000);
-                    console.log("destination");
-                    console.log(this._selectedObject.getDestination());
-                    let destination = BABYLON.MeshBuilder.CreateBox("test", { size: 0.02 });
-                    destination.position.x = this._selectedObject.getDestination().i * tileWidth - 0.5 * tileWidth;
-                    destination.position.y = -this._selectedObject.getDestination().j * tileHeight;
-                    destination.position.z = -this._selectedObject.getDestination().k * tileDepth;
-                    setTimeout(() => { destination.dispose(); }, 3000);
-                }
             }
         }
         this.updateFloatingElements();
@@ -934,6 +977,26 @@ class MachineEditor {
                     this.mirrorXTrackInPlace(this.selectedObject).then(track => {
                         this.setSelectedObject(track);
                     });
+                }
+            }
+            else if (event.code === "Numpad4") {
+                if (this.selectedObject && this.selectedObject instanceof Ramp) {
+                    this._onOriginIMinus();
+                }
+            }
+            else if (event.code === "Numpad6") {
+                if (this.selectedObject && this.selectedObject instanceof Ramp) {
+                    this._onOriginIPlus();
+                }
+            }
+            else if (event.code === "Numpad2") {
+                if (this.selectedObject && this.selectedObject instanceof Ramp) {
+                    this._onOriginJPlus();
+                }
+            }
+            else if (event.code === "Numpad8") {
+                if (this.selectedObject && this.selectedObject instanceof Ramp) {
+                    this._onOriginJMinus();
                 }
             }
         });
@@ -1053,6 +1116,104 @@ class MachineEditor {
             </svg>
         `;
         this.DPlusButton.onclick = this._onDPlus;
+        // Ramp Origin UI
+        this.floatingElementOrigin = FloatingElement.Create(this.game);
+        this.floatingElementOrigin.style.width = "calc(var(--button-xs-size) * 3.5)";
+        this.floatingElementOrigin.anchor = FloatingElementAnchor.CenterMiddle;
+        this.originKMinusButton = this._createButton("machine-editor-origin-k-minus", this.floatingElementOrigin);
+        this.originKMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+            <path d="M10 70 L50 20 L90 70 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.originKMinusButton.onclick = this._onOriginKMinus;
+        this.originJMinusButton = this._createButton("machine-editor-origin-j-minus", this.floatingElementOrigin);
+        this.originJMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.originJMinusButton.onclick = this._onOriginJMinus;
+        this._createButton("", this.floatingElementOrigin, true);
+        this.originIMinusButton = this._createButton("machine-editor-origin-i-minus", this.floatingElementOrigin);
+        this.originIMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.originIMinusButton.onclick = this._onOriginIMinus;
+        this._createButton("", this.floatingElementOrigin, true);
+        this.originIPlusButton = this._createButton("machine-editor-origin-i-plus", this.floatingElementOrigin);
+        this.originIPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.originIPlusButton.onclick = this._onOriginIPlus;
+        this.originKPlusButton = this._createButton("machine-editor-origin-k-plus", this.floatingElementOrigin);
+        this.originKPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M10 30 L50 80 L90 30 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.originKPlusButton.onclick = this._onOriginKPlus;
+        this.originJPlusButton = this._createButton("machine-editor-origin-j-plus", this.floatingElementOrigin);
+        this.originJPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.originJPlusButton.onclick = this._onOriginJPlus;
+        this._createButton("", this.floatingElementOrigin, true);
+        // Ramp Destination UI
+        this.floatingElementDestination = FloatingElement.Create(this.game);
+        this.floatingElementDestination.style.width = "calc(var(--button-xs-size) * 3.5)";
+        this.floatingElementDestination.anchor = FloatingElementAnchor.CenterMiddle;
+        this.destinationKMinusButton = this._createButton("machine-editor-destination-k-minus", this.floatingElementDestination);
+        this.destinationKMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+            <path d="M10 70 L50 20 L90 70 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.destinationKMinusButton.onclick = this._onDestinationKMinus;
+        this.destinationJMinusButton = this._createButton("machine-editor-destination-j-minus", this.floatingElementDestination);
+        this.destinationJMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.destinationJMinusButton.onclick = this._onDestinationJMinus;
+        this._createButton("", this.floatingElementDestination, true);
+        this.destinationIMinusButton = this._createButton("machine-editor-destination-i-minus", this.floatingElementDestination);
+        this.destinationIMinusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.destinationIMinusButton.onclick = this._onDestinationIMinus;
+        this._createButton("", this.floatingElementDestination, true);
+        this.destinationIPlusButton = this._createButton("machine-editor-destination-i-plus", this.floatingElementDestination);
+        this.destinationIPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.destinationIPlusButton.onclick = this._onDestinationIPlus;
+        this.destinationKPlusButton = this._createButton("machine-editor-destination-k-plus", this.floatingElementDestination);
+        this.destinationKPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M10 30 L50 80 L90 30 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.destinationKPlusButton.onclick = this._onDestinationKPlus;
+        this.destinationJPlusButton = this._createButton("machine-editor-destination-j-plus", this.floatingElementDestination);
+        this.destinationJPlusButton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.destinationJPlusButton.onclick = this._onDestinationJPlus;
+        this._createButton("", this.floatingElementDestination, true);
         this.floatingButtons = [
             this.HPlusTopButton,
             this.HMinusTopButton,
@@ -1066,15 +1227,32 @@ class MachineEditor {
             this.tileMirrorXButton,
             this.tileMirrorZButton,
             this.DPlusButton,
-            this.DMinusButton
+            this.DMinusButton,
+            this.originIPlusButton,
+            this.originIMinusButton,
+            this.originJPlusButton,
+            this.originJMinusButton,
+            this.originKPlusButton,
+            this.originKMinusButton,
+            this.destinationIPlusButton,
+            this.destinationIMinusButton,
+            this.destinationJPlusButton,
+            this.destinationJMinusButton,
+            this.destinationKPlusButton,
+            this.destinationKMinusButton,
         ];
         this.updateFloatingElements();
     }
-    _createButton(id, parent) {
+    _createButton(id, parent, spacer = false) {
         let button = document.createElement("button");
-        button.id = id;
+        if (id != "") {
+            button.id = id;
+        }
         button.classList.add("btn");
         button.classList.add("xs");
+        if (spacer) {
+            button.style.visibility = "hidden";
+        }
         parent.appendChild(button);
         return button;
     }
@@ -1128,6 +1306,28 @@ class MachineEditor {
         this.machine.generateBaseMesh();
         return editedTrack;
     }
+    async editRampOriginDestInPlace(ramp, dOrigin, dDestination) {
+        let origin = ramp.getOrigin();
+        origin.i += dOrigin.i;
+        origin.j += dOrigin.j;
+        origin.k += dOrigin.k;
+        let destination = ramp.getDestination();
+        destination.i += dDestination.i;
+        destination.j += dDestination.j;
+        destination.k += dDestination.k;
+        if (origin.i >= destination.i) {
+            return ramp;
+        }
+        let editedRamp = Ramp.CreateFromOriginDestination(origin, destination, this.machine);
+        ramp.dispose();
+        this.machine.parts.push(editedRamp);
+        editedRamp.setIsVisible(true);
+        editedRamp.generateWires();
+        await editedRamp.instantiate();
+        editedRamp.recomputeAbsolutePath();
+        this.machine.generateBaseMesh();
+        return editedRamp;
+    }
     async mirrorXTrackInPlace(track) {
         let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
         track.dispose();
@@ -1174,33 +1374,59 @@ class MachineEditor {
                 this.floatingElementRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yCenter, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
                 this.floatingElementBottom.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
                 this.floatingElementLeft.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xLeft, this.selectedObject.position.y + yCenter, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
-                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yTop, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
-                this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
                 this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
                 this.floatingElementBottomLeft.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xLeft, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
-                if (this.selectedObject.xExtendable) {
-                    this.WMinusRightButton.style.display = "";
-                    this.WPlusRightButton.style.display = "";
-                    this.WMinusLeftButton.style.display = "";
-                    this.WPlusLeftButton.style.display = "";
+                if (this.selectedObject instanceof Ramp) {
+                    let origin = this.selectedObject.getOrigin();
+                    this.floatingElementOrigin.setTarget(new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth));
+                    let destination = this.selectedObject.getDestination();
+                    this.floatingElementDestination.setTarget(new BABYLON.Vector3(destination.i * tileWidth - 0.5 * tileWidth, -destination.j * tileHeight, -destination.k * tileDepth));
+                    this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                    this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
                 }
-                if (this.selectedObject.yExtendable) {
-                    this.HMinusTopButton.style.display = "";
-                    this.HPlusTopButton.style.display = "";
-                    this.HPlusBottomButton.style.display = "";
-                    this.HMinusBottomButton.style.display = "";
+                else {
+                    this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xRight, this.selectedObject.position.y + yTop, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
+                    this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
                 }
-                if (this.selectedObject.zExtendable) {
-                    this.DPlusButton.style.display = "";
-                    this.DMinusButton.style.display = "";
+                if (this.selectedObject instanceof Ramp) {
+                    this.originIPlusButton.style.display = "";
+                    this.originIMinusButton.style.display = "";
+                    this.originJPlusButton.style.display = "";
+                    this.originJMinusButton.style.display = "";
+                    this.originKPlusButton.style.display = "";
+                    this.originKMinusButton.style.display = "";
+                    this.destinationIPlusButton.style.display = "";
+                    this.destinationIMinusButton.style.display = "";
+                    this.destinationJPlusButton.style.display = "";
+                    this.destinationJMinusButton.style.display = "";
+                    this.destinationKPlusButton.style.display = "";
+                    this.destinationKMinusButton.style.display = "";
+                }
+                else {
+                    if (this.selectedObject.xExtendable) {
+                        this.WMinusRightButton.style.display = "";
+                        this.WPlusRightButton.style.display = "";
+                        this.WMinusLeftButton.style.display = "";
+                        this.WPlusLeftButton.style.display = "";
+                    }
+                    if (this.selectedObject.yExtendable) {
+                        this.HMinusTopButton.style.display = "";
+                        this.HPlusTopButton.style.display = "";
+                        this.HPlusBottomButton.style.display = "";
+                        this.HMinusBottomButton.style.display = "";
+                    }
+                    if (this.selectedObject.zExtendable) {
+                        this.DPlusButton.style.display = "";
+                        this.DMinusButton.style.display = "";
+                    }
+                    if (this.selectedObject.xMirrorable) {
+                        this.tileMirrorXButton.style.display = "";
+                    }
+                    if (this.selectedObject.zMirrorable) {
+                        this.tileMirrorZButton.style.display = "";
+                    }
                 }
                 this.deletebutton.style.display = "";
-                if (this.selectedObject.xMirrorable) {
-                    this.tileMirrorXButton.style.display = "";
-                }
-                if (this.selectedObject.zMirrorable) {
-                    this.tileMirrorZButton.style.display = "";
-                }
             }
         }
     }
@@ -3714,20 +3940,89 @@ class Ramp extends MachinePart {
         }
         this.generateWires();
     }
-    static CreateFromOriginDestination(origin, dest) {
+    static CreateFromOriginDestination(origin, dest, machine) {
+        let i = Math.min(origin.i, dest.i);
+        let j = Math.min(origin.j, dest.j);
+        let k = Math.min(origin.k, dest.k);
+        let w = dest.i - origin.i;
+        let h = Math.abs(dest.j - origin.j);
+        let d = Math.abs(dest.k - origin.k) + 1;
+        let mirrorX = dest.j < origin.j;
+        let mirrorZ = false;
+        if (mirrorX) {
+            if (origin.k < dest.k) {
+                mirrorZ = true;
+            }
+        }
+        else {
+            if (origin.k > dest.k) {
+                mirrorZ = true;
+            }
+        }
+        return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
     }
     getOrigin() {
+        let i = this.i;
+        let j;
+        if (this.mirrorX) {
+            j = this.j + this.h;
+        }
+        else {
+            j = this.j;
+        }
+        let k;
+        if (this.mirrorZ) {
+            if (this.mirrorX) {
+                k = this.k;
+            }
+            else {
+                k = this.k + this.d - 1;
+            }
+        }
+        else {
+            if (this.mirrorX) {
+                k = this.k + this.d - 1;
+            }
+            else {
+                k = this.k;
+            }
+        }
         return {
-            i: this.i,
-            j: this.mirrorX ? this.j + this.h : this.j,
-            k: this.mirrorZ ? this.k + (this.d - 1) : this.k
+            i: i,
+            j: j,
+            k: k
         };
     }
     getDestination() {
+        let i = this.i + this.w;
+        let j;
+        if (!this.mirrorX) {
+            j = this.j + this.h;
+        }
+        else {
+            j = this.j;
+        }
+        let k;
+        if (this.mirrorZ) {
+            if (this.mirrorX) {
+                k = this.k + this.d - 1;
+            }
+            else {
+                k = this.k;
+            }
+        }
+        else {
+            if (this.mirrorX) {
+                k = this.k;
+            }
+            else {
+                k = this.k + this.d - 1;
+            }
+        }
         return {
-            i: this.i + this.w,
-            j: this.mirrorX ? this.j : this.j + this.h,
-            k: this.mirrorZ ? this.k : this.k + (this.d - 1)
+            i: i,
+            j: j,
+            k: k
         };
     }
 }
@@ -4098,13 +4393,14 @@ class Wave extends MachinePart {
 }
 var FloatingElementAnchor;
 (function (FloatingElementAnchor) {
-    FloatingElementAnchor[FloatingElementAnchor["BottomCenter"] = 0] = "BottomCenter";
-    FloatingElementAnchor[FloatingElementAnchor["LeftMiddle"] = 1] = "LeftMiddle";
-    FloatingElementAnchor[FloatingElementAnchor["TopCenter"] = 2] = "TopCenter";
-    FloatingElementAnchor[FloatingElementAnchor["RightMiddle"] = 3] = "RightMiddle";
-    FloatingElementAnchor[FloatingElementAnchor["LeftBottom"] = 4] = "LeftBottom";
-    FloatingElementAnchor[FloatingElementAnchor["LeftTop"] = 5] = "LeftTop";
-    FloatingElementAnchor[FloatingElementAnchor["RightTop"] = 6] = "RightTop";
+    FloatingElementAnchor[FloatingElementAnchor["CenterMiddle"] = 0] = "CenterMiddle";
+    FloatingElementAnchor[FloatingElementAnchor["BottomCenter"] = 1] = "BottomCenter";
+    FloatingElementAnchor[FloatingElementAnchor["LeftMiddle"] = 2] = "LeftMiddle";
+    FloatingElementAnchor[FloatingElementAnchor["TopCenter"] = 3] = "TopCenter";
+    FloatingElementAnchor[FloatingElementAnchor["RightMiddle"] = 4] = "RightMiddle";
+    FloatingElementAnchor[FloatingElementAnchor["LeftBottom"] = 5] = "LeftBottom";
+    FloatingElementAnchor[FloatingElementAnchor["LeftTop"] = 6] = "LeftTop";
+    FloatingElementAnchor[FloatingElementAnchor["RightTop"] = 7] = "RightTop";
 })(FloatingElementAnchor || (FloatingElementAnchor = {}));
 class FloatingElement extends HTMLElement {
     constructor() {
@@ -4126,6 +4422,10 @@ class FloatingElement extends HTMLElement {
             let screenPos = BABYLON.Vector3.Project(p, BABYLON.Matrix.Identity(), this.game.scene.getTransformMatrix(), this.game.camera.viewport.toGlobal(1, 1));
             let dLeft = 0;
             let dBottom = 0;
+            if (this.anchor === FloatingElementAnchor.CenterMiddle) {
+                dLeft = -0.5 * this.clientWidth;
+                dBottom = -0.5 * this.clientHeight;
+            }
             if (this.anchor === FloatingElementAnchor.TopCenter) {
                 dLeft = -0.5 * this.clientWidth;
                 dBottom = -this.clientHeight - this.anchorMargin;

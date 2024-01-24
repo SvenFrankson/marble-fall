@@ -4,6 +4,8 @@ interface IMeshWithGroundWidth {
 }
 
 enum FloatingElementAnchor {
+    CenterMiddle,
+
     BottomCenter,
     LeftMiddle,
     TopCenter,
@@ -91,6 +93,10 @@ class FloatingElement extends HTMLElement {
         );
         let dLeft = 0;
         let dBottom = 0;
+        if (this.anchor === FloatingElementAnchor.CenterMiddle) {
+            dLeft = - 0.5 * this.clientWidth;
+            dBottom = - 0.5 * this.clientHeight;
+        }
         if (this.anchor === FloatingElementAnchor.TopCenter) {
             dLeft = - 0.5 * this.clientWidth;
             dBottom = - this.clientHeight - this.anchorMargin;

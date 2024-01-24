@@ -35,23 +35,91 @@ class Ramp extends MachinePart {
         this.generateWires();
     }
 
-    public static CreateFromOriginDestination(origin: Nabu.IJK, dest: Nabu.IJK) {
-
+    public static CreateFromOriginDestination(origin: Nabu.IJK, dest: Nabu.IJK, machine: Machine): Ramp {
+        let i = Math.min(origin.i, dest.i);
+        let j = Math.min(origin.j, dest.j);
+        let k = Math.min(origin.k, dest.k);
+        let w = dest.i - origin.i;
+        let h = Math.abs(dest.j - origin.j);
+        let d = Math.abs(dest.k - origin.k) + 1;
+        let mirrorX = dest.j < origin.j;
+        let mirrorZ = false;
+        if (mirrorX) {
+            if (origin.k < dest.k) {
+                mirrorZ = true;
+            }
+        }
+        else {
+            if (origin.k > dest.k) {
+                mirrorZ = true;
+            }
+        }
+        return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
     }
 
     public getOrigin(): Nabu.IJK {
+        let i = this.i;
+        let j: number;
+        if (this.mirrorX) {
+            j = this.j + this.h;
+        }
+        else {
+            j = this.j;
+        }
+        let k: number;
+        if (this.mirrorZ) {
+            if (this.mirrorX) {
+                k = this.k;
+            }
+            else {
+                k = this.k + this.d - 1;
+            }
+        }
+        else {
+            if (this.mirrorX) {
+                k = this.k + this.d - 1;
+            }
+            else {
+                k = this.k;
+            }
+        }
         return {
-            i: this.i,
-            j: this.mirrorX ? this.j + this.h : this.j,
-            k: this.mirrorZ ? this.k + (this.d - 1) : this.k
+            i: i,
+            j: j,
+            k: k
         }
     }
 
     public getDestination(): Nabu.IJK {
+        let i = this.i + this.w;
+        let j: number;
+        if (!this.mirrorX) {
+            j = this.j + this.h;
+        }
+        else {
+            j = this.j;
+        }
+        let k: number;
+        if (this.mirrorZ) {
+            if (this.mirrorX) {
+                k = this.k + this.d - 1;
+            }
+            else {
+                k = this.k;
+            }
+        }
+        else {
+            if (this.mirrorX) {
+                k = this.k;
+            }
+            else {
+                k = this.k + this.d - 1;
+            }
+        }
         return {
-            i: this.i + this.w,
-            j: this.mirrorX ? this.j : this.j + this.h,
-            k: this.mirrorZ ? this.k : this.k + (this.d - 1)
+            i: i,
+            j: j,
+            k: k
         }
     }
 }
