@@ -40,6 +40,7 @@ class Wire extends BABYLON.Mesh {
     }
 
     public recomputeAbsolutePath(): void {
+        this.computeWorldMatrix(true);
         this.absolutePath.splice(this.path.length);
         for (let i = 0; i < this.path.length; i++) {
             if (!this.absolutePath[i]) {

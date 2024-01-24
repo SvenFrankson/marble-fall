@@ -130,6 +130,7 @@ class MachinePart extends BABYLON.Mesh {
     }
     public setK(v: number) {
         this._k = v;
+        this._k = Math.max(this._k, 0);
         this.position.z = - this._k * tileDepth;
     }
 
@@ -227,6 +228,7 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public recomputeAbsolutePath(): void {
+        this.computeWorldMatrix(true);
         this.tracks.forEach(track => {
             track.recomputeAbsolutePath();
         })

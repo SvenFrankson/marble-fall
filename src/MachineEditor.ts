@@ -241,6 +241,42 @@ class MachineEditor {
                     this._onOriginJMinus();
                 }
             }
+            else if (event.code === "KeyW") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setJ(this.selectedObject.j - 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyA") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setI(this.selectedObject.i - 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyS") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setJ(this.selectedObject.j + 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyD") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setI(this.selectedObject.i + 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyQ") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setK(this.selectedObject.k - 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyE") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setK(this.selectedObject.k + 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
         });
 
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);

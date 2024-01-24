@@ -63,7 +63,7 @@ class Loop2 extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir)
         ];
 
-        let r = tileWidth * 0.5 * w * 0.9;
+        let r = tileWidth * 0.5 * w * 0.7;
         for (let n = 0; n <= 8; n++) {
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
@@ -73,8 +73,8 @@ class Loop2 extends MachinePart {
                 new TrackPoint(
                     this.tracks[0],
                     new BABYLON.Vector3(
-                        sina * r * 0.9,
-                        r - cosa * r,
+                        sina * r,
+                        r * 1.2 - cosa * r,
                         - tileDepth * (this.d - 1) * (n + 1) / 10
                     )
                 )
@@ -85,6 +85,7 @@ class Loop2 extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), 0, - tileDepth * (this.d - 1)), dir)
         );
 
+        /*
         let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone() });
         let f = 3;
         for (let n = 0; n < 3; n++) {
@@ -98,6 +99,7 @@ class Loop2 extends MachinePart {
         for (let i = 0; i < points.length; i++) {
             this.tracks[0].trackpoints[i].position.copyFrom(points[i]);
         }
+        */
 
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();

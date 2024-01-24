@@ -181,7 +181,7 @@ class Ball extends BABYLON.Mesh {
             this.strReaction += reactions.length() * 0.02;
             this.velocity.subtractInPlace(canceledSpeed);
             this.position.addInPlace(forcedDisplacement);
-            let friction = this.velocity.scale(-1).scaleInPlace(0.0005);
+            let friction = this.velocity.scale(-1).scaleInPlace(0.001);
             let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
@@ -358,19 +358,21 @@ var demoLoop = {
         { x: 0.39808697121492503, y: 0.041276811477638765 },
         { x: 0.42178813750112076, y: 0.03490450521423004 },
         { x: 0.4479109908664016, y: 0.030144576207480372 },
-        { x: 0.4319101875212412, y: 0.35092749838770887 },
+        { x: 0.4512616994466042, y: 0.3383223566718828 },
         { x: 0.37699677269433557, y: 0.04633268053343625 },
     ],
     parts: [
-        { name: "uturnlayer-1.3", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-2.2", i: 1, j: -10, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-2.1.2", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 2, j: -11, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "elevator-11", i: 3, j: -12, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "loop-2.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "ramp-3.10.1", i: 2, j: -9, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.2", i: 6, j: -5, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 1, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.2", i: 1, j: -11, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 8, j: 1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 6, j: 1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 7, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "elevator-12", i: 3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.11.1", i: 2, j: -10, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 2, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-6.2.2", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -1019,6 +1021,42 @@ class MachineEditor {
                     this._onOriginJMinus();
                 }
             }
+            else if (event.code === "KeyW") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setJ(this.selectedObject.j - 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyA") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setI(this.selectedObject.i - 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyS") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setJ(this.selectedObject.j + 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyD") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setI(this.selectedObject.i + 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyQ") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setK(this.selectedObject.k - 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
+            else if (event.code === "KeyE") {
+                if (this.selectedObject instanceof MachinePart) {
+                    this.selectedObject.setK(this.selectedObject.k + 1);
+                    this.selectedObject.recomputeAbsolutePath();
+                }
+            }
         });
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
@@ -1473,7 +1511,7 @@ class Game {
         this.mainVolume = 0;
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
-        this.physicDT = 0.001;
+        this.physicDT = 0.0005;
         this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
         this._animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
         this.onPointerEvent = (eventData, eventState) => {
@@ -2648,6 +2686,7 @@ class Wire extends BABYLON.Mesh {
         });
     }
     recomputeAbsolutePath() {
+        this.computeWorldMatrix(true);
         this.absolutePath.splice(this.path.length);
         for (let i = 0; i < this.path.length; i++) {
             if (!this.absolutePath[i]) {
@@ -2951,6 +2990,7 @@ class MachinePart extends BABYLON.Mesh {
     }
     setK(v) {
         this._k = v;
+        this._k = Math.max(this._k, 0);
         this.position.z = -this._k * tileDepth;
     }
     setIsVisible(isVisible) {
@@ -3031,6 +3071,7 @@ class MachinePart extends BABYLON.Mesh {
         return BABYLON.Vector3.TransformCoordinates(barycenter, this.getWorldMatrix());
     }
     recomputeAbsolutePath() {
+        this.computeWorldMatrix(true);
         this.tracks.forEach(track => {
             track.recomputeAbsolutePath();
         });
@@ -3956,26 +3997,29 @@ class Loop2 extends MachinePart {
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir)
         ];
-        let r = tileWidth * 0.5 * w * 0.9;
+        let r = tileWidth * 0.5 * w * 0.7;
         for (let n = 0; n <= 8; n++) {
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
-            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r * 0.9, r - cosa * r, -tileDepth * (this.d - 1) * (n + 1) / 10)));
+            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r, r * 1.2 - cosa * r, -tileDepth * (this.d - 1) * (n + 1) / 10)));
         }
         this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), 0, -tileDepth * (this.d - 1)), dir));
-        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone(); });
+        /*
+        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone() });
         let f = 3;
         for (let n = 0; n < 3; n++) {
-            let smoothedPoints = [...points].map(p => { return p.clone(); });
+            let smoothedPoints = [...points].map(p => { return p.clone() });
             for (let i = 1; i < smoothedPoints.length - 1; i++) {
                 smoothedPoints[i].copyFrom(points[i - 1]).addInPlace(points[i].scale(f)).addInPlace(points[i + 1]).scaleInPlace(1 / (2 + f));
             }
             points = smoothedPoints;
         }
+
         for (let i = 0; i < points.length; i++) {
             this.tracks[0].trackpoints[i].position.copyFrom(points[i]);
         }
+        */
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
         }

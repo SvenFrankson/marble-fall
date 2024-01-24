@@ -34,7 +34,7 @@ class Game {
     public mainVolume: number = 0;
     public targetTimeFactor: number = 0.8;
     public timeFactor: number = 0.1;
-    public physicDT: number = 0.001;
+    public physicDT: number = 0.0005;
 
     public machine: Machine;
     public trackEditor: TrackEditor;
