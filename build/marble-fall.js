@@ -163,8 +163,8 @@ class Ball extends BABYLON.Mesh {
                             this.marbleChocSound.volume = v / 5 * this.game.mainVolume;
                             this.marbleChocSound.play();
                         }
-                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
-                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
+                        this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
+                        ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         let dir = this.position.subtract(ball.position).normalize();
@@ -353,7 +353,71 @@ var demo3D = {
         { name: "ramp-3.1.2", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: true },
     ],
 };
-var demoLoop = { "balls": [{ "x": 0.39808697121492503, "y": 0.041276811477638765 }, { "x": 0.42178813750112076, "y": 0.03490450521423004 }, { "x": 0.4479109908664016, "y": 0.030144576207480372 }, { "x": 0.4512616994466042, "y": 0.3383223566718828 }, { "x": 0.37699677269433557, "y": 0.04633268053343625 }, { "x": 0.4537058415985139, "y": 0.25988103124019435 }, { "x": 0.4523347497209613, "y": 0.18159650041604788 }, { "x": 0.4518257916075914, "y": 0.10443575951224476 }], "parts": [{ "name": "elevator-12", "i": 3, "j": -13, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "split", "i": 1, "j": -11, "k": 1, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-1.1.2", "i": 2, "j": -12, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "loop-1.2", "i": 3, "j": -8, "k": 1, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-1.5.1", "i": 2, "j": -9, "k": 1, "mirrorX": false, "mirrorZ": false }, { "name": "spiral", "i": 0, "j": -9, "k": 1, "mirrorX": true, "mirrorZ": false }, { "name": "join", "i": 1, "j": -3, "k": 3, "mirrorX": true, "mirrorZ": false }, { "name": "uturnlayer-1.4", "i": -1, "j": -2, "k": 0, "mirrorX": true, "mirrorZ": true }, { "name": "ramp-2.0.1", "i": 1, "j": -1, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-2.1.1", "i": -1, "j": -4, "k": 3, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-1.1.1", "i": -1, "j": -6, "k": 1, "mirrorX": true, "mirrorZ": false }, { "name": "uturnlayer-1.3", "i": -2, "j": -5, "k": 1, "mirrorX": true, "mirrorZ": false }, { "name": "uturnlayer-0.2", "i": 4, "j": -4, "k": 2, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-2.1.1", "i": 2, "j": -4, "k": 3, "mirrorX": true, "mirrorZ": false }] };
+var demoLoop = {
+    balls: [
+        { x: 0.39808697121492503, y: 0.041276811477638765 },
+        { x: 0.42178813750112076, y: 0.03490450521423004 },
+        { x: 0.4479109908664016, y: 0.030144576207480372 },
+        { x: 0.4512616994466042, y: 0.3383223566718828 },
+        { x: 0.37699677269433557, y: 0.04633268053343625 },
+        { x: 0.4537058415985139, y: 0.25988103124019435 },
+        { x: 0.4523347497209613, y: 0.18159650041604788 },
+        { x: 0.4518257916075914, y: 0.10443575951224476 },
+    ],
+    parts: [
+        { name: "elevator-12", i: 3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "split", i: 1, j: -11, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.1.2", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: 3, j: -8, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.5.1", i: 2, j: -9, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "spiral", i: 0, j: -9, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "join", i: 1, j: -3, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.4", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "ramp-2.0.1", i: 1, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -1, j: -4, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -1, j: -6, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.1.1", i: 2, j: -4, k: 3, mirrorX: true, mirrorZ: false },
+    ],
+};
+var demoXXL = {
+    balls: [
+        { x: -0.14940814725193807, y: 0.37256903324063273, z: -0.24 },
+        { x: 0.12699683890522956, y: 0.3778240595217145, z: -0.24 },
+        { x: 0.15394038324885653, y: 0.28825437966177486, z: -0.24000000715255748 },
+        { x: 0.15372840040364857, y: 0.20960589947653657, z: -0.2400000071525572 },
+        { x: 0.15418796141657928, y: 0.13141977555023623, z: -0.24000000715255748 },
+    ],
+    parts: [
+        { name: "split", i: -1, j: -12, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -12, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.0.2", i: 0, j: -10, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 2, j: -10, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 0, j: -9, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.4", i: -3, j: -10, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.5.1", i: 1, j: -10, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "split", i: 1, j: -3, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "join", i: 1, j: 0, k: 6, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 0, j: 1, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.5", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "elevator-14", i: 1, j: -13, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.3.1", i: 0, j: -6, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: -4, j: -7, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.5", i: -1, j: -1, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.5", i: 0, j: -7, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.6", i: 2, j: -8, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "ramp-3.1.1", i: -1, j: -9, k: 7, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.6", i: 2, j: -7, k: 1, mirrorX: false, mirrorZ: true },
+        { name: "uturnlayer-1.6", i: -4, j: -6, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-4.0.1", i: -2, j: -6, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-4.1.1", i: -2, j: -5, k: 6, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.5", i: 2, j: -4, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "ramp-3.1.1", i: -3, j: -7, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -1, j: -5, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.2.2", i: -3, j: -6, k: 3, mirrorX: false, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -558,7 +622,6 @@ class MachineEditor {
                     }
                     else if (this.draggedObject instanceof Ball) {
                         let p = point.clone();
-                        p.z = 0;
                         this.draggedObject.setPositionZero(p);
                         this.draggedObject.setIsVisible(true);
                         this.updateFloatingElements();
@@ -616,9 +679,6 @@ class MachineEditor {
                     });
                 }
                 else if (this.draggedObject instanceof Ball) {
-                    let p = point.clone();
-                    p.z = 0;
-                    this.draggedObject.setPositionZero(p);
                     if (this.machine.balls.indexOf(this.draggedObject) === -1) {
                         this.machine.balls.push(this.draggedObject);
                     }
@@ -1015,38 +1075,110 @@ class MachineEditor {
             }
             else if (event.code === "KeyW") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setJ(this.selectedObject.j - 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setJ(selectedTrack.j - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyA") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setI(this.selectedObject.i - 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setI(selectedTrack.i - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyS") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setJ(this.selectedObject.j + 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setJ(selectedTrack.j + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyD") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setI(this.selectedObject.i + 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setI(selectedTrack.i + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyQ") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setK(this.selectedObject.k - 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setK(selectedTrack.k - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
+                }
+                else if (this.selectedObject instanceof Ball) {
+                    let p = this.selectedObject.positionZero.clone();
+                    p.z += tileDepth;
+                    this.selectedObject.setPositionZero(p);
+                    this.updateFloatingElements();
+                    if (!this.machine.playing) {
+                        this.selectedObject.reset();
+                    }
                 }
             }
             else if (event.code === "KeyE") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setK(this.selectedObject.k + 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setK(selectedTrack.k + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
+                }
+                else if (this.selectedObject instanceof Ball) {
+                    let p = this.selectedObject.positionZero.clone();
+                    p.z -= tileDepth;
+                    this.selectedObject.setPositionZero(p);
+                    this.updateFloatingElements();
+                    if (!this.machine.playing) {
+                        this.selectedObject.reset();
+                    }
                 }
             }
         });
@@ -1859,7 +1991,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(demoLoop);
+                this.machine.deserialize(demoXXL);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -2845,6 +2977,7 @@ class Machine {
             data.balls.push({
                 x: this.balls[i].positionZero.x,
                 y: this.balls[i].positionZero.y,
+                z: this.balls[i].positionZero.z
             });
         }
         for (let i = 0; i < this.parts.length; i++) {
@@ -2864,7 +2997,7 @@ class Machine {
         this.parts = [];
         for (let i = 0; i < data.balls.length; i++) {
             let ballData = data.balls[i];
-            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, 0), this);
+            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, isFinite(ballData.z) ? ballData.z : 0), this);
             this.balls.push(ball);
         }
         for (let i = 0; i < data.parts.length; i++) {

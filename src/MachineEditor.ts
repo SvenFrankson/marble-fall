@@ -256,38 +256,110 @@ class MachineEditor {
             }
             else if (event.code === "KeyW") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setJ(this.selectedObject.j - 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setJ(selectedTrack.j - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyA") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setI(this.selectedObject.i - 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setI(selectedTrack.i - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyS") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setJ(this.selectedObject.j + 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setJ(selectedTrack.j + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyD") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setI(this.selectedObject.i + 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setI(selectedTrack.i + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
                 }
             }
             else if (event.code === "KeyQ") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setK(this.selectedObject.k - 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setK(selectedTrack.k - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
+                }
+                else if (this.selectedObject instanceof Ball) {
+                    let p = this.selectedObject.positionZero.clone();
+                    p.z += tileDepth;
+                    this.selectedObject.setPositionZero(p);
+                    this.updateFloatingElements();
+                    if (!this.machine.playing) {
+                        this.selectedObject.reset();
+                    }
                 }
             }
             else if (event.code === "KeyE") {
                 if (this.selectedObject instanceof MachinePart) {
-                    this.selectedObject.setK(this.selectedObject.k + 1);
-                    this.selectedObject.recomputeAbsolutePath();
+                    let selectedTrack = this.selectedObject;
+                    selectedTrack.setK(selectedTrack.k + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    selectedTrack.instantiate().then(() => {
+                        selectedTrack.recomputeAbsolutePath();
+                        this.setSelectedObject(selectedTrack);
+                        this.setDraggedObject(undefined);
+                        this.setSelectedItem("");
+                        this.machine.generateBaseMesh();
+                    });
+                }
+                else if (this.selectedObject instanceof Ball) {
+                    let p = this.selectedObject.positionZero.clone();
+                    p.z -= tileDepth;
+                    this.selectedObject.setPositionZero(p);
+                    this.updateFloatingElements();
+                    if (!this.machine.playing) {
+                        this.selectedObject.reset();
+                    }
                 }
             }
         });
@@ -699,7 +771,6 @@ class MachineEditor {
                 }
                 else if (this.draggedObject instanceof Ball) {
                     let p = point.clone();
-                    p.z = 0;
                     this.draggedObject.setPositionZero(p);
                     this.draggedObject.setIsVisible(true);
                     this.updateFloatingElements();
@@ -763,9 +834,6 @@ class MachineEditor {
                 });
             }
             else if (this.draggedObject instanceof Ball) {
-                let p = point.clone();
-                p.z = 0;
-                this.draggedObject.setPositionZero(p);
                 if (this.machine.balls.indexOf(this.draggedObject) === -1) {
                     this.machine.balls.push(this.draggedObject);
                 }

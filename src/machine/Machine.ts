@@ -1,6 +1,7 @@
 interface IBallData {
     x: number;
     y: number;
+    z?: number;
 }
 
 interface IMachinePartData {
@@ -176,6 +177,7 @@ class Machine {
             data.balls.push({
                 x: this.balls[i].positionZero.x,
                 y: this.balls[i].positionZero.y,
+                z: this.balls[i].positionZero.z
             })
         }
 
@@ -199,7 +201,7 @@ class Machine {
 
         for (let i = 0; i < data.balls.length; i++) {
             let ballData = data.balls[i];
-            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, 0), this);
+            let ball = new Ball(new BABYLON.Vector3(ballData.x, ballData.y, isFinite(ballData.z) ? ballData.z : 0), this);
             this.balls.push(ball);
         }
 
