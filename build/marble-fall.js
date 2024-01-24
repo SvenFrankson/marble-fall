@@ -846,6 +846,7 @@ class MachineEditor {
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
+        this.machinePartEditorMenu = new MachinePartEditorMenu(this.game);
     }
     get machine() {
         return this.game.machine;
@@ -920,13 +921,18 @@ class MachineEditor {
             this._selectedObject.select();
             if (this._selectedObject instanceof MachinePart) {
                 this.currentLayer = this._selectedObject.k;
+                this.machinePartEditorMenu.currentPart = this._selectedObject;
             }
+        }
+        else {
+            this.machinePartEditorMenu.currentPart = undefined;
         }
         this.updateFloatingElements();
     }
     async instantiate() {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
+        this.machinePartEditorMenu.initialize();
         let ballItem = document.createElement("div");
         ballItem.classList.add("machine-editor-item");
         ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -1317,6 +1323,7 @@ class MachineEditor {
     dispose() {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
+        this.machinePartEditorMenu.dispose();
         this.floatingElementTop.dispose();
         this.floatingElementRight.dispose();
         this.floatingElementBottom.dispose();
@@ -2943,6 +2950,7 @@ class MachinePart extends BABYLON.Mesh {
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
+        this.minD = 1;
         this.xMirrorable = false;
         this.zMirrorable = false;
         this._partVisibilityMode = PartVisibilityMode.Default;
@@ -4453,6 +4461,7 @@ class UTurnLayer extends MachinePart {
         });
         this.yExtendable = true;
         this.zExtendable = true;
+        this.minD = 2;
         this.xMirrorable = true;
         this.zMirrorable = true;
         this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
@@ -4672,6 +4681,127 @@ class Logo {
         subtitle.setAttribute("y", "570");
         subtitle.innerHTML = "SIMULATOR";
         this.container.appendChild(subtitle);
+    }
+}
+class MachinePartEditorMenu {
+    constructor(game) {
+        this.game = game;
+        this._shown = true;
+    }
+    get currentPart() {
+        return this._currentPart;
+    }
+    set currentPart(part) {
+        this._currentPart = part;
+        this.update();
+    }
+    initialize() {
+        this.container = document.getElementById("machine-editor-part-menu");
+        this.titleElement = document.querySelector("#machine-editor-part-menu-title span");
+        this.showButton = document.querySelector("#machine-editor-part-menu-show");
+        this.showButton.onclick = () => {
+            this._shown = true;
+            this.update();
+        };
+        this.hideButton = document.querySelector("#machine-editor-part-menu-hide");
+        this.hideButton.onclick = () => {
+            this._shown = false;
+            this.update();
+        };
+        this.widthLine = document.getElementById("machine-editor-part-menu-width");
+        this.wPlusButton = document.querySelector("#machine-editor-part-menu-width button.plus");
+        this.wPlusButton.onclick = async () => {
+            if (this.currentPart.xExtendable) {
+                let w = this.currentPart.w + 1;
+                let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                this.game.machineEditor.setSelectedObject(editedTrack);
+            }
+        };
+        this.wMinusButton = document.querySelector("#machine-editor-part-menu-width button.minus");
+        this.wMinusButton.onclick = async () => {
+            if (this.currentPart.xExtendable) {
+                let w = this.currentPart.w - 1;
+                if (w >= 1) {
+                    let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                    this.game.machineEditor.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this.wValue = document.querySelector("#machine-editor-part-menu-width .value");
+        this.heightLine = document.getElementById("machine-editor-part-menu-height");
+        this.hPlusButton = document.querySelector("#machine-editor-part-menu-height button.plus");
+        this.hPlusButton.onclick = async () => {
+            if (this.currentPart.yExtendable) {
+                let h = this.currentPart.h + 1;
+                let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                this.game.machineEditor.setSelectedObject(editedTrack);
+            }
+        };
+        this.hMinusButton = document.querySelector("#machine-editor-part-menu-height button.minus");
+        this.hMinusButton.onclick = async () => {
+            if (this.currentPart.yExtendable) {
+                let h = this.currentPart.h - 1;
+                if (h >= 0) {
+                    let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                    this.game.machineEditor.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this.hValue = document.querySelector("#machine-editor-part-menu-height .value");
+        this.depthLine = document.getElementById("machine-editor-part-menu-depth");
+        this.dPlusButton = document.querySelector("#machine-editor-part-menu-depth button.plus");
+        this.dPlusButton.onclick = async () => {
+            if (this.currentPart.zExtendable) {
+                let d = this.currentPart.d + 1;
+                let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
+                this.game.machineEditor.setSelectedObject(editedTrack);
+            }
+        };
+        this.dMinusButton = document.querySelector("#machine-editor-part-menu-depth button.minus");
+        this.dMinusButton.onclick = async () => {
+            if (this.currentPart.zExtendable) {
+                let d = this.currentPart.d - 1;
+                if (d >= this.currentPart.minD) {
+                    let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
+                    this.game.machineEditor.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this.dValue = document.querySelector("#machine-editor-part-menu-depth .value");
+        this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX");
+        this.mirrorXButton = document.querySelector("#machine-editor-part-menu-mirrorX button");
+        this.mirrorXButton.onclick = async () => {
+            let editedTrack = await this.game.machineEditor.mirrorXTrackInPlace(this.currentPart);
+            this.game.machineEditor.setSelectedObject(editedTrack);
+        };
+        this.mirrorZLine = document.getElementById("machine-editor-part-menu-mirrorZ");
+        this.mirrorZButton = document.querySelector("#machine-editor-part-menu-mirrorZ button");
+        this.mirrorZButton.onclick = async () => {
+            let editedTrack = await this.game.machineEditor.mirrorZTrackInPlace(this.currentPart);
+            this.game.machineEditor.setSelectedObject(editedTrack);
+        };
+    }
+    dispose() {
+        this.currentPart = undefined;
+    }
+    update() {
+        if (!this.currentPart) {
+            this.container.style.display = "none";
+        }
+        else {
+            this.container.style.display = "";
+            this.showButton.style.display = this._shown ? "none" : "";
+            this.hideButton.style.display = this._shown ? "" : "none";
+            this.widthLine.style.display = this._shown && this.currentPart.xExtendable ? "" : "none";
+            this.heightLine.style.display = this._shown && this.currentPart.yExtendable ? "" : "none";
+            this.depthLine.style.display = this._shown && this.currentPart.zExtendable ? "" : "none";
+            this.mirrorXLine.style.display = this._shown && this.currentPart.xMirrorable ? "" : "none";
+            this.mirrorZLine.style.display = this._shown && this.currentPart.zMirrorable ? "" : "none";
+            this.titleElement.innerText = this.currentPart.partName;
+            this.wValue.innerText = this.currentPart.w.toFixed(0);
+            this.hValue.innerText = this.currentPart.h.toFixed(0);
+            this.dValue.innerText = this.currentPart.d.toFixed(0);
+        }
     }
 }
 class Toolbar {

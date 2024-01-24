@@ -8,6 +8,8 @@ class MachineEditor {
     public itemContainer: HTMLDivElement;
     public items: Map<string, HTMLDivElement> = new Map<string, HTMLDivElement>();
 
+    public machinePartEditorMenu: MachinePartEditorMenu;
+
     public floatingButtons: HTMLButtonElement[];
 
     public floatingElementTop: FloatingElement;
@@ -127,7 +129,11 @@ class MachineEditor {
             this._selectedObject.select();
             if (this._selectedObject instanceof MachinePart) {
                 this.currentLayer = this._selectedObject.k;
+                this.machinePartEditorMenu.currentPart = this._selectedObject;
             }
+        }
+        else {
+            this.machinePartEditorMenu.currentPart = undefined;
         }
         this.updateFloatingElements();
     }
@@ -137,11 +143,13 @@ class MachineEditor {
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
+        this.machinePartEditorMenu = new MachinePartEditorMenu(this.game);
     }
 
     public async instantiate(): Promise<void> {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
+        this.machinePartEditorMenu.initialize();
 
         let ballItem = document.createElement("div") as HTMLDivElement;
         ballItem.classList.add("machine-editor-item");
@@ -558,6 +566,7 @@ class MachineEditor {
     public dispose(): void {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
+        this.machinePartEditorMenu.dispose();
 
         this.floatingElementTop.dispose();
         this.floatingElementRight.dispose();

@@ -75,6 +75,7 @@ class UTurnLayer extends MachinePart {
         });
         this.yExtendable = true;
         this.zExtendable = true;
+        this.minD = 2;
         this.xMirrorable = true;
         this.zMirrorable = true;
         this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);

@@ -97,10 +97,7 @@ body {
     top: 20px;
     left: 20px;
     width: 400px;
-}
-
-.line {
-    height: 30px;
+    font-size: 2vh;
 }
 
 .separator {
@@ -199,6 +196,7 @@ input-number {
 
 
 :root {
+    --button-xxs-size: 2vh;
     --button-xs-size: 3vh;
     --half-button-xs-size: calc(var(--button-xs-size) * 0.5);
     --button-s-size: 4vh;
@@ -215,6 +213,51 @@ input-number {
     z-index: 3;
 }
 
+#machine-editor-part-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 3;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    background-color: rgba(39, 43, 46, 75%);
+    padding: 1vh 2vh 1vh 2vh;
+    border-bottom-left-radius: 2vh;
+    border-left: 1px solid white;
+    border-bottom: 1px solid white;
+    width: 18vh;
+}
+
+#machine-editor-part-menu .line {
+    height: 3vh;
+    font-size: 2vh;
+}
+
+#machine-editor-part-menu .label {
+    display: inline-block;
+    color: rgba(255, 255, 255, 70%);
+    font-size: 1.5vh;
+    width: 6vh;
+}
+
+#machine-editor-part-menu .value {
+    display: inline-block;
+    width: 3vh;
+    text-align: center;
+}
+
+#machine-editor-part-menu-show {
+    position: absolute;
+    top: 0.5vh;
+    right: 0.5vh;
+}
+
+#machine-editor-part-menu-hide {
+    position: absolute;
+    top: 0.5vh;
+    right: 0.5vh;
+}
+
 .btn {
     position: relative;
     font-size: var(--half-button-xs-size);
@@ -225,6 +268,12 @@ input-number {
     color: white;
     font-weight: bold;
     margin: 2px;
+}
+
+.btn.xxs {
+    width: var(--button-xxs-size);
+    height: var(--button-xxs-size);
+    border-radius: var(--button-xxs-size);
 }
 
 .btn.xs {
@@ -243,6 +292,13 @@ input-number {
     width: var(--button-m-size);
     height: var(--button-height);
     border-radius: var(--button-height);
+}
+
+.btn.xxs .label {
+    position: absolute;
+    top: var(--half-button-xxs-size);
+    left: var(--half-button-xxs-size);
+    transform: translate(-50%, -50%);
 }
 
 .btn.xs .label {

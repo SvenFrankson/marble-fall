@@ -79,6 +79,7 @@ class MachinePart extends BABYLON.Mesh {
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
     public zExtendable: boolean = false;
+    public minD: number = 1;
     public xMirrorable: boolean = false;
     public zMirrorable: boolean = false;
 
