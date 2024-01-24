@@ -846,7 +846,7 @@ class MachineEditor {
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
-        this.machinePartEditorMenu = new MachinePartEditorMenu(this.game);
+        this.machinePartEditorMenu = new MachinePartEditorMenu(this);
     }
     get machine() {
         return this.game.machine;
@@ -4684,8 +4684,8 @@ class Logo {
     }
 }
 class MachinePartEditorMenu {
-    constructor(game) {
-        this.game = game;
+    constructor(machineEditor) {
+        this.machineEditor = machineEditor;
         this._shown = true;
     }
     get currentPart() {
@@ -4713,8 +4713,8 @@ class MachinePartEditorMenu {
         this.wPlusButton.onclick = async () => {
             if (this.currentPart.xExtendable) {
                 let w = this.currentPart.w + 1;
-                let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
-                this.game.machineEditor.setSelectedObject(editedTrack);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                this.machineEditor.setSelectedObject(editedTrack);
             }
         };
         this.wMinusButton = document.querySelector("#machine-editor-part-menu-width button.minus");
@@ -4722,8 +4722,8 @@ class MachinePartEditorMenu {
             if (this.currentPart.xExtendable) {
                 let w = this.currentPart.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
-                    this.game.machineEditor.setSelectedObject(editedTrack);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                    this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
         };
@@ -4733,8 +4733,8 @@ class MachinePartEditorMenu {
         this.hPlusButton.onclick = async () => {
             if (this.currentPart.yExtendable) {
                 let h = this.currentPart.h + 1;
-                let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
-                this.game.machineEditor.setSelectedObject(editedTrack);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                this.machineEditor.setSelectedObject(editedTrack);
             }
         };
         this.hMinusButton = document.querySelector("#machine-editor-part-menu-height button.minus");
@@ -4742,8 +4742,8 @@ class MachinePartEditorMenu {
             if (this.currentPart.yExtendable) {
                 let h = this.currentPart.h - 1;
                 if (h >= 0) {
-                    let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
-                    this.game.machineEditor.setSelectedObject(editedTrack);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                    this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
         };
@@ -4753,8 +4753,8 @@ class MachinePartEditorMenu {
         this.dPlusButton.onclick = async () => {
             if (this.currentPart.zExtendable) {
                 let d = this.currentPart.d + 1;
-                let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
-                this.game.machineEditor.setSelectedObject(editedTrack);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
+                this.machineEditor.setSelectedObject(editedTrack);
             }
         };
         this.dMinusButton = document.querySelector("#machine-editor-part-menu-depth button.minus");
@@ -4762,8 +4762,8 @@ class MachinePartEditorMenu {
             if (this.currentPart.zExtendable) {
                 let d = this.currentPart.d - 1;
                 if (d >= this.currentPart.minD) {
-                    let editedTrack = await this.game.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
-                    this.game.machineEditor.setSelectedObject(editedTrack);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
+                    this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
         };
@@ -4771,14 +4771,20 @@ class MachinePartEditorMenu {
         this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX");
         this.mirrorXButton = document.querySelector("#machine-editor-part-menu-mirrorX button");
         this.mirrorXButton.onclick = async () => {
-            let editedTrack = await this.game.machineEditor.mirrorXTrackInPlace(this.currentPart);
-            this.game.machineEditor.setSelectedObject(editedTrack);
+            let editedTrack = await this.machineEditor.mirrorXTrackInPlace(this.currentPart);
+            this.machineEditor.setSelectedObject(editedTrack);
         };
         this.mirrorZLine = document.getElementById("machine-editor-part-menu-mirrorZ");
         this.mirrorZButton = document.querySelector("#machine-editor-part-menu-mirrorZ button");
         this.mirrorZButton.onclick = async () => {
-            let editedTrack = await this.game.machineEditor.mirrorZTrackInPlace(this.currentPart);
-            this.game.machineEditor.setSelectedObject(editedTrack);
+            let editedTrack = await this.machineEditor.mirrorZTrackInPlace(this.currentPart);
+            this.machineEditor.setSelectedObject(editedTrack);
+        };
+        this.deleteButton = document.querySelector("#machine-editor-part-menu-delete button");
+        this.deleteButton.onclick = async () => {
+            this.currentPart.dispose();
+            this.machineEditor.setSelectedObject(undefined);
+            this.machineEditor.setDraggedObject(undefined);
         };
     }
     dispose() {

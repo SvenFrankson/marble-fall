@@ -143,7 +143,7 @@ class MachineEditor {
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
-        this.machinePartEditorMenu = new MachinePartEditorMenu(this.game);
+        this.machinePartEditorMenu = new MachinePartEditorMenu(this);
     }
 
     public async instantiate(): Promise<void> {
