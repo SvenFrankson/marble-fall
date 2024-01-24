@@ -100,7 +100,7 @@ class UTurnLayer extends MachinePart {
 
         for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {
             let f = n / (this.tracks[0].trackpoints.length - 1)
-            this.tracks[0].trackpoints[n].position.y = - f * (this.h - 1) * tileHeight;
+            this.tracks[0].trackpoints[n].position.y = - f * this.h * tileHeight;
         }
 
         if (mirrorX) {

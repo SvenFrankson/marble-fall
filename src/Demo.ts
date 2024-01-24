@@ -178,10 +178,7 @@ var demoLoop: IMachineData = {
         { x: 0.37699677269433557, y: 0.04633268053343625 },
     ],
     parts: [
-        { name: "uturnlayer-1.3", i: 1, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.2", i: 1, j: -11, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 8, j: 1, k: 2, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2", i: 6, j: 1, k: 1, mirrorX: true, mirrorZ: false },
         { name: "loop-1.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2", i: 7, j: 1, k: 1, mirrorX: false, mirrorZ: false },
@@ -189,5 +186,8 @@ var demoLoop: IMachineData = {
         { name: "ramp-3.11.1", i: 2, j: -10, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 2, j: -1, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-6.2.2", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 1, j: -11, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 1, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 8, j: 1, k: 2, mirrorX: false, mirrorZ: false },
     ],
 };

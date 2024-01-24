@@ -362,10 +362,7 @@ var demoLoop = {
         { x: 0.37699677269433557, y: 0.04633268053343625 },
     ],
     parts: [
-        { name: "uturnlayer-1.3", i: 1, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.2", i: 1, j: -11, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 8, j: 1, k: 2, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2", i: 6, j: 1, k: 1, mirrorX: true, mirrorZ: false },
         { name: "loop-1.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2", i: 7, j: 1, k: 1, mirrorX: false, mirrorZ: false },
@@ -373,6 +370,9 @@ var demoLoop = {
         { name: "ramp-3.11.1", i: 2, j: -10, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 2, j: -1, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-6.2.2", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 1, j: -11, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 1, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 8, j: 1, k: 2, mirrorX: false, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -2993,7 +2993,7 @@ class MachinePart extends BABYLON.Mesh {
     setIsVisible(isVisible) {
         this.isVisible = isVisible;
         this.getChildren(undefined, false).forEach(m => {
-            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
                 m.isVisible = isVisible;
             }
         });
@@ -3005,14 +3005,14 @@ class MachinePart extends BABYLON.Mesh {
         this._partVisibilityMode = v;
         if (this._partVisibilityMode === PartVisibilityMode.Default) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
                     m.visibility = 1;
                 }
             });
         }
         if (this._partVisibilityMode === PartVisibilityMode.Ghost) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
                     m.visibility = 0.3;
                 }
             });
@@ -3020,9 +3020,11 @@ class MachinePart extends BABYLON.Mesh {
     }
     select() {
         this.selectorMesh.visibility = 0.2;
+        this.encloseMesh.visibility = 1;
     }
     unselect() {
         this.selectorMesh.visibility = 0;
+        this.encloseMesh.visibility = 0;
     }
     mirrorXTrackPointsInPlace() {
         for (let i = 0; i < this.tracks.length; i++) {
@@ -3106,6 +3108,30 @@ class MachinePart extends BABYLON.Mesh {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
         }
         this.selectorMesh.visibility = 0;
+        if (this.encloseMesh) {
+            this.encloseMesh.dispose();
+        }
+        let w = this.w * tileWidth;
+        let h = (this.h + 1) * tileHeight;
+        let d = this.d * tileDepth;
+        let x0 = -tileWidth * 0.5;
+        let y0 = tileHeight * 0.5;
+        let z0 = tileDepth * 0.5;
+        let x1 = x0 + w;
+        let y1 = y0 - h;
+        let z1 = z0 - d;
+        this.encloseMesh = BABYLON.MeshBuilder.CreateLineSystem("enclose-mesh", {
+            lines: [
+                [new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x1, y0, z0), new BABYLON.Vector3(x1, y1, z0), new BABYLON.Vector3(x0, y1, z0), new BABYLON.Vector3(x0, y0, z0)],
+                [new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x0, y0, z1)],
+                [new BABYLON.Vector3(x1, y0, z0), new BABYLON.Vector3(x1, y0, z1)],
+                [new BABYLON.Vector3(x1, y1, z0), new BABYLON.Vector3(x1, y1, z1)],
+                [new BABYLON.Vector3(x0, y1, z0), new BABYLON.Vector3(x0, y1, z1)],
+                [new BABYLON.Vector3(x0, y0, z1), new BABYLON.Vector3(x1, y0, z1), new BABYLON.Vector3(x1, y1, z1), new BABYLON.Vector3(x0, y1, z1), new BABYLON.Vector3(x0, y0, z1)]
+            ]
+        }, this.getScene());
+        this.encloseMesh.parent = this;
+        this.encloseMesh.visibility = 0;
         this.rebuildWireMeshes();
     }
     dispose() {
@@ -4472,7 +4498,7 @@ class UTurnLayer extends MachinePart {
         ];
         for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {
             let f = n / (this.tracks[0].trackpoints.length - 1);
-            this.tracks[0].trackpoints[n].position.y = -f * (this.h - 1) * tileHeight;
+            this.tracks[0].trackpoints[n].position.y = -f * this.h * tileHeight;
         }
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();

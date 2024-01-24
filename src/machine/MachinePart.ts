@@ -63,6 +63,7 @@ class MachinePart extends BABYLON.Mesh {
 
     public sleepersMesh: BABYLON.Mesh;
     public selectorMesh: MachinePartSelectorMesh;
+    public encloseMesh: BABYLON.Mesh;
 
     public summedLength: number[] = [0];
     public totalLength: number = 0
@@ -138,7 +139,7 @@ class MachinePart extends BABYLON.Mesh {
     public setIsVisible(isVisible: boolean): void {
         this.isVisible = isVisible;
         this.getChildren(undefined, false).forEach(m => {
-            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
                 m.isVisible = isVisible;
             }
         })
@@ -152,14 +153,14 @@ class MachinePart extends BABYLON.Mesh {
         this._partVisibilityMode = v;
         if (this._partVisibilityMode === PartVisibilityMode.Default) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
                     m.visibility = 1;
                 }
             })
         }
         if (this._partVisibilityMode === PartVisibilityMode.Ghost) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
                     m.visibility = 0.3;
                 }
             })
@@ -168,10 +169,12 @@ class MachinePart extends BABYLON.Mesh {
 
     public select(): void {
         this.selectorMesh.visibility = 0.2;
+        this.encloseMesh.visibility = 1;
     }
 
     public unselect(): void {
         this.selectorMesh.visibility = 0;
+        this.encloseMesh.visibility = 0;
     }
 
     protected mirrorXTrackPointsInPlace(): void {
@@ -270,6 +273,31 @@ class MachinePart extends BABYLON.Mesh {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
         }
         this.selectorMesh.visibility = 0;
+
+        if (this.encloseMesh) {
+            this.encloseMesh.dispose();
+        }
+        let w = this.w * tileWidth;
+        let h = (this.h + 1) * tileHeight;
+        let d = this.d * tileDepth;
+        let x0 = - tileWidth * 0.5;
+        let y0 = tileHeight * 0.5;
+        let z0 = tileDepth * 0.5;
+        let x1 = x0 + w;
+        let y1 = y0 - h;
+        let z1 = z0 - d;
+        this.encloseMesh = BABYLON.MeshBuilder.CreateLineSystem("enclose-mesh", {
+            lines: [
+                [new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x1, y0, z0), new BABYLON.Vector3(x1, y1, z0), new BABYLON.Vector3(x0, y1, z0), new BABYLON.Vector3(x0, y0, z0)],
+                [new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x0, y0, z1)],
+                [new BABYLON.Vector3(x1, y0, z0), new BABYLON.Vector3(x1, y0, z1)],
+                [new BABYLON.Vector3(x1, y1, z0), new BABYLON.Vector3(x1, y1, z1)],
+                [new BABYLON.Vector3(x0, y1, z0), new BABYLON.Vector3(x0, y1, z1)],
+                [new BABYLON.Vector3(x0, y0, z1), new BABYLON.Vector3(x1, y0, z1), new BABYLON.Vector3(x1, y1, z1), new BABYLON.Vector3(x0, y1, z1), new BABYLON.Vector3(x0, y0, z1)]
+            ]
+        }, this.getScene());
+        this.encloseMesh.parent = this;
+        this.encloseMesh.visibility = 0;
 
         this.rebuildWireMeshes();
     }
