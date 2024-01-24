@@ -133,6 +133,9 @@ class MachineEditor {
                 this.currentLayer = this._selectedObject.k;
                 this.machinePartEditorMenu.currentPart = this._selectedObject;
             }
+            else {
+                this.machinePartEditorMenu.currentPart = undefined;
+            }
         }
         else {
             this.machinePartEditorMenu.currentPart = undefined;
@@ -368,16 +371,6 @@ class MachineEditor {
             `;
             this.WMinusLeftButton.onclick = this._onWMinusLeft;
 
-            this.floatingElementDelete = FloatingElement.Create(this.game);
-            this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
-            this.deletebutton = this._createButton("machine-editor-delete", this.floatingElementDelete);
-            this.deletebutton.innerHTML = `
-                <svg class="label" viewBox="0 0 100 100">
-                    <path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            `;
-            this.deletebutton.onclick = this._onDelete;
-
             this.floatingElementBottomRight = FloatingElement.Create(this.game);
             this.floatingElementBottomRight.anchor = FloatingElementAnchor.LeftTop;
             this.tileMirrorXButton = this._createButton("machine-editor-mirror-x", this.floatingElementBottomRight);
@@ -426,13 +419,24 @@ class MachineEditor {
                 this.HPlusBottomButton,
                 this.WPlusLeftButton,
                 this.WMinusLeftButton,
-                this.deletebutton,
                 this.tileMirrorXButton,
                 this.tileMirrorZButton,
                 this.DPlusButton,
                 this.DMinusButton
             );
         }
+
+        this.floatingElementDelete = FloatingElement.Create(this.game);
+        this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
+        this.deletebutton = this._createButton("machine-editor-delete", this.floatingElementDelete);
+        this.deletebutton.innerHTML = `
+            <svg class="label" viewBox="0 0 100 100">
+                <path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        this.deletebutton.onclick = this._onDelete;
+
+        this.floatingButtons.push(this.deletebutton);
         
         // Ramp Origin UI
         this.floatingElementOrigin = FloatingElement.Create(this.game);
@@ -667,11 +671,14 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
+                    /*
+                    // Not working and break drag.
                     if (mesh instanceof MachinePartSelectorMesh) {
                         if (mesh.part != this.draggedObject) {
                             return true;
                         }
                     }
+                    */
                     if (mesh === this.layerMesh) {
                         return true;
                     }

@@ -68,6 +68,7 @@ class UTurnLayer extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, h: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
         super(machine, i, j, k, {
+            w: Math.ceil(d / 3),
             h: h,
             d: d,
             mirrorX: mirrorX,

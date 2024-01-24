@@ -169,25 +169,4 @@ var demo3D: IMachineData = {
     ],
 };
 
-var demoLoop: IMachineData = {
-    balls: [
-        { x: 0.39808697121492503, y: 0.041276811477638765 },
-        { x: 0.42178813750112076, y: 0.03490450521423004 },
-        { x: 0.4479109908664016, y: 0.030144576207480372 },
-        { x: 0.4512616994466042, y: 0.3383223566718828 },
-        { x: 0.37699677269433557, y: 0.04633268053343625 },
-    ],
-    parts: [
-        { name: "ramp-1.1.1", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.2", i: 6, j: -3, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.2", i: 5, j: -3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.2", i: 7, j: -3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "elevator-12", i: 3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-3.11.1", i: 2, j: -10, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 2, j: -1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-6.2.2", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 1, j: -11, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 1, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 8, j: 1, k: 2, mirrorX: false, mirrorZ: false },
-    ],
-};
+var demoLoop: IMachineData = {"balls":[{"x":0.39808697121492503,"y":0.041276811477638765},{"x":0.42178813750112076,"y":0.03490450521423004},{"x":0.4479109908664016,"y":0.030144576207480372},{"x":0.4512616994466042,"y":0.3383223566718828},{"x":0.37699677269433557,"y":0.04633268053343625},{"x":0.4537058415985139,"y":0.25988103124019435},{"x":0.4523347497209613,"y":0.18159650041604788},{"x":0.4518257916075914,"y":0.10443575951224476}],"parts":[{"name":"elevator-12","i":3,"j":-13,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"split","i":1,"j":-11,"k":1,"mirrorX":false,"mirrorZ":false},{"name":"ramp-1.1.2","i":2,"j":-12,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"loop-1.2","i":3,"j":-8,"k":1,"mirrorX":false,"mirrorZ":false},{"name":"ramp-1.5.1","i":2,"j":-9,"k":1,"mirrorX":false,"mirrorZ":false},{"name":"spiral","i":0,"j":-9,"k":1,"mirrorX":true,"mirrorZ":false},{"name":"join","i":1,"j":-3,"k":3,"mirrorX":true,"mirrorZ":false},{"name":"uturnlayer-1.4","i":-1,"j":-2,"k":0,"mirrorX":true,"mirrorZ":true},{"name":"ramp-2.0.1","i":1,"j":-1,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"ramp-2.1.1","i":-1,"j":-4,"k":3,"mirrorX":false,"mirrorZ":false},{"name":"ramp-1.1.1","i":-1,"j":-6,"k":1,"mirrorX":true,"mirrorZ":false},{"name":"uturnlayer-1.3","i":-2,"j":-5,"k":1,"mirrorX":true,"mirrorZ":false},{"name":"uturnlayer-0.2","i":4,"j":-4,"k":2,"mirrorX":false,"mirrorZ":false},{"name":"ramp-2.1.1","i":2,"j":-4,"k":3,"mirrorX":true,"mirrorZ":false}]};
