@@ -4,6 +4,7 @@ class Spiral extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
         super(machine, i, j, k, {
             h: 3,
+            d: 3,
             mirrorX: mirrorX
         });
         this.xMirrorable = true;
