@@ -363,9 +363,9 @@ var demoLoop = {
     ],
     parts: [
         { name: "ramp-1.1.1", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.2", i: 6, j: 1, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.2", i: 7, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 6, j: -3, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: 5, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 7, j: -3, k: 1, mirrorX: false, mirrorZ: false },
         { name: "elevator-12", i: 3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.11.1", i: 2, j: -10, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 2, j: -1, k: 0, mirrorX: false, mirrorZ: false },
@@ -4004,6 +4004,7 @@ class Loop2 extends MachinePart {
     constructor(machine, i, j, k, w = 1, d = 1, mirrorX, mirrorZ) {
         super(machine, i, j, k, {
             w: w,
+            h: 4 * w,
             d: d,
             mirrorX: mirrorX,
             mirrorZ: mirrorZ,
@@ -4018,16 +4019,16 @@ class Loop2 extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -this.h * tileHeight, 0), dir)
         ];
         let r = tileWidth * 0.5 * w * 0.7;
         for (let n = 0; n <= 8; n++) {
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
-            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r, r * 1.2 - cosa * r, -tileDepth * (this.d - 1) * (n + 1) / 10)));
+            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r, r * 1.2 - cosa * r - this.h * tileHeight, -tileDepth * (this.d - 1) * (n + 1) / 10)));
         }
-        this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), 0, -tileDepth * (this.d - 1)), dir));
+        this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -this.h * tileHeight, -tileDepth * (this.d - 1)), dir));
         /*
         let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone() });
         let f = 3;

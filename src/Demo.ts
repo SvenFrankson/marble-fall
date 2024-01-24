@@ -179,9 +179,9 @@ var demoLoop: IMachineData = {
     ],
     parts: [
         { name: "ramp-1.1.1", i: 2, j: -12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.2", i: 6, j: 1, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.2", i: 5, j: 1, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.2", i: 7, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 6, j: -3, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: 5, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2", i: 7, j: -3, k: 1, mirrorX: false, mirrorZ: false },
         { name: "elevator-12", i: 3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.11.1", i: 2, j: -10, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 2, j: -1, k: 0, mirrorX: false, mirrorZ: false },

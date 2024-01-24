@@ -43,6 +43,7 @@ class Loop2 extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, d: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
         super(machine, i, j, k, {
             w: w,
+            h: 4 * w,
             d: d,
             mirrorX: mirrorX,
             mirrorZ: mirrorZ,
@@ -60,7 +61,7 @@ class Loop2 extends MachinePart {
 
 
         this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, - this.h * tileHeight, 0), dir)
         ];
 
         let r = tileWidth * 0.5 * w * 0.7;
@@ -74,7 +75,7 @@ class Loop2 extends MachinePart {
                     this.tracks[0],
                     new BABYLON.Vector3(
                         sina * r,
-                        r * 1.2 - cosa * r,
+                        r * 1.2 - cosa * r - this.h * tileHeight,
                         - tileDepth * (this.d - 1) * (n + 1) / 10
                     )
                 )
@@ -82,7 +83,7 @@ class Loop2 extends MachinePart {
         }
 
         this.tracks[0].trackpoints.push(
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), 0, - tileDepth * (this.d - 1)), dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), - this.h * tileHeight, - tileDepth * (this.d - 1)), dir)
         );
 
         /*
