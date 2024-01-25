@@ -352,6 +352,8 @@ class Game {
         let logo = new Logo();
         logo.initialize();
 
+        MainMenuLayout.Resize();
+
         this.setContext(GameMode.MainMenu);
 	}
 
@@ -364,6 +366,7 @@ class Game {
 		window.addEventListener("resize", () => {
 			this.engine.resize();
             this.toolbar.resize();
+            MainMenuLayout.Resize();
 		});
 	}
 

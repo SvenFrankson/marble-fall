@@ -2095,6 +2095,7 @@ class Game {
         this.toolbar.initialize();
         let logo = new Logo();
         logo.initialize();
+        MainMenuLayout.Resize();
         this.setContext(GameMode.MainMenu);
     }
     animate() {
@@ -2105,6 +2106,7 @@ class Game {
         window.addEventListener("resize", () => {
             this.engine.resize();
             this.toolbar.resize();
+            MainMenuLayout.Resize();
         });
     }
     async initialize() {
@@ -5238,6 +5240,71 @@ class MachinePartEditorMenu {
                 this.kElement.innerText = this.currentObject.k.toFixed(0);
             }
         }
+    }
+}
+class MainMenuLayout {
+    static Resize() {
+        let container = document.getElementById("main-menu");
+        let requestedTileCount = container.querySelectorAll(".panel.demo").length + 3;
+        let rect = container.getBoundingClientRect();
+        let containerW = rect.width;
+        let containerH = rect.height;
+        let bestValue = 0;
+        let xCount;
+        let yCount;
+        for (let xC = 1; xC <= 10; xC++) {
+            for (let yC = 1; yC <= 10; yC++) {
+                let count = xC * yC;
+                if (count >= requestedTileCount) {
+                    let w = containerW / xC;
+                    let h = containerH / yC;
+                    let area = w * h;
+                    let squareness = Math.min(w / h, h / w);
+                    let value = area * squareness;
+                    if (value > bestValue) {
+                        xCount = xC;
+                        yCount = yC;
+                        bestValue = value;
+                    }
+                }
+            }
+        }
+        let tileW = containerW / xCount;
+        let tileH = containerH / yCount;
+        let m = Math.min(tileW, tileH) / 20;
+        let demoButtons = container.querySelectorAll(".panel.demo");
+        for (let i = 0; i < demoButtons.length; i++) {
+            let pos = i + 2;
+            let button = demoButtons[i];
+            button.style.display = "block";
+            button.style.width = (tileW - 2 * m).toFixed(0) + "px";
+            button.style.height = (tileH - 2 * m).toFixed(0) + "px";
+            button.style.position = "absolute";
+            button.style.left = ((pos % xCount) * tileW + m).toFixed(0) + "px";
+            button.style.top = (Math.floor(pos / xCount) * tileH + m).toFixed(0) + "px";
+        }
+        let n = demoButtons.length;
+        let buttonCreate = container.querySelector(".panel.create");
+        buttonCreate.style.display = "block";
+        buttonCreate.style.width = (2 * tileW - 2 * m).toFixed(0) + "px";
+        buttonCreate.style.height = (tileH - 2 * m).toFixed(0) + "px";
+        buttonCreate.style.position = "absolute";
+        buttonCreate.style.left = m.toFixed(0) + "px";
+        buttonCreate.style.top = m.toFixed(0) + "px";
+        let buttonOption = container.querySelector(".panel.option");
+        buttonOption.style.display = "block";
+        buttonOption.style.width = (tileW - 2 * m).toFixed(0) + "px";
+        buttonOption.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
+        buttonOption.style.position = "absolute";
+        buttonOption.style.right = (m).toFixed(0) + "px";
+        buttonOption.style.bottom = (0.5 * tileH + m).toFixed(0) + "px";
+        let buttonCredit = container.querySelector(".panel.credit");
+        buttonCredit.style.display = "block";
+        buttonCredit.style.width = (tileW - 2 * m).toFixed(0) + "px";
+        buttonCredit.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
+        buttonCredit.style.position = "absolute";
+        buttonCredit.style.right = (m).toFixed(0) + "px";
+        buttonCredit.style.bottom = m.toFixed(0) + "px";
     }
 }
 class Toolbar {

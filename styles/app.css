@@ -32,7 +32,6 @@ body {
     width: calc(min(100vh, 100vw) * 0.95);
     left: calc((100vw - min(100vh, 100vw) * 0.95) * 0.5);
     z-index: 2;
-    outline: 1px solid magenta;
 }
 
 #logo-banner {
@@ -41,7 +40,7 @@ body {
     height: calc(min(100vh, 100vw) * 0.95 / 5.5);
     left: 0;
     top: calc(min(100vh, 100vw) * 0.95 / 10);
-    background-color: rgba(39, 43, 46, 75%);
+    background-color: rgba(39, 43, 46, 60%);
     margin: 0;
     padding: 0;
 }
@@ -92,7 +91,17 @@ body {
     width: min(100vh, 100vw);
     height: calc(100vh - calc(min(100vh, 100vw) * 0.95 * 350 / 1000) - 7vh);
     z-index: 2;
-    outline: 1px solid lime;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.panel {
+    background-color: rgba(39, 43, 46, 60%);
+    outline: 0.1vh solid white;
+    border-radius: 2vh;
+    margin: 0;
+    padding: 0;
+    color: white;
 }
 
 #render-canvas.full-screen {
