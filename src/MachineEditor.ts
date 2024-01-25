@@ -124,6 +124,7 @@ class MachineEditor {
         }
     }
 
+    private _majDown: boolean = false;
     private _selectedObjects: (MachinePart | Ball)[] = [];
     public get selectedObject(): MachinePart | Ball {
         return this._selectedObjects[0];
@@ -234,13 +235,14 @@ class MachineEditor {
             });
         }
 
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.code === "ShiftLeft") {
+                this._majDown = true;
+            }
+        })
         document.addEventListener("keyup", (event: KeyboardEvent) => {
             if (event.key === "x" || event.key === "Delete") {
-                if (this.selectedObject) {
-                    this.selectedObject.dispose();
-                    this.setSelectedObject(undefined);
-                    this.setDraggedObject(undefined);
-                }
+                this._onDelete();
             }
             else if (event.key === "m") {
                 if (this.draggedObject && this.draggedObject instanceof MachinePart) {
@@ -271,6 +273,9 @@ class MachineEditor {
             }
             else if (event.code === "KeyE") {
                 this._onKPlus();
+            }
+            else if (event.code === "ShiftLeft") {
+                this._majDown = false;
             }
         });
 
@@ -788,7 +793,12 @@ class MachineEditor {
                         this.setSelectedObject(pick.pickedMesh.ball);
                     }
                     else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
-                        this.setSelectedObject(pick.pickedMesh.part);
+                        if (this._majDown) {
+                            this.addSelectedObject(pick.pickedMesh.part);
+                        }
+                        else {
+                            this.setSelectedObject(pick.pickedMesh.part);
+                        }
                     }
                 }
             }
@@ -1209,11 +1219,11 @@ class MachineEditor {
     }
 
     private _onDelete = async () => {
-        if (this.selectedObject) {
-            this.selectedObject.dispose();
-            this.setSelectedObject(undefined);
-            this.setDraggedObject(undefined);
-        }
+        this._selectedObjects.forEach(obj => {
+            obj.dispose();
+        })
+        this.setSelectedObject(undefined);
+        this.setDraggedObject(undefined);
     }
 
     private _onMirrorX = async () => {

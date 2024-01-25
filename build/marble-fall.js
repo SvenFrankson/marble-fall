@@ -552,6 +552,7 @@ class MachineEditor {
         this._currentLayer = 0;
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
+        this._majDown = false;
         this._selectedObjects = [];
         this._pointerDownX = 0;
         this._pointerDownY = 0;
@@ -708,7 +709,12 @@ class MachineEditor {
                             this.setSelectedObject(pick.pickedMesh.ball);
                         }
                         else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
-                            this.setSelectedObject(pick.pickedMesh.part);
+                            if (this._majDown) {
+                                this.addSelectedObject(pick.pickedMesh.part);
+                            }
+                            else {
+                                this.setSelectedObject(pick.pickedMesh.part);
+                            }
                         }
                     }
                 }
@@ -817,11 +823,11 @@ class MachineEditor {
             }
         };
         this._onDelete = async () => {
-            if (this.selectedObject) {
-                this.selectedObject.dispose();
-                this.setSelectedObject(undefined);
-                this.setDraggedObject(undefined);
-            }
+            this._selectedObjects.forEach(obj => {
+                obj.dispose();
+            });
+            this.setSelectedObject(undefined);
+            this.setDraggedObject(undefined);
         };
         this._onMirrorX = async () => {
             let track = this.selectedObject;
@@ -1165,13 +1171,14 @@ class MachineEditor {
                 }
             });
         }
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "ShiftLeft") {
+                this._majDown = true;
+            }
+        });
         document.addEventListener("keyup", (event) => {
             if (event.key === "x" || event.key === "Delete") {
-                if (this.selectedObject) {
-                    this.selectedObject.dispose();
-                    this.setSelectedObject(undefined);
-                    this.setDraggedObject(undefined);
-                }
+                this._onDelete();
             }
             else if (event.key === "m") {
                 if (this.draggedObject && this.draggedObject instanceof MachinePart) {
@@ -1202,6 +1209,9 @@ class MachineEditor {
             }
             else if (event.code === "KeyE") {
                 this._onKPlus();
+            }
+            else if (event.code === "ShiftLeft") {
+                this._majDown = false;
             }
         });
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
