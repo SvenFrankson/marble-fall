@@ -548,6 +548,7 @@ class MachineEditor {
         this.items = new Map();
         this.showManipulators = false;
         this.showDisplacers = true;
+        this.smallHandleSize = 0.015;
         this._currentLayer = 0;
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
@@ -660,7 +661,6 @@ class MachineEditor {
                 return false;
             });
             if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
-                console.log("ouch !");
                 pickHandle.pickedMesh.onClick();
                 return;
             }
@@ -1313,104 +1313,54 @@ class MachineEditor {
         this.deletebutton.onclick = this._onDelete;
         this.floatingButtons.push(this.deletebutton);
         // Ramp Origin UI
-        this.floatingElementOrigin = FloatingElement.Create(this.game);
-        this.floatingElementOrigin.style.width = "calc(var(--button-xs-size) * 3.5)";
-        this.floatingElementOrigin.anchor = FloatingElementAnchor.CenterMiddle;
-        this.originKMinusButton = this._createButton("machine-editor-origin-k-minus", this.floatingElementOrigin);
-        this.originKMinusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-            <path d="M10 70 L50 20 L90 70 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.originKMinusButton.onclick = this._onOriginKMinus;
-        this.originJMinusButton = this._createButton("machine-editor-origin-j-minus", this.floatingElementOrigin);
-        this.originJMinusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.originJMinusButton.onclick = this._onOriginJMinus;
-        this._createButton("", this.floatingElementOrigin, true);
-        this.originIMinusButton = this._createButton("machine-editor-origin-i-minus", this.floatingElementOrigin);
-        this.originIMinusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.originIMinusButton.onclick = this._onOriginIMinus;
-        this._createButton("", this.floatingElementOrigin, true);
-        this.originIPlusButton = this._createButton("machine-editor-origin-i-plus", this.floatingElementOrigin);
-        this.originIPlusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.originIPlusButton.onclick = this._onOriginIPlus;
-        this.originKPlusButton = this._createButton("machine-editor-origin-k-plus", this.floatingElementOrigin);
-        this.originKPlusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M10 30 L50 80 L90 30 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.originKPlusButton.onclick = this._onOriginKPlus;
-        this.originJPlusButton = this._createButton("machine-editor-origin-j-plus", this.floatingElementOrigin);
-        this.originJPlusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.originJPlusButton.onclick = this._onOriginJPlus;
-        this._createButton("", this.floatingElementOrigin, true);
+        this.originIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originIPlusHandle.rotation.z = -Math.PI / 2;
+        this.originIPlusHandle.instantiate();
+        this.originIPlusHandle.onClick = this._onOriginIPlus;
+        this.originIMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originIMinusHandle.rotation.z = Math.PI / 2;
+        this.originIMinusHandle.instantiate();
+        this.originIMinusHandle.onClick = this._onOriginIMinus;
+        this.originJPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originJPlusHandle.rotation.z = Math.PI;
+        this.originJPlusHandle.instantiate();
+        this.originJPlusHandle.onClick = this._onOriginJPlus;
+        this.originJMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originJMinusHandle.instantiate();
+        this.originJMinusHandle.onClick = this._onOriginJMinus;
+        this.originKPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originKPlusHandle.rotation.x = -Math.PI / 2;
+        this.originKPlusHandle.instantiate();
+        this.originKPlusHandle.onClick = this._onOriginKPlus;
+        this.originKMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originKMinusHandle.rotation.x = Math.PI / 2;
+        this.originKMinusHandle.instantiate();
+        this.originKMinusHandle.onClick = this._onOriginKMinus;
         // Ramp Destination UI
-        this.floatingElementDestination = FloatingElement.Create(this.game);
-        this.floatingElementDestination.style.width = "calc(var(--button-xs-size) * 3.5)";
-        this.floatingElementDestination.anchor = FloatingElementAnchor.CenterMiddle;
-        this.destinationKMinusButton = this._createButton("machine-editor-destination-k-minus", this.floatingElementDestination);
-        this.destinationKMinusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-            <path d="M10 70 L50 20 L90 70 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.destinationKMinusButton.onclick = this._onDestinationKMinus;
-        this.destinationJMinusButton = this._createButton("machine-editor-destination-j-minus", this.floatingElementDestination);
-        this.destinationJMinusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M25 70 L50 20 L80 70" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.destinationJMinusButton.onclick = this._onDestinationJMinus;
-        this._createButton("", this.floatingElementDestination, true);
-        this.destinationIMinusButton = this._createButton("machine-editor-destination-i-minus", this.floatingElementDestination);
-        this.destinationIMinusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M70 25 L20 50 L70 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.destinationIMinusButton.onclick = this._onDestinationIMinus;
-        this._createButton("", this.floatingElementDestination, true);
-        this.destinationIPlusButton = this._createButton("machine-editor-destination-i-plus", this.floatingElementDestination);
-        this.destinationIPlusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M30 25 L80 50 L30 80" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.destinationIPlusButton.onclick = this._onDestinationIPlus;
-        this.destinationKPlusButton = this._createButton("machine-editor-destination-k-plus", this.floatingElementDestination);
-        this.destinationKPlusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M10 30 L50 80 L90 30 Z" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.destinationKPlusButton.onclick = this._onDestinationKPlus;
-        this.destinationJPlusButton = this._createButton("machine-editor-destination-j-plus", this.floatingElementDestination);
-        this.destinationJPlusButton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M25 30 L50 80 L80 30" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.destinationJPlusButton.onclick = this._onDestinationJPlus;
-        this._createButton("", this.floatingElementDestination, true);
-        this.floatingButtons.push(this.originIPlusButton, this.originIMinusButton, this.originJPlusButton, this.originJMinusButton, this.originKPlusButton, this.originKMinusButton, this.destinationIPlusButton, this.destinationIMinusButton, this.destinationJPlusButton, this.destinationJMinusButton, this.destinationKPlusButton, this.destinationKMinusButton);
+        this.destinationIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationIPlusHandle.rotation.z = -Math.PI / 2;
+        this.destinationIPlusHandle.instantiate();
+        this.destinationIPlusHandle.onClick = this._onDestinationIPlus;
+        this.destinationIMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationIMinusHandle.rotation.z = Math.PI / 2;
+        this.destinationIMinusHandle.instantiate();
+        this.destinationIMinusHandle.onClick = this._onDestinationIMinus;
+        this.destinationJPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationJPlusHandle.rotation.z = Math.PI;
+        this.destinationJPlusHandle.instantiate();
+        this.destinationJPlusHandle.onClick = this._onDestinationJPlus;
+        this.destinationJMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationJMinusHandle.instantiate();
+        this.destinationJMinusHandle.onClick = this._onDestinationJMinus;
+        this.destinationKPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationKPlusHandle.rotation.x = -Math.PI / 2;
+        this.destinationKPlusHandle.instantiate();
+        this.destinationKPlusHandle.onClick = this._onDestinationKPlus;
+        this.destinationKMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationKMinusHandle.rotation.x = Math.PI / 2;
+        this.destinationKMinusHandle.instantiate();
+        this.destinationKMinusHandle.onClick = this._onDestinationKMinus;
+        // Machine Part displacer UI.
         this.IPlusHandle = new Arrow("IPlusHandle", this.game, 0.03);
         this.IPlusHandle.rotation.z = -Math.PI / 2;
         this.IPlusHandle.instantiate();
@@ -1440,7 +1390,19 @@ class MachineEditor {
             this.JPlusHandle,
             this.JMinusHandle,
             this.KPlusHandle,
-            this.KMinusHandle
+            this.KMinusHandle,
+            this.originIPlusHandle,
+            this.originIMinusHandle,
+            this.originJPlusHandle,
+            this.originJMinusHandle,
+            this.originKPlusHandle,
+            this.originKMinusHandle,
+            this.destinationIPlusHandle,
+            this.destinationIMinusHandle,
+            this.destinationJPlusHandle,
+            this.destinationJMinusHandle,
+            this.destinationKPlusHandle,
+            this.destinationKMinusHandle
         ];
         this.updateFloatingElements();
     }
@@ -1461,13 +1423,15 @@ class MachineEditor {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.dispose();
-        this.floatingElementTop.dispose();
-        this.floatingElementRight.dispose();
-        this.floatingElementBottom.dispose();
-        this.floatingElementLeft.dispose();
+        if (this.showManipulators) {
+            this.floatingElementTop.dispose();
+            this.floatingElementRight.dispose();
+            this.floatingElementBottom.dispose();
+            this.floatingElementLeft.dispose();
+            this.floatingElementBottomRight.dispose();
+            this.floatingElementBottomLeft.dispose();
+        }
         this.floatingElementDelete.dispose();
-        this.floatingElementBottomRight.dispose();
-        this.floatingElementBottomLeft.dispose();
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
@@ -1616,9 +1580,33 @@ class MachineEditor {
                 }
                 if (this.selectedObject instanceof Ramp) {
                     let origin = this.selectedObject.getOrigin();
-                    this.floatingElementOrigin.setTarget(new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth));
+                    let pOrigin = new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth);
+                    this.originIPlusHandle.position.copyFrom(pOrigin);
+                    this.originIPlusHandle.position.x += this.smallHandleSize;
+                    this.originIMinusHandle.position.copyFrom(pOrigin);
+                    this.originIMinusHandle.position.x -= this.smallHandleSize;
+                    this.originJPlusHandle.position.copyFrom(pOrigin);
+                    this.originJPlusHandle.position.y -= this.smallHandleSize;
+                    this.originJMinusHandle.position.copyFrom(pOrigin);
+                    this.originJMinusHandle.position.y += this.smallHandleSize;
+                    this.originKPlusHandle.position.copyFrom(pOrigin);
+                    this.originKPlusHandle.position.z -= this.smallHandleSize;
+                    this.originKMinusHandle.position.copyFrom(pOrigin);
+                    this.originKMinusHandle.position.z += this.smallHandleSize;
                     let destination = this.selectedObject.getDestination();
-                    this.floatingElementDestination.setTarget(new BABYLON.Vector3(destination.i * tileWidth - 0.5 * tileWidth, -destination.j * tileHeight, -destination.k * tileDepth));
+                    let pDestination = new BABYLON.Vector3(destination.i * tileWidth - 0.5 * tileWidth, -destination.j * tileHeight, -destination.k * tileDepth);
+                    this.destinationIPlusHandle.position.copyFrom(pDestination);
+                    this.destinationIPlusHandle.position.x += this.smallHandleSize;
+                    this.destinationIMinusHandle.position.copyFrom(pDestination);
+                    this.destinationIMinusHandle.position.x -= this.smallHandleSize;
+                    this.destinationJPlusHandle.position.copyFrom(pDestination);
+                    this.destinationJPlusHandle.position.y -= this.smallHandleSize;
+                    this.destinationJMinusHandle.position.copyFrom(pDestination);
+                    this.destinationJMinusHandle.position.y += this.smallHandleSize;
+                    this.destinationKPlusHandle.position.copyFrom(pDestination);
+                    this.destinationKPlusHandle.position.z -= this.smallHandleSize;
+                    this.destinationKMinusHandle.position.copyFrom(pDestination);
+                    this.destinationKMinusHandle.position.z += this.smallHandleSize;
                     if (this.showManipulators) {
                         this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.position.x + xCenter, this.selectedObject.position.y + yBottom, this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth));
                         this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
@@ -1631,18 +1619,18 @@ class MachineEditor {
                     }
                 }
                 if (this.selectedObject instanceof Ramp) {
-                    this.originIPlusButton.style.display = "";
-                    this.originIMinusButton.style.display = "";
-                    this.originJPlusButton.style.display = "";
-                    this.originJMinusButton.style.display = "";
-                    this.originKPlusButton.style.display = "";
-                    this.originKMinusButton.style.display = "";
-                    this.destinationIPlusButton.style.display = "";
-                    this.destinationIMinusButton.style.display = "";
-                    this.destinationJPlusButton.style.display = "";
-                    this.destinationJMinusButton.style.display = "";
-                    this.destinationKPlusButton.style.display = "";
-                    this.destinationKMinusButton.style.display = "";
+                    this.originIPlusHandle.isVisible = true;
+                    this.originIMinusHandle.isVisible = true;
+                    this.originJPlusHandle.isVisible = true;
+                    this.originJMinusHandle.isVisible = true;
+                    this.originKPlusHandle.isVisible = true;
+                    this.originKMinusHandle.isVisible = true;
+                    this.destinationIPlusHandle.isVisible = true;
+                    this.destinationIMinusHandle.isVisible = true;
+                    this.destinationJPlusHandle.isVisible = true;
+                    this.destinationJMinusHandle.isVisible = true;
+                    this.destinationKPlusHandle.isVisible = true;
+                    this.destinationKMinusHandle.isVisible = true;
                 }
                 else {
                     if (this.showManipulators) {
