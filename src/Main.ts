@@ -61,6 +61,9 @@ class Game {
     public handleMaterialHover: BABYLON.StandardMaterial;
     public insertHandleMaterial: BABYLON.StandardMaterial;
     public ghostMaterial: BABYLON.StandardMaterial;
+    public cyanMaterial: BABYLON.StandardMaterial;
+    public redMaterial: BABYLON.StandardMaterial;
+    public greenMaterial: BABYLON.StandardMaterial;
     public blueMaterial: BABYLON.StandardMaterial;
     public uiMaterial: BABYLON.StandardMaterial;
 
@@ -126,8 +129,20 @@ class Game {
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.ghostMaterial.alpha = 0.3;
 
-        this.blueMaterial = new BABYLON.StandardMaterial("ghost-material");
-        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
+        this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
+        
+        this.redMaterial = new BABYLON.StandardMaterial("red-material");
+        this.redMaterial.diffuseColor = BABYLON.Color3.FromHexString("#bf212f");
+        this.redMaterial.specularColor.copyFromFloats(0, 0, 0);
+        
+        this.greenMaterial = new BABYLON.StandardMaterial("green-material");
+        this.greenMaterial.diffuseColor = BABYLON.Color3.FromHexString("#006f3c");
+        this.greenMaterial.specularColor.copyFromFloats(0, 0, 0);
+        
+        this.blueMaterial = new BABYLON.StandardMaterial("blue-material");
+        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
 
         this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");

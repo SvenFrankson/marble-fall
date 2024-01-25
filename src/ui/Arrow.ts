@@ -3,7 +3,6 @@ class Arrow extends BABYLON.Mesh {
     constructor(name: string, public game: Game, public size: number = 0.1, public dir?: BABYLON.Vector3) {
         super(name);
         this.scaling.copyFromFloats(this.size, this.size, this.size);
-        this.material = this.game.uiMaterial;
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();
         }

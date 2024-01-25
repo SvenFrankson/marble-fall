@@ -174,7 +174,7 @@ class MachinePart extends BABYLON.Mesh {
 
     public select(): void {
         this.selectorMesh.visibility = 0.2;
-        this.encloseMesh.visibility = 1;
+        this.encloseMesh.visibility = 0.1;
     }
 
     public unselect(): void {
@@ -272,7 +272,7 @@ class MachinePart extends BABYLON.Mesh {
             this.selectorMesh.dispose();
         }
         this.selectorMesh = new MachinePartSelectorMesh(this);
-        this.selectorMesh.material = this.game.blueMaterial;
+        this.selectorMesh.material = this.game.cyanMaterial;
         this.selectorMesh.parent = this;
         if (datas.length) {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);

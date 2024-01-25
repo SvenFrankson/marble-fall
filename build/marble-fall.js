@@ -1314,73 +1314,91 @@ class MachineEditor {
         this.floatingButtons.push(this.deletebutton);
         // Ramp Origin UI
         this.originIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originIPlusHandle.material = this.game.redMaterial;
         this.originIPlusHandle.rotation.z = -Math.PI / 2;
         this.originIPlusHandle.instantiate();
         this.originIPlusHandle.onClick = this._onOriginIPlus;
         this.originIMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originIMinusHandle.material = this.game.redMaterial;
         this.originIMinusHandle.rotation.z = Math.PI / 2;
         this.originIMinusHandle.instantiate();
         this.originIMinusHandle.onClick = this._onOriginIMinus;
         this.originJPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originJPlusHandle.material = this.game.greenMaterial;
         this.originJPlusHandle.rotation.z = Math.PI;
         this.originJPlusHandle.instantiate();
         this.originJPlusHandle.onClick = this._onOriginJPlus;
         this.originJMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originJMinusHandle.material = this.game.greenMaterial;
         this.originJMinusHandle.instantiate();
         this.originJMinusHandle.onClick = this._onOriginJMinus;
         this.originKPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originKPlusHandle.material = this.game.blueMaterial;
         this.originKPlusHandle.rotation.x = -Math.PI / 2;
         this.originKPlusHandle.instantiate();
         this.originKPlusHandle.onClick = this._onOriginKPlus;
         this.originKMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.originKMinusHandle.material = this.game.blueMaterial;
         this.originKMinusHandle.rotation.x = Math.PI / 2;
         this.originKMinusHandle.instantiate();
         this.originKMinusHandle.onClick = this._onOriginKMinus;
         // Ramp Destination UI
         this.destinationIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationIPlusHandle.material = this.game.redMaterial;
         this.destinationIPlusHandle.rotation.z = -Math.PI / 2;
         this.destinationIPlusHandle.instantiate();
         this.destinationIPlusHandle.onClick = this._onDestinationIPlus;
         this.destinationIMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationIMinusHandle.material = this.game.redMaterial;
         this.destinationIMinusHandle.rotation.z = Math.PI / 2;
         this.destinationIMinusHandle.instantiate();
         this.destinationIMinusHandle.onClick = this._onDestinationIMinus;
         this.destinationJPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationJPlusHandle.material = this.game.greenMaterial;
         this.destinationJPlusHandle.rotation.z = Math.PI;
         this.destinationJPlusHandle.instantiate();
         this.destinationJPlusHandle.onClick = this._onDestinationJPlus;
         this.destinationJMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationJMinusHandle.material = this.game.greenMaterial;
         this.destinationJMinusHandle.instantiate();
         this.destinationJMinusHandle.onClick = this._onDestinationJMinus;
         this.destinationKPlusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationKPlusHandle.material = this.game.blueMaterial;
         this.destinationKPlusHandle.rotation.x = -Math.PI / 2;
         this.destinationKPlusHandle.instantiate();
         this.destinationKPlusHandle.onClick = this._onDestinationKPlus;
         this.destinationKMinusHandle = new Arrow("", this.game, this.smallHandleSize);
+        this.destinationKMinusHandle.material = this.game.blueMaterial;
         this.destinationKMinusHandle.rotation.x = Math.PI / 2;
         this.destinationKMinusHandle.instantiate();
         this.destinationKMinusHandle.onClick = this._onDestinationKMinus;
         // Machine Part displacer UI.
         this.IPlusHandle = new Arrow("IPlusHandle", this.game, 0.03);
+        this.IPlusHandle.material = this.game.redMaterial;
         this.IPlusHandle.rotation.z = -Math.PI / 2;
         this.IPlusHandle.instantiate();
         this.IPlusHandle.onClick = this._onIPlus;
         this.IMinusHandle = new Arrow("IMinusHandle", this.game, 0.03);
+        this.IMinusHandle.material = this.game.redMaterial;
         this.IMinusHandle.rotation.z = Math.PI / 2;
         this.IMinusHandle.instantiate();
         this.IMinusHandle.onClick = this._onIMinus;
         this.JPlusHandle = new Arrow("JPlusHandle", this.game, 0.03);
+        this.JPlusHandle.material = this.game.greenMaterial;
         this.JPlusHandle.rotation.z = Math.PI;
         this.JPlusHandle.instantiate();
         this.JPlusHandle.onClick = this._onJPlus;
         this.JMinusHandle = new Arrow("JMinusHandle", this.game, 0.03);
+        this.JMinusHandle.material = this.game.greenMaterial;
         this.JMinusHandle.instantiate();
         this.JMinusHandle.onClick = this._onJMinus;
         this.KPlusHandle = new Arrow("KPlusHandle", this.game, 0.03);
+        this.KPlusHandle.material = this.game.blueMaterial;
         this.KPlusHandle.rotation.x = -Math.PI / 2;
         this.KPlusHandle.instantiate();
         this.KPlusHandle.onClick = this._onKPlus;
         this.KMinusHandle = new Arrow("KMinusHandle", this.game, 0.03);
+        this.KMinusHandle.material = this.game.blueMaterial;
         this.KMinusHandle.rotation.x = Math.PI / 2;
         this.KMinusHandle.instantiate();
         this.KMinusHandle.onClick = this._onKMinus;
@@ -1802,8 +1820,17 @@ class Game {
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.ghostMaterial.alpha = 0.3;
-        this.blueMaterial = new BABYLON.StandardMaterial("ghost-material");
-        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
+        this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.redMaterial = new BABYLON.StandardMaterial("red-material");
+        this.redMaterial.diffuseColor = BABYLON.Color3.FromHexString("#bf212f");
+        this.redMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.greenMaterial = new BABYLON.StandardMaterial("green-material");
+        this.greenMaterial.diffuseColor = BABYLON.Color3.FromHexString("#006f3c");
+        this.greenMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.blueMaterial = new BABYLON.StandardMaterial("blue-material");
+        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
         this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
@@ -3218,7 +3245,7 @@ class MachinePart extends BABYLON.Mesh {
     }
     select() {
         this.selectorMesh.visibility = 0.2;
-        this.encloseMesh.visibility = 1;
+        this.encloseMesh.visibility = 0.1;
     }
     unselect() {
         this.selectorMesh.visibility = 0;
@@ -3300,7 +3327,7 @@ class MachinePart extends BABYLON.Mesh {
             this.selectorMesh.dispose();
         }
         this.selectorMesh = new MachinePartSelectorMesh(this);
-        this.selectorMesh.material = this.game.blueMaterial;
+        this.selectorMesh.material = this.game.cyanMaterial;
         this.selectorMesh.parent = this;
         if (datas.length) {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
@@ -4758,7 +4785,6 @@ class Arrow extends BABYLON.Mesh {
             }
         };
         this.scaling.copyFromFloats(this.size, this.size, this.size);
-        this.material = this.game.uiMaterial;
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();
         }
