@@ -44,6 +44,14 @@ class Ball extends BABYLON.Mesh {
         this.positionZeroGhost.position.copyFrom(p);
     }
 
+    public get k(): number {
+        return - Math.round(this.positionZero.z / tileDepth);
+    }
+    public set k(v: number) {
+        this.positionZero.z = - Math.round(v) * tileDepth;
+        this.positionZeroGhost.position.copyFrom(this.positionZero);
+    }
+
     public marbleChocSound: Sound;
     public marbleLoopSound: Sound;
 

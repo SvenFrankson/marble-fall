@@ -20,7 +20,6 @@ class MachineEditor {
     public floatingElementRight: FloatingElement;
     public floatingElementBottom: FloatingElement;
     public floatingElementLeft: FloatingElement;
-    public floatingElementDelete: FloatingElement;
     public floatingElementBottomRight: FloatingElement;
     public floatingElementBottomLeft: FloatingElement;
 
@@ -32,7 +31,6 @@ class MachineEditor {
     public HMinusBottomButton: HTMLButtonElement;
     public WPlusLeftButton: HTMLButtonElement;
     public WMinusLeftButton: HTMLButtonElement;
-    public deletebutton: HTMLButtonElement;
     public tileMirrorXButton: HTMLButtonElement;
     public tileMirrorZButton: HTMLButtonElement;
     public DPlusButton: HTMLButtonElement;
@@ -65,8 +63,9 @@ class MachineEditor {
         return this._currentLayer;
     }
     public set currentLayer(v: number) {
+        v = Math.round(v);
         if (v >= 0) {
-            this._currentLayer = Math.round(v);
+            this._currentLayer = v;
             this.layerMesh.position.z = - this._currentLayer * tileDepth;
         }
     }
@@ -114,6 +113,7 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
+                this.currentLayer = this._draggedObject.k;
                 this.game.camera.detachControl();
                 this.showCurrentLayer();
             }
@@ -138,24 +138,21 @@ class MachineEditor {
                 obj.unselect();
             })
         }
+
         if (s) {
             this._selectedObjects = [s];
         }
         else {
             this._selectedObjects = [];
         }
+
         if (this._selectedObjects[0]) {
+            this.currentLayer = this._selectedObjects[0].k;
             this._selectedObjects[0].select();
-            if (this._selectedObjects[0] instanceof MachinePart) {
-                this.currentLayer = this._selectedObjects[0].k;
-                this.machinePartEditorMenu.currentPart = this._selectedObjects[0];
-            }
-            else {
-                this.machinePartEditorMenu.currentPart = undefined;
-            }
+            this.machinePartEditorMenu.currentObject = this._selectedObjects[0];
         }
         else {
-            this.machinePartEditorMenu.currentPart = undefined;
+            this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();
     }
@@ -164,6 +161,12 @@ class MachineEditor {
         if (index === - 1) {
             this._selectedObjects.push(s);
             s.select();
+        }
+        if (this.selectedObjectsCount === 1) {
+            this.machinePartEditorMenu.currentObject = this.selectedObject;
+        }
+        if (this.selectedObjectsCount > 1) {
+            this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();
     }
@@ -416,18 +419,6 @@ class MachineEditor {
                 this.DMinusButton
             );
         }
-
-        this.floatingElementDelete = FloatingElement.Create(this.game);
-        this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
-        this.deletebutton = this._createButton("machine-editor-delete", this.floatingElementDelete);
-        this.deletebutton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.deletebutton.onclick = this._onDelete;
-
-        this.floatingButtons.push(this.deletebutton);
         
         // Ramp Origin UI
         this.originIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
@@ -591,7 +582,6 @@ class MachineEditor {
         this.handles.forEach(handle => {
             handle.dispose();
         })
-        this.floatingElementDelete.dispose();
 
         this.itemContainer.innerHTML = "";
         this.items = new Map<string, HTMLDivElement>();
@@ -734,19 +724,21 @@ class MachineEditor {
 
     public pointerUp = (event: PointerEvent) => {
         // First, check for handle pick
-        let pickHandle = this.game.scene.pick(
-            this.game.scene.pointerX,
-            this.game.scene.pointerY,
-            (mesh) => {
-                if (mesh instanceof Arrow) {
-                    return true;
+        if (!this.draggedObject) {
+            let pickHandle = this.game.scene.pick(
+                this.game.scene.pointerX,
+                this.game.scene.pointerY,
+                (mesh) => {
+                    if (mesh instanceof Arrow && mesh.isVisible) {
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
+            )
+            if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
+                pickHandle.pickedMesh.onClick();
+                return;
             }
-        )
-        if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
-            pickHandle.pickedMesh.onClick();
-            return;
         }
 
         let pick = this.game.scene.pick(
@@ -899,21 +891,14 @@ class MachineEditor {
         })
         if (this.selectedObject) {
             let s = this.actionTileSize;
-            if (this.selectedObject instanceof Ball) {
-                this.deletebutton.style.display = "";
-                
-                this.floatingElementDelete.setTarget(new BABYLON.Vector3(
-                    this.selectedObject.positionZeroGhost.position.x,
-                    this.selectedObject.positionZeroGhost.position.y - this.selectedObject.radius - 0.005,
-                    this.selectedObject.positionZeroGhost.position.z + 0,
-                ));
-                this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
-                    
+            if (this.selectedObject instanceof Ball) {                    
                 this.KPlusHandle.position.copyFrom(this.selectedObject.positionZeroGhost.position);
+                this.KPlusHandle.position.y -= 0.02;
                 this.KPlusHandle.position.z -= 0.02;
                 this.KPlusHandle.isVisible = true;
                 
                 this.KMinusHandle.position.copyFrom(this.selectedObject.positionZeroGhost.position);
+                this.KMinusHandle.position.y -= 0.02;
                 this.KMinusHandle.position.z += 0.02;
                 this.KMinusHandle.isVisible = true;
             }
@@ -1357,9 +1342,8 @@ class MachineEditor {
             this.updateFloatingElements();
         }
         else if (this.selectedObject instanceof Ball) {
-            let p = this.selectedObject.positionZero.clone();
-            p.z -= tileDepth;
-            this.selectedObject.setPositionZero(p);
+            this.selectedObject.k = this.selectedObject.k + 1;
+            this.setSelectedObject(this.selectedObject);
             this.updateFloatingElements();
             if (!this.machine.playing) {
                 this.selectedObject.reset();
@@ -1386,9 +1370,8 @@ class MachineEditor {
             this.updateFloatingElements();
         }
         else if (this.selectedObject instanceof Ball) {
-            let p = this.selectedObject.positionZero.clone();
-            p.z += tileDepth;
-            this.selectedObject.setPositionZero(p);
+            this.selectedObject.k = this.selectedObject.k - 1;
+            this.setSelectedObject(this.selectedObject);
             this.updateFloatingElements();
             if (!this.machine.playing) {
                 this.selectedObject.reset();

@@ -51,6 +51,13 @@ class Ball extends BABYLON.Mesh {
         this.positionZero.copyFrom(p);
         this.positionZeroGhost.position.copyFrom(p);
     }
+    get k() {
+        return -Math.round(this.positionZero.z / tileDepth);
+    }
+    set k(v) {
+        this.positionZero.z = -Math.round(v) * tileDepth;
+        this.positionZeroGhost.position.copyFrom(this.positionZero);
+    }
     select() {
         this.selectedMesh.isVisible = true;
     }
@@ -656,15 +663,17 @@ class MachineEditor {
         };
         this.pointerUp = (event) => {
             // First, check for handle pick
-            let pickHandle = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                if (mesh instanceof Arrow) {
-                    return true;
+            if (!this.draggedObject) {
+                let pickHandle = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    if (mesh instanceof Arrow && mesh.isVisible) {
+                        return true;
+                    }
+                    return false;
+                });
+                if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
+                    pickHandle.pickedMesh.onClick();
+                    return;
                 }
-                return false;
-            });
-            if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
-                pickHandle.pickedMesh.onClick();
-                return;
             }
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                 if (!this.draggedObject && (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh)) {
@@ -990,9 +999,8 @@ class MachineEditor {
                 this.updateFloatingElements();
             }
             else if (this.selectedObject instanceof Ball) {
-                let p = this.selectedObject.positionZero.clone();
-                p.z -= tileDepth;
-                this.selectedObject.setPositionZero(p);
+                this.selectedObject.k = this.selectedObject.k + 1;
+                this.setSelectedObject(this.selectedObject);
                 this.updateFloatingElements();
                 if (!this.machine.playing) {
                     this.selectedObject.reset();
@@ -1018,9 +1026,8 @@ class MachineEditor {
                 this.updateFloatingElements();
             }
             else if (this.selectedObject instanceof Ball) {
-                let p = this.selectedObject.positionZero.clone();
-                p.z += tileDepth;
-                this.selectedObject.setPositionZero(p);
+                this.selectedObject.k = this.selectedObject.k - 1;
+                this.setSelectedObject(this.selectedObject);
                 this.updateFloatingElements();
                 if (!this.machine.playing) {
                     this.selectedObject.reset();
@@ -1040,8 +1047,9 @@ class MachineEditor {
         return this._currentLayer;
     }
     set currentLayer(v) {
+        v = Math.round(v);
         if (v >= 0) {
-            this._currentLayer = Math.round(v);
+            this._currentLayer = v;
             this.layerMesh.position.z = -this._currentLayer * tileDepth;
         }
     }
@@ -1083,6 +1091,7 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
+                this.currentLayer = this._draggedObject.k;
                 this.game.camera.detachControl();
                 this.showCurrentLayer();
             }
@@ -1111,17 +1120,12 @@ class MachineEditor {
             this._selectedObjects = [];
         }
         if (this._selectedObjects[0]) {
+            this.currentLayer = this._selectedObjects[0].k;
             this._selectedObjects[0].select();
-            if (this._selectedObjects[0] instanceof MachinePart) {
-                this.currentLayer = this._selectedObjects[0].k;
-                this.machinePartEditorMenu.currentPart = this._selectedObjects[0];
-            }
-            else {
-                this.machinePartEditorMenu.currentPart = undefined;
-            }
+            this.machinePartEditorMenu.currentObject = this._selectedObjects[0];
         }
         else {
-            this.machinePartEditorMenu.currentPart = undefined;
+            this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();
     }
@@ -1130,6 +1134,12 @@ class MachineEditor {
         if (index === -1) {
             this._selectedObjects.push(s);
             s.select();
+        }
+        if (this.selectedObjectsCount === 1) {
+            this.machinePartEditorMenu.currentObject = this.selectedObject;
+        }
+        if (this.selectedObjectsCount > 1) {
+            this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();
     }
@@ -1345,16 +1355,6 @@ class MachineEditor {
             this.DPlusButton.onclick = this._onDPlus;
             this.floatingButtons.push(this.HPlusTopButton, this.HMinusTopButton, this.WMinusRightButton, this.WPlusRightButton, this.HMinusBottomButton, this.HPlusBottomButton, this.WPlusLeftButton, this.WMinusLeftButton, this.tileMirrorXButton, this.tileMirrorZButton, this.DPlusButton, this.DMinusButton);
         }
-        this.floatingElementDelete = FloatingElement.Create(this.game);
-        this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
-        this.deletebutton = this._createButton("machine-editor-delete", this.floatingElementDelete);
-        this.deletebutton.innerHTML = `
-            <svg class="label" viewBox="0 0 100 100">
-                <path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-        `;
-        this.deletebutton.onclick = this._onDelete;
-        this.floatingButtons.push(this.deletebutton);
         // Ramp Origin UI
         this.originIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
         this.originIPlusHandle.material = this.game.redMaterial;
@@ -1495,7 +1495,6 @@ class MachineEditor {
         this.handles.forEach(handle => {
             handle.dispose();
         });
-        this.floatingElementDelete.dispose();
         this.itemContainer.innerHTML = "";
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
@@ -1591,13 +1590,12 @@ class MachineEditor {
         if (this.selectedObject) {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
-                this.deletebutton.style.display = "";
-                this.floatingElementDelete.setTarget(new BABYLON.Vector3(this.selectedObject.positionZeroGhost.position.x, this.selectedObject.positionZeroGhost.position.y - this.selectedObject.radius - 0.005, this.selectedObject.positionZeroGhost.position.z + 0));
-                this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
                 this.KPlusHandle.position.copyFrom(this.selectedObject.positionZeroGhost.position);
+                this.KPlusHandle.position.y -= 0.02;
                 this.KPlusHandle.position.z -= 0.02;
                 this.KPlusHandle.isVisible = true;
                 this.KMinusHandle.position.copyFrom(this.selectedObject.positionZeroGhost.position);
+                this.KMinusHandle.position.y -= 0.02;
                 this.KMinusHandle.position.z += 0.02;
                 this.KMinusHandle.isVisible = true;
             }
@@ -4996,11 +4994,11 @@ class MachinePartEditorMenu {
         this.machineEditor = machineEditor;
         this._shown = true;
     }
-    get currentPart() {
-        return this._currentPart;
+    get currentObject() {
+        return this._currentObject;
     }
-    set currentPart(part) {
-        this._currentPart = part;
+    set currentObject(part) {
+        this._currentObject = part;
         this.update();
     }
     initialize() {
@@ -5019,18 +5017,18 @@ class MachinePartEditorMenu {
         this.widthLine = document.getElementById("machine-editor-part-menu-width");
         this.wPlusButton = document.querySelector("#machine-editor-part-menu-width button.plus");
         this.wPlusButton.onclick = async () => {
-            if (this.currentPart.xExtendable) {
-                let w = this.currentPart.w + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+            if (this.currentObject instanceof MachinePart && this.currentObject.xExtendable) {
+                let w = this.currentObject.w + 1;
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, w, this.currentObject.yExtendable ? this.currentObject.h : undefined, this.currentObject.zExtendable ? this.currentObject.d : undefined);
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
         this.wMinusButton = document.querySelector("#machine-editor-part-menu-width button.minus");
         this.wMinusButton.onclick = async () => {
-            if (this.currentPart.xExtendable) {
-                let w = this.currentPart.w - 1;
+            if (this.currentObject instanceof MachinePart && this.currentObject.xExtendable) {
+                let w = this.currentObject.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, w, this.currentPart.yExtendable ? this.currentPart.h : undefined, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, w, this.currentObject.yExtendable ? this.currentObject.h : undefined, this.currentObject.zExtendable ? this.currentObject.d : undefined);
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -5039,18 +5037,18 @@ class MachinePartEditorMenu {
         this.heightLine = document.getElementById("machine-editor-part-menu-height");
         this.hPlusButton = document.querySelector("#machine-editor-part-menu-height button.plus");
         this.hPlusButton.onclick = async () => {
-            if (this.currentPart.yExtendable) {
-                let h = this.currentPart.h + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+            if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
+                let h = this.currentObject.h + 1;
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, h, this.currentObject.zExtendable ? this.currentObject.d : undefined);
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
         this.hMinusButton = document.querySelector("#machine-editor-part-menu-height button.minus");
         this.hMinusButton.onclick = async () => {
-            if (this.currentPart.yExtendable) {
-                let h = this.currentPart.h - 1;
+            if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
+                let h = this.currentObject.h - 1;
                 if (h >= 0) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, h, this.currentPart.zExtendable ? this.currentPart.d : undefined);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, h, this.currentObject.zExtendable ? this.currentObject.d : undefined);
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -5059,18 +5057,18 @@ class MachinePartEditorMenu {
         this.depthLine = document.getElementById("machine-editor-part-menu-depth");
         this.dPlusButton = document.querySelector("#machine-editor-part-menu-depth button.plus");
         this.dPlusButton.onclick = async () => {
-            if (this.currentPart.zExtendable) {
-                let d = this.currentPart.d + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
+            if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
+                let d = this.currentObject.d + 1;
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, this.currentObject.yExtendable ? this.currentObject.h : undefined, d);
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
         this.dMinusButton = document.querySelector("#machine-editor-part-menu-depth button.minus");
         this.dMinusButton.onclick = async () => {
-            if (this.currentPart.zExtendable) {
-                let d = this.currentPart.d - 1;
-                if (d >= this.currentPart.minD) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentPart, undefined, undefined, undefined, this.currentPart.xExtendable ? this.currentPart.w : undefined, this.currentPart.yExtendable ? this.currentPart.h : undefined, d);
+            if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
+                let d = this.currentObject.d - 1;
+                if (d >= this.currentObject.minD) {
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, this.currentObject.yExtendable ? this.currentObject.h : undefined, d);
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -5079,42 +5077,51 @@ class MachinePartEditorMenu {
         this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX");
         this.mirrorXButton = document.querySelector("#machine-editor-part-menu-mirrorX button");
         this.mirrorXButton.onclick = async () => {
-            let editedTrack = await this.machineEditor.mirrorXTrackInPlace(this.currentPart);
-            this.machineEditor.setSelectedObject(editedTrack);
+            if (this.currentObject instanceof MachinePart) {
+                let editedTrack = await this.machineEditor.mirrorXTrackInPlace(this.currentObject);
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
         };
         this.mirrorZLine = document.getElementById("machine-editor-part-menu-mirrorZ");
         this.mirrorZButton = document.querySelector("#machine-editor-part-menu-mirrorZ button");
         this.mirrorZButton.onclick = async () => {
-            let editedTrack = await this.machineEditor.mirrorZTrackInPlace(this.currentPart);
-            this.machineEditor.setSelectedObject(editedTrack);
+            if (this.currentObject instanceof MachinePart) {
+                let editedTrack = await this.machineEditor.mirrorZTrackInPlace(this.currentObject);
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
         };
         this.deleteButton = document.querySelector("#machine-editor-part-menu-delete button");
         this.deleteButton.onclick = async () => {
-            this.currentPart.dispose();
+            this.currentObject.dispose();
             this.machineEditor.setSelectedObject(undefined);
             this.machineEditor.setDraggedObject(undefined);
         };
     }
     dispose() {
-        this.currentPart = undefined;
+        this.currentObject = undefined;
     }
     update() {
-        if (!this.currentPart) {
+        if (!this.currentObject) {
             this.container.style.display = "none";
         }
         else {
             this.container.style.display = "";
             this.showButton.style.display = this._shown ? "none" : "";
             this.hideButton.style.display = this._shown ? "" : "none";
-            this.widthLine.style.display = this._shown && this.currentPart.xExtendable ? "" : "none";
-            this.heightLine.style.display = this._shown && this.currentPart.yExtendable ? "" : "none";
-            this.depthLine.style.display = this._shown && this.currentPart.zExtendable ? "" : "none";
-            this.mirrorXLine.style.display = this._shown && this.currentPart.xMirrorable ? "" : "none";
-            this.mirrorZLine.style.display = this._shown && this.currentPart.zMirrorable ? "" : "none";
-            this.titleElement.innerText = this.currentPart.partName;
-            this.wValue.innerText = this.currentPart.w.toFixed(0);
-            this.hValue.innerText = this.currentPart.h.toFixed(0);
-            this.dValue.innerText = this.currentPart.d.toFixed(0);
+            this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
+            this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
+            this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
+            this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
+            this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
+            if (this.currentObject instanceof MachinePart) {
+                this.titleElement.innerText = this.currentObject.partName;
+                this.wValue.innerText = this.currentObject.w.toFixed(0);
+                this.hValue.innerText = this.currentObject.h.toFixed(0);
+                this.dValue.innerText = this.currentObject.d.toFixed(0);
+            }
+            else if (this.currentObject instanceof Ball) {
+                this.titleElement.innerText = "Marble";
+            }
         }
     }
 }
