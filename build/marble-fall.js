@@ -5081,7 +5081,7 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("text-anchor", "end");
         earlyAccessDisclaimer.setAttribute("x", "340");
         earlyAccessDisclaimer.setAttribute("y", "250");
-        earlyAccessDisclaimer.setAttribute("fill", "lime");
+        earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
         earlyAccessDisclaimer.innerHTML = "> v0.1 early access";
