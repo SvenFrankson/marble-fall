@@ -1378,4 +1378,41 @@ class MachineEditor {
             }
         }
     }
+
+    public _onFill = () => {
+        if (this.selectedObject instanceof Elevator) {
+            let elevator = this.selectedObject as Elevator;
+            // Remove all balls located in the Elevator vicinity.
+            let currentBallsInElevator: Ball[] = [];
+            for (let i = 0; i < this.machine.balls.length; i++) {
+                let ball = this.machine.balls[i];
+                let posLocal = ball.positionZero.subtract(elevator.position);
+                if (elevator.encloseStart.x < posLocal.x && posLocal.x < elevator.encloseEnd.x) {
+                    if (elevator.encloseEnd.y < posLocal.y && posLocal.y < elevator.encloseStart.y) {
+                        if (elevator.encloseEnd.z < posLocal.z && posLocal.z < elevator.encloseStart.z) {
+                            currentBallsInElevator.push(ball);
+                        }
+                    }
+                }
+            }
+            for (let i = 0; i < currentBallsInElevator.length; i++) {
+                currentBallsInElevator[i].dispose();
+            }
+
+            elevator.reset();
+            requestAnimationFrame(() => {
+                let nBalls = Math.floor(elevator.boxesCount / 2);
+                for (let i = 0; i < nBalls; i++) {
+                    let box = elevator.boxes[i];
+                    let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-0.011, 0.009, 0), box.getWorldMatrix());
+                    let ball = new Ball(pos, this.machine);
+                    ball.instantiate().then(() => {
+                        ball.setShowPositionZeroGhost(true);
+                        ball.setIsVisible(true);
+                    });
+                    this.machine.balls.push(ball);
+                }
+            })
+        }
+    }
 }

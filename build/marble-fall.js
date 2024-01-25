@@ -1034,6 +1034,41 @@ class MachineEditor {
                 }
             }
         };
+        this._onFill = () => {
+            if (this.selectedObject instanceof Elevator) {
+                let elevator = this.selectedObject;
+                // Remove all balls located in the Elevator vicinity.
+                let currentBallsInElevator = [];
+                for (let i = 0; i < this.machine.balls.length; i++) {
+                    let ball = this.machine.balls[i];
+                    let posLocal = ball.positionZero.subtract(elevator.position);
+                    if (elevator.encloseStart.x < posLocal.x && posLocal.x < elevator.encloseEnd.x) {
+                        if (elevator.encloseEnd.y < posLocal.y && posLocal.y < elevator.encloseStart.y) {
+                            if (elevator.encloseEnd.z < posLocal.z && posLocal.z < elevator.encloseStart.z) {
+                                currentBallsInElevator.push(ball);
+                            }
+                        }
+                    }
+                }
+                for (let i = 0; i < currentBallsInElevator.length; i++) {
+                    currentBallsInElevator[i].dispose();
+                }
+                elevator.reset();
+                requestAnimationFrame(() => {
+                    let nBalls = Math.floor(elevator.boxesCount / 2);
+                    for (let i = 0; i < nBalls; i++) {
+                        let box = elevator.boxes[i];
+                        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-0.011, 0.009, 0), box.getWorldMatrix());
+                        let ball = new Ball(pos, this.machine);
+                        ball.instantiate().then(() => {
+                            ball.setShowPositionZeroGhost(true);
+                            ball.setIsVisible(true);
+                        });
+                        this.machine.balls.push(ball);
+                    }
+                });
+            }
+        };
         this.container = document.getElementById("machine-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
@@ -5090,6 +5125,9 @@ class MachinePartEditorMenu {
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
+        this.fillLine = document.getElementById("machine-editor-part-menu-fill");
+        this.fillButton = document.querySelector("#machine-editor-part-menu-fill button");
+        this.fillButton.onclick = this.machineEditor._onFill;
         this.deleteButton = document.querySelector("#machine-editor-part-menu-delete button");
         this.deleteButton.onclick = async () => {
             this.currentObject.dispose();
@@ -5113,6 +5151,7 @@ class MachinePartEditorMenu {
             this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
             this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
             this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
+            this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
             if (this.currentObject instanceof MachinePart) {
                 this.titleElement.innerText = this.currentObject.partName;
                 this.wValue.innerText = this.currentObject.w.toFixed(0);
