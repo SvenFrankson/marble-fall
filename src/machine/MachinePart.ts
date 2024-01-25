@@ -405,11 +405,16 @@ class MachinePart extends BABYLON.Mesh {
             if (pointData.dir) {
                 direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
             }
+            let normal: BABYLON.Vector3;
+            if (pointData.normal) {
+                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
+            }
 
             let trackPoint = new TrackPoint(
                 this.tracks[0],
                 new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z),
                 direction,
+                normal,
                 pointData.tangentIn,
                 pointData.tangentOut
             );

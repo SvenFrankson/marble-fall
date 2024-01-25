@@ -1,6 +1,5 @@
 class TrackPoint {
 
-    public normal: BABYLON.Vector3 = BABYLON.Vector3.Up();
     public fixedNormal: boolean = false;
     public fixedDir: boolean = false;
     public fixedTangentIn: boolean = false;
@@ -11,9 +10,19 @@ class TrackPoint {
         public track: Track,
         public position: BABYLON.Vector3,
         public dir?: BABYLON.Vector3,
+        public normal?: BABYLON.Vector3,
         public tangentIn?: number,
         public tangentOut?: number
     ) {
+        if (normal) {
+            this.fixedNormal = true;
+        }
+        else {
+            this.fixedNormal = false;
+            this.normal = BABYLON.Vector3.Up();
+        }
+        this.normal = this.normal.clone();
+
         if (dir) {
             this.fixedDir = true;
         }

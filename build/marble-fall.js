@@ -198,30 +198,27 @@ class Ball extends BABYLON.Mesh {
 }
 var demo1 = {
     balls: [
-        { x: 0.45223644798326457, y: -0.14555925508040052 },
-        { x: 0.4542039643251569, y: -0.06168364093616862 },
-        { x: 0.4554387140880808, y: 0.021382350340019358 },
-        { x: 0.4552031364946579, y: 0.10582023181972072 },
-        { x: 0.45496577489396894, y: 0.19089755354340562 },
-        { x: 0.4265645074593439, y: -0.14331937155899638 },
-        { x: 0.40186220720561006, y: -0.1411542072522732 },
-        { x: 0.37693605105079203, y: -0.1396427223486105 },
+        { x: 0.4539999737739563, y: -0.15150000488758086, z: 0 },
+        { x: 0.4539999737739563, y: -0.07465930616855622, z: 0 },
+        { x: 0.4539999737739563, y: 0.002181407451629638, z: 0 },
+        { x: 0.4539999737739563, y: 0.07902212107181548, z: 0 },
+        { x: 0.4539999737739563, y: 0.15586281979084016, z: 0 },
     ],
     parts: [
-        { name: "ramp-3.1", i: -1, j: -6, mirror: true },
-        { name: "ramp-3.1", i: -1, j: 4 },
-        { name: "uturn-s", i: -2, j: -1, mirror: true },
-        { name: "uturn-s", i: -2, j: 3, mirror: true },
-        { name: "uturn-s", i: -2, j: -5, mirror: true },
-        { name: "elevator-12", i: 3, j: -7 },
-        { name: "ramp-1.0", i: 2, j: -6 },
-        { name: "ramp-1.0", i: 2, j: 5 },
-        { name: "wave", i: -1, j: -4 },
-        { name: "ramp-2.1", i: -1, j: -2, mirror: true },
-        { name: "uturn-l", i: 1, j: -3 },
-        { name: "ramp-2.1", i: -1, j: 2, mirror: true },
-        { name: "wave", i: -1, j: 0 },
-        { name: "uturn-l", i: 1, j: 1 },
+        { name: "ramp-3.1.1", i: -1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.1.1", i: -1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-s", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-s", i: -2, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-s", i: -2, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "elevator-12", i: 3, j: -7, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 2, j: -6, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 2, j: 5, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "wave", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-l", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -1, j: 2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "wave", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-l", i: 1, j: 1, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
 var demo2 = {
@@ -3504,7 +3501,11 @@ class MachinePart extends BABYLON.Mesh {
             if (pointData.dir) {
                 direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
             }
-            let trackPoint = new TrackPoint(this.tracks[0], new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), direction, pointData.tangentIn, pointData.tangentOut);
+            let normal;
+            if (pointData.normal) {
+                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
+            }
+            let trackPoint = new TrackPoint(this.tracks[0], new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), direction, normal, pointData.tangentIn, pointData.tangentOut);
             this.tracks[0].trackpoints[i] = trackPoint;
         }
     }
@@ -3978,18 +3979,26 @@ class Track {
     }
 }
 class TrackPoint {
-    constructor(track, position, dir, tangentIn, tangentOut) {
+    constructor(track, position, dir, normal, tangentIn, tangentOut) {
         this.track = track;
         this.position = position;
         this.dir = dir;
+        this.normal = normal;
         this.tangentIn = tangentIn;
         this.tangentOut = tangentOut;
-        this.normal = BABYLON.Vector3.Up();
         this.fixedNormal = false;
         this.fixedDir = false;
         this.fixedTangentIn = false;
         this.fixedTangentOut = false;
         this.summedLength = 0;
+        if (normal) {
+            this.fixedNormal = true;
+        }
+        else {
+            this.fixedNormal = false;
+            this.normal = BABYLON.Vector3.Up();
+        }
+        this.normal = this.normal.clone();
         if (dir) {
             this.fixedDir = true;
         }
@@ -4068,7 +4077,7 @@ class Elevator extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.35), 0), dir),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.35) + 0.01, 0), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [

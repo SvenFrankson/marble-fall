@@ -61,7 +61,7 @@ class Elevator extends MachinePart {
                 -0.005,
                 0.035 - tileHeight,
                 0
-            ), (new BABYLON.Vector3(-1, 1, 0)).normalize())
+            ), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
