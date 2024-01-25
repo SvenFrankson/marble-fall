@@ -126,6 +126,9 @@ class MachineEditor {
 
     private _majDown: boolean = false;
     private _selectedObjects: (MachinePart | Ball)[] = [];
+    public get selectedObjectsCount(): number {
+        return this._selectedObjects.length;
+    }
     public get selectedObject(): MachinePart | Ball {
         return this._selectedObjects[0];
     }
@@ -162,6 +165,7 @@ class MachineEditor {
             this._selectedObjects.push(s);
             s.select();
         }
+        this.updateFloatingElements();
     }
 
     constructor(public game: Game) {
@@ -914,84 +918,8 @@ class MachineEditor {
                 this.KMinusHandle.isVisible = true;
             }
             else if (this.selectedObject instanceof MachinePart) {
-                let xLeft = - tileWidth * 0.5;
-                let xRight = tileWidth * (this.selectedObject.w - 0.5);
-                let xCenter = (xLeft + xRight) * 0.5;
-                let yTop = tileHeight * 0.25;
-                let yBottom = - tileHeight * (this.selectedObject.h + 0.75);
-                let yCenter = (yTop + yBottom) * 0.5;
-
-                if (this.showManipulators) {
-                    this.floatingElementTop.setTarget(new BABYLON.Vector3(
-                        this.selectedObject.position.x + xCenter,
-                        this.selectedObject.position.y + yTop,
-                        this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                    ));
-                    
-                    this.floatingElementRight.setTarget(new BABYLON.Vector3(
-                        this.selectedObject.position.x + xRight,
-                        this.selectedObject.position.y + yCenter,
-                        this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                    ));
-    
-                    this.floatingElementBottom.setTarget(new BABYLON.Vector3(
-                        this.selectedObject.position.x + xCenter,
-                        this.selectedObject.position.y + yBottom,
-                        this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                    ));
-                    
-                    this.floatingElementLeft.setTarget(new BABYLON.Vector3(
-                        this.selectedObject.position.x + xLeft,
-                        this.selectedObject.position.y + yCenter,
-                        this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                    ));
-    
-                    this.floatingElementBottomRight.setTarget(new BABYLON.Vector3(
-                        this.selectedObject.position.x + xRight,
-                        this.selectedObject.position.y + yBottom,
-                        this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                    ));
-    
-                    this.floatingElementBottomLeft.setTarget(new BABYLON.Vector3(
-                        this.selectedObject.position.x + xLeft,
-                        this.selectedObject.position.y + yBottom,
-                        this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                    ));
-                }
-
-                if (this.showDisplacers) {
-                    this.IPlusHandle.position.copyFrom(this.selectedObject.position);
-                    this.IPlusHandle.position.x += this.selectedObject.encloseEnd.x;
-                    this.IPlusHandle.position.y += this.selectedObject.encloseMid.y;
-                    this.IPlusHandle.position.z += this.selectedObject.encloseStart.z;
-                    
-                    this.IMinusHandle.position.copyFrom(this.selectedObject.position);
-                    this.IMinusHandle.position.x += this.selectedObject.encloseStart.x;
-                    this.IMinusHandle.position.y += this.selectedObject.encloseMid.y;
-                    this.IMinusHandle.position.z += this.selectedObject.encloseStart.z;
-                    
-                    this.JPlusHandle.position.copyFrom(this.selectedObject.position);
-                    this.JPlusHandle.position.x += this.selectedObject.enclose13.x;
-                    this.JPlusHandle.position.y += this.selectedObject.encloseEnd.y;
-                    this.JPlusHandle.position.z += this.selectedObject.encloseStart.z;
-                    
-                    this.JMinusHandle.position.copyFrom(this.selectedObject.position);
-                    this.JMinusHandle.position.x += this.selectedObject.enclose13.x;
-                    this.JMinusHandle.position.y += this.selectedObject.encloseStart.y;
-                    this.JMinusHandle.position.z += this.selectedObject.encloseStart.z;
-                    
-                    this.KPlusHandle.position.copyFrom(this.selectedObject.position);
-                    this.KPlusHandle.position.x += this.selectedObject.enclose23.x;
-                    this.KPlusHandle.position.y += this.selectedObject.encloseEnd.y;
-                    this.KPlusHandle.position.z += this.selectedObject.encloseEnd.z;
-                    
-                    this.KMinusHandle.position.copyFrom(this.selectedObject.position);
-                    this.KMinusHandle.position.x += this.selectedObject.enclose23.x;
-                    this.KMinusHandle.position.y += this.selectedObject.encloseEnd.y;
-                    this.KMinusHandle.position.z += this.selectedObject.encloseStart.z;
-                }
-
-                if (this.selectedObject instanceof Ramp) {
+                
+                if (this.selectedObject instanceof Ramp && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(
                         origin.i * tileWidth - 0.5 * tileWidth,
@@ -1031,28 +959,7 @@ class MachineEditor {
                     this.destinationKPlusHandle.position.z -= this.smallHandleSize;
                     this.destinationKMinusHandle.position.copyFrom(pDestination);
                     this.destinationKMinusHandle.position.z += this.smallHandleSize;
-
-                    if (this.showManipulators) {
-                        this.floatingElementDelete.setTarget(new BABYLON.Vector3(
-                            this.selectedObject.position.x + xCenter,
-                            this.selectedObject.position.y + yBottom,
-                            this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                        ));
-                        this.floatingElementDelete.anchor = FloatingElementAnchor.TopCenter;
-                    }
-                }
-                else {
-                    if (this.showManipulators) {
-                        this.floatingElementDelete.setTarget(new BABYLON.Vector3(
-                            this.selectedObject.position.x + xRight,
-                            this.selectedObject.position.y + yTop,
-                            this.selectedObject.position.z - 0.5 * (this.selectedObject.d - 1) * tileDepth,
-                        ));
-                        this.floatingElementDelete.anchor = FloatingElementAnchor.LeftBottom;
-                    }
-                }
-
-                if (this.selectedObject instanceof Ramp) {
+                    
                     this.originIPlusHandle.isVisible = true;
                     this.originIMinusHandle.isVisible = true;
                     this.originJPlusHandle.isVisible = true;
@@ -1067,41 +974,86 @@ class MachineEditor {
                     this.destinationKMinusHandle.isVisible = true;
                 }
                 else {
-                    if (this.showManipulators) {
-                        if (this.selectedObject.xExtendable) {
-                            this.WMinusRightButton.style.display = "";
-                            this.WPlusRightButton.style.display = "";
-                            this.WMinusLeftButton.style.display = "";
-                            this.WPlusLeftButton.style.display = "";
-                        }
-                        if (this.selectedObject.yExtendable) {
-                            this.HMinusTopButton.style.display = "";
-                            this.HPlusTopButton.style.display = "";
-                            this.HPlusBottomButton.style.display = "";
-                            this.HMinusBottomButton.style.display = "";
-                        }
-                        if (this.selectedObject.zExtendable) {
-                            this.DPlusButton.style.display = "";
-                            this.DMinusButton.style.display = "";
-                        }
-                        if (this.selectedObject.xMirrorable) {
-                            this.tileMirrorXButton.style.display = "";
-                        }
-                        if (this.selectedObject.zMirrorable) {
-                            this.tileMirrorZButton.style.display = "";
-                        }
+                    if (this.selectedObjectsCount === 1) {
+                        this.IPlusHandle.position.copyFrom(this.selectedObject.position);
+                        this.IPlusHandle.position.x += this.selectedObject.encloseEnd.x;
+                        this.IPlusHandle.position.y += this.selectedObject.encloseMid.y;
+                        this.IPlusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        
+                        this.IMinusHandle.position.copyFrom(this.selectedObject.position);
+                        this.IMinusHandle.position.x += this.selectedObject.encloseStart.x;
+                        this.IMinusHandle.position.y += this.selectedObject.encloseMid.y;
+                        this.IMinusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        
+                        this.JPlusHandle.position.copyFrom(this.selectedObject.position);
+                        this.JPlusHandle.position.x += this.selectedObject.enclose13.x;
+                        this.JPlusHandle.position.y += this.selectedObject.encloseEnd.y;
+                        this.JPlusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        
+                        this.JMinusHandle.position.copyFrom(this.selectedObject.position);
+                        this.JMinusHandle.position.x += this.selectedObject.enclose13.x;
+                        this.JMinusHandle.position.y += this.selectedObject.encloseStart.y;
+                        this.JMinusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        
+                        this.KPlusHandle.position.copyFrom(this.selectedObject.position);
+                        this.KPlusHandle.position.x += this.selectedObject.enclose23.x;
+                        this.KPlusHandle.position.y += this.selectedObject.encloseEnd.y;
+                        this.KPlusHandle.position.z += this.selectedObject.encloseEnd.z;
+                        
+                        this.KMinusHandle.position.copyFrom(this.selectedObject.position);
+                        this.KMinusHandle.position.x += this.selectedObject.enclose23.x;
+                        this.KMinusHandle.position.y += this.selectedObject.encloseEnd.y;
+                        this.KMinusHandle.position.z += this.selectedObject.encloseStart.z;
                     }
-                    if (this.showDisplacers) {
-                        this.IPlusHandle.isVisible = true;
-                        this.IMinusHandle.isVisible = true;
-                        this.JPlusHandle.isVisible = true;
-                        this.JMinusHandle.isVisible = true;
-                        this.KPlusHandle.isVisible = true;
-                        this.KMinusHandle.isVisible = true;
+                    else if (this.selectedObjectsCount > 1) {
+                        let encloseStart: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, - Infinity, - Infinity);
+                        let encloseEnd: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, Infinity, Infinity);
+                        this._selectedObjects.forEach(obj => {
+                            if (obj instanceof MachinePart) {
+                                encloseStart.x = Math.min(encloseStart.x, obj.position.x + obj.encloseStart.x);
+                                encloseStart.y = Math.max(encloseStart.y, obj.position.y + obj.encloseStart.y);
+                                encloseStart.z = Math.max(encloseStart.z, obj.position.z + obj.encloseStart.z);
+                                
+                                encloseEnd.x = Math.max(encloseEnd.x, obj.position.x + obj.encloseEnd.x);
+                                encloseEnd.y = Math.min(encloseEnd.y, obj.position.y + obj.encloseEnd.y);
+                                encloseEnd.z = Math.min(encloseEnd.z, obj.position.z + obj.encloseEnd.z);
+                            }
+                        });
+                        let enclose13 = encloseStart.clone().scaleInPlace(2 / 3).addInPlace(encloseEnd.scale(1 / 3));
+                        let encloseMid = encloseStart.clone().addInPlace(encloseEnd).scaleInPlace(0.5);
+                        let enclose23 = encloseStart.clone().scaleInPlace(1 / 3).addInPlace(encloseEnd.scale(2 / 3));
+                        
+                        this.IPlusHandle.position.x = encloseEnd.x;
+                        this.IPlusHandle.position.y = encloseMid.y;
+                        this.IPlusHandle.position.z = encloseStart.z - tileDepth * 0.5;
+                        
+                        this.IMinusHandle.position.x = encloseStart.x;
+                        this.IMinusHandle.position.y = encloseMid.y;
+                        this.IMinusHandle.position.z = encloseStart.z - tileDepth * 0.5;
+                        
+                        this.JPlusHandle.position.x = enclose13.x;
+                        this.JPlusHandle.position.y = encloseEnd.y;
+                        this.JPlusHandle.position.z = encloseStart.z - tileDepth * 0.5;
+                        
+                        this.JMinusHandle.position.x = enclose13.x;
+                        this.JMinusHandle.position.y = encloseStart.y;
+                        this.JMinusHandle.position.z = encloseStart.z - tileDepth * 0.5;
+                        
+                        this.KPlusHandle.position.x = enclose23.x;
+                        this.KPlusHandle.position.y = encloseEnd.y;
+                        this.KPlusHandle.position.z = encloseEnd.z;
+                        
+                        this.KMinusHandle.position.x = enclose23.x;
+                        this.KMinusHandle.position.y = encloseEnd.y;
+                        this.KMinusHandle.position.z = encloseStart.z;
                     }
-                }
-                if (this.showManipulators) {
-                    this.deletebutton.style.display = "";
+                    
+                    this.IPlusHandle.isVisible = true;
+                    this.IMinusHandle.isVisible = true;
+                    this.JPlusHandle.isVisible = true;
+                    this.JMinusHandle.isVisible = true;
+                    this.KPlusHandle.isVisible = true;
+                    this.KMinusHandle.isVisible = true;
                 }
             }
         }
@@ -1314,87 +1266,99 @@ class MachineEditor {
         }
     }
 
-    private _onJMinus = () => {
-        if (this.selectedObject instanceof MachinePart) {
-            let selectedTrack = this.selectedObject;
-            selectedTrack.setJ(selectedTrack.j - 1);
-            selectedTrack.recomputeAbsolutePath();
-            selectedTrack.generateWires();
-            selectedTrack.instantiate().then(() => {
+    private _onIPlus = async () => {
+        for (let i = 0; i < this._selectedObjects.length; i++) {
+            let selectedTrack = this._selectedObjects[i];
+            if (selectedTrack instanceof MachinePart) {
+                selectedTrack.setI(selectedTrack.i + 1);
                 selectedTrack.recomputeAbsolutePath();
-                this.setSelectedObject(selectedTrack);
-                this.setDraggedObject(undefined);
-                this.setSelectedItem("");
-                this.machine.generateBaseMesh();
-            });
+                selectedTrack.generateWires();
+                await selectedTrack.instantiate();
+                selectedTrack.recomputeAbsolutePath();
+                selectedTrack.select();
+            }
         }
+        this.setDraggedObject(undefined);
+        this.setSelectedItem("");
+        this.machine.generateBaseMesh();
+        this.updateFloatingElements();
     }
 
-    private _onIMinus = () => {
-        if (this.selectedObject instanceof MachinePart) {
-            let selectedTrack = this.selectedObject;
-            selectedTrack.setI(selectedTrack.i - 1);
-            selectedTrack.recomputeAbsolutePath();
-            selectedTrack.generateWires();
-            selectedTrack.instantiate().then(() => {
+    private _onIMinus = async () => {
+        for (let i = 0; i < this._selectedObjects.length; i++) {
+            let selectedTrack = this._selectedObjects[i];
+            if (selectedTrack instanceof MachinePart) {
+                selectedTrack.setI(selectedTrack.i - 1);
                 selectedTrack.recomputeAbsolutePath();
-                this.setSelectedObject(selectedTrack);
-                this.setDraggedObject(undefined);
-                this.setSelectedItem("");
-                this.machine.generateBaseMesh();
-            });
+                selectedTrack.generateWires();
+                await selectedTrack.instantiate();
+                selectedTrack.recomputeAbsolutePath();
+                selectedTrack.select();
+            }
         }
+        this.setDraggedObject(undefined);
+        this.setSelectedItem("");
+        this.machine.generateBaseMesh();
+        this.updateFloatingElements();
     }
     
-    private _onJPlus = () => {
-        if (this.selectedObject instanceof MachinePart) {
-            let selectedTrack = this.selectedObject;
-            selectedTrack.setJ(selectedTrack.j + 1);
-            selectedTrack.recomputeAbsolutePath();
-            selectedTrack.generateWires();
-            selectedTrack.instantiate().then(() => {
+    private _onJPlus = async () => {
+        for (let i = 0; i < this._selectedObjects.length; i++) {
+            let selectedTrack = this._selectedObjects[i];
+            if (selectedTrack instanceof MachinePart) {
+                selectedTrack.setJ(selectedTrack.j + 1);
                 selectedTrack.recomputeAbsolutePath();
-                this.setSelectedObject(selectedTrack);
-                this.setDraggedObject(undefined);
-                this.setSelectedItem("");
-                this.machine.generateBaseMesh();
-            });
+                selectedTrack.generateWires();
+                await selectedTrack.instantiate();
+                selectedTrack.recomputeAbsolutePath();
+                selectedTrack.select();
+            }
         }
+        this.setDraggedObject(undefined);
+        this.setSelectedItem("");
+        this.machine.generateBaseMesh();
+        this.updateFloatingElements();
     }
 
-    private _onIPlus = () => {
-        if (this.selectedObject instanceof MachinePart) {
-            let selectedTrack = this.selectedObject;
-            selectedTrack.setI(selectedTrack.i + 1);
-            selectedTrack.recomputeAbsolutePath();
-            selectedTrack.generateWires();
-            selectedTrack.instantiate().then(() => {
+    private _onJMinus = async () => {
+        for (let i = 0; i < this._selectedObjects.length; i++) {
+            let selectedTrack = this._selectedObjects[i];
+            if (selectedTrack instanceof MachinePart) {
+                selectedTrack.setJ(selectedTrack.j - 1);
                 selectedTrack.recomputeAbsolutePath();
-                this.setSelectedObject(selectedTrack);
-                this.setDraggedObject(undefined);
-                this.setSelectedItem("");
-                this.machine.generateBaseMesh();
-            });
+                selectedTrack.generateWires();
+                await selectedTrack.instantiate();
+                selectedTrack.recomputeAbsolutePath();
+                selectedTrack.select();
+            }
         }
+        this.setDraggedObject(undefined);
+        this.setSelectedItem("");
+        this.machine.generateBaseMesh();
+        this.updateFloatingElements();
     }
 
-    private _onKMinus = () => {
+    private _onKPlus = async () => {
         if (this.selectedObject instanceof MachinePart) {
-            let selectedTrack = this.selectedObject;
-            selectedTrack.setK(selectedTrack.k - 1);
-            selectedTrack.recomputeAbsolutePath();
-            selectedTrack.generateWires();
-            selectedTrack.instantiate().then(() => {
-                selectedTrack.recomputeAbsolutePath();
-                this.setSelectedObject(selectedTrack);
-                this.setDraggedObject(undefined);
-                this.setSelectedItem("");
-                this.machine.generateBaseMesh();
-            });
+            for (let i = 0; i < this._selectedObjects.length; i++) {
+                let selectedTrack = this._selectedObjects[i];
+                if (selectedTrack instanceof MachinePart) {
+                    selectedTrack.setK(selectedTrack.k + 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    await selectedTrack.instantiate();
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.select();
+                }
+            }
+            this.setDraggedObject(undefined);
+            this.setSelectedItem("");
+            this.machine.generateBaseMesh();
+            this.updateFloatingElements();
         }
         else if (this.selectedObject instanceof Ball) {
             let p = this.selectedObject.positionZero.clone();
-            p.z += tileDepth;
+            p.z -= tileDepth;
             this.selectedObject.setPositionZero(p);
             this.updateFloatingElements();
             if (!this.machine.playing) {
@@ -1403,23 +1367,27 @@ class MachineEditor {
         }
     }
 
-    private _onKPlus = () => {
+    private _onKMinus = async () => {
         if (this.selectedObject instanceof MachinePart) {
-            let selectedTrack = this.selectedObject;
-            selectedTrack.setK(selectedTrack.k + 1);
-            selectedTrack.recomputeAbsolutePath();
-            selectedTrack.generateWires();
-            selectedTrack.instantiate().then(() => {
-                selectedTrack.recomputeAbsolutePath();
-                this.setSelectedObject(selectedTrack);
-                this.setDraggedObject(undefined);
-                this.setSelectedItem("");
-                this.machine.generateBaseMesh();
-            });
+            for (let i = 0; i < this._selectedObjects.length; i++) {
+                let selectedTrack = this._selectedObjects[i];
+                if (selectedTrack instanceof MachinePart) {
+                    selectedTrack.setK(selectedTrack.k - 1);
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.generateWires();
+                    await selectedTrack.instantiate();
+                    selectedTrack.recomputeAbsolutePath();
+                    selectedTrack.select();
+                }
+            }
+            this.setDraggedObject(undefined);
+            this.setSelectedItem("");
+            this.machine.generateBaseMesh();
+            this.updateFloatingElements();
         }
         else if (this.selectedObject instanceof Ball) {
             let p = this.selectedObject.positionZero.clone();
-            p.z -= tileDepth;
+            p.z += tileDepth;
             this.selectedObject.setPositionZero(p);
             this.updateFloatingElements();
             if (!this.machine.playing) {
