@@ -101,6 +101,7 @@ class Game {
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
 
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+        //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
 
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, - 2)).normalize(), this.scene);
 
@@ -348,10 +349,10 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
 
-        //let logo = new Logo();
-        //logo.initialize();
+        let logo = new Logo();
+        logo.initialize();
 
-        this.setContext(GameMode.CreateMode);
+        this.setContext(GameMode.MainMenu);
 	}
 
 	public animate(): void {
@@ -437,7 +438,7 @@ class Game {
             
             if (this.mode === GameMode.MainMenu) {
                 this.machine.dispose();
-                this.machine.deserialize(demo1);
+                this.machine.deserialize(demoLoops);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.play();
@@ -456,7 +457,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(demo1);
+                this.machine.deserialize(demoLoops);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();

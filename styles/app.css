@@ -27,13 +27,22 @@ body {
 }
 
 #logo {
-    width: min(100vw, 100vh);
-    height: min(100vw, 100vh);
     position: fixed;
-    left: calc((100vw - min(100vw, 100vh)) * 0.5);
-    top: calc((100vh - min(100vw, 100vh)) * 0.5);
+    top: 0;
+    width: calc(min(100vh, 100vw) * 0.95);
+    left: calc((100vw - min(100vh, 100vw) * 0.95) * 0.5);
     z-index: 2;
-    pointer-events: none;
+}
+
+#logo-banner {
+    position: fixed;
+    width: 100%;
+    height: calc(min(100vh, 100vw) * 0.95 / 5.5);
+    left: 0;
+    top: calc(min(100vh, 100vw) * 0.95 / 10);
+    background-color: rgba(39, 43, 46, 75%);
+    margin: 0;
+    padding: 0;
 }
 
 .logo-title {

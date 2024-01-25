@@ -422,6 +422,27 @@ var demoXXL = {
         { name: "split", i: 1, j: -3, k: 2, mirrorX: true, mirrorZ: false },
     ],
 };
+var demoLoops = {
+    balls: [
+        { x: 0.00010022970034684678, y: 0.031589830783326715, z: -0.18000000715255726 },
+        { x: -0.0019573246060616625, y: 0.11443649644939181, z: -0.18000000715255737 },
+        { x: 0.021524476718230344, y: 0.03563486942858014, z: -0.18000000000000016 },
+        { x: 0.04171689148047655, y: 0.03742712033545841, z: -0.1800000000000001 },
+        { x: 0.06167878274313393, y: 0.03844460823755899, z: -0.18 },
+    ],
+    parts: [
+        { name: "elevator-5", i: 0, j: -6, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 4, j: -2, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.1.1", i: 1, j: -2, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 3, j: -4, k: 3, mirrorX: false, mirrorZ: true },
+        { name: "uturnlayer-1.3", i: 1, j: -3, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.4", i: 3, j: -4, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.3.2", i: 1, j: -5, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.0.1", i: 2, j: -2, k: 5, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 2, j: -3, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.5", i: 1, j: -4, k: 1, mirrorX: true, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1868,6 +1889,7 @@ class Game {
         this.scene = new BABYLON.Scene(this.engine);
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+        //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, -2)).normalize(), this.scene);
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
@@ -2071,9 +2093,9 @@ class Game {
         //return;
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
-        //let logo = new Logo();
-        //logo.initialize();
-        this.setContext(GameMode.CreateMode);
+        let logo = new Logo();
+        logo.initialize();
+        this.setContext(GameMode.MainMenu);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2145,7 +2167,7 @@ class Game {
             this.mode = mode;
             if (this.mode === GameMode.MainMenu) {
                 this.machine.dispose();
-                this.machine.deserialize(demo1);
+                this.machine.deserialize(demoLoops);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.play();
@@ -2161,7 +2183,7 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machine.dispose();
-                this.machine.deserialize(demo1);
+                this.machine.deserialize(demoLoops);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
@@ -4992,8 +5014,12 @@ class Logo {
     constructor() {
         this.container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.container.id = "logo";
-        this.container.setAttribute("viewBox", "0 0 1000 1000");
+        this.container.setAttribute("viewBox", "0 0 1000 350");
+        this.container.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
         document.body.appendChild(this.container);
+        this.fullScreenBanner = document.createElement("div");
+        this.fullScreenBanner.id = "logo-banner";
+        document.body.appendChild(this.fullScreenBanner);
     }
     initialize() {
         this.container.innerHTML = `
@@ -5008,13 +5034,20 @@ class Logo {
                 <stop offset="100%" stop-color="#633204" />
             </linearGradient>
         `;
+        let img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        img.setAttribute("x", "100");
+        img.setAttribute("y", "-225");
+        img.setAttribute("width", "800");
+        img.setAttribute("height", "800");
+        img.setAttribute("href", "./datas/textures/edited-background.png");
+        this.container.appendChild(img);
         let titleBack = document.createElementNS("http://www.w3.org/2000/svg", "text");
         titleBack.id = "logo-title-back";
         titleBack.classList.add("logo-title");
         titleBack.setAttribute("text-anchor", "middle");
         titleBack.setAttribute("x", "500");
-        titleBack.setAttribute("y", "500");
-        titleBack.setAttribute("transform-origin", "500 500");
+        titleBack.setAttribute("y", "200");
+        titleBack.setAttribute("transform-origin", "500 200");
         titleBack.setAttribute("transform", "scale(1 1.2)");
         titleBack.innerHTML = "MARBLE RUN";
         this.container.appendChild(titleBack);
@@ -5023,8 +5056,8 @@ class Logo {
         title.classList.add("logo-title");
         title.setAttribute("text-anchor", "middle");
         title.setAttribute("x", "500");
-        title.setAttribute("y", "500");
-        title.setAttribute("transform-origin", "500 500");
+        title.setAttribute("y", "200");
+        title.setAttribute("transform-origin", "500 200");
         title.setAttribute("transform", "scale(1 1.2)");
         title.innerHTML = "MARBLE RUN";
         this.container.appendChild(title);
@@ -5033,7 +5066,7 @@ class Logo {
         subtitleBack.classList.add("logo-subtitle");
         subtitleBack.setAttribute("text-anchor", "middle");
         subtitleBack.setAttribute("x", "600");
-        subtitleBack.setAttribute("y", "570");
+        subtitleBack.setAttribute("y", "270");
         subtitleBack.innerHTML = "SIMULATOR";
         this.container.appendChild(subtitleBack);
         let subtitle = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -5041,9 +5074,18 @@ class Logo {
         subtitle.classList.add("logo-subtitle");
         subtitle.setAttribute("text-anchor", "middle");
         subtitle.setAttribute("x", "600");
-        subtitle.setAttribute("y", "570");
+        subtitle.setAttribute("y", "270");
         subtitle.innerHTML = "SIMULATOR";
         this.container.appendChild(subtitle);
+        let earlyAccessDisclaimer = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        earlyAccessDisclaimer.setAttribute("text-anchor", "end");
+        earlyAccessDisclaimer.setAttribute("x", "340");
+        earlyAccessDisclaimer.setAttribute("y", "250");
+        earlyAccessDisclaimer.setAttribute("fill", "lime");
+        earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
+        earlyAccessDisclaimer.setAttribute("font-size", "26px");
+        earlyAccessDisclaimer.innerHTML = "> v0.1 early access";
+        this.container.appendChild(earlyAccessDisclaimer);
     }
 }
 class MachinePartEditorMenu {
