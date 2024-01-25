@@ -557,6 +557,7 @@ class MachineEditor {
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
         this._majDown = false;
+        this._ctrlDown = false;
         this._selectedObjects = [];
         this._pointerDownX = 0;
         this._pointerDownY = 0;
@@ -716,7 +717,7 @@ class MachineEditor {
                         }
                         else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
                             if (this._majDown) {
-                                this.addSelectedObject(pick.pickedMesh.part);
+                                this.addSelectedObjects(pick.pickedMesh.part);
                             }
                             else {
                                 this.setSelectedObject(pick.pickedMesh.part);
@@ -1161,11 +1162,14 @@ class MachineEditor {
         }
         this.updateFloatingElements();
     }
-    addSelectedObject(s) {
-        let index = this._selectedObjects.indexOf(s);
-        if (index === -1) {
-            this._selectedObjects.push(s);
-            s.select();
+    addSelectedObjects(...objects) {
+        for (let i = 0; i < objects.length; i++) {
+            let object = objects[i];
+            let index = this._selectedObjects.indexOf(object);
+            if (index === -1) {
+                this._selectedObjects.push(object);
+                object.select();
+            }
         }
         if (this.selectedObjectsCount === 1) {
             this.machinePartEditorMenu.currentObject = this.selectedObject;
@@ -1237,9 +1241,15 @@ class MachineEditor {
             if (event.code === "ShiftLeft") {
                 this._majDown = true;
             }
+            else if (event.code === "ControlLeft") {
+                this._ctrlDown = true;
+            }
         });
         document.addEventListener("keyup", (event) => {
-            if (event.key === "x" || event.key === "Delete") {
+            if (this._ctrlDown && event.key === "a") {
+                this.addSelectedObjects(...this.machine.parts);
+            }
+            else if (event.key === "x" || event.key === "Delete") {
                 this._onDelete();
             }
             else if (event.key === "m") {
@@ -1274,6 +1284,9 @@ class MachineEditor {
             }
             else if (event.code === "ShiftLeft") {
                 this._majDown = false;
+            }
+            else if (event.code === "ControlLeft") {
+                this._ctrlDown = false;
             }
         });
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);

@@ -125,6 +125,7 @@ class MachineEditor {
     }
 
     private _majDown: boolean = false;
+    private _ctrlDown: boolean = false;
     private _selectedObjects: (MachinePart | Ball)[] = [];
     public get selectedObjectsCount(): number {
         return this._selectedObjects.length;
@@ -156,11 +157,14 @@ class MachineEditor {
         }
         this.updateFloatingElements();
     }
-    public addSelectedObject(s: MachinePart | Ball): void {
-        let index = this._selectedObjects.indexOf(s);
-        if (index === - 1) {
-            this._selectedObjects.push(s);
-            s.select();
+    public addSelectedObjects(...objects: (MachinePart | Ball)[]): void {
+        for (let i = 0; i < objects.length; i++) {
+            let object = objects[i];
+            let index = this._selectedObjects.indexOf(object);
+            if (index === - 1) {
+                this._selectedObjects.push(object);
+                object.select();
+            }
         }
         if (this.selectedObjectsCount === 1) {
             this.machinePartEditorMenu.currentObject = this.selectedObject;
@@ -246,9 +250,15 @@ class MachineEditor {
             if (event.code === "ShiftLeft") {
                 this._majDown = true;
             }
+            else if (event.code === "ControlLeft") {
+                this._ctrlDown = true;
+            }
         })
         document.addEventListener("keyup", (event: KeyboardEvent) => {
-            if (event.key === "x" || event.key === "Delete") {
+            if (this._ctrlDown && event.key === "a") {
+                this.addSelectedObjects(...this.machine.parts);
+            }
+            else if (event.key === "x" || event.key === "Delete") {
                 this._onDelete();
             }
             else if (event.key === "m") {
@@ -283,6 +293,9 @@ class MachineEditor {
             }
             else if (event.code === "ShiftLeft") {
                 this._majDown = false;
+            }
+            else if (event.code === "ControlLeft") {
+                this._ctrlDown = false;
             }
         });
 
@@ -790,7 +803,7 @@ class MachineEditor {
                     }
                     else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
                         if (this._majDown) {
-                            this.addSelectedObject(pick.pickedMesh.part);
+                            this.addSelectedObjects(pick.pickedMesh.part);
                         }
                         else {
                             this.setSelectedObject(pick.pickedMesh.part);
