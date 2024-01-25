@@ -397,7 +397,6 @@ var demoXXL = {
         { name: "loop-1.2", i: 0, j: -9, k: 3, mirrorX: true, mirrorZ: false },
         { name: "uturnlayer-1.4", i: -3, j: -10, k: 4, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.5.1", i: 1, j: -10, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "split", i: 1, j: -3, k: 2, mirrorX: false, mirrorZ: false },
         { name: "join", i: 1, j: 0, k: 6, mirrorX: true, mirrorZ: false },
         { name: "uturnlayer-0.3", i: 0, j: 1, k: 4, mirrorX: true, mirrorZ: false },
         { name: "uturnlayer-1.5", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
@@ -416,6 +415,7 @@ var demoXXL = {
         { name: "ramp-3.1.1", i: -3, j: -7, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.1.1", i: -1, j: -5, k: 4, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.2", i: -3, j: -6, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "split", i: 1, j: -3, k: 2, mirrorX: true, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -4463,7 +4463,12 @@ class Split extends MachinePart {
         this.pivotL = 0.025;
         this.reset = () => {
             this._moving = false;
-            this.pivot.rotation.z = Math.PI / 4;
+            if (this.mirrorX) {
+                this.pivot.rotation.z = -Math.PI / 4;
+            }
+            else {
+                this.pivot.rotation.z = Math.PI / 4;
+            }
         };
         this._moving = false;
         this.xMirrorable = true;
@@ -4520,7 +4525,6 @@ class Split extends MachinePart {
         this.pivot.position.copyFromFloats(0, -tileHeight, 0);
         this.pivot.material = this.game.copperMaterial;
         this.pivot.parent = this;
-        this.pivot.rotation.z = Math.PI / 4;
         let dz = this.wireGauge * 0.5;
         this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
             if (datas[0]) {

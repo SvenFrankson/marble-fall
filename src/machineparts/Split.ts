@@ -73,7 +73,6 @@ class Split extends MachinePart {
         this.pivot.position.copyFromFloats(0, - tileHeight, 0);
         this.pivot.material = this.game.copperMaterial;
         this.pivot.parent = this;
-        this.pivot.rotation.z = Math.PI / 4;
         let dz = this.wireGauge * 0.5;
         this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
             if (datas[0]) {
@@ -166,7 +165,12 @@ class Split extends MachinePart {
 
     public reset = () => {
         this._moving = false;
-        this.pivot.rotation.z = Math.PI / 4;
+        if (this.mirrorX) {
+            this.pivot.rotation.z = - Math.PI / 4;
+        }
+        else {
+            this.pivot.rotation.z = Math.PI / 4;
+        }
     }
 
     private _moving: boolean = false;
