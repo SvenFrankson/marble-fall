@@ -1449,6 +1449,9 @@ class MachineEditor {
             this.floatingElementBottomRight.dispose();
             this.floatingElementBottomLeft.dispose();
         }
+        this.handles.forEach(handle => {
+            handle.dispose();
+        });
         this.floatingElementDelete.dispose();
         this.itemContainer.innerHTML = "";
         this.items = new Map();
