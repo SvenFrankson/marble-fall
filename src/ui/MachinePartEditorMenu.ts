@@ -4,6 +4,8 @@ class MachinePartEditorMenu {
     public showButton: HTMLButtonElement;
     public hideButton: HTMLButtonElement;
 
+    public ijkLine: HTMLDivElement;
+    public kLine: HTMLDivElement;
     public widthLine: HTMLDivElement;
     public heightLine: HTMLDivElement;
     public depthLine: HTMLDivElement;
@@ -12,6 +14,10 @@ class MachinePartEditorMenu {
     public fillLine: HTMLDivElement;
 
     public titleElement: HTMLSpanElement;
+    public ijkIElement: HTMLSpanElement;
+    public ijkJElement: HTMLSpanElement;
+    public ijkKElement: HTMLSpanElement;
+    public kElement: HTMLSpanElement;
     public wPlusButton: HTMLButtonElement;
     public wMinusButton: HTMLButtonElement;
     public wValue: HTMLSpanElement;
@@ -57,6 +63,14 @@ class MachinePartEditorMenu {
             this._shown = false;
             this.update();
         }
+
+        this.ijkLine = document.getElementById("machine-editor-part-menu-ijk") as HTMLDivElement;
+        this.ijkIElement = this.ijkLine.querySelector(".value.i") as HTMLSpanElement;
+        this.ijkJElement = this.ijkLine.querySelector(".value.j") as HTMLSpanElement;
+        this.ijkKElement = this.ijkLine.querySelector(".value.k") as HTMLSpanElement;
+
+        this.kLine = document.getElementById("machine-editor-part-menu-k") as HTMLDivElement;
+        this.kElement = this.kLine.querySelector(".value.k") as HTMLSpanElement;
 
         this.widthLine = document.getElementById("machine-editor-part-menu-width") as HTMLDivElement;
     
@@ -178,6 +192,8 @@ class MachinePartEditorMenu {
             this.container.style.display = "";
             this.showButton.style.display = this._shown ? "none" : "";
             this.hideButton.style.display = this._shown ? "" : "none";
+            this.ijkLine.style.display = this._shown && this.currentObject instanceof MachinePart ? "" : "none";
+            this.kLine.style.display = this._shown && this.currentObject instanceof Ball ? "" : "none";
             this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
             this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
             this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
@@ -187,12 +203,16 @@ class MachinePartEditorMenu {
 
             if (this.currentObject instanceof MachinePart) {
                 this.titleElement.innerText = this.currentObject.partName;
+                this.ijkIElement.innerText = this.currentObject.i.toFixed(0);
+                this.ijkJElement.innerText = this.currentObject.j.toFixed(0);
+                this.ijkKElement.innerText = this.currentObject.k.toFixed(0);
                 this.wValue.innerText = this.currentObject.w.toFixed(0);
                 this.hValue.innerText = this.currentObject.h.toFixed(0);
                 this.dValue.innerText = this.currentObject.d.toFixed(0);
             }
             else if (this.currentObject instanceof Ball) {
                 this.titleElement.innerText = "Marble";
+                this.kElement.innerText = this.currentObject.k.toFixed(0);
             }
         }
     }

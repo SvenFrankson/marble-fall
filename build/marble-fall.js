@@ -5049,6 +5049,12 @@ class MachinePartEditorMenu {
             this._shown = false;
             this.update();
         };
+        this.ijkLine = document.getElementById("machine-editor-part-menu-ijk");
+        this.ijkIElement = this.ijkLine.querySelector(".value.i");
+        this.ijkJElement = this.ijkLine.querySelector(".value.j");
+        this.ijkKElement = this.ijkLine.querySelector(".value.k");
+        this.kLine = document.getElementById("machine-editor-part-menu-k");
+        this.kElement = this.kLine.querySelector(".value.k");
         this.widthLine = document.getElementById("machine-editor-part-menu-width");
         this.wPlusButton = document.querySelector("#machine-editor-part-menu-width button.plus");
         this.wPlusButton.onclick = async () => {
@@ -5146,6 +5152,8 @@ class MachinePartEditorMenu {
             this.container.style.display = "";
             this.showButton.style.display = this._shown ? "none" : "";
             this.hideButton.style.display = this._shown ? "" : "none";
+            this.ijkLine.style.display = this._shown && this.currentObject instanceof MachinePart ? "" : "none";
+            this.kLine.style.display = this._shown && this.currentObject instanceof Ball ? "" : "none";
             this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
             this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
             this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
@@ -5154,12 +5162,16 @@ class MachinePartEditorMenu {
             this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
             if (this.currentObject instanceof MachinePart) {
                 this.titleElement.innerText = this.currentObject.partName;
+                this.ijkIElement.innerText = this.currentObject.i.toFixed(0);
+                this.ijkJElement.innerText = this.currentObject.j.toFixed(0);
+                this.ijkKElement.innerText = this.currentObject.k.toFixed(0);
                 this.wValue.innerText = this.currentObject.w.toFixed(0);
                 this.hValue.innerText = this.currentObject.h.toFixed(0);
                 this.dValue.innerText = this.currentObject.d.toFixed(0);
             }
             else if (this.currentObject instanceof Ball) {
                 this.titleElement.innerText = "Marble";
+                this.kElement.innerText = this.currentObject.k.toFixed(0);
             }
         }
     }

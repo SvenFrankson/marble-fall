@@ -242,8 +242,11 @@ input-number {
 
 #machine-editor-part-menu .value {
     display: inline-block;
-    width: 3vh;
+    font-size: 1.6vh;
+    width: 2.4vh;
     text-align: center;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 #machine-editor-part-menu-show {
