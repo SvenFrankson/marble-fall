@@ -337,15 +337,6 @@ class Game {
         //logo.initialize();
 
         this.setContext(GameMode.CreateMode);
-
-        // test
-        let up = new Arrow("test-arrow", this, 0.05, BABYLON.Vector3.Up());
-        up.position.y = 0.05;
-        up.instantiate();
-        
-        let right = new Arrow("test-arrow", this, 0.05, BABYLON.Vector3.Right());
-        right.position.x = 0.05;
-        right.instantiate();
 	}
 
 	public animate(): void {

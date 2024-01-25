@@ -70,6 +70,11 @@ class MachinePart extends BABYLON.Mesh {
     public globalSlope: number = 0;
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public encloseStart: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public enclose13: BABYLON.Vector3 = BABYLON.Vector3.One().scaleInPlace(1 / 3);
+    public encloseMid: BABYLON.Vector3 = BABYLON.Vector3.One().scaleInPlace(0.5);
+    public enclose23: BABYLON.Vector3 = BABYLON.Vector3.One().scaleInPlace(2 / 3);
+    public encloseEnd: BABYLON.Vector3 = BABYLON.Vector3.One();
 
     public w: number = 1;
     public h: number = 1;
@@ -286,6 +291,11 @@ class MachinePart extends BABYLON.Mesh {
         let x1 = x0 + w;
         let y1 = y0 - h;
         let z1 = z0 - d;
+        this.encloseStart.copyFromFloats(x0, y0, z0);
+        this.encloseEnd.copyFromFloats(x1, y1, z1);
+        this.enclose13.copyFrom(this.encloseStart).scaleInPlace(2 / 3).addInPlace(this.encloseEnd.scale(1 / 3));
+        this.encloseMid.copyFrom(this.encloseStart).addInPlace(this.encloseEnd).scaleInPlace(0.5);
+        this.enclose23.copyFrom(this.encloseStart).scaleInPlace(1 / 3).addInPlace(this.encloseEnd.scale(2 / 3));
         this.encloseMesh = BABYLON.MeshBuilder.CreateLineSystem("enclose-mesh", {
             lines: [
                 [new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x1, y0, z0), new BABYLON.Vector3(x1, y1, z0), new BABYLON.Vector3(x0, y1, z0), new BABYLON.Vector3(x0, y0, z0)],

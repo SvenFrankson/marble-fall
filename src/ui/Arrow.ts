@@ -1,10 +1,12 @@
 class Arrow extends BABYLON.Mesh {
 
-    constructor(name: string, public game: Game, public size: number = 0.1, public dir: BABYLON.Vector3) {
+    constructor(name: string, public game: Game, public size: number = 0.1, public dir?: BABYLON.Vector3) {
         super(name);
         this.scaling.copyFromFloats(this.size, this.size, this.size);
         this.material = this.game.uiMaterial;
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        if (this.dir) {
+            this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        }
     }
 
     public async instantiate(): Promise<void> {
@@ -23,7 +25,11 @@ class Arrow extends BABYLON.Mesh {
     }
 
     private _update = () => {
-        let z = this.position.subtract(this.game.camera.globalPosition);
-        Mummu.QuaternionFromYZAxisToRef(this.dir, z, this.rotationQuaternion);
+        if (this.dir && this.isVisible) {
+            let z = this.position.subtract(this.game.camera.globalPosition);
+            Mummu.QuaternionFromYZAxisToRef(this.dir, z, this.rotationQuaternion);
+        }
     }
+
+    public onClick: () => void;
 }
