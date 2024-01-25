@@ -124,22 +124,27 @@ class MachineEditor {
         }
     }
 
-    private _selectedObject: MachinePart | Ball;
+    private _selectedObjects: (MachinePart | Ball)[] = [];
     public get selectedObject(): MachinePart | Ball {
-        return this._selectedObject;
+        return this._selectedObjects[0];
     }
     public setSelectedObject(s: MachinePart | Ball): void {
-        if (this._selectedObject) {
-            this._selectedObject.unselect();
+        if (this._selectedObjects) {
+            this._selectedObjects.forEach(obj => {
+                obj.unselect();
+            })
         }
-        if (s != this._selectedObject) {
-            this._selectedObject = s;
+        if (s) {
+            this._selectedObjects = [s];
         }
-        if (this._selectedObject) {
-            this._selectedObject.select();
-            if (this._selectedObject instanceof MachinePart) {
-                this.currentLayer = this._selectedObject.k;
-                this.machinePartEditorMenu.currentPart = this._selectedObject;
+        else {
+            this._selectedObjects = [];
+        }
+        if (this._selectedObjects[0]) {
+            this._selectedObjects[0].select();
+            if (this._selectedObjects[0] instanceof MachinePart) {
+                this.currentLayer = this._selectedObjects[0].k;
+                this.machinePartEditorMenu.currentPart = this._selectedObjects[0];
             }
             else {
                 this.machinePartEditorMenu.currentPart = undefined;
@@ -149,6 +154,13 @@ class MachineEditor {
             this.machinePartEditorMenu.currentPart = undefined;
         }
         this.updateFloatingElements();
+    }
+    public addSelectedObject(s: MachinePart | Ball): void {
+        let index = this._selectedObjects.indexOf(s);
+        if (index === - 1) {
+            this._selectedObjects.push(s);
+            s.select();
+        }
     }
 
     constructor(public game: Game) {

@@ -552,6 +552,7 @@ class MachineEditor {
         this._currentLayer = 0;
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
+        this._selectedObjects = [];
         this._pointerDownX = 0;
         this._pointerDownY = 0;
         this.pointerDown = (event) => {
@@ -1070,20 +1071,25 @@ class MachineEditor {
         }
     }
     get selectedObject() {
-        return this._selectedObject;
+        return this._selectedObjects[0];
     }
     setSelectedObject(s) {
-        if (this._selectedObject) {
-            this._selectedObject.unselect();
+        if (this._selectedObjects) {
+            this._selectedObjects.forEach(obj => {
+                obj.unselect();
+            });
         }
-        if (s != this._selectedObject) {
-            this._selectedObject = s;
+        if (s) {
+            this._selectedObjects = [s];
         }
-        if (this._selectedObject) {
-            this._selectedObject.select();
-            if (this._selectedObject instanceof MachinePart) {
-                this.currentLayer = this._selectedObject.k;
-                this.machinePartEditorMenu.currentPart = this._selectedObject;
+        else {
+            this._selectedObjects = [];
+        }
+        if (this._selectedObjects[0]) {
+            this._selectedObjects[0].select();
+            if (this._selectedObjects[0] instanceof MachinePart) {
+                this.currentLayer = this._selectedObjects[0].k;
+                this.machinePartEditorMenu.currentPart = this._selectedObjects[0];
             }
             else {
                 this.machinePartEditorMenu.currentPart = undefined;
@@ -1093,6 +1099,13 @@ class MachineEditor {
             this.machinePartEditorMenu.currentPart = undefined;
         }
         this.updateFloatingElements();
+    }
+    addSelectedObject(s) {
+        let index = this._selectedObjects.indexOf(s);
+        if (index === -1) {
+            this._selectedObjects.push(s);
+            s.select();
+        }
     }
     async instantiate() {
         document.getElementById("machine-editor-objects").style.display = "block";
