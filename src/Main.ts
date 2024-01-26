@@ -31,6 +31,7 @@ class Game {
     public camera: BABYLON.ArcRotateCamera;
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
+    public config: Configuration;
 
     public logo: Logo;
     public mainMenu: MainMenu;
@@ -99,6 +100,8 @@ class Game {
     public async createScene(): Promise<void> {
         this.scene = new BABYLON.Scene(this.engine);
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
+        this.config = new Configuration(this);
+        this.config.initialize();
 
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
         //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
@@ -264,6 +267,7 @@ class Game {
         this.mainMenu.hide();
 
         this.optionsPage = new OptionsPage(this);
+        this.optionsPage.initialize();
         this.optionsPage.hide();
 
         this.creditsPage = new CreditsPage(this);
@@ -299,7 +303,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        this.setPageMode(GameMode.Credits);
+        this.setPageMode(GameMode.MainMenu);
 	}
 
 	public animate(): void {

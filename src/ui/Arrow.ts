@@ -1,8 +1,17 @@
 class Arrow extends BABYLON.Mesh {
 
-    constructor(name: string, public game: Game, public size: number = 0.1, public dir?: BABYLON.Vector3) {
+    public get size(): number {
+        return this.scaling.x / this.baseSize;
+    }
+
+    public set size(v: number) {
+        let s = v * this.baseSize
+        this.scaling.copyFromFloats(s, s, s);
+    }
+
+    constructor(name: string, public game: Game, public readonly baseSize: number = 0.1, public dir?: BABYLON.Vector3) {
         super(name);
-        this.scaling.copyFromFloats(this.size, this.size, this.size);
+        this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();
         }

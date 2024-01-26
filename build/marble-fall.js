@@ -196,6 +196,50 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainVolume;
     }
 }
+class Configuration {
+    constructor(game) {
+        this.game = game;
+        this._handleSize = 1;
+    }
+    get handleSize() {
+        return this._handleSize;
+    }
+    setHandleSize(v, skipStorage) {
+        if (isFinite(v)) {
+            if (v > 0 && v <= 3) {
+                this._handleSize = v;
+                if (this.game.machineEditor) {
+                    this.game.machineEditor.handles.forEach(handle => {
+                        handle.size = this._handleSize;
+                    });
+                }
+                if (!skipStorage) {
+                    this.saveToLocalStorage();
+                }
+            }
+        }
+    }
+    initialize() {
+        let data = JSON.parse(localStorage.getItem("mrs-configuration"));
+        this.deserialize(data);
+    }
+    saveToLocalStorage() {
+        let data = this.serialize();
+        localStorage.setItem("mrs-configuration", JSON.stringify(data));
+    }
+    serialize() {
+        return {
+            handleSize: this.handleSize
+        };
+    }
+    deserialize(data) {
+        if (data) {
+            if (isFinite(data.handleSize)) {
+                this.setHandleSize(data.handleSize, true);
+            }
+        }
+    }
+}
 var demo1 = {
     balls: [
         { x: 0.4539999737739563, y: -0.15150000488758086, z: 0 },
@@ -1562,6 +1606,9 @@ class MachineEditor {
             this.destinationKPlusHandle,
             this.destinationKMinusHandle
         ];
+        this.handles.forEach(handle => {
+            handle.size = this.game.config.handleSize;
+        });
         this.updateFloatingElements();
     }
     _createButton(id, parent, spacer = false) {
@@ -1868,6 +1915,8 @@ class Game {
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
+        this.config = new Configuration(this);
+        this.config.initialize();
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
         //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, -2)).normalize(), this.scene);
@@ -2000,6 +2049,7 @@ class Game {
         this.mainMenu.resize();
         this.mainMenu.hide();
         this.optionsPage = new OptionsPage(this);
+        this.optionsPage.initialize();
         this.optionsPage.hide();
         this.creditsPage = new CreditsPage(this);
         this.creditsPage.hide();
@@ -2032,7 +2082,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        this.setPageMode(GameMode.Credits);
+        this.setPageMode(GameMode.MainMenu);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -4873,10 +4923,10 @@ class Wave extends MachinePart {
     }
 }
 class Arrow extends BABYLON.Mesh {
-    constructor(name, game, size = 0.1, dir) {
+    constructor(name, game, baseSize = 0.1, dir) {
         super(name);
         this.game = game;
-        this.size = size;
+        this.baseSize = baseSize;
         this.dir = dir;
         this._update = () => {
             if (this.dir && this.isVisible) {
@@ -4884,10 +4934,17 @@ class Arrow extends BABYLON.Mesh {
                 Mummu.QuaternionFromYZAxisToRef(this.dir, z, this.rotationQuaternion);
             }
         };
-        this.scaling.copyFromFloats(this.size, this.size, this.size);
+        this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();
         }
+    }
+    get size() {
+        return this.scaling.x / this.baseSize;
+    }
+    set size(v) {
+        let s = v * this.baseSize;
+        this.scaling.copyFromFloats(s, s, s);
     }
     async instantiate() {
         let datas = await this.game.vertexDataLoader.get("./meshes/arrow.babylon");
@@ -4916,7 +4973,7 @@ class CreditsPage {
         }
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.display = "";
-        await anim(1, 0.1);
+        await anim(1, 0.5);
         this.container.style.pointerEvents = "";
     }
     async hide() {
@@ -5400,6 +5457,20 @@ class OptionsPage {
         this.container = document.getElementById("options");
         this.updateNode = new BABYLON.Node("options-update-node");
     }
+    initialize() {
+        this.handleSizeMinus = document.getElementById("handle-size-minus");
+        this.handleSizeMinus.onclick = () => {
+            this.game.config.setHandleSize(this.game.config.handleSize - 0.5);
+            this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
+        };
+        this.handleSizeValue = document.getElementById("handle-size-val");
+        this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
+        this.handleSizePlus = document.getElementById("handle-size-plus");
+        this.handleSizePlus.onclick = () => {
+            this.game.config.setHandleSize(this.game.config.handleSize + 0.5);
+            this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
+        };
+    }
     async show() {
         if (this.container.style.visibility === "visible") {
             this.container.style.pointerEvents = "";
@@ -5407,7 +5478,7 @@ class OptionsPage {
         }
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
-        await anim(1, 1);
+        await anim(1, 0.5);
         this.container.style.pointerEvents = "";
     }
     async hide() {

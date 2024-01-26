@@ -33,19 +33,44 @@
 			<div class="panel credit"><span class="label">&gt; CREDIT</span></div>
 		</div>
 		<div id="options" class="page" style="opacity: 0;">
-			<div id="options-background">
+			<div id="options" class="background">
 				<h2 style="opacity: 0.5;">Options</h2>
-				<h2><span class="label">Concept, Art & Code</span></h1>
-				<h1>Sven Taton</h1>
-				<a href="https://svenfrankson.github.io/" target="_blank"><img src="./datas/textures/logo-white.svg"/></a>
-				<h4>Marble Run Simulator Source Code <a href="https://github.com/SvenFrankson/marble-fall" target="_blank">&#10697</a></h4>
-				<a href="https://www.babylonjs.com/" target="_blank"><img src="./datas/textures/babylonjs_identity_color.svg"/></a>
-				<p>&copy; 2024 Sven Taton</p>
-				<p>Wood material from TextureCan <a href="https://www.texturecan.com/details/146/" target="_blank">&#10697</a></p>
+				<h3>Controls</h3>
+				<h4>Machine Editor</h4>
+				<div class="line">
+					<span class="label">move selected parts</span>
+					<span class="value">WASD</span>
+				</div>
+				<div class="line">
+					<span class="label">multiple selection</span>
+					<span class="value">LShift + Clic</span>
+				</div>
+				<div class="line">
+					<span class="label">deleted selected parts</span>
+					<span class="value">X (Del)</span>
+				</div>
+				<div class="line">
+					<span class="label">mirror selected part</span>
+					<span class="value">M</span>
+				</div>
+				<div class="line">
+					<span class="label">select all</span>
+					<span class="value">LCtrl + A</span>
+				</div>
+				<h3>Accessibility</h3>
+				<h4>Machine Editor</h4>
+				<div class="line">
+					<span class="label">handle size</span>
+					<span class="value">
+						<span id="handle-size-minus" class="btn">-</span>		
+						<span id="handle-size-val" class="val"></span>
+						<span id="handle-size-plus" class="btn">+</span>	
+					</span>
+				</div>
 			</div>
 		</div>
 		<div id="credits" class="page" style="opacity: 0;">
-			<div id="credits-background">
+			<div id="credits" class="background">
 				<h2 style="opacity: 0.5;">Credit</h2>
 				<h2><span class="label">Concept, Art & Code</span></h1>
 				<h1>Sven Taton</h1>
@@ -180,7 +205,7 @@
 			<div id="machine-editor-part-menu-width" class="line">
 				<span class="label">width</span>
 				
-				<button class="btn xxs minus" title="Back to main menu">
+				<button class="btn xxs minus">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M20 50 L80 50" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -188,7 +213,7 @@
 
 				<span class="value">1</span>
 				
-				<button class="btn xxs plus" title="Back to main menu">
+				<button class="btn xxs plus">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M20 50 L80 50 M50 20 L50 80" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -197,7 +222,7 @@
 			<div id="machine-editor-part-menu-height" class="line">
 				<span class="label">height</span>
 				
-				<button class="btn xxs minus" title="Back to main menu">
+				<button class="btn xxs minus">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M20 50 L80 50" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -205,7 +230,7 @@
 
 				<span class="value"">1</span>
 				
-				<button class="btn xxs plus" title="Back to main menu">
+				<button class="btn xxs plus">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M20 50 L80 50 M50 20 L50 80" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -214,7 +239,7 @@
 			<div id="machine-editor-part-menu-depth" class="line">
 				<span class="label">depth</span>
 				
-				<button class="btn xxs minus" title="Back to main menu">
+				<button class="btn xxs minus">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M20 50 L80 50" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -222,7 +247,7 @@
 
 				<span class="value"">1</span>
 				
-				<button class="btn xxs plus" title="Back to main menu">
+				<button class="btn xxs plus">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M20 50 L80 50 M50 20 L50 80" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -231,7 +256,7 @@
 			<div id="machine-editor-part-menu-mirrorX" class="line">
 				<span class="label">mirrorX</span>
 				
-				<button class="btn xxs"  title="Back to main menu">
+				<button class="btn xxs">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M25 30 L10 50 L25 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
 						<path d="M75 30 L90 50 L75 70 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -242,7 +267,7 @@
 			<div id="machine-editor-part-menu-mirrorZ" class="line">
 				<span class="label">mirrorZ</span>
 				
-				<button class="btn xxs"  title="Back to main menu">
+				<button class="btn xxs">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M30 25 L50 10 L70 25 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
 						<path d="M30 75 L50 90 L70 75 Z" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -253,7 +278,7 @@
 			<div id="machine-editor-part-menu-fill" class="line">
 				<span class="label">fill</span>
 				
-				<button class="btn xxs"  title="Back to main menu">
+				<button class="btn xxs">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M35 20 L65 20" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
 						<path d="M35 50 L65 50" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -264,7 +289,7 @@
 			<div id="machine-editor-part-menu-delete" class="line">
 				<span class="label">delete</span>
 				
-				<button class="btn xxs"  title="Back to main menu">
+				<button class="btn xxs">
 					<svg class="label" viewBox="0 0 100 100">
 						<path d="M25 25 L75 75 M25 75 L75 25" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>

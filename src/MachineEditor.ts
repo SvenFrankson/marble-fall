@@ -58,6 +58,8 @@ class MachineEditor {
     public destinationKPlusHandle: Arrow;
     public destinationKMinusHandle: Arrow;
 
+    public handleSize: number;
+
     private _currentLayer: number = 0;
     public get currentLayer(): number {
         return this._currentLayer;
@@ -561,6 +563,10 @@ class MachineEditor {
             this.destinationKPlusHandle,
             this.destinationKMinusHandle
         ];
+
+        this.handles.forEach(handle => {
+            handle.size = this.game.config.handleSize;
+        })
 
         this.updateFloatingElements();
     }

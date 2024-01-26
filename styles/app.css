@@ -146,16 +146,15 @@ body {
     font-size: 2vh;
 }
 
-#credits {
+.page {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#credits-background {
+.page .background {
     display: inline-block;
-    background-color: rgba(39, 43, 46, 90%);
+    background-color: rgba(39, 43, 46, 98%);
     width: 90%;
-    padding-left: 5%;
-    padding-right: 5%;
+    padding: 0.5vh 2vh 3vh 2vh;
     height: auto;
     outline: 1px solid white;
 }
@@ -166,23 +165,23 @@ body {
     margin: 1vh;
 }
 
-#credits h1 {
+.page h1 {
     font-size: 3.5vh;
-    margin: 2vh;
+    margin: 1vh;
     margin-bottom: 3vh;
 }
 
-#credits h2 {
+.page h2 {
     font-size: 3vh;
-    margin: 1.5vh;
+    margin: 0.8vh;
 }
 
-#credits h3 {
+.page h3 {
     font-size: 2.5vh;
-    margin: 0.2vh;
+    margin: 0.5vh;
 }
 
-#credits h4 {
+.page h4 {
     font-size: 2vh;
     margin: 0.2vh;
 }
@@ -217,6 +216,49 @@ body {
 
 #credits a:active { 
     text-decoration: none; 
+}
+
+#options .line {
+    height: 2vh;
+    margin: 0.4vh;
+}
+
+#options .label {
+    font-family: monospace;
+    font-size: 1.5vh;
+    display: inline-block;
+    text-align: right;
+    padding-right: 1vh;
+    width: 50%;
+    height: 100%;
+}
+
+#options .value {
+    font-family: monospace;
+    font-size: 1.5vh;
+    display: inline-block;
+    text-align: left;
+    padding-left: 1vh;
+    width: 40%;
+    height: 100%;
+    border: 1px solid rgba(255, 255, 255, 20%);
+}
+
+#options .btn {
+    display: inline-block;
+    width: 3vh;
+    outline: none;
+    text-align: center;
+    vertical-align: top;
+    background-color: rgba(0, 0, 0, 20%);;
+}
+
+#options .val {
+    display: inline-block;
+    width: 5vh;
+    outline: none;
+    text-align: center;
+    vertical-align: top;
 }
 
 #render-canvas.full-screen {

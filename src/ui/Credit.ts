@@ -17,7 +17,7 @@ class CreditsPage {
 
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.display = "";
-        await anim(1, 0.1);
+        await anim(1, 0.5);
         this.container.style.pointerEvents = "";
     }
 
