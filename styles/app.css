@@ -153,16 +153,16 @@ body {
 #credits-background {
     display: inline-block;
     background-color: rgba(39, 43, 46, 90%);
-    width: auto;
-    padding-left: 7vh;
-    padding-right: 7vh;
+    width: 90%;
+    padding-left: 5%;
+    padding-right: 5%;
     height: 100%;
     outline: 1px solid white;
 }
 
 #credits img {
     display: inline-block;
-    height: 20%;
+    height: 15%;
     margin-bottom: 4%;
 }
 

@@ -176,7 +176,7 @@ class MachineEditor {
     }
 
     constructor(public game: Game) {
-        this.container = document.getElementById("machine-menu") as HTMLDivElement;
+        this.container = document.getElementById("machine-editor-menu") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
@@ -184,7 +184,7 @@ class MachineEditor {
     }
 
     public async instantiate(): Promise<void> {
-        document.getElementById("machine-editor-objects").style.display = "block";
+        document.getElementById("machine-editor-menu").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
 
@@ -580,7 +580,7 @@ class MachineEditor {
     }
 
     public dispose(): void {
-        document.getElementById("machine-editor-objects").style.display = "none";
+        document.getElementById("machine-editor-menu").style.display = "none";
         this.game.toolbar.resize();
         if (this.machinePartEditorMenu) {
             this.machinePartEditorMenu.dispose();

@@ -1119,7 +1119,7 @@ class MachineEditor {
                 });
             }
         };
-        this.container = document.getElementById("machine-menu");
+        this.container = document.getElementById("machine-editor-menu");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
@@ -1232,7 +1232,7 @@ class MachineEditor {
         this.updateFloatingElements();
     }
     async instantiate() {
-        document.getElementById("machine-editor-objects").style.display = "block";
+        document.getElementById("machine-editor-menu").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
         let ballItem = document.createElement("div");
@@ -1578,7 +1578,7 @@ class MachineEditor {
         return button;
     }
     dispose() {
-        document.getElementById("machine-editor-objects").style.display = "none";
+        document.getElementById("machine-editor-menu").style.display = "none";
         this.game.toolbar.resize();
         if (this.machinePartEditorMenu) {
             this.machinePartEditorMenu.dispose();
@@ -4906,27 +4906,28 @@ class CreditsPage {
     constructor(game) {
         this.game = game;
         this.container = document.getElementById("credits");
+        this.container.style.display = "none";
         this.updateNode = new BABYLON.Node("credits-update-node");
     }
     async show() {
-        if (this.container.style.visibility === "visible") {
+        if (this.container.style.display === "") {
             this.container.style.pointerEvents = "";
             return;
         }
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        this.container.style.visibility = "visible";
+        this.container.style.display = "";
         await anim(1, 0.1);
         this.container.style.pointerEvents = "";
     }
     async hide() {
-        if (this.container.style.visibility === "hidden") {
+        if (this.container.style.display === "none") {
             this.container.style.pointerEvents = "none";
             return;
         }
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        this.container.style.visibility = "visible";
+        this.container.style.display = "";
         await anim(0, 0.5);
-        this.container.style.visibility = "hidden";
+        this.container.style.display = "none";
         this.container.style.pointerEvents = "none";
     }
 }

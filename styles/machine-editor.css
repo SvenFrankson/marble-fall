@@ -1,15 +1,15 @@
-#machine-menu {
+#machine-editor-menu {
     z-index: 2;
 }
 
-#machine-menu.left {
+#machine-editor-menu.left {
     left: 0;
     top: 0;
     width: 300px;
     height: 100%;
 }
 
-#machine-menu.bottom {
+#machine-editor-menu.bottom {
     left: 0;
     bottom: 0;
     width: 100%;
@@ -23,14 +23,14 @@
     z-index: 2;
 }
 
-#machine-menu.left #machine-editor-objects {
+#machine-editor-menu.left #machine-editor-objects {
     height: 100%;
     width: 28vh;
     top: 0;
     left: 0;
 }
 
-#machine-menu.bottom #machine-editor-objects {
+#machine-editor-menu.bottom #machine-editor-objects {
     width: 100%;
     height: 33vw;
     bottom: 0;
@@ -45,12 +45,12 @@
     background-color: rgba(0, 0, 0, 50%);
 }
 
-#machine-menu.left #machine-editor-objects .machine-editor-item{
+#machine-editor-menu.left #machine-editor-objects .machine-editor-item{
     margin: 0.25vh;
     padding: 1vh;
 }
 
-#machine-menu.bottom #machine-editor-objects .machine-editor-item{
+#machine-editor-menu.bottom #machine-editor-objects .machine-editor-item{
     margin: 0.5vw;
     padding: 1vw;
 }
@@ -66,16 +66,16 @@
     padding: 0;
 }
 
-#machine-menu.left .machine-editor-item{
+#machine-editor-menu.left .machine-editor-item{
     width: 11vh;
     height: 11vh;
 }
 
-#machine-menu.bottom .machine-editor-item{
+#machine-editor-menu.bottom .machine-editor-item{
     width: 13.5vw;
     height: 13.5vw;
 }
 
-#machine-menu.bottom #machine-editor-item-container {
+#machine-editor-menu.bottom #machine-editor-item-container {
     width: 100%;
 }
