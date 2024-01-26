@@ -44,6 +44,7 @@ class MainMenuLayout {
             button.style.position = "absolute";
             button.style.left = ((pos % xCount) * tileW + m).toFixed(0) + "px";
             button.style.top = (Math.floor(pos / xCount) * tileH + m).toFixed(0) + "px";
+            button.style.backgroundImage = "url(./datas/icons/demo-" + (i + 1).toFixed(0) + ".png)"
         }
 
         let n = demoButtons.length;

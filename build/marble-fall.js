@@ -2091,12 +2091,17 @@ class Game {
         document.getElementById("track-editor-menu").style.display = "none";
         //this.makeScreenshot("split");
         //return;
+        let screenshotButton = document.querySelector("#toolbar-screenshot");
+        screenshotButton.addEventListener("click", () => {
+            this.makeCircuitScreenshot();
+        });
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         let logo = new Logo();
         logo.initialize();
+        logo.hide();
         MainMenuLayout.Resize();
-        this.setContext(GameMode.MainMenu);
+        this.setContext(GameMode.DemoMode, 1);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2284,6 +2289,31 @@ class Game {
                     await Mummu.MakeScreenshot({ miniatureName: objectName });
                     resolve();
                 });
+            });
+        });
+    }
+    async makeCircuitScreenshot() {
+        this.creditPlaque.setIsVisible(false);
+        this.machine.baseWall.isVisible = false;
+        this.machine.baseFrame.isVisible = false;
+        this.skybox.isVisible = false;
+        this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
+        let encloseStart = this.machine.getEncloseStart();
+        let encloseEnd = this.machine.getEncloseEnd();
+        this.camera.target = encloseStart.add(encloseEnd).scale(0.5);
+        this.camera.alpha = -0.9 * Math.PI / 2;
+        this.camera.beta = 0.8 * Math.PI / 2;
+        let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
+        this.camera.radius = 1.25 * size;
+        return new Promise(resolve => {
+            requestAnimationFrame(async () => {
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
+                this.creditPlaque.setIsVisible(true);
+                this.machine.baseWall.isVisible = true;
+                this.machine.baseFrame.isVisible = true;
+                this.skybox.isVisible = true;
+                this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+                resolve();
             });
         });
     }
@@ -3199,6 +3229,24 @@ class Machine {
             let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror ? true : part.mirrorX, part.mirrorZ);
             this.parts.push(track);
         }
+    }
+    getEncloseStart() {
+        let encloseStart = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
+        this.parts.forEach(part => {
+            encloseStart.x = Math.min(encloseStart.x, part.position.x + part.encloseStart.x);
+            encloseStart.y = Math.max(encloseStart.y, part.position.y + part.encloseStart.y);
+            encloseStart.z = Math.max(encloseStart.z, part.position.z + part.encloseStart.z);
+        });
+        return encloseStart;
+    }
+    getEncloseEnd() {
+        let encloseEnd = new BABYLON.Vector3(-Infinity, Infinity, Infinity);
+        this.parts.forEach(part => {
+            encloseEnd.x = Math.max(encloseEnd.x, part.position.x + part.encloseEnd.x);
+            encloseEnd.y = Math.min(encloseEnd.y, part.position.y + part.encloseEnd.y);
+            encloseEnd.z = Math.min(encloseEnd.z, part.position.z + part.encloseEnd.z);
+        });
+        return encloseEnd;
     }
 }
 var baseRadius = 0.075;
@@ -4753,6 +4801,7 @@ class UTurnLarge extends MachinePart {
     constructor(machine, i, j, k, mirrorX) {
         super(machine, i, j, k, {
             w: 2,
+            d: 3,
             mirrorX: mirrorX
         });
         this.xMirrorable = true;
@@ -4784,6 +4833,7 @@ class UTurnLarge extends MachinePart {
 class UTurn extends MachinePart {
     constructor(machine, i, j, k, mirrorX) {
         super(machine, i, j, k, {
+            d: 2,
             mirrorX: mirrorX
         });
         this.xMirrorable = true;
@@ -5022,6 +5072,14 @@ class Logo {
         this.fullScreenBanner = document.createElement("div");
         this.fullScreenBanner.id = "logo-banner";
         document.body.appendChild(this.fullScreenBanner);
+    }
+    show() {
+        this.container.style.display = "";
+        this.fullScreenBanner.style.display = "";
+    }
+    hide() {
+        this.container.style.display = "none";
+        this.fullScreenBanner.style.display = "none";
     }
     initialize() {
         this.container.innerHTML = `
@@ -5282,6 +5340,7 @@ class MainMenuLayout {
             button.style.position = "absolute";
             button.style.left = ((pos % xCount) * tileW + m).toFixed(0) + "px";
             button.style.top = (Math.floor(pos / xCount) * tileH + m).toFixed(0) + "px";
+            button.style.backgroundImage = "url(./datas/icons/demo-" + (i + 1).toFixed(0) + ".png)";
         }
         let n = demoButtons.length;
         let buttonCreate = container.querySelector(".panel.create");

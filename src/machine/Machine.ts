@@ -211,4 +211,24 @@ class Machine {
             this.parts.push(track);
         }
     }
+
+    public getEncloseStart():  BABYLON.Vector3 {
+        let encloseStart: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, - Infinity, - Infinity);
+        this.parts.forEach(part => {
+            encloseStart.x = Math.min(encloseStart.x, part.position.x + part.encloseStart.x);
+            encloseStart.y = Math.max(encloseStart.y, part.position.y + part.encloseStart.y);
+            encloseStart.z = Math.max(encloseStart.z, part.position.z + part.encloseStart.z);
+        });
+        return encloseStart;
+    }
+
+    public getEncloseEnd(): BABYLON.Vector3 {
+        let encloseEnd: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, Infinity, Infinity);
+        this.parts.forEach(part => {
+            encloseEnd.x = Math.max(encloseEnd.x, part.position.x + part.encloseEnd.x);
+            encloseEnd.y = Math.min(encloseEnd.y, part.position.y + part.encloseEnd.y);
+            encloseEnd.z = Math.min(encloseEnd.z, part.position.z + part.encloseEnd.z);
+        });
+        return encloseEnd;
+    }
 }

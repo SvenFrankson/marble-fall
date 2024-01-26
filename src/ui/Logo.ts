@@ -15,6 +15,16 @@ class Logo {
         document.body.appendChild(this.fullScreenBanner);
     }
 
+    public show(): void {
+        this.container.style.display = "";
+        this.fullScreenBanner.style.display = "";
+    }
+
+    public hide(): void {
+        this.container.style.display = "none";
+        this.fullScreenBanner.style.display = "none";
+    }
+
     public initialize(): void {
 
         this.container.innerHTML = `

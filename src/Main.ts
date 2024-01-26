@@ -346,15 +346,21 @@ class Game {
         //this.makeScreenshot("split");
         //return;
 
+        let screenshotButton = document.querySelector("#toolbar-screenshot") as HTMLButtonElement;
+        screenshotButton.addEventListener("click", () => {
+            this.makeCircuitScreenshot();
+        });
+
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
 
         let logo = new Logo();
         logo.initialize();
+        logo.hide();
 
         MainMenuLayout.Resize();
 
-        this.setContext(GameMode.MainMenu);
+        this.setContext(GameMode.DemoMode, 1);
 	}
 
 	public animate(): void {
@@ -636,6 +642,35 @@ class Game {
                     await Mummu.MakeScreenshot({ miniatureName: objectName });
                     resolve();
                 });
+            });
+        });
+    }
+
+    public async makeCircuitScreenshot(): Promise<void> {
+        this.creditPlaque.setIsVisible(false);
+        this.machine.baseWall.isVisible = false;
+        this.machine.baseFrame.isVisible = false;
+        this.skybox.isVisible = false;
+        this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
+        
+
+        let encloseStart = this.machine.getEncloseStart();
+        let encloseEnd = this.machine.getEncloseEnd();
+        this.camera.target = encloseStart.add(encloseEnd).scale(0.5);
+        this.camera.alpha = - 0.9 * Math.PI / 2;
+        this.camera.beta = 0.8 * Math.PI / 2;
+        let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
+        this.camera.radius = 1.25 * size;
+
+        return new Promise<void>(resolve => {
+            requestAnimationFrame(async () => {
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
+                this.creditPlaque.setIsVisible(true);
+                this.machine.baseWall.isVisible = true;
+                this.machine.baseFrame.isVisible = true;
+                this.skybox.isVisible = true;
+                this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+                resolve();
             });
         });
     }

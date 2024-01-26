@@ -2,6 +2,7 @@ class UTurnLarge extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
         super(machine, i, j, k, {
             w: 2,
+            d: 3,
             mirrorX: mirrorX
         });
         this.xMirrorable = true;
@@ -37,6 +38,7 @@ class UTurnLarge extends MachinePart {
 class UTurn extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
         super(machine, i, j, k, {
+            d: 2,
             mirrorX: mirrorX
         });
         this.xMirrorable = true;
