@@ -108,23 +108,23 @@ class TrackEditor {
         });
 
         document.getElementById("btn-cam-top").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(- Math.PI * 0.5, 0);
+            //this.game.setCameraAlphaBeta(- Math.PI * 0.5, 0);
         });
 
         document.getElementById("btn-cam-left").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(Math.PI, Math.PI * 0.5);
+            //this.game.setCameraAlphaBeta(Math.PI, Math.PI * 0.5);
         });
 
         document.getElementById("btn-cam-face").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5);
+            //this.game.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5);
         });
 
         document.getElementById("btn-cam-right").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(0, Math.PI * 0.5);
+            //this.game.setCameraAlphaBeta(0, Math.PI * 0.5);
         });
 
         document.getElementById("btn-cam-bottom").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI);
+            //this.game.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI);
         });
 
         document.getElementById("btn-cam-ortho").addEventListener("click", () => {
@@ -140,7 +140,7 @@ class TrackEditor {
         document.getElementById("btn-focus-point").addEventListener("click", () => {
             if (this.part && this.selectedTrackPoint) {
                 let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.part.getWorldMatrix());
-                this.game.setCameraTarget(target);
+                ////this.game.setCameraTarget(target);
             }
         });
 
@@ -550,7 +550,7 @@ class TrackEditor {
         if (this.part) {
             let center = this.part.getBarycenter();
             center.x = this.part.position.x;
-            this.game.setCameraTarget(center);
+            ////this.game.setCameraTarget(center);
         }
     }
 

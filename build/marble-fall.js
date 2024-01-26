@@ -1882,6 +1882,10 @@ var GameMode;
 })(GameMode || (GameMode = {}));
 class Game {
     constructor(canvasElement) {
+        this.targetCamTarget = BABYLON.Vector3.Zero();
+        this.targetCamAlpha = -Math.PI * 0.5;
+        this.targetCamBeta = Math.PI * 0.5;
+        this.targetCamRadius = 0.1;
         this.cameraOrtho = false;
         this.mainVolume = 0;
         this.targetTimeFactor = 0.8;
@@ -1989,7 +1993,7 @@ class Game {
         skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         this.skybox.material = skyboxMaterial;
-        this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 1, BABYLON.Vector3.Zero());
+        this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
@@ -2000,6 +2004,7 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 10000;
+        /*
         let savedTarget = window.localStorage.getItem("saved-target");
         if (savedTarget) {
             let target = JSON.parse(savedTarget);
@@ -2012,6 +2017,7 @@ class Game {
             let pos = JSON.parse(savedPos);
             this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
         }
+        */
         /*
         let savedRot = window.localStorage.getItem("saved-rot");
         if (savedRot) {
@@ -2021,10 +2027,12 @@ class Game {
             (this.camera as BABYLON.FreeCamera).rotation.z = rot.z;
         }
         */
-        let savedCameraOrtho = window.localStorage.getItem("saved-cam-ortho");
-        if (savedCameraOrtho === "true") {
-            this.cameraOrtho = true;
-        }
+        /*
+         let savedCameraOrtho = window.localStorage.getItem("saved-cam-ortho");
+         if (savedCameraOrtho === "true") {
+             this.cameraOrtho = true;
+         }
+         */
         this.camera.attachControl();
         this.camera.getScene();
         this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
@@ -2067,6 +2075,7 @@ class Game {
                 this.machine.deserialize(demo);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
+                this.frameFullCircuit();
                 this.setPageMode(GameMode.DemoMode);
             };
         }
@@ -2083,6 +2092,7 @@ class Game {
             this.setPageMode(GameMode.Credits);
         };
         this.setPageMode(GameMode.MainMenu);
+        this.frameFullCircuit();
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2098,13 +2108,23 @@ class Game {
     async initialize() {
     }
     update() {
-        let pos = this.camera.globalPosition;
-        window.localStorage.setItem("saved-pos", JSON.stringify({ x: pos.x, y: pos.y, z: pos.z }));
-        //let rot = (this.camera as BABYLON.FreeCamera).rotation;
-        //window.localStorage.setItem("saved-rot", JSON.stringify({ x: rot.x, y: rot.y, z: rot.z }));
-        let target = this.camera.target;
-        window.localStorage.setItem("saved-target", JSON.stringify({ x: target.x, y: target.y, z: target.z }));
-        window.localStorage.setItem("saved-cam-ortho", this.cameraOrtho ? "true" : "false");
+        let dt = this.scene.deltaTime / 1000;
+        if (this.mode != GameMode.CreateMode && isFinite(dt)) {
+            let target = BABYLON.Vector3.Lerp(this.camera.target, this.targetCamTarget, 0.01);
+            let alpha = Nabu.Step(this.camera.alpha, this.targetCamAlpha, Math.PI * 0.01 * dt);
+            let beta = Nabu.Step(this.camera.beta, this.targetCamBeta, Math.PI * 0.01 * dt);
+            let radius = Nabu.Step(this.camera.radius, this.targetCamRadius * 0.5, 0.02 * dt);
+            this.camera.target.copyFrom(target);
+            this.camera.alpha = alpha;
+            this.camera.beta = beta;
+            this.camera.radius = radius;
+            if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
+                this.targetCamAlpha = -0.2 - Math.random() * Math.PI * 0.6;
+            }
+            if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
+                this.targetCamBeta = 0.2 + Math.random() * Math.PI * 0.5;
+            }
+        }
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
         let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
@@ -2119,18 +2139,12 @@ class Game {
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
         }
-        if (this.mode === GameMode.MainMenu) {
-            this.camera.target.x = 0;
-            this.camera.target.y = 0;
-        }
-        this.camera.target.z = 0;
         if (this.machineEditor) {
             this.machineEditor.update();
         }
         if (this.machine) {
             this.machine.update();
         }
-        let dt = this.scene.deltaTime / 1000;
         let fps = 1 / dt;
         if (fps < 30) {
             this.timeFactor *= 0.9;
@@ -2197,8 +2211,8 @@ class Game {
                 this.mainMenu.show();
                 this.mainMenu.resize();
                 this.logo.show();
-                this.setCameraTarget(BABYLON.Vector3.Zero());
-                await this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());
+                //this.setCameraTarget(BABYLON.Vector3.Zero());
+                //await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = -Math.PI * 0.65;
                 this.camera.upperAlphaLimit = -Math.PI * 0.35;
                 this.camera.lowerBetaLimit = Math.PI * 0.35;
@@ -2210,8 +2224,8 @@ class Game {
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
                 this.machine.stop();
-                this.setCameraTarget(BABYLON.Vector3.Zero());
-                await this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
+                //this.setCameraTarget(BABYLON.Vector3.Zero());
+                //await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = -Math.PI * 0.95;
                 this.camera.upperAlphaLimit = -Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -2220,18 +2234,18 @@ class Game {
             }
             else if (this.mode === GameMode.DemoMode) {
                 if (demoIndex === 1) {
-                    this.setCameraTarget(BABYLON.Vector3.Zero());
+                    //this.setCameraTarget(BABYLON.Vector3.Zero());
                 }
                 else if (demoIndex === 2) {
-                    this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
+                    //this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
                 }
                 else if (demoIndex === 3) {
-                    this.setCameraTarget(new BABYLON.Vector3(-0.33, -0.17, 0));
+                    //this.setCameraTarget(new BABYLON.Vector3(-0.33, -0.17, 0));
                 }
                 else {
-                    this.setCameraTarget(BABYLON.Vector3.Zero());
+                    //this.setCameraTarget(BABYLON.Vector3.Zero());
                 }
-                await this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
+                //await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
                 this.camera.lowerAlphaLimit = -Math.PI * 0.95;
                 this.camera.upperAlphaLimit = -Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
@@ -2240,16 +2254,8 @@ class Game {
             this.toolbar.resize();
         }
     }
-    async setCameraAlphaBeta(alpha, beta, radius) {
-        if (!radius) {
-            radius = this.camera.radius;
-        }
-        await this._animateCamera([alpha, beta, radius], 0.8);
-    }
-    async setCameraTarget(target) {
-        await this._animateCameraTarget(target, 0.8);
-    }
     async makeScreenshot(objectName) {
+        return;
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
@@ -2290,6 +2296,7 @@ class Game {
         });
     }
     async makeCircuitScreenshot() {
+        return;
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
@@ -2327,6 +2334,15 @@ class Game {
     setCameraZoomFactor(v) {
         let f = Math.sqrt(v);
         this.camera.radius = (1 - f) * (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit) + this.camera.lowerRadiusLimit;
+    }
+    frameFullCircuit() {
+        let encloseStart = this.machine.getEncloseStart();
+        let encloseEnd = this.machine.getEncloseEnd();
+        let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
+        this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
+        this.targetCamAlpha = -0.9 * Math.PI / 2;
+        this.targetCamBeta = 0.8 * Math.PI / 2;
+        this.targetCamRadius = size;
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -2738,19 +2754,19 @@ class TrackEditor {
             }
         });
         document.getElementById("btn-cam-top").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(-Math.PI * 0.5, 0);
+            //this.game.setCameraAlphaBeta(- Math.PI * 0.5, 0);
         });
         document.getElementById("btn-cam-left").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(Math.PI, Math.PI * 0.5);
+            //this.game.setCameraAlphaBeta(Math.PI, Math.PI * 0.5);
         });
         document.getElementById("btn-cam-face").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5);
+            //this.game.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5);
         });
         document.getElementById("btn-cam-right").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(0, Math.PI * 0.5);
+            //this.game.setCameraAlphaBeta(0, Math.PI * 0.5);
         });
         document.getElementById("btn-cam-bottom").addEventListener("click", () => {
-            this.game.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI);
+            //this.game.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI);
         });
         document.getElementById("btn-cam-ortho").addEventListener("click", () => {
             this.game.cameraOrtho = true;
@@ -2763,7 +2779,7 @@ class TrackEditor {
         document.getElementById("btn-focus-point").addEventListener("click", () => {
             if (this.part && this.selectedTrackPoint) {
                 let target = BABYLON.Vector3.TransformCoordinates(this.selectedTrackPoint.position, this.part.getWorldMatrix());
-                this.game.setCameraTarget(target);
+                ////this.game.setCameraTarget(target);
             }
         });
         document.getElementById("btn-center-track").addEventListener("click", () => {
@@ -2982,7 +2998,7 @@ class TrackEditor {
         if (this.part) {
             let center = this.part.getBarycenter();
             center.x = this.part.position.x;
-            this.game.setCameraTarget(center);
+            ////this.game.setCameraTarget(center);
         }
     }
 }
