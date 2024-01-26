@@ -1826,6 +1826,9 @@ class Game {
             }
         }
     }
+    getScene() {
+        return this.scene;
+    }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
@@ -1944,7 +1947,6 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         this.machine.deserialize(demo1);
-        document.getElementById("main-menu").style.display = "none";
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         document.getElementById("track-editor-menu").style.display = "none";
@@ -1954,12 +1956,13 @@ class Game {
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
         });
-        this.toolbar = new Toolbar(this);
-        this.toolbar.initialize();
-        this.logo = new Logo();
+        this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
-        MainMenuLayout.Resize();
+        this.mainMenu = new MainMenu(this);
+        this.mainMenu.hide();
+        this.toolbar = new Toolbar(this);
+        this.toolbar.initialize();
         let demos = [demo1, demo2, demo3];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
@@ -1990,7 +1993,7 @@ class Game {
         window.addEventListener("resize", () => {
             this.engine.resize();
             this.toolbar.resize();
-            MainMenuLayout.Resize();
+            this.mainMenu.resize();
         });
     }
     async initialize() {
@@ -2040,7 +2043,7 @@ class Game {
     async setContext(mode, demoIndex) {
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
-                document.getElementById("main-menu").style.display = "none";
+                this.mainMenu.hide();
                 this.logo.hide();
             }
             else if (this.mode === GameMode.CreateMode) {
@@ -2058,8 +2061,8 @@ class Game {
                 this.machine.play();
                 //this.tileMenuContainer.position.y = 0;
                 //this.tileMenuContainer.position.z = - 0.03;
-                document.getElementById("main-menu").style.display = "block";
-                MainMenuLayout.Resize();
+                this.mainMenu.show();
+                this.mainMenu.resize();
                 this.logo.show();
                 this.setCameraTarget(BABYLON.Vector3.Zero());
                 await this.setCameraAlphaBeta(-Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());
@@ -4931,23 +4934,36 @@ class FloatingElement extends HTMLElement {
 }
 window.customElements.define("floating-element", FloatingElement);
 class Logo {
-    constructor() {
+    constructor(game) {
+        this.game = game;
         this.container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.container.id = "logo";
         this.container.setAttribute("viewBox", "0 0 1000 350");
         this.container.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        this.container.style.opacity = "0";
         document.body.appendChild(this.container);
         this.fullScreenBanner = document.createElement("div");
         this.fullScreenBanner.id = "logo-banner";
+        this.fullScreenBanner.style.opacity = "0";
         document.body.appendChild(this.fullScreenBanner);
     }
-    show() {
-        this.container.style.display = "";
-        this.fullScreenBanner.style.display = "";
+    async show() {
+        let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.fullScreenBanner.style.visibility = "visible";
+        this.container.style.visibility = "visible";
+        animBanner(1, 1);
+        await animContainer(1, 1);
     }
-    hide() {
-        this.container.style.display = "none";
-        this.fullScreenBanner.style.display = "none";
+    async hide() {
+        let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.fullScreenBanner.style.visibility = "visible";
+        this.container.style.visibility = "visible";
+        animBanner(0, 0.5);
+        await animContainer(0, 0.5);
+        this.fullScreenBanner.style.visibility = "hidden";
+        this.container.style.visibility = "hidden";
     }
     initialize() {
         this.container.innerHTML = `
@@ -5168,11 +5184,30 @@ class MachinePartEditorMenu {
         }
     }
 }
-class MainMenuLayout {
-    static Resize() {
-        let container = document.getElementById("main-menu");
-        let requestedTileCount = container.querySelectorAll(".panel.demo").length + 3;
-        let rect = container.getBoundingClientRect();
+class MainMenu {
+    constructor(game) {
+        this.game = game;
+        this.container = document.getElementById("main-menu");
+        this.updateNode = new BABYLON.Node("main-menu-update-node");
+    }
+    async show() {
+        console.log("show start");
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(1, 1);
+        console.log("show");
+    }
+    async hide() {
+        console.log("hide start");
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(0, 0.5);
+        this.container.style.visibility = "visible";
+        console.log("hide");
+    }
+    resize() {
+        let requestedTileCount = this.container.querySelectorAll(".panel.demo").length + 3;
+        let rect = this.container.getBoundingClientRect();
         let containerW = rect.width;
         let containerH = rect.height;
         let bestValue = 0;
@@ -5198,7 +5233,7 @@ class MainMenuLayout {
         let tileW = containerW / xCount;
         let tileH = containerH / yCount;
         let m = Math.min(tileW, tileH) / 20;
-        let demoButtons = container.querySelectorAll(".panel.demo");
+        let demoButtons = this.container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
             let pos = i + 2;
             let button = demoButtons[i];
@@ -5211,21 +5246,21 @@ class MainMenuLayout {
             button.style.backgroundImage = "url(./datas/icons/demo-" + (i + 1).toFixed(0) + ".png)";
         }
         let n = demoButtons.length;
-        let buttonCreate = container.querySelector(".panel.create");
+        let buttonCreate = this.container.querySelector(".panel.create");
         buttonCreate.style.display = "block";
         buttonCreate.style.width = (2 * tileW - 2 * m).toFixed(0) + "px";
         buttonCreate.style.height = (tileH - 2 * m).toFixed(0) + "px";
         buttonCreate.style.position = "absolute";
         buttonCreate.style.left = m.toFixed(0) + "px";
         buttonCreate.style.top = m.toFixed(0) + "px";
-        let buttonOption = container.querySelector(".panel.option");
+        let buttonOption = this.container.querySelector(".panel.option");
         buttonOption.style.display = "block";
         buttonOption.style.width = (tileW - 2 * m).toFixed(0) + "px";
         buttonOption.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
         buttonOption.style.position = "absolute";
         buttonOption.style.right = (m).toFixed(0) + "px";
         buttonOption.style.bottom = (0.5 * tileH + m).toFixed(0) + "px";
-        let buttonCredit = container.querySelector(".panel.credit");
+        let buttonCredit = this.container.querySelector(".panel.credit");
         buttonCredit.style.display = "block";
         buttonCredit.style.width = (tileW - 2 * m).toFixed(0) + "px";
         buttonCredit.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";

@@ -3,26 +3,38 @@ class Logo {
     public container: SVGElement;
     public fullScreenBanner: HTMLDivElement;
 
-    constructor() {
+    constructor(public game: Game) {
         this.container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.container.id = "logo";
         this.container.setAttribute("viewBox", "0 0 1000 350");
         this.container.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        this.container.style.opacity = "0";
         document.body.appendChild(this.container);
 
         this.fullScreenBanner = document.createElement("div");
         this.fullScreenBanner.id = "logo-banner";
+        this.fullScreenBanner.style.opacity = "0";
         document.body.appendChild(this.fullScreenBanner);
     }
 
-    public show(): void {
-        this.container.style.display = "";
-        this.fullScreenBanner.style.display = "";
+    public async show(): Promise<void> {
+        let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.fullScreenBanner.style.visibility = "visible";
+        this.container.style.visibility = "visible";
+        animBanner(1, 1);
+        await animContainer(1, 1);
     }
 
-    public hide(): void {
-        this.container.style.display = "none";
-        this.fullScreenBanner.style.display = "none";
+    public async hide(): Promise<void> {
+        let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.fullScreenBanner.style.visibility = "visible";
+        this.container.style.visibility = "visible";
+        animBanner(0, 0.5);
+        await animContainer(0, 0.5);
+        this.fullScreenBanner.style.visibility = "hidden";
+        this.container.style.visibility = "hidden";
     }
 
     public initialize(): void {

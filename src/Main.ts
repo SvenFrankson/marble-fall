@@ -23,12 +23,17 @@ class Game {
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
     public scene: BABYLON.Scene;
+    public getScene(): BABYLON.Scene {
+        return this.scene;
+    }
     //public camera: BABYLON.FreeCamera;
     public camera: BABYLON.ArcRotateCamera;
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
-    public toolbar: Toolbar;
+
     public logo: Logo;
+    public mainMenu: MainMenu;
+    public toolbar: Toolbar;
 
     public cameraOrtho: boolean = false;
 
@@ -232,8 +237,6 @@ class Game {
 
         this.machine.deserialize(demo1);
 
-        document.getElementById("main-menu").style.display = "none";
-
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
 
@@ -247,14 +250,15 @@ class Game {
             this.makeCircuitScreenshot();
         });
 
-        this.toolbar = new Toolbar(this);
-        this.toolbar.initialize();
-
-        this.logo = new Logo();
+        this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
 
-        MainMenuLayout.Resize();
+        this.mainMenu = new MainMenu(this);
+        this.mainMenu.hide();
+
+        this.toolbar = new Toolbar(this);
+        this.toolbar.initialize();
 
         let demos = [demo1, demo2, demo3];
         let container = document.getElementById("main-menu");
@@ -289,7 +293,7 @@ class Game {
 		window.addEventListener("resize", () => {
 			this.engine.resize();
             this.toolbar.resize();
-            MainMenuLayout.Resize();
+            this.mainMenu.resize();
 		});
 	}
 
@@ -349,7 +353,7 @@ class Game {
     public async setContext(mode: GameMode, demoIndex?: number): Promise<void> {
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
-                document.getElementById("main-menu").style.display = "none";
+                this.mainMenu.hide();
                 this.logo.hide();
             }
             else if (this.mode === GameMode.CreateMode) {
@@ -370,8 +374,8 @@ class Game {
 
                 //this.tileMenuContainer.position.y = 0;
                 //this.tileMenuContainer.position.z = - 0.03;
-                document.getElementById("main-menu").style.display = "block";
-                MainMenuLayout.Resize();
+                this.mainMenu.show();
+                this.mainMenu.resize();
                 this.logo.show();
 
                 this.setCameraTarget(BABYLON.Vector3.Zero());

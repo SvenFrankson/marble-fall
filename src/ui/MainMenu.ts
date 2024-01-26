@@ -1,10 +1,34 @@
-class MainMenuLayout {
+class MainMenu {
 
-    public static Resize(): void {
-        let container = document.getElementById("main-menu");
-        let requestedTileCount = container.querySelectorAll(".panel.demo").length + 3;
+    public updateNode: BABYLON.Node;
+    public container: HTMLDivElement;
 
-        let rect = container.getBoundingClientRect();
+    constructor(public game: Game) {
+        this.container = document.getElementById("main-menu") as HTMLDivElement;
+        this.updateNode = new BABYLON.Node("main-menu-update-node");
+    }
+
+    public async show(): Promise<void> {
+        console.log("show start");
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(1, 1);
+        console.log("show");
+    }
+
+    public async hide(): Promise<void> {
+        console.log("hide start");
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(0, 0.5);
+        this.container.style.visibility = "visible";
+        console.log("hide");
+    }
+
+    public resize(): void {
+        let requestedTileCount = this.container.querySelectorAll(".panel.demo").length + 3;
+
+        let rect = this.container.getBoundingClientRect();
         let containerW = rect.width;
         let containerH = rect.height;
 
@@ -34,7 +58,7 @@ class MainMenuLayout {
         let tileH = containerH / yCount;
         let m = Math.min(tileW, tileH) / 20;
 
-        let demoButtons = container.querySelectorAll(".panel.demo");
+        let demoButtons = this.container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
             let pos = i + 2;
             let button = demoButtons[i] as HTMLDivElement;
@@ -49,7 +73,7 @@ class MainMenuLayout {
 
         let n = demoButtons.length;
 
-        let buttonCreate = container.querySelector(".panel.create") as HTMLDivElement;
+        let buttonCreate = this.container.querySelector(".panel.create") as HTMLDivElement;
         buttonCreate.style.display = "block";
         buttonCreate.style.width = (2 * tileW - 2 * m).toFixed(0) + "px";
         buttonCreate.style.height = (tileH - 2 * m).toFixed(0) + "px";
@@ -57,7 +81,7 @@ class MainMenuLayout {
         buttonCreate.style.left = m.toFixed(0) + "px";
         buttonCreate.style.top = m.toFixed(0) + "px";
 
-        let buttonOption = container.querySelector(".panel.option") as HTMLDivElement;
+        let buttonOption = this.container.querySelector(".panel.option") as HTMLDivElement;
         buttonOption.style.display = "block";
         buttonOption.style.width = (tileW - 2 * m).toFixed(0) + "px";
         buttonOption.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
@@ -65,7 +89,7 @@ class MainMenuLayout {
         buttonOption.style.right = (m).toFixed(0) + "px";
         buttonOption.style.bottom = (0.5 * tileH + m).toFixed(0) + "px";
 
-        let buttonCredit = container.querySelector(".panel.credit") as HTMLDivElement;
+        let buttonCredit = this.container.querySelector(".panel.credit") as HTMLDivElement;
         buttonCredit.style.display = "block";
         buttonCredit.style.width = (tileW - 2 * m).toFixed(0) + "px";
         buttonCredit.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
