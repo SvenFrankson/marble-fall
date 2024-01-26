@@ -2,6 +2,8 @@ class Logo {
 
     public container: SVGElement;
     public fullScreenBanner: HTMLDivElement;
+    public updateNode: BABYLON.Node;
+    public updateNodeBanner: BABYLON.Node;
 
     constructor(public game: Game) {
         this.container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -17,6 +19,9 @@ class Logo {
         this.fullScreenBanner.style.opacity = "0";
         this.fullScreenBanner.style.pointerEvents = "none";
         document.body.appendChild(this.fullScreenBanner);
+
+        this.updateNode = new BABYLON.Node("main-menu-update-node-logo");
+        this.updateNodeBanner = new BABYLON.Node("main-menu-update-node-banner");
     }
 
     public async show(): Promise<void> {
@@ -26,8 +31,8 @@ class Logo {
             }
         }
         
-        let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animContainer = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animBanner = Mummu.AnimationFactory.CreateNumber(this.updateNodeBanner, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.fullScreenBanner.style.visibility = "visible";
         this.container.style.visibility = "visible";
         animBanner(1, 1);
@@ -41,8 +46,8 @@ class Logo {
             }
         }
 
-        let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animContainer = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        let animBanner = Mummu.AnimationFactory.CreateNumber(this.updateNodeBanner, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.fullScreenBanner.style.visibility = "visible";
         this.container.style.visibility = "visible";
         animBanner(0, 0.5);
