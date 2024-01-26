@@ -106,7 +106,13 @@ class Toolbar {
             this.loadInputShown = false;
             this.backButton.style.display = "none";
         }
-        else if (this.game.mode === GameMode.Credit) {
+        else if (this.game.mode === GameMode.Credits) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "";
+        }
+        else if (this.game.mode === GameMode.Options) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -269,7 +275,7 @@ class Toolbar {
     }
 
     public onBack = () => {
-        this.game.setContext(GameMode.MainMenu);
+        this.game.setPageMode(GameMode.MainMenu);
     }
 
     public closeAllDropdowns = () => {

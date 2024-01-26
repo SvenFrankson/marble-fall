@@ -443,6 +443,36 @@ var demoLoops = {
         { name: "uturnlayer-0.5", i: 1, j: -4, k: 1, mirrorX: true, mirrorZ: false },
     ],
 };
+var largeTornado = {
+    balls: [
+        { x: 0.15400000655651092, y: -0.2408360127210617, z: 0 },
+        { x: 0.15400000655651092, y: -0.16197078263759612, z: 0 },
+        { x: 0.15400000655651092, y: -0.08310558235645295, z: 0 },
+        { x: 0.15400000655651092, y: -0.00424036717414856, z: 0 },
+        { x: 0.15400000655651092, y: 0.07462484800815582, z: 0 },
+        { x: 0.15400000655651092, y: 0.1534900631904602, z: 0 },
+    ],
+    parts: [
+        { name: "uturnlayer-1.5", i: -1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.5", i: 1, j: -5, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.8", i: -2, j: -4, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturnlayer-1.7", i: 1, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.7", i: -2, j: -2, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturnlayer-1.6", i: 1, j: -1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.6", i: -1, j: 0, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturnlayer-1.5", i: 1, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.5", i: -1, j: 2, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturnlayer-1.4", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.4", i: -1, j: 4, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "elevator-15", i: 1, j: -7, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.5", i: 1, j: 5, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.4.1", i: -1, j: 6, k: 5, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.5", i: -4, j: 10, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "loop-1.2", i: -2, j: 6, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.3.1", i: -2, j: 7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 0, j: 7, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -573,6 +603,7 @@ class MachineEditor {
         this.items = new Map();
         this.showManipulators = false;
         this.showDisplacers = true;
+        this.handles = [];
         this.smallHandleSize = 0.015;
         this._currentLayer = 0;
         this._selectedItem = "";
@@ -1549,7 +1580,9 @@ class MachineEditor {
     dispose() {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
-        this.machinePartEditorMenu.dispose();
+        if (this.machinePartEditorMenu) {
+            this.machinePartEditorMenu.dispose();
+        }
         if (this.showManipulators) {
             this.floatingElementTop.dispose();
             this.floatingElementRight.dispose();
@@ -1561,7 +1594,9 @@ class MachineEditor {
         this.handles.forEach(handle => {
             handle.dispose();
         });
-        this.itemContainer.innerHTML = "";
+        if (this.itemContainer) {
+            this.itemContainer.innerHTML = "";
+        }
         this.items = new Map();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
@@ -1793,9 +1828,10 @@ function addLine(text) {
 var GameMode;
 (function (GameMode) {
     GameMode[GameMode["MainMenu"] = 0] = "MainMenu";
-    GameMode[GameMode["CreateMode"] = 1] = "CreateMode";
-    GameMode[GameMode["DemoMode"] = 2] = "DemoMode";
-    GameMode[GameMode["Credit"] = 3] = "Credit";
+    GameMode[GameMode["Options"] = 1] = "Options";
+    GameMode[GameMode["Credits"] = 2] = "Credits";
+    GameMode[GameMode["CreateMode"] = 3] = "CreateMode";
+    GameMode[GameMode["DemoMode"] = 4] = "DemoMode";
 })(GameMode || (GameMode = {}));
 class Game {
     constructor(canvasElement) {
@@ -1956,13 +1992,20 @@ class Game {
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
         });
+        this.mode = GameMode.MainMenu;
         this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
         this.mainMenu = new MainMenu(this);
+        this.mainMenu.resize();
         this.mainMenu.hide();
+        this.optionsPage = new OptionsPage(this);
+        this.optionsPage.hide();
+        this.creditsPage = new CreditsPage(this);
+        this.creditsPage.hide();
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
+        this.toolbar.resize();
         let demos = [demo1, demo2, demo3];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
@@ -1974,16 +2017,22 @@ class Game {
                 this.machine.deserialize(demo);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
-                this.setContext(GameMode.DemoMode, 1);
+                this.setPageMode(GameMode.DemoMode);
             };
         }
         let buttonCreate = container.querySelector(".panel.create");
         buttonCreate.onclick = () => {
-            this.setContext(GameMode.CreateMode);
+            this.setPageMode(GameMode.CreateMode);
         };
         let buttonOption = container.querySelector(".panel.option");
+        buttonOption.onclick = () => {
+            this.setPageMode(GameMode.Options);
+        };
         let buttonCredit = container.querySelector(".panel.credit");
-        this.setContext(GameMode.MainMenu);
+        buttonCredit.onclick = () => {
+            this.setPageMode(GameMode.Credits);
+        };
+        this.setPageMode(GameMode.MainMenu);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2040,7 +2089,44 @@ class Game {
             this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
         }
     }
-    async setContext(mode, demoIndex) {
+    async setPageMode(mode) {
+        this.machineEditor.dispose();
+        if (mode === GameMode.MainMenu) {
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+            this.logo.show();
+            await this.mainMenu.show();
+        }
+        if (mode === GameMode.Options) {
+            await this.mainMenu.hide();
+            await this.creditsPage.hide();
+            this.logo.show();
+            await this.optionsPage.show();
+        }
+        if (mode === GameMode.Credits) {
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            this.logo.show();
+            await this.creditsPage.show();
+        }
+        if (mode === GameMode.CreateMode) {
+            this.logo.hide();
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+            this.machineEditor.instantiate();
+        }
+        if (mode === GameMode.DemoMode) {
+            this.logo.hide();
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+        }
+        this.mode = mode;
+        this.toolbar.resize();
+    }
+    async setContextOld(mode, demoIndex) {
+        return;
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
                 this.mainMenu.hide();
@@ -2048,9 +2134,6 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machineEditor.dispose();
-            }
-            else if (this.mode === GameMode.Credit) {
-                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1 * 0.8 / this.getCameraMinFOV());
             }
             this.mode = mode;
             if (this.mode === GameMode.MainMenu) {
@@ -2103,15 +2186,6 @@ class Game {
                 this.camera.upperAlphaLimit = -Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
                 this.camera.upperBetaLimit = Math.PI * 0.95;
-            }
-            else if (this.mode === GameMode.Credit) {
-                this.setCameraTarget(new BABYLON.Vector3(0, 0, 0.13));
-                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1 * 0.8 / this.getCameraMinFOV());
-                await this.setCameraAlphaBeta(Math.PI * 0.5, Math.PI * 0.5, 0.4 * 0.8 / this.getCameraMinFOV());
-                this.camera.lowerAlphaLimit = Math.PI * 0.2;
-                this.camera.upperAlphaLimit = Math.PI * 0.8;
-                this.camera.lowerBetaLimit = Math.PI * 0.2;
-                this.camera.upperBetaLimit = Math.PI * 0.8;
             }
             this.toolbar.resize();
         }
@@ -4828,6 +4902,34 @@ class Arrow extends BABYLON.Mesh {
         this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 }
+class CreditsPage {
+    constructor(game) {
+        this.game = game;
+        this.container = document.getElementById("credits");
+        this.updateNode = new BABYLON.Node("credits-update-node");
+    }
+    async show() {
+        if (this.container.style.visibility === "visible") {
+            this.container.style.pointerEvents = "";
+            return;
+        }
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(1, 1);
+        this.container.style.pointerEvents = "";
+    }
+    async hide() {
+        if (this.container.style.visibility === "hidden") {
+            this.container.style.pointerEvents = "none";
+            return;
+        }
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(0, 0.5);
+        this.container.style.visibility = "hidden";
+        this.container.style.pointerEvents = "none";
+    }
+}
 var FloatingElementAnchor;
 (function (FloatingElementAnchor) {
     FloatingElementAnchor[FloatingElementAnchor["CenterMiddle"] = 0] = "CenterMiddle";
@@ -4941,13 +5043,20 @@ class Logo {
         this.container.setAttribute("viewBox", "0 0 1000 350");
         this.container.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
         this.container.style.opacity = "0";
+        this.container.style.pointerEvents = "none";
         document.body.appendChild(this.container);
         this.fullScreenBanner = document.createElement("div");
         this.fullScreenBanner.id = "logo-banner";
         this.fullScreenBanner.style.opacity = "0";
+        this.fullScreenBanner.style.pointerEvents = "none";
         document.body.appendChild(this.fullScreenBanner);
     }
     async show() {
+        if (this.container.style.visibility === "visible") {
+            if (this.fullScreenBanner.style.visibility === "visible") {
+                return;
+            }
+        }
         let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.fullScreenBanner.style.visibility = "visible";
@@ -4956,6 +5065,11 @@ class Logo {
         await animContainer(1, 1);
     }
     async hide() {
+        if (this.container.style.visibility === "hidden") {
+            if (this.fullScreenBanner.style.visibility === "hidden") {
+                return;
+            }
+        }
         let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.fullScreenBanner.style.visibility = "visible";
@@ -5153,33 +5267,35 @@ class MachinePartEditorMenu {
         this.currentObject = undefined;
     }
     update() {
-        if (!this.currentObject) {
-            this.container.style.display = "none";
-        }
-        else {
-            this.container.style.display = "";
-            this.showButton.style.display = this._shown ? "none" : "";
-            this.hideButton.style.display = this._shown ? "" : "none";
-            this.ijkLine.style.display = this._shown && this.currentObject instanceof MachinePart ? "" : "none";
-            this.kLine.style.display = this._shown && this.currentObject instanceof Ball ? "" : "none";
-            this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
-            this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
-            this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
-            this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
-            this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
-            this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
-            if (this.currentObject instanceof MachinePart) {
-                this.titleElement.innerText = this.currentObject.partName;
-                this.ijkIElement.innerText = this.currentObject.i.toFixed(0);
-                this.ijkJElement.innerText = this.currentObject.j.toFixed(0);
-                this.ijkKElement.innerText = this.currentObject.k.toFixed(0);
-                this.wValue.innerText = this.currentObject.w.toFixed(0);
-                this.hValue.innerText = this.currentObject.h.toFixed(0);
-                this.dValue.innerText = this.currentObject.d.toFixed(0);
+        if (this.container) {
+            if (!this.currentObject) {
+                this.container.style.display = "none";
             }
-            else if (this.currentObject instanceof Ball) {
-                this.titleElement.innerText = "Marble";
-                this.kElement.innerText = this.currentObject.k.toFixed(0);
+            else {
+                this.container.style.display = "";
+                this.showButton.style.display = this._shown ? "none" : "";
+                this.hideButton.style.display = this._shown ? "" : "none";
+                this.ijkLine.style.display = this._shown && this.currentObject instanceof MachinePart ? "" : "none";
+                this.kLine.style.display = this._shown && this.currentObject instanceof Ball ? "" : "none";
+                this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
+                this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
+                this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
+                this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
+                this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
+                this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
+                if (this.currentObject instanceof MachinePart) {
+                    this.titleElement.innerText = this.currentObject.partName;
+                    this.ijkIElement.innerText = this.currentObject.i.toFixed(0);
+                    this.ijkJElement.innerText = this.currentObject.j.toFixed(0);
+                    this.ijkKElement.innerText = this.currentObject.k.toFixed(0);
+                    this.wValue.innerText = this.currentObject.w.toFixed(0);
+                    this.hValue.innerText = this.currentObject.h.toFixed(0);
+                    this.dValue.innerText = this.currentObject.d.toFixed(0);
+                }
+                else if (this.currentObject instanceof Ball) {
+                    this.titleElement.innerText = "Marble";
+                    this.kElement.innerText = this.currentObject.k.toFixed(0);
+                }
             }
         }
     }
@@ -5191,19 +5307,25 @@ class MainMenu {
         this.updateNode = new BABYLON.Node("main-menu-update-node");
     }
     async show() {
-        console.log("show start");
+        if (this.container.style.visibility === "visible") {
+            this.container.style.pointerEvents = "";
+            return;
+        }
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(1, 1);
-        console.log("show");
+        this.container.style.pointerEvents = "";
     }
     async hide() {
-        console.log("hide start");
+        if (this.container.style.visibility === "hidden") {
+            this.container.style.pointerEvents = "none";
+            return;
+        }
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(0, 0.5);
-        this.container.style.visibility = "visible";
-        console.log("hide");
+        this.container.style.visibility = "hidden";
+        this.container.style.pointerEvents = "none";
     }
     resize() {
         let requestedTileCount = this.container.querySelectorAll(".panel.demo").length + 3;
@@ -5267,6 +5389,34 @@ class MainMenu {
         buttonCredit.style.position = "absolute";
         buttonCredit.style.right = (m).toFixed(0) + "px";
         buttonCredit.style.bottom = m.toFixed(0) + "px";
+    }
+}
+class OptionsPage {
+    constructor(game) {
+        this.game = game;
+        this.container = document.getElementById("options");
+        this.updateNode = new BABYLON.Node("options-update-node");
+    }
+    async show() {
+        if (this.container.style.visibility === "visible") {
+            this.container.style.pointerEvents = "";
+            return;
+        }
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(1, 1);
+        this.container.style.pointerEvents = "";
+    }
+    async hide() {
+        if (this.container.style.visibility === "hidden") {
+            this.container.style.pointerEvents = "none";
+            return;
+        }
+        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
+        this.container.style.visibility = "visible";
+        await anim(0, 0.5);
+        this.container.style.visibility = "hidden";
+        this.container.style.pointerEvents = "none";
     }
 }
 class Toolbar {
@@ -5365,7 +5515,7 @@ class Toolbar {
             }
         };
         this.onBack = () => {
-            this.game.setContext(GameMode.MainMenu);
+            this.game.setPageMode(GameMode.MainMenu);
         };
         this.closeAllDropdowns = () => {
             if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {
@@ -5431,7 +5581,13 @@ class Toolbar {
             this.loadInputShown = false;
             this.backButton.style.display = "none";
         }
-        else if (this.game.mode === GameMode.Credit) {
+        else if (this.game.mode === GameMode.Credits) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "";
+        }
+        else if (this.game.mode === GameMode.Options) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;

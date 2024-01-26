@@ -11,9 +11,10 @@ function addLine(text: string): void {
 
 enum GameMode {
     MainMenu,
+    Options,
+    Credits,
     CreateMode,
-    DemoMode,
-    Credit
+    DemoMode
 }
 
 class Game {
@@ -33,6 +34,8 @@ class Game {
 
     public logo: Logo;
     public mainMenu: MainMenu;
+    public optionsPage: OptionsPage;
+    public creditsPage: CreditsPage;
     public toolbar: Toolbar;
 
     public cameraOrtho: boolean = false;
@@ -250,15 +253,25 @@ class Game {
             this.makeCircuitScreenshot();
         });
 
+        this.mode = GameMode.MainMenu;
+
         this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
 
         this.mainMenu = new MainMenu(this);
+        this.mainMenu.resize();
         this.mainMenu.hide();
+
+        this.optionsPage = new OptionsPage(this);
+        this.optionsPage.hide();
+
+        this.creditsPage = new CreditsPage(this);
+        this.creditsPage.hide();
 
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
+        this.toolbar.resize();
 
         let demos = [demo1, demo2, demo3];
         let container = document.getElementById("main-menu");
@@ -271,17 +284,22 @@ class Game {
                 this.machine.deserialize(demo);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
-                this.setContext(GameMode.DemoMode, 1);
+                this.setPageMode(GameMode.DemoMode);
             }
         }
         let buttonCreate = container.querySelector(".panel.create") as HTMLDivElement;
         buttonCreate.onclick = () => {
-            this.setContext(GameMode.CreateMode);
+            this.setPageMode(GameMode.CreateMode);
         }
         let buttonOption = container.querySelector(".panel.option") as HTMLDivElement;
+        buttonOption.onclick = () => {
+            this.setPageMode(GameMode.Options);
+        }
         let buttonCredit = container.querySelector(".panel.credit") as HTMLDivElement;
-
-        this.setContext(GameMode.MainMenu);
+        buttonCredit.onclick = () => {
+            this.setPageMode(GameMode.Credits);
+        }
+        this.setPageMode(GameMode.MainMenu);
 	}
 
 	public animate(): void {
@@ -349,8 +367,50 @@ class Game {
         }
     }
 
+    public async setPageMode(mode: GameMode): Promise<void> {
+        this.machineEditor.dispose();
+        if (mode === GameMode.MainMenu) {
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+            
+            this.logo.show();
+            await this.mainMenu.show();
+        }
+        if (mode === GameMode.Options) {
+            await this.mainMenu.hide();
+            await this.creditsPage.hide();
+            
+            this.logo.show();
+            await this.optionsPage.show();
+        }
+        if (mode === GameMode.Credits) {
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            
+            this.logo.show();
+            await this.creditsPage.show();
+        }
+        if (mode === GameMode.CreateMode) {
+            this.logo.hide();
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+            
+            this.machineEditor.instantiate();
+        }
+        if (mode === GameMode.DemoMode) {
+            this.logo.hide();
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+        }
+        this.mode = mode;
+        this.toolbar.resize();
+    }
+
     public mode: GameMode;
-    public async setContext(mode: GameMode, demoIndex?: number): Promise<void> {
+    public async setContextOld(mode: GameMode, demoIndex?: number): Promise<void> {
+        return;
         if (this.mode != mode) {
             if (this.mode === GameMode.MainMenu) {
                 this.mainMenu.hide();
@@ -358,9 +418,6 @@ class Game {
             }
             else if (this.mode === GameMode.CreateMode) {
                 this.machineEditor.dispose();
-            }
-            else if (this.mode === GameMode.Credit) {
-                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1 * 0.8 / this.getCameraMinFOV());
             }
 
             this.mode = mode;
@@ -419,15 +476,6 @@ class Game {
                 this.camera.upperAlphaLimit = - Math.PI * 0.05;
                 this.camera.lowerBetaLimit = Math.PI * 0.05;
                 this.camera.upperBetaLimit = Math.PI * 0.95;
-            }
-            else if (this.mode === GameMode.Credit) {
-                this.setCameraTarget(new BABYLON.Vector3(0, 0, 0.13));
-                await this.setCameraAlphaBeta(0, Math.PI * 0.5, 1 * 0.8 / this.getCameraMinFOV());
-                await this.setCameraAlphaBeta(Math.PI * 0.5, Math.PI * 0.5, 0.4 * 0.8 / this.getCameraMinFOV());
-                this.camera.lowerAlphaLimit = Math.PI * 0.2;
-                this.camera.upperAlphaLimit = Math.PI * 0.8;
-                this.camera.lowerBetaLimit = Math.PI * 0.2;
-                this.camera.upperBetaLimit = Math.PI * 0.8;
             }
             this.toolbar.resize();
         }

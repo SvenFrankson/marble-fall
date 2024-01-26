@@ -9,15 +9,23 @@ class Logo {
         this.container.setAttribute("viewBox", "0 0 1000 350");
         this.container.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
         this.container.style.opacity = "0";
+        this.container.style.pointerEvents = "none";
         document.body.appendChild(this.container);
 
         this.fullScreenBanner = document.createElement("div");
         this.fullScreenBanner.id = "logo-banner";
         this.fullScreenBanner.style.opacity = "0";
+        this.fullScreenBanner.style.pointerEvents = "none";
         document.body.appendChild(this.fullScreenBanner);
     }
 
     public async show(): Promise<void> {
+        if (this.container.style.visibility === "visible") {
+            if (this.fullScreenBanner.style.visibility === "visible") {
+                return;
+            }
+        }
+        
         let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.fullScreenBanner.style.visibility = "visible";
@@ -27,6 +35,12 @@ class Logo {
     }
 
     public async hide(): Promise<void> {
+        if (this.container.style.visibility === "hidden") {
+            if (this.fullScreenBanner.style.visibility === "hidden") {
+                return;
+            }
+        }
+
         let animContainer = Mummu.AnimationFactory.CreateNumber(this.game, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         let animBanner = Mummu.AnimationFactory.CreateNumber(this.game, this.fullScreenBanner.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.fullScreenBanner.style.visibility = "visible";

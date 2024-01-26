@@ -9,20 +9,28 @@ class MainMenu {
     }
 
     public async show(): Promise<void> {
-        console.log("show start");
+        if (this.container.style.visibility === "visible") {
+            this.container.style.pointerEvents = "";
+            return;
+        }
+
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(1, 1);
-        console.log("show");
+        this.container.style.pointerEvents = "";
     }
 
     public async hide(): Promise<void> {
-        console.log("hide start");
+        if (this.container.style.visibility === "hidden") {
+            this.container.style.pointerEvents = "none";
+            return;
+        }
+
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(0, 0.5);
-        this.container.style.visibility = "visible";
-        console.log("hide");
+        this.container.style.visibility = "hidden";
+        this.container.style.pointerEvents = "none";
     }
 
     public resize(): void {

@@ -14,7 +14,7 @@ class MachineEditor {
     public showDisplacers: boolean = true;
 
     public floatingButtons: HTMLButtonElement[];
-    public handles: Arrow[];
+    public handles: Arrow[] = [];
 
     public floatingElementTop: FloatingElement;
     public floatingElementRight: FloatingElement;
@@ -582,7 +582,9 @@ class MachineEditor {
     public dispose(): void {
         document.getElementById("machine-editor-objects").style.display = "none";
         this.game.toolbar.resize();
-        this.machinePartEditorMenu.dispose();
+        if (this.machinePartEditorMenu) {
+            this.machinePartEditorMenu.dispose();
+        }
 
         if (this.showManipulators) {
             this.floatingElementTop.dispose();
@@ -596,7 +598,9 @@ class MachineEditor {
             handle.dispose();
         })
 
-        this.itemContainer.innerHTML = "";
+        if (this.itemContainer) {
+            this.itemContainer.innerHTML = "";
+        }
         this.items = new Map<string, HTMLDivElement>();
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
