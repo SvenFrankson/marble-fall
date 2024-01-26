@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
-   sodipodi:docname="logo-white.svg">
+   sodipodi:docname="logo-white-web.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -52,34 +52,71 @@
      inkscape:label="Calque 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35.1173px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;"
-       x="2.9844022"
-       y="26.870012"
-       id="text835"><tspan
-         sodipodi:role="line"
-         id="tspan833"
-         x="2.9844022"
-         y="26.870012"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;">TIARATUM</tspan></text>
-    <rect
-       style="fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+    <g
+       aria-label="TIARATUM"
+       id="text835"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35.1173px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers">
+      <path
+         d="M 3.8623346,6.6775659 V 3.6925955 H 28.444443 V 6.6775659 H 18.6116 V 26.870012 H 13.695178 V 6.6775659 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path899" />
+      <path
+         d="M 31.956105,26.870012 V 3.6925955 h 4.916422 V 26.870012 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path901" />
+      <path
+         d="M 39.857464,26.870012 50.743826,3.6925955 h 5.618768 L 67.248956,26.870012 H 62.2623 L 59.558268,21.075658 H 47.548152 l -2.704032,5.794354 z m 9.09538,-8.779324 h 9.200732 L 53.55321,8.2578443 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path903" />
+      <path
+         d="M 70.233899,26.870012 V 3.6925955 h 16.856303 q 5.267595,0 5.267595,4.2140758 V 12.99868 q 0,4.178958 -5.302712,4.214075 l 6.356231,9.657257 h -5.408064 l -6.356231,-9.657257 h -6.4967 v 9.657257 z m 4.916422,-12.642227 h 10.886362 q 1.404692,0 1.404692,-1.123754 V 7.8013194 q 0,-1.1237535 -1.404692,-1.1237535 H 75.150321 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path905" />
+      <path
+         d="M 94.991543,26.870012 105.87791,3.6925955 h 5.61876 l 10.88637,23.1774165 h -4.98666 l -2.70403,-5.794354 h -12.01012 l -2.704031,5.794354 z m 9.095377,-8.779324 h 9.20074 l -4.60037,-9.8328437 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path907" />
+      <path
+         d="M 119.39801,6.6775659 V 3.6925955 h 24.58211 v 2.9849704 h -9.83285 V 26.870012 h -4.91642 V 6.6775659 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path909" />
+      <path
+         d="M 147.49178,22.655937 V 3.6925955 h 4.91642 V 22.761288 q 0,1.123754 1.40469,1.123754 h 10.53519 q 1.4047,0 1.4047,-1.123754 V 3.6925955 h 4.91642 V 22.655937 q 0,4.214075 -5.2676,4.214075 h -12.64222 q -5.2676,0 -5.2676,-4.214075 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path911" />
+      <path
+         d="M 175.93677,26.870012 V 3.6925955 h 6.32112 l 8.77932,18.4014645 8.77933,-18.4014645 h 6.32111 V 26.870012 h -4.91642 V 10.680938 l -7.72581,16.189074 H 188.579 l -7.72581,-16.189074 v 16.189074 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path913" />
+    </g>
+    <path
        id="rect885"
-       width="94.155716"
-       height="21.316473"
-       x="111.98194"
-       y="31.007425" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;"
-       x="113.8464"
-       y="48.908615"
-       id="text835-6"><tspan
-         sodipodi:role="line"
-         id="tspan833-0"
-         x="113.8464"
-         y="48.908615"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;">GAMES</tspan></text>
+       style="fill:#fcfcfc;fill-opacity:1;stroke:none;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 111.98194,31.007425 h 94.15572 v 21.316473 h -94.15572 z" />
+    <g
+       aria-label="GAMES"
+       id="text835-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers">
+      <path
+         d="m 115.49252,46.274819 v -9.218286 q 0,-2.633795 3.29224,-2.633795 h 10.09622 v 1.865605 h -9.43777 q -0.87793,0 -0.87793,0.702346 v 9.349975 q 0,0.702346 0.87793,0.702346 h 7.24294 v -4.938368 h -3.73121 v -1.865605 h 6.80397 v 8.669578 h -10.97415 q -3.29224,0 -3.29224,-2.633796 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path887" />
+      <path
+         d="m 131.6245,48.908615 6.80398,-14.485877 h 3.51172 l 6.80398,14.485877 h -3.11666 l -1.69002,-3.621469 h -7.50632 l -1.69002,3.621469 z m 5.68461,-5.487075 h 5.75046 l -2.87523,-6.145524 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path889" />
+      <path
+         d="M 150.60976,48.908615 V 34.422738 h 3.9507 l 5.48707,11.500908 5.48708,-11.500908 h 3.95069 v 14.485877 h -3.07276 V 38.790449 l -4.82863,10.118166 h -3.07276 l -4.82862,-10.118166 v 10.118166 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path891" />
+      <path
+         d="M 172.77751,48.908615 V 34.422738 h 13.38846 v 1.865605 h -10.3157 v 3.950694 h 9.21829 v 1.865605 h -9.21829 v 4.938368 h 10.3157 v 1.865605 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path893" />
+      <path
+         d="M 188.79976,48.908615 V 47.04301 h 9.87674 q 0.87793,0 0.87793,-0.702346 v -3.533676 q 0,-0.702346 -0.87793,-0.702346 h -6.58449 q -3.29225,0 -3.29225,-2.633796 v -2.414313 q 0,-2.633795 3.29225,-2.633795 h 9.43777 v 1.865605 h -8.77932 q -0.87794,0 -0.87794,0.702346 v 2.546002 q 0,0.702346 0.87794,0.702346 h 6.58449 q 3.29224,0 3.29224,2.633796 v 3.401986 q 0,2.633796 -3.29224,2.633796 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.9483px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.66499;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         id="path895" />
+    </g>
   </g>
 </svg>

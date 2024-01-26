@@ -2032,7 +2032,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        this.setPageMode(GameMode.MainMenu);
+        this.setPageMode(GameMode.Credits);
     }
     animate() {
         this.engine.runRenderLoop(() => {

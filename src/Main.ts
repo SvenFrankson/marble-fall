@@ -299,7 +299,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        this.setPageMode(GameMode.MainMenu);
+        this.setPageMode(GameMode.Credits);
 	}
 
 	public animate(): void {
