@@ -64,7 +64,6 @@ class Game {
     public physicDT: number = 0.0005;
 
     public machine: Machine;
-    public trackEditor: TrackEditor;
     public machineEditor: MachineEditor;
 
     public skybox: BABYLON.Mesh;
