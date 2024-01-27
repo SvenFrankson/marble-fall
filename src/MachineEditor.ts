@@ -634,6 +634,23 @@ class MachineEditor {
     public pointerDown = (event: PointerEvent) => {
         this._pointerDownX = this.game.scene.pointerX;
         this._pointerDownY = this.game.scene.pointerY;
+        // First, check for handle pick
+        if (!this.draggedObject) {
+            let pickHandle = this.game.scene.pick(
+                this.game.scene.pointerX,
+                this.game.scene.pointerY,
+                (mesh) => {
+                    if (mesh instanceof Arrow && mesh.isVisible) {
+                        return true;
+                    }
+                    return false;
+                }
+            )
+            if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
+                return;
+            }
+        }
+
         if (this.selectedObject) {
             let pick = this.game.scene.pick(
                 this.game.scene.pointerX,
