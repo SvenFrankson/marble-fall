@@ -11,6 +11,10 @@ class OptionsPage {
     public graphicQValue: HTMLDivElement;
     public graphicQPlus: HTMLDivElement;
 
+    public uiScaleFactorMinus: HTMLDivElement;
+    public uiScaleFactorValue: HTMLDivElement;
+    public uiScaleFactorPlus: HTMLDivElement;
+
     constructor(public game: Game) {
         this.container = document.getElementById("options") as HTMLDivElement;
         this.updateNode = new BABYLON.Node("options-update-node");
@@ -19,14 +23,14 @@ class OptionsPage {
     public initialize(): void {
         this.handleSizeMinus = document.getElementById("handle-size-minus") as HTMLDivElement;
         this.handleSizeMinus.onclick = () => {
-            this.game.config.setHandleSize(this.game.config.handleSize - 0.5);
+            this.game.config.setHandleSize(this.game.config.handleSize - 0.2);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         }
         this.handleSizeValue = document.getElementById("handle-size-val") as HTMLDivElement;
         this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         this.handleSizePlus = document.getElementById("handle-size-plus") as HTMLDivElement;
         this.handleSizePlus.onclick = () => {
-            this.game.config.setHandleSize(this.game.config.handleSize + 0.5);
+            this.game.config.setHandleSize(this.game.config.handleSize + 0.2);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         }
         
@@ -41,6 +45,19 @@ class OptionsPage {
         this.graphicQPlus.onclick = () => {
             this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
             this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        }
+        
+        this.uiScaleFactorMinus = document.getElementById("ui-size-minus") as HTMLDivElement;
+        this.uiScaleFactorMinus.onclick = () => {
+            this.game.config.setUISize(this.game.config.uiSize - 0.1);
+            this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
+        }
+        this.uiScaleFactorValue = document.getElementById("ui-size-val") as HTMLDivElement;
+        this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
+        this.uiScaleFactorPlus = document.getElementById("ui-size-plus") as HTMLDivElement;
+        this.uiScaleFactorPlus.onclick = () => {
+            this.game.config.setUISize(this.game.config.uiSize + 0.1);
+            this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
         }
     }
 
@@ -57,6 +74,10 @@ class OptionsPage {
         else if (graphicQ === 3) {
             return "High";
         }
+    } 
+
+    private _uiSizeToString(s: number): string {
+        return (s * 100).toFixed(0) + "%";
     } 
 
     public async show(): Promise<void> {

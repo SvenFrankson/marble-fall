@@ -2,6 +2,7 @@ interface IConfigurationData {
 
     handleSize?: number;
     graphicQ?: number;
+    uiSize?: number;
 }
 
 class Configuration {
@@ -49,6 +50,23 @@ class Configuration {
         }
     }
 
+    private _uiSize: number = 1.3;
+    public get uiSize() {
+        return this._uiSize;
+    }
+    public setUISize(v: number, skipStorage?: boolean) {
+        if (v >= 0.9 && v <= 2) {
+            this._uiSize = v;
+
+            var r = document.querySelector(':root') as HTMLElement;
+            r.style.setProperty("--ui-size", (this._uiSize * 100).toFixed(0) + "%");
+
+            if (!skipStorage) {
+                this.saveToLocalStorage();
+            }
+        }
+    }
+
     constructor(public game: Game) {
 
     }
@@ -66,17 +84,33 @@ class Configuration {
     public serialize(): IConfigurationData {
         return {
             handleSize: this.handleSize,
-            graphicQ: this.graphicQ
+            graphicQ: this.graphicQ,
+            uiSize: this.uiSize
         }
     }
 
     public deserialize(data: IConfigurationData) {
+        if (!data) {
+            data = {};
+            if (!isFinite(data.handleSize)) {
+                data.handleSize = this.handleSize;
+            }
+            if (!isFinite(data.graphicQ)) {
+                data.graphicQ = this.graphicQ;
+            }
+            if (!isFinite(data.uiSize)) {
+                data.uiSize = this.uiSize;
+            }
+        }
         if (data) {
             if (isFinite(data.handleSize)) {
                 this.setHandleSize(data.handleSize, true);
             }
             if (isFinite(data.graphicQ)) {
                 this.setGraphicQ(data.graphicQ, true);
+            }
+            if (isFinite(data.uiSize)) {
+                this.setUISize(data.uiSize, true);
             }
         }
     }

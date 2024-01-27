@@ -278,6 +278,7 @@ body {
 }
 
 :root {
+    --ui-size: 100%;
     --button-xxs-size: 2vh;
     --button-xs-size: 3vh;
     --half-button-xs-size: calc(var(--button-xs-size) * 0.5);
@@ -308,6 +309,8 @@ body {
     border-left: 1px solid white;
     border-bottom: 1px solid white;
     width: 18vh;
+    transform-origin: top right;
+    transform: scale(var(--ui-size));
 }
 
 #machine-editor-part-menu .line {

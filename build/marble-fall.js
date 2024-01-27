@@ -202,6 +202,7 @@ class Configuration {
         this.game = game;
         this._handleSize = 1;
         this._graphicQ = 3;
+        this._uiSize = 1.3;
     }
     get handleSize() {
         return this._handleSize;
@@ -238,6 +239,19 @@ class Configuration {
             }
         }
     }
+    get uiSize() {
+        return this._uiSize;
+    }
+    setUISize(v, skipStorage) {
+        if (v >= 0.9 && v <= 2) {
+            this._uiSize = v;
+            var r = document.querySelector(':root');
+            r.style.setProperty("--ui-size", (this._uiSize * 100).toFixed(0) + "%");
+            if (!skipStorage) {
+                this.saveToLocalStorage();
+            }
+        }
+    }
     initialize() {
         let data = JSON.parse(localStorage.getItem("mrs-configuration"));
         this.deserialize(data);
@@ -249,16 +263,32 @@ class Configuration {
     serialize() {
         return {
             handleSize: this.handleSize,
-            graphicQ: this.graphicQ
+            graphicQ: this.graphicQ,
+            uiSize: this.uiSize
         };
     }
     deserialize(data) {
+        if (!data) {
+            data = {};
+            if (!isFinite(data.handleSize)) {
+                data.handleSize = this.handleSize;
+            }
+            if (!isFinite(data.graphicQ)) {
+                data.graphicQ = this.graphicQ;
+            }
+            if (!isFinite(data.uiSize)) {
+                data.uiSize = this.uiSize;
+            }
+        }
         if (data) {
             if (isFinite(data.handleSize)) {
                 this.setHandleSize(data.handleSize, true);
             }
             if (isFinite(data.graphicQ)) {
                 this.setGraphicQ(data.graphicQ, true);
+            }
+            if (isFinite(data.uiSize)) {
+                this.setUISize(data.uiSize, true);
             }
         }
     }
@@ -671,7 +701,7 @@ class MachineEditor {
         this.showManipulators = false;
         this.showDisplacers = true;
         this.handles = [];
-        this.smallHandleSize = 0.015;
+        this.smallHandleSize = 0.02;
         this._currentLayer = 0;
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
@@ -5013,14 +5043,14 @@ class OptionsPage {
     initialize() {
         this.handleSizeMinus = document.getElementById("handle-size-minus");
         this.handleSizeMinus.onclick = () => {
-            this.game.config.setHandleSize(this.game.config.handleSize - 0.5);
+            this.game.config.setHandleSize(this.game.config.handleSize - 0.2);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         };
         this.handleSizeValue = document.getElementById("handle-size-val");
         this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         this.handleSizePlus = document.getElementById("handle-size-plus");
         this.handleSizePlus.onclick = () => {
-            this.game.config.setHandleSize(this.game.config.handleSize + 0.5);
+            this.game.config.setHandleSize(this.game.config.handleSize + 0.2);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         };
         this.graphicQMinus = document.getElementById("graphic-q-minus");
@@ -5034,6 +5064,18 @@ class OptionsPage {
         this.graphicQPlus.onclick = () => {
             this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
             this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        };
+        this.uiScaleFactorMinus = document.getElementById("ui-size-minus");
+        this.uiScaleFactorMinus.onclick = () => {
+            this.game.config.setUISize(this.game.config.uiSize - 0.1);
+            this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
+        };
+        this.uiScaleFactorValue = document.getElementById("ui-size-val");
+        this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
+        this.uiScaleFactorPlus = document.getElementById("ui-size-plus");
+        this.uiScaleFactorPlus.onclick = () => {
+            this.game.config.setUISize(this.game.config.uiSize + 0.1);
+            this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
         };
     }
     _graphicQToString(graphicQ) {
@@ -5049,6 +5091,9 @@ class OptionsPage {
         else if (graphicQ === 3) {
             return "High";
         }
+    }
+    _uiSizeToString(s) {
+        return (s * 100).toFixed(0) + "%";
     }
     async show() {
         if (this.container.style.visibility === "visible") {

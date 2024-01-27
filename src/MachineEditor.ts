@@ -43,7 +43,7 @@ class MachineEditor {
     public KPlusHandle: Arrow;
     public KMinusHandle: Arrow;
     
-    public smallHandleSize: number = 0.015;
+    public smallHandleSize: number = 0.02;
     public originIPlusHandle: Arrow;
     public originIMinusHandle: Arrow;
     public originJPlusHandle: Arrow;
