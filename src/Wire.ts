@@ -51,11 +51,19 @@ class Wire extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
+        let q = this.track.game.config.graphicQ;
+
         while (this.getChildren().length > 0) {
             this.getChildren()[0].dispose();
         }
 
-        let n = 8;
+        let n = 4;
+        if (q === 2) {
+            n = 6;
+        }
+        else if (q === 3) {
+            n = 8;
+        }
         let shape: BABYLON.Vector3[] = [];
         for (let i = 0; i < n; i++) {
             let a = i / n * 2 * Math.PI;
@@ -65,7 +73,24 @@ class Wire extends BABYLON.Mesh {
         }
 
         if (!Wire.DEBUG_DISPLAY) {
-            let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let path = this.path;
+            if (q === 2) {
+                path = [];
+                for (let i = 0; i < this.path.length; i++) {
+                    if (i % 3 === 0 || i === this.path.length - 1) {
+                        path.push(this.path[i]);
+                    }
+                }
+            }
+            if (q === 1) {
+                path = [];
+                for (let i = 0; i < this.path.length; i++) {
+                    if (i % 6 === 0 || i === this.path.length - 1) {
+                        path.push(this.path[i]);
+                    }
+                }
+            }
+            let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
             wire.material = this.track.game.steelMaterial;
         }

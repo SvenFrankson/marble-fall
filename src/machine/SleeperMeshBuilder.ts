@@ -1,6 +1,7 @@
 class SleeperMeshBuilder {
 
     public static GenerateSleepersVertexData(part: MachinePart, spacing: number): BABYLON.VertexData {
+        let q = part.game.config.graphicQ;
         let partialsDatas: BABYLON.VertexData[] = [];
 
         for (let j = 0; j < part.tracks.length; j++) {
@@ -18,7 +19,13 @@ class SleeperMeshBuilder {
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
 
             let radius = part.wireSize * 0.5 * 0.75;
-            let nShape = 6;
+            let nShape = 3;
+            if (q === 2) {
+                nShape = 4;
+            }
+            else if (q === 3) {
+                nShape = 6;
+            }
             let shape: BABYLON.Vector3[] = [];
             for (let i = 0; i < nShape; i++) {
                 let a = i / nShape * 2 * Math.PI;
@@ -36,7 +43,13 @@ class SleeperMeshBuilder {
             }
 
             let radiusPath = part.wireGauge * 0.5;
-            let nPath = 12;
+            let nPath = 4;
+            if (q === 2) {
+                nPath = 8;
+            }
+            else if (q === 3) {
+                nPath = 12;
+            }
             let basePath: BABYLON.Vector3[] = [];
             for (let i = 0; i <= nPath; i++) {
                 let a = i / nPath * Math.PI;
@@ -45,7 +58,7 @@ class SleeperMeshBuilder {
                 basePath[i] = new BABYLON.Vector3(cosa * radiusPath, - sina * radiusPath, 0);
             }
 
-            let q = BABYLON.Quaternion.Identity();
+            let quat = BABYLON.Quaternion.Identity();
             let n = 0.5;
             for (let i = 1; i < interpolatedPoints.length - 1; i++) {
                 let sumPrev = summedLength[i - 1];
@@ -70,8 +83,8 @@ class SleeperMeshBuilder {
         
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, q);
-                    let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), q, t);
+                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, quat);
+                    let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     
                     for (let j = 0; j < path.length; j++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
@@ -96,7 +109,13 @@ class SleeperMeshBuilder {
                         let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
                         let anchorWall = anchorCenter.clone();
                         anchorWall.y -= radiusFixation * 0.5;
-                        let nFixation = 10;
+                        let nFixation = 2;
+                        if (q === 2) {
+                            nFixation = 6;
+                        }
+                        else if (q === 3) {
+                            nFixation = 10;
+                        }
                         let fixationPath: BABYLON.Vector3[] = [];
                         for (let i = 0; i <= nFixation; i++) {
                             let a = i / nFixation * 0.5 * Math.PI;
@@ -111,9 +130,9 @@ class SleeperMeshBuilder {
                         tmp.dispose();
 
                         let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
-                        let q = BABYLON.Quaternion.Identity();
-                        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
-                        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+                        let quat = BABYLON.Quaternion.Identity();
+                        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
+                        Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
                         Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
                         partialsDatas.push(tmpVertexData);
                         tmp.dispose();

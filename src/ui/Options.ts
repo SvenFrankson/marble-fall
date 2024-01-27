@@ -7,6 +7,10 @@ class OptionsPage {
     public handleSizeValue: HTMLDivElement;
     public handleSizePlus: HTMLDivElement;
 
+    public graphicQMinus: HTMLDivElement;
+    public graphicQValue: HTMLDivElement;
+    public graphicQPlus: HTMLDivElement;
+
     constructor(public game: Game) {
         this.container = document.getElementById("options") as HTMLDivElement;
         this.updateNode = new BABYLON.Node("options-update-node");
@@ -25,7 +29,35 @@ class OptionsPage {
             this.game.config.setHandleSize(this.game.config.handleSize + 0.5);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         }
+        
+        this.graphicQMinus = document.getElementById("graphic-q-minus") as HTMLDivElement;
+        this.graphicQMinus.onclick = () => {
+            this.game.config.setGraphicQ(this.game.config.graphicQ - 1);
+            this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        }
+        this.graphicQValue = document.getElementById("graphic-q-val") as HTMLDivElement;
+        this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        this.graphicQPlus = document.getElementById("graphic-q-plus") as HTMLDivElement;
+        this.graphicQPlus.onclick = () => {
+            this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
+            this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        }
     }
+
+    private _graphicQToString(graphicQ: number): string {
+        if (graphicQ === 0) {
+            return "Auto";
+        }
+        else if (graphicQ === 1) {
+            return "Low";
+        }
+        else if (graphicQ === 2) {
+            return "Medium";
+        }
+        else if (graphicQ === 3) {
+            return "High";
+        }
+    } 
 
     public async show(): Promise<void> {
         if (this.container.style.visibility === "visible") {

@@ -201,6 +201,7 @@ class Configuration {
     constructor(game) {
         this.game = game;
         this._handleSize = 1;
+        this._graphicQ = 3;
     }
     get handleSize() {
         return this._handleSize;
@@ -220,6 +221,23 @@ class Configuration {
             }
         }
     }
+    get graphicQ() {
+        return this._graphicQ;
+    }
+    setGraphicQ(v, skipStorage) {
+        if (v >= 1 && v <= 3) {
+            this._graphicQ = v;
+            if (this.game.machine) {
+                let data = this.game.machine.serialize();
+                this.game.machine.dispose();
+                this.game.machine.deserialize(data);
+                this.game.machine.instantiate();
+            }
+            if (!skipStorage) {
+                this.saveToLocalStorage();
+            }
+        }
+    }
     initialize() {
         let data = JSON.parse(localStorage.getItem("mrs-configuration"));
         this.deserialize(data);
@@ -230,13 +248,17 @@ class Configuration {
     }
     serialize() {
         return {
-            handleSize: this.handleSize
+            handleSize: this.handleSize,
+            graphicQ: this.graphicQ
         };
     }
     deserialize(data) {
         if (data) {
             if (isFinite(data.handleSize)) {
                 this.setHandleSize(data.handleSize, true);
+            }
+            if (isFinite(data.graphicQ)) {
+                this.setGraphicQ(data.graphicQ, true);
             }
         }
     }
@@ -661,6 +683,18 @@ class MachineEditor {
         this.pointerDown = (event) => {
             this._pointerDownX = this.game.scene.pointerX;
             this._pointerDownY = this.game.scene.pointerY;
+            // First, check for handle pick
+            if (!this.draggedObject) {
+                let pickHandle = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    if (mesh instanceof Arrow && mesh.isVisible) {
+                        return true;
+                    }
+                    return false;
+                });
+                if (pickHandle.hit && pickHandle.pickedMesh instanceof Arrow) {
+                    return;
+                }
+            }
             if (this.selectedObject) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                     if (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh) {
@@ -2072,6 +2106,7 @@ class Game {
         }
         let buttonCreate = container.querySelector(".panel.create");
         buttonCreate.onclick = () => {
+            this.machine.stop();
             this.setPageMode(GameMode.CreateMode);
         };
         let buttonOption = container.querySelector(".panel.option");
@@ -2504,10 +2539,17 @@ class Wire extends BABYLON.Mesh {
         }
     }
     async instantiate() {
+        let q = this.track.game.config.graphicQ;
         while (this.getChildren().length > 0) {
             this.getChildren()[0].dispose();
         }
-        let n = 8;
+        let n = 4;
+        if (q === 2) {
+            n = 6;
+        }
+        else if (q === 3) {
+            n = 8;
+        }
         let shape = [];
         for (let i = 0; i < n; i++) {
             let a = i / n * 2 * Math.PI;
@@ -2516,7 +2558,24 @@ class Wire extends BABYLON.Mesh {
             shape[i] = new BABYLON.Vector3(cosa * this.radius, sina * this.radius, 0);
         }
         if (!Wire.DEBUG_DISPLAY) {
-            let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let path = this.path;
+            if (q === 2) {
+                path = [];
+                for (let i = 0; i < this.path.length; i++) {
+                    if (i % 3 === 0 || i === this.path.length - 1) {
+                        path.push(this.path[i]);
+                    }
+                }
+            }
+            if (q === 1) {
+                path = [];
+                for (let i = 0; i < this.path.length; i++) {
+                    if (i % 6 === 0 || i === this.path.length - 1) {
+                        path.push(this.path[i]);
+                    }
+                }
+            }
+            let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
             wire.material = this.track.game.steelMaterial;
         }
@@ -3149,6 +3208,7 @@ class MachinePartFactory {
 }
 class SleeperMeshBuilder {
     static GenerateSleepersVertexData(part, spacing) {
+        let q = part.game.config.graphicQ;
         let partialsDatas = [];
         for (let j = 0; j < part.tracks.length; j++) {
             let interpolatedPoints = part.tracks[j].interpolatedPoints;
@@ -3163,7 +3223,13 @@ class SleeperMeshBuilder {
             count = Math.max(1, count);
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
             let radius = part.wireSize * 0.5 * 0.75;
-            let nShape = 6;
+            let nShape = 3;
+            if (q === 2) {
+                nShape = 4;
+            }
+            else if (q === 3) {
+                nShape = 6;
+            }
             let shape = [];
             for (let i = 0; i < nShape; i++) {
                 let a = i / nShape * 2 * Math.PI;
@@ -3179,7 +3245,13 @@ class SleeperMeshBuilder {
                 shapeSmall[i] = new BABYLON.Vector3(cosa * radius * 0.75, sina * radius * 0.75, 0);
             }
             let radiusPath = part.wireGauge * 0.5;
-            let nPath = 12;
+            let nPath = 4;
+            if (q === 2) {
+                nPath = 8;
+            }
+            else if (q === 3) {
+                nPath = 12;
+            }
             let basePath = [];
             for (let i = 0; i <= nPath; i++) {
                 let a = i / nPath * Math.PI;
@@ -3187,7 +3259,7 @@ class SleeperMeshBuilder {
                 let sina = Math.sin(a);
                 basePath[i] = new BABYLON.Vector3(cosa * radiusPath, -sina * radiusPath, 0);
             }
-            let q = BABYLON.Quaternion.Identity();
+            let quat = BABYLON.Quaternion.Identity();
             let n = 0.5;
             for (let i = 1; i < interpolatedPoints.length - 1; i++) {
                 let sumPrev = summedLength[i - 1];
@@ -3211,8 +3283,8 @@ class SleeperMeshBuilder {
                     let path = basePath.map(v => { return v.clone(); });
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, q);
-                    let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), q, t);
+                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, quat);
+                    let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     for (let j = 0; j < path.length; j++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
                     }
@@ -3233,7 +3305,13 @@ class SleeperMeshBuilder {
                         let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
                         let anchorWall = anchorCenter.clone();
                         anchorWall.y -= radiusFixation * 0.5;
-                        let nFixation = 10;
+                        let nFixation = 2;
+                        if (q === 2) {
+                            nFixation = 6;
+                        }
+                        else if (q === 3) {
+                            nFixation = 10;
+                        }
                         let fixationPath = [];
                         for (let i = 0; i <= nFixation; i++) {
                             let a = i / nFixation * 0.5 * Math.PI;
@@ -3246,9 +3324,9 @@ class SleeperMeshBuilder {
                         partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                         tmp.dispose();
                         let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
-                        let q = BABYLON.Quaternion.Identity();
-                        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), q);
-                        Mummu.RotateVertexDataInPlace(tmpVertexData, q);
+                        let quat = BABYLON.Quaternion.Identity();
+                        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
+                        Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
                         Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
                         partialsDatas.push(tmpVertexData);
                         tmp.dispose();
@@ -4945,6 +5023,32 @@ class OptionsPage {
             this.game.config.setHandleSize(this.game.config.handleSize + 0.5);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         };
+        this.graphicQMinus = document.getElementById("graphic-q-minus");
+        this.graphicQMinus.onclick = () => {
+            this.game.config.setGraphicQ(this.game.config.graphicQ - 1);
+            this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        };
+        this.graphicQValue = document.getElementById("graphic-q-val");
+        this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        this.graphicQPlus = document.getElementById("graphic-q-plus");
+        this.graphicQPlus.onclick = () => {
+            this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
+            this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        };
+    }
+    _graphicQToString(graphicQ) {
+        if (graphicQ === 0) {
+            return "Auto";
+        }
+        else if (graphicQ === 1) {
+            return "Low";
+        }
+        else if (graphicQ === 2) {
+            return "Medium";
+        }
+        else if (graphicQ === 3) {
+            return "High";
+        }
     }
     async show() {
         if (this.container.style.visibility === "visible") {

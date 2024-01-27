@@ -1,6 +1,7 @@
 interface IConfigurationData {
 
     handleSize?: number;
+    graphicQ?: number;
 }
 
 class Configuration {
@@ -27,6 +28,27 @@ class Configuration {
         }
     }
 
+    private _graphicQ: number = 3;
+    public get graphicQ() {
+        return this._graphicQ;
+    }
+    public setGraphicQ(v: number, skipStorage?: boolean) {
+        if (v >= 1 && v <= 3) {
+            this._graphicQ = v;
+
+            if (this.game.machine) {
+                let data = this.game.machine.serialize();
+                this.game.machine.dispose();
+                this.game.machine.deserialize(data);
+                this.game.machine.instantiate();
+            }
+
+            if (!skipStorage) {
+                this.saveToLocalStorage();
+            }
+        }
+    }
+
     constructor(public game: Game) {
 
     }
@@ -43,7 +65,8 @@ class Configuration {
 
     public serialize(): IConfigurationData {
         return {
-            handleSize: this.handleSize
+            handleSize: this.handleSize,
+            graphicQ: this.graphicQ
         }
     }
 
@@ -51,6 +74,9 @@ class Configuration {
         if (data) {
             if (isFinite(data.handleSize)) {
                 this.setHandleSize(data.handleSize, true);
+            }
+            if (isFinite(data.graphicQ)) {
+                this.setGraphicQ(data.graphicQ, true);
             }
         }
     }

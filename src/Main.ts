@@ -291,6 +291,7 @@ class Game {
         }
         let buttonCreate = container.querySelector(".panel.create") as HTMLDivElement;
         buttonCreate.onclick = () => {
+            this.machine.stop();
             this.setPageMode(GameMode.CreateMode);
         }
         let buttonOption = container.querySelector(".panel.option") as HTMLDivElement;
