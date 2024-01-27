@@ -183,14 +183,14 @@ class Split extends MachinePart {
                     if (local.y < ball.radius * 0.9) {
                         if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
                             this._moving = true;
-                            this._animatePivot(- Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
+                            this._animatePivot(- Math.PI / 4, 0.3 / this.game.currentTimeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
                         }
                         else if (local.x > - this.pivotL && local.x < - ball.radius * 0.5) {
                             this._moving = true;
-                            this._animatePivot(Math.PI / 4, 0.3 / this.game.timeFactor).then(() => {
+                            this._animatePivot(Math.PI / 4, 0.3 / this.game.currentTimeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;

@@ -146,7 +146,7 @@ class Ball extends BABYLON.Mesh {
             return;
         }
 
-        this._timer += dt * this.game.timeFactor;
+        this._timer += dt * this.game.currentTimeFactor;
         this._timer = Math.min(this._timer, 1);
 
         while (this._timer > 0) {
@@ -232,6 +232,7 @@ class Ball extends BABYLON.Mesh {
             this.strReaction = this.strReaction * 0.98;
             this.strReaction += reactions.length() * 0.02;
             this.velocity.subtractInPlace(canceledSpeed);
+            //this.velocity.addInPlace(forcedDisplacement.scale(0.1 * 1 / dt));
             this.position.addInPlace(forcedDisplacement);
 
             let friction = this.velocity.scale(-1).scaleInPlace(0.002);

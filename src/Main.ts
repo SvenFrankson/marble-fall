@@ -17,6 +17,12 @@ enum GameMode {
     DemoMode
 }
 
+enum CameraMode {
+    None,
+    Ball,
+    Landscape
+}
+
 class Game {
     
     public static Instance: Game;
@@ -29,10 +35,13 @@ class Game {
     }
     //public camera: BABYLON.FreeCamera;
     public camera: BABYLON.ArcRotateCamera;
+    public cameraMode: CameraMode = CameraMode.None;
+    public menuCameraMode: CameraMode = CameraMode.Ball;
     public targetCamTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public targetCamAlpha: number = - Math.PI * 0.5;
     public targetCamBeta: number = Math.PI * 0.5;
     public targetCamRadius: number = 0.1;
+    private _trackTargetCamSpeed: number = 0;
 
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
@@ -49,6 +58,9 @@ class Game {
     public mainVolume: number = 0;
     public targetTimeFactor: number = 0.8;
     public timeFactor: number = 0.1;
+    public get currentTimeFactor(): number {
+        return this.timeFactor * (this.mode === GameMode.MainMenu ? 0.7 : 1); 
+    }
     public physicDT: number = 0.0005;
 
     public machine: Machine;
@@ -72,9 +84,6 @@ class Game {
     public greenMaterial: BABYLON.StandardMaterial;
     public blueMaterial: BABYLON.StandardMaterial;
     public uiMaterial: BABYLON.StandardMaterial;
-
-    private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
-    private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
 
     public helperShape: HelperShape;
 
@@ -212,40 +221,23 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 10000;
-        /*
-        let savedTarget = window.localStorage.getItem("saved-target");
-        if (savedTarget) {
-            let target = JSON.parse(savedTarget);
-            this.camera.target.x = target.x;
-            this.camera.target.y = target.y;
-            this.camera.target.z = target.z;
+        
+        let alternateMenuCamMode = () => {
+            if (this.menuCameraMode === CameraMode.Ball) {
+                this.menuCameraMode = CameraMode.Landscape;
+            }
+            else {
+                this.menuCameraMode = CameraMode.Ball;
+            }
+            if (this.mode <= GameMode.Credits) {
+                this.setCameraMode(this.menuCameraMode);
+            }
+            setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
         }
-        let savedPos = window.localStorage.getItem("saved-pos");
-        if (savedPos) {
-            let pos = JSON.parse(savedPos);
-            this.camera.setPosition(new BABYLON.Vector3(pos.x, pos.y, pos.z));
-        }
-        */
-        /*
-        let savedRot = window.localStorage.getItem("saved-rot");
-        if (savedRot) {
-            let rot = JSON.parse(savedRot);
-            (this.camera as BABYLON.FreeCamera).rotation.x = rot.x;
-            (this.camera as BABYLON.FreeCamera).rotation.y = rot.y;
-            (this.camera as BABYLON.FreeCamera).rotation.z = rot.z;
-        }
-        */
-       /*
-        let savedCameraOrtho = window.localStorage.getItem("saved-cam-ortho");
-        if (savedCameraOrtho === "true") {
-            this.cameraOrtho = true;
-        }
-        */
+        alternateMenuCamMode();
+        
         this.camera.attachControl();
         this.camera.getScene();
-
-        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false]);
-        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target");
 
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
@@ -297,7 +289,6 @@ class Game {
                 this.machine.deserialize(demo);
                 await this.machine.instantiate();
                 await this.machine.generateBaseMesh();
-                this.frameFullCircuit();
                 this.setPageMode(GameMode.DemoMode);
             }
         }
@@ -313,8 +304,8 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        this.setPageMode(GameMode.MainMenu);
-        this.frameFullCircuit();
+        await this.setPageMode(GameMode.MainMenu);
+        this.machine.play();
 	}
 
 	public animate(): void {
@@ -337,11 +328,20 @@ class Game {
     public update(): void {
         let dt = this.scene.deltaTime / 1000;
 
-        if (this.mode != GameMode.CreateMode && isFinite(dt)) {
-            let target = BABYLON.Vector3.Lerp(this.camera.target, this.targetCamTarget, 0.01);
-            let alpha = Nabu.Step(this.camera.alpha, this.targetCamAlpha, Math.PI * 0.01 * dt);
-            let beta = Nabu.Step(this.camera.beta, this.targetCamBeta, Math.PI * 0.01 * dt);
-            let radius = Nabu.Step(this.camera.radius, this.targetCamRadius * 0.5, 0.02 * dt);
+        if (this.cameraMode != CameraMode.None && isFinite(dt)) {
+            let speed = 0.01;
+            let camTarget = this.targetCamTarget;
+            if (this.cameraMode === CameraMode.Ball && this.machine && this.machine.balls && this.machine.balls[0]) {
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 15 * 0.0005;
+                camTarget = this.machine.balls[0].position;
+            }
+            else {
+                this._trackTargetCamSpeed = 0.1;
+            }
+            let target = BABYLON.Vector3.Lerp(this.camera.target, camTarget, this._trackTargetCamSpeed * dt);
+            let alpha = Nabu.Step(this.camera.alpha, this.targetCamAlpha, Math.PI * speed * dt);
+            let beta = Nabu.Step(this.camera.beta, this.targetCamBeta, Math.PI * speed * dt);
+            let radius = Nabu.Step(this.camera.radius, this.targetCamRadius, 5 * speed * dt);
     
             this.camera.target.copyFrom(target);
             this.camera.alpha = alpha;
@@ -349,10 +349,10 @@ class Game {
             this.camera.radius = radius;
 
             if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
-                this.targetCamAlpha = - 0.2 - Math.random() * Math.PI * 0.6;
+                this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
             }
             if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
-                this.targetCamBeta = 0.2 + Math.random() * Math.PI * 0.5;
+                this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
             }
         }
 
@@ -391,6 +391,7 @@ class Game {
     public async setPageMode(mode: GameMode): Promise<void> {
         this.machineEditor.dispose();
         if (mode === GameMode.MainMenu) {
+            this.setCameraMode(this.menuCameraMode);
             await this.optionsPage.hide();
             await this.creditsPage.hide();
             
@@ -398,6 +399,7 @@ class Game {
             await this.mainMenu.show();
         }
         if (mode === GameMode.Options) {
+            this.setCameraMode(this.menuCameraMode);
             await this.mainMenu.hide();
             await this.creditsPage.hide();
             
@@ -405,6 +407,7 @@ class Game {
             await this.optionsPage.show();
         }
         if (mode === GameMode.Credits) {
+            this.setCameraMode(this.menuCameraMode);
             await this.mainMenu.hide();
             await this.optionsPage.hide();
             
@@ -412,6 +415,7 @@ class Game {
             await this.creditsPage.show();
         }
         if (mode === GameMode.CreateMode) {
+            this.setCameraMode(CameraMode.None);
             this.logo.hide();
             await this.mainMenu.hide();
             await this.optionsPage.hide();
@@ -420,6 +424,7 @@ class Game {
             this.machineEditor.instantiate();
         }
         if (mode === GameMode.DemoMode) {
+            this.setCameraMode(CameraMode.Landscape);
             this.logo.hide();
             await this.mainMenu.hide();
             await this.optionsPage.hide();
@@ -430,80 +435,8 @@ class Game {
     }
 
     public mode: GameMode;
-    public async setContextOld(mode: GameMode, demoIndex?: number): Promise<void> {
-        return;
-        if (this.mode != mode) {
-            if (this.mode === GameMode.MainMenu) {
-                this.mainMenu.hide();
-                this.logo.hide();
-            }
-            else if (this.mode === GameMode.CreateMode) {
-                this.machineEditor.dispose();
-            }
-
-            this.mode = mode;
-            
-            if (this.mode === GameMode.MainMenu) {
-                this.machine.dispose();
-                this.machine.deserialize(demoLoops);
-                await this.machine.instantiate();
-                await this.machine.generateBaseMesh();
-                this.machine.play();
-
-                //this.tileMenuContainer.position.y = 0;
-                //this.tileMenuContainer.position.z = - 0.03;
-                this.mainMenu.show();
-                this.mainMenu.resize();
-                this.logo.show();
-
-                //this.setCameraTarget(BABYLON.Vector3.Zero());
-                //await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.35 * 0.8 / this.getCameraMinFOV());
-                this.camera.lowerAlphaLimit = - Math.PI * 0.65;
-                this.camera.upperAlphaLimit = - Math.PI * 0.35;
-                this.camera.lowerBetaLimit = Math.PI * 0.35;
-                this.camera.upperBetaLimit = Math.PI * 0.65;
-            }
-            else if (this.mode === GameMode.CreateMode) {
-                this.machine.dispose();
-                this.machine.deserialize(demoLoops);
-                await this.machine.instantiate();
-                await this.machine.generateBaseMesh();
-                this.machine.stop();
-
-                //this.setCameraTarget(BABYLON.Vector3.Zero());
-                //await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
-                this.camera.lowerAlphaLimit = - Math.PI * 0.95;
-                this.camera.upperAlphaLimit = - Math.PI * 0.05;
-                this.camera.lowerBetaLimit = Math.PI * 0.05;
-                this.camera.upperBetaLimit = Math.PI * 0.95;
-
-                this.machineEditor.instantiate();
-            }
-            else if (this.mode === GameMode.DemoMode) {
-                if (demoIndex === 1) {
-                    //this.setCameraTarget(BABYLON.Vector3.Zero());
-                }
-                else if (demoIndex === 2) {
-                    //this.setCameraTarget(new BABYLON.Vector3(0.08, 0.09, 0));
-                }
-                else if (demoIndex === 3) {
-                    //this.setCameraTarget(new BABYLON.Vector3(-0.33, -0.17, 0));
-                }
-                else {
-                    //this.setCameraTarget(BABYLON.Vector3.Zero());
-                }
-                //await this.setCameraAlphaBeta(- Math.PI * 0.5, Math.PI * 0.5, 0.8 * 0.8 / this.getCameraMinFOV());
-                this.camera.lowerAlphaLimit = - Math.PI * 0.95;
-                this.camera.upperAlphaLimit = - Math.PI * 0.05;
-                this.camera.lowerBetaLimit = Math.PI * 0.05;
-                this.camera.upperBetaLimit = Math.PI * 0.95;
-            }
-            this.toolbar.resize();
-        }
-    }
 
     public async makeScreenshot(objectName: string): Promise<void> {
-        return;
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
@@ -550,7 +483,6 @@ class Game {
     }
 
     public async makeCircuitScreenshot(): Promise<void> {
-        return;
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
@@ -596,15 +528,26 @@ class Game {
         this.camera.radius = (1 - f) * (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit) + this.camera.lowerRadiusLimit;
     }
 
-    public frameFullCircuit(): void {
-        let encloseStart = this.machine.getEncloseStart();
-        let encloseEnd = this.machine.getEncloseEnd();
-        let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
+    public setCameraMode(mode: CameraMode): void {
+        this.cameraMode = mode;
+        if (this.cameraMode == CameraMode.None) {
 
-        this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
-        this.targetCamAlpha = - 0.9 * Math.PI / 2;
-        this.targetCamBeta = 0.8 * Math.PI / 2;
-        this.targetCamRadius = size;
+        }
+        else {
+            if (this.cameraMode === CameraMode.Ball) {
+                this.targetCamRadius = 0.2;
+            }
+            else {
+                let encloseStart = this.machine.getEncloseStart();
+                let encloseEnd = this.machine.getEncloseEnd();
+                let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
+        
+                this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
+                this.targetCamRadius = size * 0.5;
+            }
+            this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
+            this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
+        }
     }
 }
 

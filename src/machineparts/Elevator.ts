@@ -178,7 +178,7 @@ class Elevator extends MachinePart {
     public speed: number = 0.04; // in m/s
 
     public update(dt: number): void {
-        let dx = this.speed * dt * this.game.timeFactor;
+        let dx = this.speed * dt * this.game.currentTimeFactor;
         let x = 1;
         if (this.mirrorX) {
             x = - 1;

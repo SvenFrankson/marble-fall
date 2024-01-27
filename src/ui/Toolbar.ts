@@ -186,7 +186,7 @@ class Toolbar {
                 this._lastPlaying = this.game.machine.playing;
                 this.resize();
             }
-            this.timeFactorValue.innerText = this.game.timeFactor.toFixed(2);
+            this.timeFactorValue.innerText = this.game.currentTimeFactor.toFixed(2);
         }
         if (this.zoomInputShown) {
             this.zoomInput.value = this.game.getCameraZoomFactor().toFixed(3);
