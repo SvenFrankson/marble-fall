@@ -4,6 +4,13 @@ class Toolbar {
     public playButton: HTMLButtonElement;
     public pauseButton: HTMLButtonElement;
     public stopButton: HTMLButtonElement;
+
+    public camButton: HTMLButtonElement;
+    public camButtonPrev: HTMLButtonElement;
+    public camValue: HTMLSpanElement;
+    public camButtonNext: HTMLButtonElement;
+    public camInputContainer: HTMLDivElement;
+
     public timeFactorButton: HTMLButtonElement;
     public timeFactorValue: HTMLSpanElement;
     public timeFactorInputContainer: HTMLDivElement;
@@ -21,6 +28,7 @@ class Toolbar {
     public layerButton: HTMLButtonElement;
     public backButton: HTMLButtonElement;
 
+    public camModeInputShown: boolean = false;
     public timeFactorInputShown: boolean = false;
     public loadInputShown: boolean = false;
     public soundInputShown: boolean = false;
@@ -42,11 +50,24 @@ class Toolbar {
 
         this.stopButton = document.querySelector("#toolbar-stop") as HTMLButtonElement;
         this.stopButton.addEventListener("click", this.onStop);
-
+        
         this.timeFactorButton = document.querySelector("#toolbar-time-factor") as HTMLButtonElement;
         this.timeFactorButton.addEventListener("click", this.onTimeFactorButton);
 
         this.timeFactorValue = document.querySelector("#toolbar-time-factor .value") as HTMLSpanElement;
+
+        this.camButton = document.querySelector("#toolbar-cam-mode") as HTMLButtonElement;
+        this.camButton.addEventListener("click", this.onCamButton);
+        
+        this.camButtonPrev = document.querySelector("#toolbar-cam-mode-prev") as HTMLButtonElement;
+        this.camButtonPrev.addEventListener("click", this.onCamPrevButton);
+        
+        this.camValue = document.querySelector("#toolbar-cam-mode-value") as HTMLSpanElement;
+
+        this.camButtonNext = document.querySelector("#toolbar-cam-mode-next") as HTMLButtonElement;
+        this.camButtonNext.addEventListener("click", this.onCamNextButton);
+
+        this.camInputContainer = this.camValue.parentElement as HTMLDivElement;
 
         this.timeFactorInput = document.querySelector("#time-factor-value") as HTMLInputElement;
         this.timeFactorInput.value = this.game.targetTimeFactor.toFixed(2);
@@ -101,6 +122,7 @@ class Toolbar {
 
     public updateButtonsVisibility(): void {
         if (this.game.mode === GameMode.MainMenu) {
+            this.camButton.style.display = "none";
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -119,11 +141,13 @@ class Toolbar {
             this.backButton.style.display = "";
         }
         else if (this.game.mode === GameMode.CreateMode) {
+            this.camButton.style.display = "";
             this.saveButton.style.display = "";
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
         else if (this.game.mode === GameMode.DemoMode) {
+            this.camButton.style.display = "";
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -134,6 +158,7 @@ class Toolbar {
     public resize(): void {
         this.updateButtonsVisibility();
 
+        let margin = 10;
         let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
         this.container.style.bottom = "10px";
         if (ratio < 1) {
@@ -146,29 +171,35 @@ class Toolbar {
         let containerWidth = this.container.clientWidth;
         this.container.style.left = ((this.game.engine.getRenderWidth() - containerWidth) * 0.5) + "px";
 
+        this.camInputContainer.style.display = this.camModeInputShown ? "" : "none";
+        let rectButton = this.camButton.getBoundingClientRect();
+        let rectContainer = this.camInputContainer.getBoundingClientRect();
+        this.camInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
+        this.camInputContainer.style.top = (rectButton.top - rectContainer.height - margin).toFixed(0) + "px";
+
         this.timeFactorInputContainer.style.display = this.timeFactorInputShown ? "" : "none";
-        let rectButton = this.timeFactorButton.getBoundingClientRect();
-        let rectContainer = this.timeFactorInputContainer.getBoundingClientRect();
+        rectButton = this.timeFactorButton.getBoundingClientRect();
+        rectContainer = this.timeFactorInputContainer.getBoundingClientRect();
         this.timeFactorInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
-        this.timeFactorInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.timeFactorInputContainer.style.top = (rectButton.top - rectContainer.height - margin).toFixed(0) + "px";
         
         this.loadInputContainer.style.display = this.loadInputShown ? "" : "none";
         rectButton = this.loadButton.getBoundingClientRect();
         rectContainer = this.loadInputContainer.getBoundingClientRect();
         this.loadInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
-        this.loadInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.loadInputContainer.style.top = (rectButton.top - rectContainer.height - margin).toFixed(0) + "px";
         
         this.soundInputContainer.style.display = this.soundInputShown ? "" : "none";
         rectButton = this.soundButton.getBoundingClientRect();
         rectContainer = this.soundInputContainer.getBoundingClientRect();
         this.soundInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
-        this.soundInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.soundInputContainer.style.top = (rectButton.top - rectContainer.height - margin).toFixed(0) + "px";
         
         this.zoomInputContainer.style.display = this.zoomInputShown ? "" : "none";
         rectButton = this.zoomButton.getBoundingClientRect();
         rectContainer = this.zoomInputContainer.getBoundingClientRect();
         this.zoomInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
-        this.zoomInputContainer.style.top = (rectButton.top - rectContainer.height - 8).toFixed(0) + "px";
+        this.zoomInputContainer.style.top = (rectButton.top - rectContainer.height - margin).toFixed(0) + "px";
     }
 
     private _lastPlaying: boolean;
@@ -191,6 +222,17 @@ class Toolbar {
         if (this.zoomInputShown) {
             this.zoomInput.value = this.game.getCameraZoomFactor().toFixed(3);
         }
+        if (this.camModeInputShown) {
+            if (this.game.cameraMode === CameraMode.None) {
+                this.camValue.innerText = "None";
+            }
+            else if (this.game.cameraMode === CameraMode.Ball) {
+                this.camValue.innerText = "Ball";
+            }
+            else if (this.game.cameraMode === CameraMode.Landscape) {
+                this.camValue.innerText = "Landscape";
+            }
+        }
     }
 
     public onPlay = () => {
@@ -212,6 +254,21 @@ class Toolbar {
 
     public onTimeFactorInput = (e: InputEvent) => {
         this.game.targetTimeFactor = parseFloat((e.target as HTMLInputElement).value);
+    }
+
+    public onCamButton = () => {
+        this.camModeInputShown = !this.camModeInputShown;
+        this.resize();
+    }
+
+    public onCamPrevButton = () => {
+        this.game.setCameraMode(this.game.cameraMode - 1);
+        this.resize();
+    }
+
+    public onCamNextButton = () => {
+        this.game.setCameraMode(this.game.cameraMode + 1);
+        this.resize();
     }
 
     public onSave = () => {
@@ -279,7 +336,8 @@ class Toolbar {
     }
 
     public closeAllDropdowns = () => {
-        if (this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {
+        if (this.camModeInputShown || this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {
+            this.camModeInputShown = false;
             this.timeFactorInputShown = false;
             this.loadInputShown = false;
             this.soundInputShown = false;

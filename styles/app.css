@@ -277,109 +277,6 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-#track-editor-menu {
-    padding: 10px;
-    top: 20px;
-    left: 20px;
-    width: 400px;
-    font-size: 2vh;
-}
-
-.separator {
-    margin-top: 5px;
-    margin-bottom: 10px;
-    border-top: 1px solid black;
-    height: 1px;
-}
-
-.line-flex {
-    height: 30px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-}
-
-.paginated-title {
-    display: flex;
-    flex-direction: row;
-}
-
-.label-s {
-    display: inline-block;
-    width: 35px;
-    text-align: right;
-    font-size: 14px;
-    color: rgb(40, 40, 40);
-}
-
-.number-val {
-    display: inline-block;
-    width: 55px;
-    border: 1px solid rgb(80, 80, 80);
-    border-radius: 3px;
-    text-align: right;
-    padding-right: 3px;
-    font-size: 14px;
-}
-
-.btn-l {
-    display: inline-block;
-    width: 100%;
-    height: 25px;
-}
-
-.btn-m {
-    display: inline-block;
-    width: 120px;
-    height: 25px;
-}
-
-.btn-s {
-    display: inline-block;
-    width: 80px;
-    height: 25px;
-}
-
-.btn-xs {
-    display: inline-block;
-    width: 25px;
-    height: 25px;
-}
-
-.spacer {
-    visibility: hidden;
-}
-
-.title {
-    display: inline-block;
-    width: 100%;
-    font-weight: bold;
-    text-align: center;
-}
-
-.title.t1 {
-    font-size: 26px;
-}
-
-.title.t2 {
-    font-size: 22px;
-}
-
-.paginated-title .title {
-    flex: auto;
-    text-align: center;
-}
-
-input-vec3 {
-    display: inline-block;
-    width: 300px;
-}
-input-number {
-    display: inline-block;
-    width: 100px;
-}
-
-
 :root {
     --button-xxs-size: 2vh;
     --button-xs-size: 3vh;
@@ -519,6 +416,15 @@ input-number {
     color: rgb(189, 189, 189);
     text-align: right;
     font-size: calc(var(--half-button-height) * 0.7);
+}
+
+.value-xs {
+    display: inline-block;
+    font-size: calc(var(--button-xs-size) * 0.7);
+    width: calc(var(--button-xs-size) * 4);
+    margin: calc(var(--button-xs-size) * 0.2);
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
 }
 
 .btn svg {

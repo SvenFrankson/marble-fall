@@ -246,8 +246,6 @@ class Game {
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
 
-        document.getElementById("track-editor-menu").style.display = "none";
-
         //this.makeScreenshot("split");
         //return;
 
@@ -331,7 +329,7 @@ class Game {
             let speed = 0.01;
             let camTarget = this.targetCamTarget;
             if (this.cameraMode === CameraMode.Ball && this.machine && this.machine.balls && this.machine.balls[0]) {
-                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 15 * 0.0005;
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 20 * 0.0005;
                 camTarget = this.machine.balls[0].position;
             }
             else {
@@ -388,6 +386,7 @@ class Game {
     }
 
     public async setPageMode(mode: GameMode): Promise<void> {
+        this.toolbar.closeAllDropdowns();
         this.machineEditor.dispose();
         if (mode === GameMode.MainMenu) {
             this.setCameraMode(this.menuCameraMode);
@@ -528,24 +527,26 @@ class Game {
     }
 
     public setCameraMode(mode: CameraMode): void {
-        this.cameraMode = mode;
-        if (this.cameraMode == CameraMode.None) {
-
-        }
-        else {
-            if (this.cameraMode === CameraMode.Ball) {
-                this.targetCamRadius = 0.2;
+        if (mode >= CameraMode.None && mode <= CameraMode.Landscape) {
+            this.cameraMode = mode;
+            if (this.cameraMode == CameraMode.None) {
+    
             }
             else {
-                let encloseStart = this.machine.getEncloseStart();
-                let encloseEnd = this.machine.getEncloseEnd();
-                let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
-        
-                this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
-                this.targetCamRadius = size * 0.5;
+                if (this.cameraMode === CameraMode.Ball) {
+                    this.targetCamRadius = 0.3;
+                }
+                else {
+                    let encloseStart = this.machine.getEncloseStart();
+                    let encloseEnd = this.machine.getEncloseEnd();
+                    let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
+            
+                    this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
+                    this.targetCamRadius = size * 0.5;
+                }
+                this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
+                this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
             }
-            this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
-            this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
         }
     }
 }
