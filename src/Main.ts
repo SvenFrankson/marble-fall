@@ -250,7 +250,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        this.machine.deserialize(twoLoops);
+        this.machine.deserialize(logoCircuit);
 
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -284,7 +284,7 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
 
-        let demos = [demo1, demoLoops, demo3, largeTornado];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -530,7 +530,7 @@ class Game {
 
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {
-                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 2048, outlineWidth: 4 });
                 this.machine.baseWall.isVisible = true;
                 this.machine.baseFrame.isVisible = true;
                 this.skybox.isVisible = true;

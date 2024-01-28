@@ -73,7 +73,7 @@ class Logo {
 
         let img = document.createElementNS("http://www.w3.org/2000/svg", "image");
         img.setAttribute("x", "100");
-        img.setAttribute("y", "-225");
+        img.setAttribute("y", "-200");
         img.setAttribute("width", "800");
         img.setAttribute("height", "800");
         img.setAttribute("href", "./datas/textures/edited-background.png");
@@ -122,7 +122,7 @@ class Logo {
         let earlyAccessDisclaimer = document.createElementNS("http://www.w3.org/2000/svg", "text");
         earlyAccessDisclaimer.setAttribute("text-anchor", "end");
         earlyAccessDisclaimer.setAttribute("x", "340");
-        earlyAccessDisclaimer.setAttribute("y", "250");
+        earlyAccessDisclaimer.setAttribute("y", "260");
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");

@@ -293,6 +293,18 @@ class Configuration {
         }
     }
 }
+var simpleLoop = {
+    balls: [{ x: 0.003999999664723874, y: -0.061500001311302184, z: 0 }],
+    parts: [
+        { name: "uturnlayer-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturnlayer-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+    ],
+};
 var demo1 = {
     balls: [
         { x: 0.4539999737739563, y: -0.15150000488758086, z: 0 },
@@ -556,11 +568,45 @@ var largeTornado = {
         { name: "ramp-2.4.1", i: -1, j: 6, k: 5, mirrorX: true, mirrorZ: false },
         { name: "uturnlayer-0.5", i: -4, j: 10, k: 0, mirrorX: true, mirrorZ: true },
         { name: "loop-1.2", i: -2, j: 6, k: 4, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.3.1", i: -2, j: 7, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 0, j: 7, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.2.1", i: -2, j: 8, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: 8, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
-var twoLoops = { "balls": [{ "x": 0.6040000095367432, "y": -0.15091200506687164, "z": 0 }, { "x": 0.6040000095367432, "y": -0.07407130634784699, "z": 0 }, { "x": 0.6040000095367432, "y": 0.0027694072723388665, "z": 0 }, { "x": 0.6040000095367432, "y": 0.07961012089252471, "z": 0 }, { "x": 0.6040000095367432, "y": 0.15645081961154939, "z": 0 }], "parts": [{ "name": "loop-2.2", "i": -1, "j": -2, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "loop-1.2", "i": -2, "j": 2, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-1.1.1", "i": -3, "j": 5, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturnlayer-0.4", "i": -5, "j": 5, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.3.4", "i": -3, "j": 5, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "ramp-3.3.1", "i": 0, "j": 5, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.12.1", "i": 1, "j": -6, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.0.1", "i": 3, "j": 5, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "elevator-12", "i": 4, "j": -7, "k": 0, "mirrorX": false, "mirrorZ": false }] };
+var twoLoops = {
+    balls: [
+        { x: 0.6040000095367432, y: -0.15091200506687164, z: 0 },
+        { x: 0.6040000095367432, y: -0.07407130634784699, z: 0 },
+        { x: 0.6040000095367432, y: 0.0027694072723388665, z: 0 },
+        { x: 0.6040000095367432, y: 0.07961012089252471, z: 0 },
+        { x: 0.6040000095367432, y: 0.15645081961154939, z: 0 },
+    ],
+    parts: [
+        { name: "loop-2.2", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -3, j: 5, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.4", i: -5, j: 5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.3.4", i: -3, j: 5, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-3.3.1", i: 0, j: 5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.12.1", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 3, j: 5, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "elevator-12", i: 4, j: -7, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};
+var logoCircuit = {
+    balls: [
+        { x: -0.3430786425995497, y: 0.006175036826921158, z: -0.12 },
+        { x: -0.4920541867386349, y: -0.05544158273924758, z: -0.18 },
+    ],
+    parts: [
+        { name: "uturnlayer-0.4", i: -3, j: 0, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.4", i: -1, j: 0, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "uturnlayer-0.3", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -2, j: 1, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: -1, j: -4, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturn-s", i: 0, j: 0, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.1.2", i: -2, j: 1, k: 3, mirrorX: true, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2125,7 +2171,7 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(twoLoops);
+        this.machine.deserialize(logoCircuit);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         //this.makeScreenshot("split");
@@ -2149,7 +2195,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
-        let demos = [demo1, demoLoops, demo3, largeTornado];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -2367,7 +2413,7 @@ class Game {
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
-                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 2048, outlineWidth: 4 });
                 this.machine.baseWall.isVisible = true;
                 this.machine.baseFrame.isVisible = true;
                 this.skybox.isVisible = true;
@@ -4844,7 +4890,7 @@ class Logo {
         `;
         let img = document.createElementNS("http://www.w3.org/2000/svg", "image");
         img.setAttribute("x", "100");
-        img.setAttribute("y", "-225");
+        img.setAttribute("y", "-200");
         img.setAttribute("width", "800");
         img.setAttribute("height", "800");
         img.setAttribute("href", "./datas/textures/edited-background.png");
@@ -4888,7 +4934,7 @@ class Logo {
         let earlyAccessDisclaimer = document.createElementNS("http://www.w3.org/2000/svg", "text");
         earlyAccessDisclaimer.setAttribute("text-anchor", "end");
         earlyAccessDisclaimer.setAttribute("x", "340");
-        earlyAccessDisclaimer.setAttribute("y", "250");
+        earlyAccessDisclaimer.setAttribute("y", "260");
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
