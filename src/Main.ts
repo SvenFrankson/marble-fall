@@ -255,9 +255,6 @@ class Game {
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
 
-        //this.makeScreenshot("split");
-        //return;
-
         let screenshotButton = document.querySelector("#toolbar-screenshot") as HTMLButtonElement;
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
@@ -316,13 +313,15 @@ class Game {
         await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
 
-        /*
-        document.addEventListener("keydown", (event: KeyboardEvent) => {
-            if (event.code === "KeyZ") {
-                this.makeCircuitScreenshot();
+        document.addEventListener("keydown", async (event: KeyboardEvent) => {
+            //if (event.code === "KeyZ") {
+            //    this.makeCircuitScreenshot();
+            //}
+            for (let i = 0; i < TrackNames.length; i++) {
+                let trackname = TrackNames[i];
+                await this.makeScreenshot(trackname);
             }
         })
-        */
 	}
 
 	public animate(): void {

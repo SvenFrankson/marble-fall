@@ -2183,8 +2183,6 @@ class Game {
         this.machine.deserialize(demo1);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
-        //this.makeScreenshot("split");
-        //return;
         let screenshotButton = document.querySelector("#toolbar-screenshot");
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
@@ -2235,13 +2233,15 @@ class Game {
         };
         await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
-        /*
-        document.addEventListener("keydown", (event: KeyboardEvent) => {
-            if (event.code === "KeyZ") {
-                this.makeCircuitScreenshot();
+        document.addEventListener("keydown", async (event) => {
+            //if (event.code === "KeyZ") {
+            //    this.makeCircuitScreenshot();
+            //}
+            for (let i = 0; i < TrackNames.length; i++) {
+                let trackname = TrackNames[i];
+                await this.makeScreenshot(trackname);
             }
-        })
-        */
+        });
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -3319,17 +3319,15 @@ class MachinePart extends BABYLON.Mesh {
 }
 var TrackNames = [
     "ramp-1.1.1",
-    "ramp-1.1.2",
     "join",
     "split",
     "uturn-s",
     "uturn-l",
-    "uturnlayer-1.2",
+    "uturnlayer-0.2",
     "loop-1.2",
     "loop",
     "wave",
     "snake",
-    "spiral",
     "elevator-4"
 ];
 class MachinePartFactory {
