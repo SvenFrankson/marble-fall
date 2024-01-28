@@ -122,6 +122,8 @@ class Game {
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.config = new Configuration(this);
         this.config.initialize();
+        
+        //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
 
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
         //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
@@ -309,9 +311,8 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        //await this.setPageMode(GameMode.MainMenu);
-        //this.machine.play();
-        this.setPageMode(GameMode.CreateMode);
+        await this.setPageMode(GameMode.MainMenu);
+        this.machine.play();
 	}
 
 	public animate(): void {
@@ -610,6 +611,10 @@ class Game {
                 end.z = Math.min(end.z, part.position.z + part.encloseEnd.z);
             }
         });
+
+        if (!Mummu.IsFinite(start) || !Mummu.IsFinite(end)) {
+            return;
+        }
 
         let center = start.add(end).scale(0.5);
 
