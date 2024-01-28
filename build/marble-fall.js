@@ -1081,6 +1081,9 @@ class MachineEditor {
                     await selectedTrack.instantiate();
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
+                    if (this.game.cameraMode === CameraMode.Selected) {
+                        this._onFocus();
+                    }
                 }
             }
             this.setDraggedObject(undefined);
@@ -1098,6 +1101,9 @@ class MachineEditor {
                     await selectedTrack.instantiate();
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
+                    if (this.game.cameraMode === CameraMode.Selected) {
+                        this._onFocus();
+                    }
                 }
             }
             this.setDraggedObject(undefined);
@@ -1115,6 +1121,9 @@ class MachineEditor {
                     await selectedTrack.instantiate();
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
+                    if (this.game.cameraMode === CameraMode.Selected) {
+                        this._onFocus();
+                    }
                 }
             }
             this.setDraggedObject(undefined);
@@ -1132,6 +1141,9 @@ class MachineEditor {
                     await selectedTrack.instantiate();
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
+                    if (this.game.cameraMode === CameraMode.Selected) {
+                        this._onFocus();
+                    }
                 }
             }
             this.setDraggedObject(undefined);
@@ -1150,6 +1162,9 @@ class MachineEditor {
                         await selectedTrack.instantiate();
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
+                        if (this.game.cameraMode === CameraMode.Selected) {
+                            this._onFocus();
+                        }
                     }
                 }
                 this.setDraggedObject(undefined);
@@ -1177,6 +1192,9 @@ class MachineEditor {
                         await selectedTrack.instantiate();
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
+                        if (this.game.cameraMode === CameraMode.Selected) {
+                            this._onFocus();
+                        }
                     }
                 }
                 this.setDraggedObject(undefined);
@@ -1226,6 +1244,11 @@ class MachineEditor {
                         this.machine.balls.push(ball);
                     }
                 });
+            }
+        };
+        this._onFocus = () => {
+            if (this.selectedObjectsCount > 0) {
+                this.game.focusMachineParts(...this._selectedObjects);
             }
         };
         this.container = document.getElementById("machine-editor-menu");
@@ -1309,6 +1332,9 @@ class MachineEditor {
         }
         if (s) {
             this._selectedObjects = [s];
+            if (this.game.cameraMode === CameraMode.Selected) {
+                this._onFocus();
+            }
         }
         else {
             this._selectedObjects = [];
@@ -1330,6 +1356,9 @@ class MachineEditor {
             if (index === -1) {
                 this._selectedObjects.push(object);
                 object.select();
+                if (this.game.cameraMode === CameraMode.Selected) {
+                    this._onFocus();
+                }
             }
         }
         if (this.selectedObjectsCount === 1) {
@@ -1442,6 +1471,9 @@ class MachineEditor {
             }
             else if (event.code === "KeyE") {
                 this._onKPlus();
+            }
+            else if (event.code === "Space") {
+                this._onFocus();
             }
             else if (event.code === "ShiftLeft") {
                 this._majDown = false;
@@ -1950,9 +1982,13 @@ var CameraMode;
     CameraMode[CameraMode["None"] = 0] = "None";
     CameraMode[CameraMode["Ball"] = 1] = "Ball";
     CameraMode[CameraMode["Landscape"] = 2] = "Landscape";
+    CameraMode[CameraMode["Selected"] = 3] = "Selected";
+    CameraMode[CameraMode["Focusing"] = 4] = "Focusing";
+    CameraMode[CameraMode["FocusingSelected"] = 5] = "FocusingSelected";
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
+        this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
         this.targetCamTarget = BABYLON.Vector3.Zero();
@@ -1993,6 +2029,7 @@ class Game {
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
+        this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.config = new Configuration(this);
         this.config.initialize();
@@ -2147,8 +2184,9 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.MainMenu);
-        this.machine.play();
+        //await this.setPageMode(GameMode.MainMenu);
+        //this.machine.play();
+        this.setPageMode(GameMode.CreateMode);
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2156,6 +2194,7 @@ class Game {
             this.update();
         });
         window.addEventListener("resize", () => {
+            this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             this.engine.resize();
             this.toolbar.resize();
             this.mainMenu.resize();
@@ -2165,12 +2204,16 @@ class Game {
     }
     update() {
         let dt = this.scene.deltaTime / 1000;
-        if (this.cameraMode != CameraMode.None && isFinite(dt)) {
+        if (this.cameraMode != CameraMode.None && this.cameraMode != CameraMode.Selected && isFinite(dt)) {
             let speed = 0.01;
             let camTarget = this.targetCamTarget;
             if (this.cameraMode === CameraMode.Ball && this.machine && this.machine.balls && this.machine.balls[0]) {
                 this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 20 * 0.0005;
                 camTarget = this.machine.balls[0].position;
+            }
+            else if (this.cameraMode >= CameraMode.Focusing) {
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.95 + 20 * 0.05;
+                speed = 0.5;
             }
             else {
                 this._trackTargetCamSpeed = 0.1;
@@ -2183,23 +2226,42 @@ class Game {
             this.camera.alpha = alpha;
             this.camera.beta = beta;
             this.camera.radius = radius;
-            if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
-                this.targetCamAlpha = -0.2 * Math.PI - Math.random() * Math.PI * 0.6;
+            if (this.cameraMode >= CameraMode.Focusing) {
+                if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
+                    if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
+                        if (Math.abs(this.camera.radius - this.targetCamRadius) < 0.001) {
+                            if (BABYLON.Vector3.Distance(this.camera.target, this.targetCamTarget) < 0.001) {
+                                if (this.cameraMode === CameraMode.FocusingSelected) {
+                                    this.cameraMode = CameraMode.Selected;
+                                    this.camera.attachControl();
+                                }
+                                else {
+                                    this.cameraMode = CameraMode.None;
+                                    this.camera.attachControl();
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
-                this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
+            else if (this.cameraMode <= CameraMode.Landscape) {
+                if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
+                    this.targetCamAlpha = -0.2 * Math.PI - Math.random() * Math.PI * 0.6;
+                }
+                if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
+                    this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
+                }
             }
         }
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
-        let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         if (this.cameraOrtho) {
             let f = this.camera.radius / 4;
             this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
             this.camera.orthoTop = 1 * f;
             this.camera.orthoBottom = -1 * f;
-            this.camera.orthoLeft = -ratio * f;
-            this.camera.orthoRight = ratio * f;
+            this.camera.orthoLeft = -this.screenRatio * f;
+            this.camera.orthoRight = this.screenRatio * f;
         }
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
@@ -2331,6 +2393,9 @@ class Game {
         }
         return fov * ratio;
     }
+    getCameraHorizontalFOV() {
+        return 2 * Math.atan(this.screenRatio * Math.tan(this.camera.fov / 2));
+    }
     getCameraZoomFactor() {
         let f = 1 - (this.camera.radius - this.camera.lowerRadiusLimit) / (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit);
         return f * f;
@@ -2339,9 +2404,9 @@ class Game {
         let f = Math.sqrt(v);
         this.camera.radius = (1 - f) * (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit) + this.camera.lowerRadiusLimit;
     }
-    setCameraMode(mode) {
-        if (mode >= CameraMode.None && mode <= CameraMode.Landscape) {
-            this.cameraMode = mode;
+    setCameraMode(camMode) {
+        if (camMode >= CameraMode.None && camMode <= CameraMode.Landscape) {
+            this.cameraMode = camMode;
             if (this.cameraMode == CameraMode.None) {
             }
             else {
@@ -2359,6 +2424,53 @@ class Game {
                 this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
             }
         }
+        else if (camMode === CameraMode.Selected) {
+            if (this.mode === GameMode.CreateMode) {
+                this.cameraMode = camMode;
+                this.targetCamAlpha = this.camera.alpha;
+                this.targetCamBeta = this.camera.beta;
+                this.targetCamRadius = this.camera.radius;
+                this.targetCamTarget.copyFrom(this.camera.target);
+            }
+        }
+    }
+    async focusMachineParts(...machineParts) {
+        let start = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
+        let end = new BABYLON.Vector3(-Infinity, Infinity, Infinity);
+        machineParts.forEach(part => {
+            if (part instanceof MachinePart) {
+                start.x = Math.min(start.x, part.position.x + part.encloseStart.x);
+                start.y = Math.max(start.y, part.position.y + part.encloseStart.y);
+                start.z = Math.max(start.z, part.position.z + part.encloseStart.z);
+                end.x = Math.max(end.x, part.position.x + part.encloseEnd.x);
+                end.y = Math.min(end.y, part.position.y + part.encloseEnd.y);
+                end.z = Math.min(end.z, part.position.z + part.encloseEnd.z);
+            }
+        });
+        let center = start.add(end).scale(0.5);
+        let w = (end.x - start.x);
+        let distW = 0.5 * w / (Math.tan(this.getCameraHorizontalFOV() * 0.5));
+        let h = (start.y - end.y);
+        let distH = 0.5 * h / (Math.tan(this.camera.fov * 0.5));
+        if (this.screenRatio > 1) {
+            distW *= 2.5;
+            distH *= 1.5;
+        }
+        else {
+            distW *= 1.5;
+            distH *= 2.5;
+        }
+        this.targetCamRadius = Math.max(distW, distH);
+        this.targetCamTarget.copyFrom(center);
+        this.targetCamAlpha = -Math.PI / 2;
+        this.targetCamBeta = Math.PI / 2;
+        if (this.cameraMode === CameraMode.Selected) {
+            this.cameraMode = CameraMode.FocusingSelected;
+        }
+        else {
+            this.cameraMode = CameraMode.Focusing;
+        }
+        this.camera.detachControl();
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
@@ -4899,6 +5011,10 @@ class MachinePartEditorMenu {
         this.fillLine = document.getElementById("machine-editor-part-menu-fill");
         this.fillButton = document.querySelector("#machine-editor-part-menu-fill button");
         this.fillButton.onclick = this.machineEditor._onFill;
+        this.focusLine = document.getElementById("machine-editor-part-menu-focus");
+        this.focusButton = document.querySelector("#machine-editor-part-menu-focus button");
+        this.focusButton.onclick = this.machineEditor._onFocus;
+        this.deleteLine = document.getElementById("machine-editor-part-menu-delete");
         this.deleteButton = document.querySelector("#machine-editor-part-menu-delete button");
         this.deleteButton.onclick = async () => {
             this.currentObject.dispose();
@@ -4926,6 +5042,8 @@ class MachinePartEditorMenu {
                 this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
                 this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
                 this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
+                this.focusLine.style.display = this._shown ? "" : "none";
+                this.deleteLine.style.display = this._shown ? "" : "none";
                 if (this.currentObject instanceof MachinePart) {
                     this.titleElement.innerText = this.currentObject.partName;
                     this.ijkIElement.innerText = this.currentObject.i.toFixed(0);
@@ -5154,6 +5272,9 @@ class Toolbar {
                 else if (this.game.cameraMode === CameraMode.Landscape) {
                     this.camValue.innerText = "Landscape";
                 }
+                else if (this.game.cameraMode === CameraMode.Selected) {
+                    this.camValue.innerText = "Selected";
+                }
             }
         };
         this.onPlay = () => {
@@ -5342,9 +5463,8 @@ class Toolbar {
     resize() {
         this.updateButtonsVisibility();
         let margin = 10;
-        let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
         this.container.style.bottom = "10px";
-        if (ratio < 1) {
+        if (this.game.screenRatio < 1) {
             let objectsElement = document.getElementById("machine-editor-objects");
             if (objectsElement.style.display != "none") {
                 let h = objectsElement.getBoundingClientRect().height;

@@ -12,6 +12,8 @@ class MachinePartEditorMenu {
     public mirrorXLine: HTMLDivElement;
     public mirrorZLine: HTMLDivElement;
     public fillLine: HTMLDivElement;
+    public focusLine: HTMLDivElement;
+    public deleteLine: HTMLDivElement;
 
     public titleElement: HTMLSpanElement;
     public ijkIElement: HTMLSpanElement;
@@ -30,6 +32,7 @@ class MachinePartEditorMenu {
     public mirrorXButton: HTMLButtonElement;
     public mirrorZButton: HTMLButtonElement;
     public fillButton: HTMLButtonElement;
+    public focusButton: HTMLButtonElement;
     public deleteButton: HTMLButtonElement;
 
     private _currentObject: MachinePart | Ball;
@@ -172,6 +175,13 @@ class MachinePartEditorMenu {
         this.fillButton = document.querySelector("#machine-editor-part-menu-fill button") as HTMLButtonElement;
         this.fillButton.onclick = this.machineEditor._onFill;
 
+        this.focusLine = document.getElementById("machine-editor-part-menu-focus") as HTMLDivElement;
+
+        this.focusButton = document.querySelector("#machine-editor-part-menu-focus button") as HTMLButtonElement;
+        this.focusButton.onclick = this.machineEditor._onFocus;
+
+        this.deleteLine = document.getElementById("machine-editor-part-menu-delete") as HTMLDivElement;
+
         this.deleteButton = document.querySelector("#machine-editor-part-menu-delete button") as HTMLButtonElement;
         this.deleteButton.onclick = async () => {
             this.currentObject.dispose();
@@ -201,6 +211,8 @@ class MachinePartEditorMenu {
                 this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
                 this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
                 this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
+                this.focusLine.style.display = this._shown ? "" : "none";
+                this.deleteLine.style.display = this._shown ? "" : "none";
     
                 if (this.currentObject instanceof MachinePart) {
                     this.titleElement.innerText = this.currentObject.partName;

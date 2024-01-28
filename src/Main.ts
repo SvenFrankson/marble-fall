@@ -20,7 +20,10 @@ enum GameMode {
 enum CameraMode {
     None,
     Ball,
-    Landscape
+    Landscape,
+    Selected,
+    Focusing,
+    FocusingSelected
 }
 
 class Game {
@@ -33,6 +36,8 @@ class Game {
     public getScene(): BABYLON.Scene {
         return this.scene;
     }
+    public screenRatio: number = 1;
+
     //public camera: BABYLON.FreeCamera;
     public camera: BABYLON.ArcRotateCamera;
     public cameraMode: CameraMode = CameraMode.None;
@@ -42,6 +47,7 @@ class Game {
     public targetCamBeta: number = Math.PI * 0.5;
     public targetCamRadius: number = 0.1;
     private _trackTargetCamSpeed: number = 0;
+    public onFocusCallback: () => void;
 
     public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
@@ -112,6 +118,7 @@ class Game {
 
     public async createScene(): Promise<void> {
         this.scene = new BABYLON.Scene(this.engine);
+        this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.config = new Configuration(this);
         this.config.initialize();
@@ -302,8 +309,9 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        await this.setPageMode(GameMode.MainMenu);
-        this.machine.play();
+        //await this.setPageMode(GameMode.MainMenu);
+        //this.machine.play();
+        this.setPageMode(GameMode.CreateMode);
 	}
 
 	public animate(): void {
@@ -313,6 +321,7 @@ class Game {
 		});
 
 		window.addEventListener("resize", () => {
+            this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
 			this.engine.resize();
             this.toolbar.resize();
             this.mainMenu.resize();
@@ -326,12 +335,16 @@ class Game {
     public update(): void {
         let dt = this.scene.deltaTime / 1000;
 
-        if (this.cameraMode != CameraMode.None && isFinite(dt)) {
+        if (this.cameraMode != CameraMode.None && this.cameraMode != CameraMode.Selected && isFinite(dt)) {
             let speed = 0.01;
             let camTarget = this.targetCamTarget;
             if (this.cameraMode === CameraMode.Ball && this.machine && this.machine.balls && this.machine.balls[0]) {
                 this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 20 * 0.0005;
                 camTarget = this.machine.balls[0].position;
+            }
+            else if (this.cameraMode >= CameraMode.Focusing) {
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.95 + 20 * 0.05;
+                speed = 0.5;
             }
             else {
                 this._trackTargetCamSpeed = 0.1;
@@ -346,25 +359,44 @@ class Game {
             this.camera.beta = beta;
             this.camera.radius = radius;
 
-            if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
-                this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
+            if (this.cameraMode >= CameraMode.Focusing) {
+                if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
+                    if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
+                        if (Math.abs(this.camera.radius - this.targetCamRadius) < 0.001) {
+                            if (BABYLON.Vector3.Distance(this.camera.target, this.targetCamTarget) < 0.001) {
+                                if (this.cameraMode === CameraMode.FocusingSelected) {
+                                    this.cameraMode = CameraMode.Selected;
+                                    this.camera.attachControl();
+                                }
+                                else {
+                                    this.cameraMode = CameraMode.None;
+                                    this.camera.attachControl();
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
-                this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
+            else if (this.cameraMode <= CameraMode.Landscape) {
+                if (Math.abs(this.camera.alpha - this.targetCamAlpha) < Math.PI / 180) {
+                    this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
+                }
+                if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
+                    this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
+                }
             }
         }
 
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
 
-        let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         if (this.cameraOrtho) {
             let f = this.camera.radius / 4;
             this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
             this.camera.orthoTop = 1 * f;
             this.camera.orthoBottom = - 1 * f;
-            this.camera.orthoLeft = - ratio * f;
-            this.camera.orthoRight = ratio * f;
+            this.camera.orthoLeft = - this.screenRatio * f;
+            this.camera.orthoRight = this.screenRatio * f;
         }
         else {
             this.camera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
@@ -517,6 +549,10 @@ class Game {
         return fov * ratio;
     }
 
+    public getCameraHorizontalFOV(): number {
+        return 2 * Math.atan(this.screenRatio * Math.tan(this.camera.fov / 2));
+    }
+
     public getCameraZoomFactor(): number {
         let f = 1 - (this.camera.radius - this.camera.lowerRadiusLimit) / (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit);
         return f * f;
@@ -527,9 +563,9 @@ class Game {
         this.camera.radius = (1 - f) * (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit) + this.camera.lowerRadiusLimit;
     }
 
-    public setCameraMode(mode: CameraMode): void {
-        if (mode >= CameraMode.None && mode <= CameraMode.Landscape) {
-            this.cameraMode = mode;
+    public setCameraMode(camMode: CameraMode): void {
+        if (camMode >= CameraMode.None && camMode <= CameraMode.Landscape) {
+            this.cameraMode = camMode;
             if (this.cameraMode == CameraMode.None) {
     
             }
@@ -549,6 +585,60 @@ class Game {
                 this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
             }
         }
+        else if (camMode === CameraMode.Selected) {
+            if (this.mode === GameMode.CreateMode) {
+                this.cameraMode = camMode;
+                this.targetCamAlpha = this.camera.alpha;
+                this.targetCamBeta = this.camera.beta;
+                this.targetCamRadius = this.camera.radius;
+                this.targetCamTarget.copyFrom(this.camera.target);
+            }
+        }
+    }
+
+    public async focusMachineParts(...machineParts: MachinePart[]): Promise<void> {
+        let start: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, - Infinity, - Infinity);
+        let end: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, Infinity, Infinity);
+        machineParts.forEach(part => {
+            if (part instanceof MachinePart) {
+                start.x = Math.min(start.x, part.position.x + part.encloseStart.x);
+                start.y = Math.max(start.y, part.position.y + part.encloseStart.y);
+                start.z = Math.max(start.z, part.position.z + part.encloseStart.z);
+                
+                end.x = Math.max(end.x, part.position.x + part.encloseEnd.x);
+                end.y = Math.min(end.y, part.position.y + part.encloseEnd.y);
+                end.z = Math.min(end.z, part.position.z + part.encloseEnd.z);
+            }
+        });
+
+        let center = start.add(end).scale(0.5);
+
+        let w = (end.x - start.x);
+        let distW = 0.5 * w / (Math.tan(this.getCameraHorizontalFOV() * 0.5));
+        let h = (start.y - end.y);
+        let distH = 0.5 * h / (Math.tan(this.camera.fov * 0.5));
+
+        if (this.screenRatio > 1) {
+            distW *= 2.5;
+            distH *= 1.5;
+        }
+        else {
+            distW *= 1.5;
+            distH *= 2.5;
+        }
+        this.targetCamRadius = Math.max(distW, distH);
+
+        this.targetCamTarget.copyFrom(center);
+        this.targetCamAlpha = - Math.PI / 2;
+        this.targetCamBeta = Math.PI / 2;
+
+        if (this.cameraMode === CameraMode.Selected) {
+            this.cameraMode = CameraMode.FocusingSelected;
+        }
+        else {
+            this.cameraMode = CameraMode.Focusing;
+        }
+        this.camera.detachControl();
     }
 }
 

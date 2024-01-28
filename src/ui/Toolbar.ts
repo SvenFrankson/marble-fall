@@ -159,9 +159,8 @@ class Toolbar {
         this.updateButtonsVisibility();
 
         let margin = 10;
-        let ratio = this.game.engine.getRenderWidth() / this.game.engine.getRenderHeight();
         this.container.style.bottom = "10px";
-        if (ratio < 1) {
+        if (this.game.screenRatio < 1) {
             let objectsElement = document.getElementById("machine-editor-objects");
             if (objectsElement.style.display != "none") {
                 let h = objectsElement.getBoundingClientRect().height;
@@ -231,6 +230,9 @@ class Toolbar {
             }
             else if (this.game.cameraMode === CameraMode.Landscape) {
                 this.camValue.innerText = "Landscape";
+            }
+            else if (this.game.cameraMode === CameraMode.Selected) {
+                this.camValue.innerText = "Selected";
             }
         }
     }

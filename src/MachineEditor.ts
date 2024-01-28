@@ -144,6 +144,9 @@ class MachineEditor {
 
         if (s) {
             this._selectedObjects = [s];
+            if (this.game.cameraMode === CameraMode.Selected) {
+                this._onFocus();
+            }
         }
         else {
             this._selectedObjects = [];
@@ -166,6 +169,9 @@ class MachineEditor {
             if (index === - 1) {
                 this._selectedObjects.push(object);
                 object.select();
+                if (this.game.cameraMode === CameraMode.Selected) {
+                    this._onFocus();
+                }
             }
         }
         if (this.selectedObjectsCount === 1) {
@@ -292,6 +298,9 @@ class MachineEditor {
             }
             else if (event.code === "KeyE") {
                 this._onKPlus();
+            }
+            else if (event.code === "Space") {
+                this._onFocus();
             }
             else if (event.code === "ShiftLeft") {
                 this._majDown = false;
@@ -1301,6 +1310,9 @@ class MachineEditor {
                 await selectedTrack.instantiate();
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
+                if (this.game.cameraMode === CameraMode.Selected) {
+                    this._onFocus();
+                }
             }
         }
         this.setDraggedObject(undefined);
@@ -1319,6 +1331,9 @@ class MachineEditor {
                 await selectedTrack.instantiate();
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
+                if (this.game.cameraMode === CameraMode.Selected) {
+                    this._onFocus();
+                }
             }
         }
         this.setDraggedObject(undefined);
@@ -1337,6 +1352,9 @@ class MachineEditor {
                 await selectedTrack.instantiate();
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
+                if (this.game.cameraMode === CameraMode.Selected) {
+                    this._onFocus();
+                }
             }
         }
         this.setDraggedObject(undefined);
@@ -1355,6 +1373,9 @@ class MachineEditor {
                 await selectedTrack.instantiate();
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
+                if (this.game.cameraMode === CameraMode.Selected) {
+                    this._onFocus();
+                }
             }
         }
         this.setDraggedObject(undefined);
@@ -1374,6 +1395,9 @@ class MachineEditor {
                     await selectedTrack.instantiate();
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
+                    if (this.game.cameraMode === CameraMode.Selected) {
+                        this._onFocus();
+                    }
                 }
             }
             this.setDraggedObject(undefined);
@@ -1402,6 +1426,9 @@ class MachineEditor {
                     await selectedTrack.instantiate();
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
+                    if (this.game.cameraMode === CameraMode.Selected) {
+                        this._onFocus();
+                    }
                 }
             }
             this.setDraggedObject(undefined);
@@ -1453,6 +1480,12 @@ class MachineEditor {
                     this.machine.balls.push(ball);
                 }
             })
+        }
+    }
+
+    public _onFocus = () => {
+        if (this.selectedObjectsCount > 0) {
+            this.game.focusMachineParts(...this._selectedObjects as MachinePart[]);
         }
     }
 }
