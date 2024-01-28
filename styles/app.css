@@ -26,6 +26,16 @@ body {
     border: 1px solid white;
 }
 
+#screenshot-frame {
+    pointer-events: none;
+    width: min(100vw, 100vh);
+    height: min(100vw, 100vh);
+    position: fixed;
+    left: calc((100vw - min(100vw, 100vh)) * 0.5);
+    top: calc((100vh - min(100vw, 100vh)) * 0.5);
+    outline: 1px solid white;
+}
+
 #logo {
     position: fixed;
     top: 0;

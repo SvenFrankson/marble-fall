@@ -317,7 +317,7 @@ var demo1 = {
         { name: "ramp-2.4.1", i: 0, j: 1, k: 0, mirrorX: true, mirrorZ: false },
     ],
 };
-var demo2 = {
+var demoLoops = {
     balls: [
         { x: 0.3039999976158142, y: -0.24149999356269836, z: 0 },
         { x: 0.3039999976158142, y: -0.07789317107200623, z: 0 },
@@ -326,15 +326,22 @@ var demo2 = {
     ],
     parts: [
         { name: "loop", i: -1, j: -8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-s", i: -2, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-s", i: 1, j: -1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "loop", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-s", i: -2, j: 3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop", i: -1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: -6, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false },
         { name: "elevator-17", i: 2, j: -9, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 1, j: -8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 1, j: 7, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: -6, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturnlayer-1.3", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "loop", i: -1, j: -2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: 2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "loop", i: -1, j: 2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: 4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: -2, j: 7, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "ramp-3.1.3", i: -1, j: 7, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
 var demo4 = {
@@ -387,24 +394,35 @@ var demoTest = {
 };
 var demo3 = {
     balls: [
-        { x: -0.4510339268831631, y: -0.1789705706231774, z: 0 },
-        { x: -0.4531945138854282, y: -0.018399617435979055, z: -1.1102230246251565e-16 },
-        { x: -0.4525009237071227, y: 0.14720955029389016, z: 1.1102230246251565e-16 },
+        { x: -0.45039562940864025, y: -0.14880134622293845, z: 0 },
+        { x: -0.4507414790693519, y: 0.00570802711480296, z: 0 },
+        { x: -0.4512511582822969, y: 0.15488847198893452, z: 1.1102230246251565e-16 },
     ],
     parts: [
         { name: "split", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "split", i: 0, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "split", i: 0, j: 1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "join", i: 0, j: 4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-2.1.1", i: -2, j: 5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: -2, j: -3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: -2, j: 0, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: -2, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "split", i: 0, j: -2, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.1.1", i: -2, j: -6, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "elevator-13", i: -3, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "join", i: -1, j: 2, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -2, j: 0, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -1, j: -3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -1, j: -2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturnlayer-1.2", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "join", i: 0, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "elevator-12", i: -3, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -2, j: 4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.0.1", i: -1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 4, j: -1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-2.3.1", i: 0, j: -1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.0.1", i: 2, j: -1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 3, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: true },
+        { name: "ramp-3.1.1", i: -2, j: 2, k: 3, mirrorX: false, mirrorZ: false },
     ],
 };
 var createDefault = {
@@ -510,27 +528,6 @@ var demoXXL = {
         { name: "ramp-1.1.1", i: -1, j: -5, k: 4, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.2", i: -3, j: -6, k: 3, mirrorX: false, mirrorZ: false },
         { name: "split", i: 1, j: -3, k: 2, mirrorX: true, mirrorZ: false },
-    ],
-};
-var demoLoops = {
-    balls: [
-        { x: 0.00010022970034684678, y: 0.031589830783326715, z: -0.18000000715255726 },
-        { x: -0.0019573246060616625, y: 0.11443649644939181, z: -0.18000000715255737 },
-        { x: 0.021524476718230344, y: 0.03563486942858014, z: -0.18000000000000016 },
-        { x: 0.04171689148047655, y: 0.03742712033545841, z: -0.1800000000000001 },
-        { x: 0.06167878274313393, y: 0.03844460823755899, z: -0.18 },
-    ],
-    parts: [
-        { name: "elevator-5", i: 0, j: -6, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 4, j: -2, k: 3, mirrorX: false, mirrorZ: false },
-        { name: "ramp-3.1.1", i: 1, j: -2, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: 3, j: -4, k: 3, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-1.3", i: 1, j: -3, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.4", i: 3, j: -4, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.3.2", i: 1, j: -5, k: 3, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.0.1", i: 2, j: -2, k: 5, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 2, j: -3, k: 3, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.5", i: 1, j: -4, k: 1, mirrorX: true, mirrorZ: false },
     ],
 };
 var largeTornado = {
@@ -1427,9 +1424,7 @@ class MachineEditor {
             else if (event.code === "ControlLeft") {
                 this._ctrlDown = true;
             }
-        });
-        document.addEventListener("keyup", (event) => {
-            if (this._ctrlDown && event.key === "a") {
+            else if (this._ctrlDown && event.key === "a") {
                 this.addSelectedObjects(...this.machine.parts);
             }
             else if (event.key === "x" || event.key === "Delete") {
@@ -1468,7 +1463,9 @@ class MachineEditor {
             else if (event.code === "Space") {
                 this._onFocus();
             }
-            else if (event.code === "ShiftLeft") {
+        });
+        document.addEventListener("keyup", (event) => {
+            if (event.code === "ShiftLeft") {
                 this._majDown = false;
             }
             else if (event.code === "ControlLeft") {
@@ -2151,7 +2148,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
-        let demos = [demo1, demo2, demo3, largeTornado];
+        let demos = [demo1, demoLoops, demo3, largeTornado];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -2182,6 +2179,11 @@ class Game {
         };
         await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "KeyZ") {
+                this.makeCircuitScreenshot();
+            }
+        });
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2362,13 +2364,6 @@ class Game {
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
-        let encloseStart = this.machine.getEncloseStart();
-        let encloseEnd = this.machine.getEncloseEnd();
-        this.camera.target = encloseStart.add(encloseEnd).scale(0.5);
-        this.camera.alpha = -0.9 * Math.PI / 2;
-        this.camera.beta = 0.8 * Math.PI / 2;
-        let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
-        this.camera.radius = 1.25 * size;
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
                 await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });

@@ -23,7 +23,7 @@ var demo1: IMachineData = {
     ],
 };
 
-var demo2: IMachineData = {
+var demoLoops: IMachineData = {
     balls: [
         { x: 0.3039999976158142, y: -0.24149999356269836, z: 0 },
         { x: 0.3039999976158142, y: -0.07789317107200623, z: 0 },
@@ -32,15 +32,22 @@ var demo2: IMachineData = {
     ],
     parts: [
         { name: "loop", i: -1, j: -8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-s", i: -2, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-s", i: 1, j: -1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "loop", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-s", i: -2, j: 3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop", i: -1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: -6, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false },
         { name: "elevator-17", i: 2, j: -9, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 1, j: -8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 1, j: 7, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: -6, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturnlayer-1.3", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "loop", i: -1, j: -2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: -2, j: 2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "loop", i: -1, j: 2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.3", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -1, j: 4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: -2, j: 7, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "ramp-3.1.3", i: -1, j: 7, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
 
@@ -96,24 +103,35 @@ var demoTest: IMachineData = {
 
 var demo3: IMachineData = {
     balls: [
-        { x: -0.4510339268831631, y: -0.1789705706231774, z: 0 },
-        { x: -0.4531945138854282, y: -0.018399617435979055, z: -1.1102230246251565e-16 },
-        { x: -0.4525009237071227, y: 0.14720955029389016, z: 1.1102230246251565e-16 },
+        { x: -0.45039562940864025, y: -0.14880134622293845, z: 0 },
+        { x: -0.4507414790693519, y: 0.00570802711480296, z: 0 },
+        { x: -0.4512511582822969, y: 0.15488847198893452, z: 1.1102230246251565e-16 },
     ],
     parts: [
         { name: "split", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "split", i: 0, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "split", i: 0, j: 1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "join", i: 0, j: 4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-2.1.1", i: -2, j: 5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: -2, j: -3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: -2, j: 0, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: -2, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "split", i: 0, j: -2, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.1.1", i: -2, j: -6, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "elevator-13", i: -3, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "join", i: -1, j: 2, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop", i: -2, j: 0, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -1, j: -3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -1, j: -2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturnlayer-1.2", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "join", i: 0, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "elevator-12", i: -3, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: -2, j: 4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.0.1", i: -1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: 4, j: -1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-2.3.1", i: 0, j: -1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.0.1", i: 2, j: -1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 3, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-1.2", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: true },
+        { name: "ramp-3.1.1", i: -2, j: 2, k: 3, mirrorX: false, mirrorZ: false },
     ],
 };
 
@@ -223,28 +241,6 @@ var demoXXL: IMachineData = {
         { name: "ramp-1.1.1", i: -1, j: -5, k: 4, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.2", i: -3, j: -6, k: 3, mirrorX: false, mirrorZ: false },
         { name: "split", i: 1, j: -3, k: 2, mirrorX: true, mirrorZ: false },
-    ],
-};
-
-var demoLoops: IMachineData = {
-    balls: [
-        { x: 0.00010022970034684678, y: 0.031589830783326715, z: -0.18000000715255726 },
-        { x: -0.0019573246060616625, y: 0.11443649644939181, z: -0.18000000715255737 },
-        { x: 0.021524476718230344, y: 0.03563486942858014, z: -0.18000000000000016 },
-        { x: 0.04171689148047655, y: 0.03742712033545841, z: -0.1800000000000001 },
-        { x: 0.06167878274313393, y: 0.03844460823755899, z: -0.18 },
-    ],
-    parts: [
-        { name: "elevator-5", i: 0, j: -6, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 4, j: -2, k: 3, mirrorX: false, mirrorZ: false },
-        { name: "ramp-3.1.1", i: 1, j: -2, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: 3, j: -4, k: 3, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-1.3", i: 1, j: -3, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.4", i: 3, j: -4, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.3.2", i: 1, j: -5, k: 3, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.0.1", i: 2, j: -2, k: 5, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 2, j: -3, k: 3, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.5", i: 1, j: -4, k: 1, mirrorX: true, mirrorZ: false },
     ],
 };
 

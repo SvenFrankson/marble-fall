@@ -284,7 +284,7 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
 
-        let demos = [demo1, demo2, demo3, largeTornado];
+        let demos = [demo1, demoLoops, demo3, largeTornado];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -315,6 +315,12 @@ class Game {
         }
         await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
+
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.code === "KeyZ") {
+                this.makeCircuitScreenshot();
+            }
+        })
 	}
 
 	public animate(): void {
@@ -521,15 +527,6 @@ class Game {
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
-        
-
-        let encloseStart = this.machine.getEncloseStart();
-        let encloseEnd = this.machine.getEncloseEnd();
-        this.camera.target = encloseStart.add(encloseEnd).scale(0.5);
-        this.camera.alpha = - 0.9 * Math.PI / 2;
-        this.camera.beta = 0.8 * Math.PI / 2;
-        let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
-        this.camera.radius = 1.25 * size;
 
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {

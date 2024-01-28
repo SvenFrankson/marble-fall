@@ -261,9 +261,7 @@ class MachineEditor {
             else if (event.code === "ControlLeft") {
                 this._ctrlDown = true;
             }
-        })
-        document.addEventListener("keyup", (event: KeyboardEvent) => {
-            if (this._ctrlDown && event.key === "a") {
+            else if (this._ctrlDown && event.key === "a") {
                 this.addSelectedObjects(...this.machine.parts);
             }
             else if (event.key === "x" || event.key === "Delete") {
@@ -302,7 +300,9 @@ class MachineEditor {
             else if (event.code === "Space") {
                 this._onFocus();
             }
-            else if (event.code === "ShiftLeft") {
+        })
+        document.addEventListener("keyup", (event: KeyboardEvent) => {
+            if (event.code === "ShiftLeft") {
                 this._majDown = false;
             }
             else if (event.code === "ControlLeft") {
