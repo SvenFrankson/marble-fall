@@ -2151,19 +2151,21 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
-        let demos = [demo1, demo2, demo3];
+        let demos = [demo1, demo2, demo3, largeTornado];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
             let demo = demos[i];
-            let buttonDemo = demoButtons[i];
-            buttonDemo.onclick = async () => {
-                this.machine.dispose();
-                this.machine.deserialize(demo);
-                await this.machine.instantiate();
-                await this.machine.generateBaseMesh();
-                this.setPageMode(GameMode.DemoMode);
-            };
+            if (demo) {
+                let buttonDemo = demoButtons[i];
+                buttonDemo.onclick = async () => {
+                    this.machine.dispose();
+                    this.machine.deserialize(demo);
+                    await this.machine.instantiate();
+                    await this.machine.generateBaseMesh();
+                    this.setPageMode(GameMode.DemoMode);
+                };
+            }
         }
         let buttonCreate = container.querySelector(".panel.create");
         buttonCreate.onclick = () => {
