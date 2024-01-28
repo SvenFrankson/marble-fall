@@ -274,3 +274,5 @@ var largeTornado: IMachineData = {
         { name: "ramp-1.1.1", i: 0, j: 7, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
+
+var twoLoops = {"balls":[{"x":0.6040000095367432,"y":-0.15091200506687164,"z":0},{"x":0.6040000095367432,"y":-0.07407130634784699,"z":0},{"x":0.6040000095367432,"y":0.0027694072723388665,"z":0},{"x":0.6040000095367432,"y":0.07961012089252471,"z":0},{"x":0.6040000095367432,"y":0.15645081961154939,"z":0}],"parts":[{"name":"loop-2.2","i":-1,"j":-2,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"loop-1.2","i":-2,"j":2,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"ramp-1.1.1","i":-3,"j":5,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"uturnlayer-0.4","i":-5,"j":5,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-3.3.4","i":-3,"j":5,"k":0,"mirrorX":false,"mirrorZ":true},{"name":"ramp-3.3.1","i":0,"j":5,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-3.12.1","i":1,"j":-6,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-1.0.1","i":3,"j":5,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"elevator-12","i":4,"j":-7,"k":0,"mirrorX":false,"mirrorZ":false}]};

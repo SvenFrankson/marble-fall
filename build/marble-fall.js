@@ -560,6 +560,7 @@ var largeTornado = {
         { name: "ramp-1.1.1", i: 0, j: 7, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
+var twoLoops = { "balls": [{ "x": 0.6040000095367432, "y": -0.15091200506687164, "z": 0 }, { "x": 0.6040000095367432, "y": -0.07407130634784699, "z": 0 }, { "x": 0.6040000095367432, "y": 0.0027694072723388665, "z": 0 }, { "x": 0.6040000095367432, "y": 0.07961012089252471, "z": 0 }, { "x": 0.6040000095367432, "y": 0.15645081961154939, "z": 0 }], "parts": [{ "name": "loop-2.2", "i": -1, "j": -2, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "loop-1.2", "i": -2, "j": 2, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-1.1.1", "i": -3, "j": 5, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturnlayer-0.4", "i": -5, "j": 5, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.3.4", "i": -3, "j": 5, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "ramp-3.3.1", "i": 0, "j": 5, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.12.1", "i": 1, "j": -6, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.0.1", "i": 3, "j": 5, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "elevator-12", "i": 4, "j": -7, "k": 0, "mirrorX": false, "mirrorZ": false }] };
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2124,7 +2125,7 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(demo1);
+        this.machine.deserialize(twoLoops);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         //this.makeScreenshot("split");
@@ -2177,7 +2178,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.MainMenu);
+        await this.setPageMode(GameMode.CreateMode);
         this.machine.play();
         document.addEventListener("keydown", (event) => {
             if (event.code === "KeyZ") {
@@ -4087,29 +4088,30 @@ class Loop2 extends MachinePart {
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -this.h * tileHeight, 0), dir)
         ];
-        let r = tileWidth * 0.5 * w * 0.7;
-        for (let n = 0; n <= 8; n++) {
+        let nLoops = 1;
+        let rStart = tileWidth * 0.5 * w * 0.7;
+        let rEnd = rStart / (nLoops * 0.7);
+        for (let n = 0; n <= 8 * nLoops; n++) {
+            let f = Math.floor(n / 8) / nLoops;
+            let r = rStart * (1 - f) + rEnd * f;
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
-            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r, r * 1.2 - cosa * r - this.h * tileHeight, -tileDepth * (this.d - 1) * (n + 1) / 10)));
+            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r + 0.5 * tileWidth * (this.w - 1), r * 1 - cosa * r - this.h * tileHeight, -tileDepth * (this.d - 1) * (n + 0) / (8 * nLoops))));
         }
         this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -this.h * tileHeight, -tileDepth * (this.d - 1)), dir));
-        /*
-        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone() });
+        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone(); });
         let f = 3;
-        for (let n = 0; n < 3; n++) {
-            let smoothedPoints = [...points].map(p => { return p.clone() });
+        for (let n = 0; n < 2; n++) {
+            let smoothedPoints = [...points].map(p => { return p.clone(); });
             for (let i = 1; i < smoothedPoints.length - 1; i++) {
                 smoothedPoints[i].copyFrom(points[i - 1]).addInPlace(points[i].scale(f)).addInPlace(points[i + 1]).scaleInPlace(1 / (2 + f));
             }
             points = smoothedPoints;
         }
-
         for (let i = 0; i < points.length; i++) {
             this.tracks[0].trackpoints[i].position.copyFrom(points[i]);
         }
-        */
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
         }
