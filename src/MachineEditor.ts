@@ -254,61 +254,8 @@ class MachineEditor {
             });
         }
 
-        document.addEventListener("keydown", (event: KeyboardEvent) => {
-            if (event.code === "ShiftLeft") {
-                this._majDown = true;
-            }
-            else if (event.code === "ControlLeft") {
-                this._ctrlDown = true;
-            }
-            else if (this._ctrlDown && event.key === "a") {
-                this.addSelectedObjects(...this.machine.parts);
-            }
-            else if (event.key === "x" || event.key === "Delete") {
-                this._onDelete();
-            }
-            else if (event.key === "m") {
-                if (this.draggedObject && this.draggedObject instanceof MachinePart) {
-                    this.mirrorXTrackInPlace(this.draggedObject).then(track => {
-                        this.setDraggedObject(track);
-                    });
-                }
-                else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
-                    this.mirrorXTrackInPlace(this.selectedObject).then(track => {
-                        this.setSelectedObject(track);
-                    });
-                }
-            }
-            else if (event.code === "KeyW") {
-                this._onJMinus();
-            }
-            else if (event.code === "KeyA") {
-                this._onIMinus();
-            }
-            else if (event.code === "KeyS") {
-                this._onJPlus();
-            }
-            else if (event.code === "KeyD") {
-                this._onIPlus();
-            }
-            else if (event.code === "KeyQ") {
-                this._onKMinus();
-            }
-            else if (event.code === "KeyE") {
-                this._onKPlus();
-            }
-            else if (event.code === "Space") {
-                this._onFocus();
-            }
-        })
-        document.addEventListener("keyup", (event: KeyboardEvent) => {
-            if (event.code === "ShiftLeft") {
-                this._majDown = false;
-            }
-            else if (event.code === "ControlLeft") {
-                this._ctrlDown = false;
-            }
-        });
+        document.addEventListener("keydown", this._onKeyDown);
+        document.addEventListener("keyup", this._onKeyUp);
 
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
@@ -596,6 +543,7 @@ class MachineEditor {
 
     public dispose(): void {
         document.getElementById("machine-editor-menu").style.display = "none";
+        this.setSelectedObject(undefined);
         this.game.toolbar.resize();
         if (this.machinePartEditorMenu) {
             this.machinePartEditorMenu.dispose();
@@ -617,6 +565,8 @@ class MachineEditor {
             this.itemContainer.innerHTML = "";
         }
         this.items = new Map<string, HTMLDivElement>();
+        document.removeEventListener("keydown", this._onKeyDown);
+        document.removeEventListener("keyup", this._onKeyUp);
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
@@ -932,12 +882,16 @@ class MachineEditor {
 
     public actionTileSize: number = 0.018;
     public updateFloatingElements(): void {
-        this.floatingButtons.forEach(button => {
-            button.style.display = "none";
-        })
-        this.handles.forEach(handle => {
-            handle.isVisible = false;
-        })
+        if (this.floatingButtons) {
+            this.floatingButtons.forEach(button => {
+                button.style.display = "none";
+            })
+        }
+        if (this.handles) {
+            this.handles.forEach(handle => {
+                handle.isVisible = false;
+            })
+        }
         if (this.selectedObject) {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {                    
@@ -1090,6 +1044,63 @@ class MachineEditor {
                     this.KMinusHandle.isVisible = true;
                 }
             }
+        }
+    }
+
+    private _onKeyDown = (event: KeyboardEvent) => {
+        if (event.code === "ShiftLeft") {
+            this._majDown = true;
+        }
+        else if (event.code === "ControlLeft") {
+            this._ctrlDown = true;
+        }
+        else if (this._ctrlDown && event.key === "a") {
+            this.addSelectedObjects(...this.machine.parts);
+        }
+        else if (event.key === "x" || event.key === "Delete") {
+            this._onDelete();
+        }
+        else if (event.key === "m") {
+            if (this.draggedObject && this.draggedObject instanceof MachinePart) {
+                this.mirrorXTrackInPlace(this.draggedObject).then(track => {
+                    this.setDraggedObject(track);
+                });
+            }
+            else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
+                this.mirrorXTrackInPlace(this.selectedObject).then(track => {
+                    this.setSelectedObject(track);
+                });
+            }
+        }
+        else if (event.code === "KeyW") {
+            this._onJMinus();
+        }
+        else if (event.code === "KeyA") {
+            this._onIMinus();
+        }
+        else if (event.code === "KeyS") {
+            this._onJPlus();
+        }
+        else if (event.code === "KeyD") {
+            this._onIPlus();
+        }
+        else if (event.code === "KeyQ") {
+            this._onKMinus();
+        }
+        else if (event.code === "KeyE") {
+            this._onKPlus();
+        }
+        else if (event.code === "Space") {
+            this._onFocus();
+        }
+    }
+
+    private _onKeyUp = (event: KeyboardEvent) => {
+        if (event.code === "ShiftLeft") {
+            this._majDown = false;
+        }
+        else if (event.code === "ControlLeft") {
+            this._ctrlDown = false;
         }
     }
 

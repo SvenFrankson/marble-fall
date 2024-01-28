@@ -250,7 +250,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        this.machine.deserialize(logoCircuit);
+        this.machine.deserialize(demo1);
 
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -313,14 +313,16 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        await this.setPageMode(GameMode.CreateMode);
+        await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
 
+        /*
         document.addEventListener("keydown", (event: KeyboardEvent) => {
             if (event.code === "KeyZ") {
                 this.makeCircuitScreenshot();
             }
         })
+        */
 	}
 
 	public animate(): void {
@@ -530,7 +532,7 @@ class Game {
 
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {
-                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 2048, outlineWidth: 4 });
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 1 });
                 this.machine.baseWall.isVisible = true;
                 this.machine.baseFrame.isVisible = true;
                 this.skybox.isVisible = true;

@@ -933,6 +933,61 @@ class MachineEditor {
             }
         };
         this.actionTileSize = 0.018;
+        this._onKeyDown = (event) => {
+            if (event.code === "ShiftLeft") {
+                this._majDown = true;
+            }
+            else if (event.code === "ControlLeft") {
+                this._ctrlDown = true;
+            }
+            else if (this._ctrlDown && event.key === "a") {
+                this.addSelectedObjects(...this.machine.parts);
+            }
+            else if (event.key === "x" || event.key === "Delete") {
+                this._onDelete();
+            }
+            else if (event.key === "m") {
+                if (this.draggedObject && this.draggedObject instanceof MachinePart) {
+                    this.mirrorXTrackInPlace(this.draggedObject).then(track => {
+                        this.setDraggedObject(track);
+                    });
+                }
+                else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
+                    this.mirrorXTrackInPlace(this.selectedObject).then(track => {
+                        this.setSelectedObject(track);
+                    });
+                }
+            }
+            else if (event.code === "KeyW") {
+                this._onJMinus();
+            }
+            else if (event.code === "KeyA") {
+                this._onIMinus();
+            }
+            else if (event.code === "KeyS") {
+                this._onJPlus();
+            }
+            else if (event.code === "KeyD") {
+                this._onIPlus();
+            }
+            else if (event.code === "KeyQ") {
+                this._onKMinus();
+            }
+            else if (event.code === "KeyE") {
+                this._onKPlus();
+            }
+            else if (event.code === "Space") {
+                this._onFocus();
+            }
+        };
+        this._onKeyUp = (event) => {
+            if (event.code === "ShiftLeft") {
+                this._majDown = false;
+            }
+            else if (event.code === "ControlLeft") {
+                this._ctrlDown = false;
+            }
+        };
         this._onHPlusTop = async () => {
             let track = this.selectedObject;
             if (track instanceof MachinePart && track.yExtendable) {
@@ -1464,61 +1519,8 @@ class MachineEditor {
                 }
             });
         }
-        document.addEventListener("keydown", (event) => {
-            if (event.code === "ShiftLeft") {
-                this._majDown = true;
-            }
-            else if (event.code === "ControlLeft") {
-                this._ctrlDown = true;
-            }
-            else if (this._ctrlDown && event.key === "a") {
-                this.addSelectedObjects(...this.machine.parts);
-            }
-            else if (event.key === "x" || event.key === "Delete") {
-                this._onDelete();
-            }
-            else if (event.key === "m") {
-                if (this.draggedObject && this.draggedObject instanceof MachinePart) {
-                    this.mirrorXTrackInPlace(this.draggedObject).then(track => {
-                        this.setDraggedObject(track);
-                    });
-                }
-                else if (this.selectedObject && this.selectedObject instanceof MachinePart) {
-                    this.mirrorXTrackInPlace(this.selectedObject).then(track => {
-                        this.setSelectedObject(track);
-                    });
-                }
-            }
-            else if (event.code === "KeyW") {
-                this._onJMinus();
-            }
-            else if (event.code === "KeyA") {
-                this._onIMinus();
-            }
-            else if (event.code === "KeyS") {
-                this._onJPlus();
-            }
-            else if (event.code === "KeyD") {
-                this._onIPlus();
-            }
-            else if (event.code === "KeyQ") {
-                this._onKMinus();
-            }
-            else if (event.code === "KeyE") {
-                this._onKPlus();
-            }
-            else if (event.code === "Space") {
-                this._onFocus();
-            }
-        });
-        document.addEventListener("keyup", (event) => {
-            if (event.code === "ShiftLeft") {
-                this._majDown = false;
-            }
-            else if (event.code === "ControlLeft") {
-                this._ctrlDown = false;
-            }
-        });
+        document.addEventListener("keydown", this._onKeyDown);
+        document.addEventListener("keyup", this._onKeyUp);
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
         this.game.canvas.addEventListener("pointermove", this.pointerMove);
         this.game.canvas.addEventListener("pointerup", this.pointerUp);
@@ -1760,6 +1762,7 @@ class MachineEditor {
     }
     dispose() {
         document.getElementById("machine-editor-menu").style.display = "none";
+        this.setSelectedObject(undefined);
         this.game.toolbar.resize();
         if (this.machinePartEditorMenu) {
             this.machinePartEditorMenu.dispose();
@@ -1779,6 +1782,8 @@ class MachineEditor {
             this.itemContainer.innerHTML = "";
         }
         this.items = new Map();
+        document.removeEventListener("keydown", this._onKeyDown);
+        document.removeEventListener("keyup", this._onKeyUp);
         this.game.canvas.removeEventListener("pointerdown", this.pointerDown);
         this.game.canvas.removeEventListener("pointermove", this.pointerMove);
         this.game.canvas.removeEventListener("pointerup", this.pointerUp);
@@ -1863,12 +1868,16 @@ class MachineEditor {
         return this.items.get(this._selectedItem);
     }
     updateFloatingElements() {
-        this.floatingButtons.forEach(button => {
-            button.style.display = "none";
-        });
-        this.handles.forEach(handle => {
-            handle.isVisible = false;
-        });
+        if (this.floatingButtons) {
+            this.floatingButtons.forEach(button => {
+                button.style.display = "none";
+            });
+        }
+        if (this.handles) {
+            this.handles.forEach(handle => {
+                handle.isVisible = false;
+            });
+        }
         if (this.selectedObject) {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
@@ -2171,7 +2180,7 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(logoCircuit);
+        this.machine.deserialize(demo1);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         //this.makeScreenshot("split");
@@ -2224,13 +2233,15 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.CreateMode);
+        await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
-        document.addEventListener("keydown", (event) => {
+        /*
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
             if (event.code === "KeyZ") {
                 this.makeCircuitScreenshot();
             }
-        });
+        })
+        */
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2413,7 +2424,7 @@ class Game {
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
-                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 2048, outlineWidth: 4 });
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 1 });
                 this.machine.baseWall.isVisible = true;
                 this.machine.baseFrame.isVisible = true;
                 this.skybox.isVisible = true;
