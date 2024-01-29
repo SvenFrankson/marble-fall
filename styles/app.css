@@ -118,6 +118,10 @@ body {
     background-position: center;
 }
 
+.panel:hover { 
+    background-color: rgba(78, 86, 92, 90%);
+}
+
 .panel .label {
     text-align: right;
     display: block;

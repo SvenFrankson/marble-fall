@@ -314,13 +314,19 @@ class Game {
         this.machine.play();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
-            //if (event.code === "KeyZ") {
-            //    this.makeCircuitScreenshot();
-            //}
-            for (let i = 0; i < TrackNames.length; i++) {
-                let trackname = TrackNames[i];
-                await this.makeScreenshot(trackname);
+            if (event.code === "KeyP") {
+                let e = document.getElementById("screenshot-frame");
+                if (e.style.display != "block") {
+                    e.style.display = "block";
+                }
+                else {
+                    this.makeCircuitScreenshot();
+                }
             }
+            //for (let i = 0; i < TrackNames.length; i++) {
+            //    let trackname = TrackNames[i];
+            //    await this.makeScreenshot(trackname);
+            //}
         })
 	}
 
@@ -531,7 +537,7 @@ class Game {
 
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {
-                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 1 });
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
                 this.machine.baseWall.isVisible = true;
                 this.machine.baseFrame.isVisible = true;
                 this.skybox.isVisible = true;

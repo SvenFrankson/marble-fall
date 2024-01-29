@@ -2234,13 +2234,19 @@ class Game {
         await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
-            //if (event.code === "KeyZ") {
-            //    this.makeCircuitScreenshot();
-            //}
-            for (let i = 0; i < TrackNames.length; i++) {
-                let trackname = TrackNames[i];
-                await this.makeScreenshot(trackname);
+            if (event.code === "KeyP") {
+                let e = document.getElementById("screenshot-frame");
+                if (e.style.display != "block") {
+                    e.style.display = "block";
+                }
+                else {
+                    this.makeCircuitScreenshot();
+                }
             }
+            //for (let i = 0; i < TrackNames.length; i++) {
+            //    let trackname = TrackNames[i];
+            //    await this.makeScreenshot(trackname);
+            //}
         });
     }
     animate() {
@@ -2424,7 +2430,7 @@ class Game {
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
-                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 1 });
+                await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
                 this.machine.baseWall.isVisible = true;
                 this.machine.baseFrame.isVisible = true;
                 this.skybox.isVisible = true;
@@ -5186,6 +5192,8 @@ class MainMenu {
         buttonCreate.style.position = "absolute";
         buttonCreate.style.left = m.toFixed(0) + "px";
         buttonCreate.style.top = m.toFixed(0) + "px";
+        buttonCreate.style.backgroundImage = "url(./datas/icons/create.png)";
+        buttonCreate.style.backgroundPosition = "bottom right";
         let buttonOption = this.container.querySelector(".panel.option");
         buttonOption.style.display = "block";
         buttonOption.style.width = (tileW - 2 * m).toFixed(0) + "px";

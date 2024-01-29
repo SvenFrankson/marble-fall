@@ -88,6 +88,8 @@ class MainMenu {
         buttonCreate.style.position = "absolute";
         buttonCreate.style.left = m.toFixed(0) + "px";
         buttonCreate.style.top = m.toFixed(0) + "px";
+        buttonCreate.style.backgroundImage = "url(./datas/icons/create.png)"
+        buttonCreate.style.backgroundPosition = "bottom right"
 
         let buttonOption = this.container.querySelector(".panel.option") as HTMLDivElement;
         buttonOption.style.display = "block";
