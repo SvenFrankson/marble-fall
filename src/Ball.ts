@@ -164,13 +164,8 @@ class Ball extends BABYLON.Mesh {
             let canceledSpeed = BABYLON.Vector3.Zero();
     
             this.machine.parts.forEach(part => {
-                if (Mummu.AABBAABBIntersect(
-                    this.position.x - this.radius,
-                    this.position.x + this.radius,
-                    this.position.y - this.radius,
-                    this.position.y + this.radius,
-                    this.position.z - this.radius,
-                    this.position.z + this.radius,
+                if (Mummu.SphereAABBCheck(
+                    this.position, this.radius,
                     part.AABBMin.x - this.radius,
                     part.AABBMax.x + this.radius,
                     part.AABBMin.y - this.radius,
