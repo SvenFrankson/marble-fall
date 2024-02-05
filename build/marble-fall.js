@@ -2094,7 +2094,7 @@ class Game {
         return this.scene;
     }
     get currentTimeFactor() {
-        return this.timeFactor * (this.mode === GameMode.MainMenu ? 0.7 : 1);
+        return this.timeFactor * (this.mode === GameMode.MainMenu ? 0.5 : 1);
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
@@ -2306,8 +2306,8 @@ class Game {
                 camTarget = this.machine.balls[0].position;
             }
             else if (this.cameraMode >= CameraMode.Focusing) {
-                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.995 + 30 * 0.005;
-                speed = 0.5;
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.995 + 20 * 0.005;
+                speed = 0.2;
             }
             else {
                 this._trackTargetCamSpeed = 0.2;
@@ -2546,8 +2546,8 @@ class Game {
         let h = (start.y - end.y);
         let distH = 0.5 * h / (Math.tan(this.camera.fov * 0.5));
         if (this.screenRatio > 1) {
-            distW *= 2.5;
-            distH *= 1.5;
+            distW *= 3.5;
+            distH *= 2.5;
         }
         else {
             distW *= 1.5;
