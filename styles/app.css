@@ -316,8 +316,12 @@ body {
     left: 400px;
     z-index: 3;
     background-color: #42484d7e;
-    padding: 0.5vh;
     border-bottom-right-radius: var(--half-button-height);
+    text-align: center;
+}
+
+#topbar .btn {
+    margin: 0.5vh;
 }
 
 #machine-editor-part-menu {

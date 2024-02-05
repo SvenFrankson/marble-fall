@@ -36,6 +36,7 @@ class Join extends MachinePart {
             new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(0, -r, 0))),
             new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(r * Math.sqrt(3) / 2, -r * 1 / 2, 0)), new BABYLON.Vector3(0.5, Math.sqrt(3) / 2, 0), new BABYLON.Vector3(1, 0, 0)),
         ];
+        
         this.tracks[2].drawStartTip = true;
         this.tracks[2].drawEndTip = true;
         

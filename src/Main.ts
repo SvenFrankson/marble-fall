@@ -479,7 +479,7 @@ class Game {
             await this.optionsPage.hide();
             await this.creditsPage.hide();
             
-            this.machineEditor.instantiate();
+            await this.machineEditor.instantiate();
         }
         if (mode === GameMode.DemoMode) {
             this.setCameraMode(CameraMode.Landscape);

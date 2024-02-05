@@ -607,16 +607,7 @@ var logoCircuit = {
         { name: "ramp-2.1.2", i: -2, j: 1, k: 3, mirrorX: true, mirrorZ: false },
     ],
 };
-var test = {
-    balls: [{ x: -0.42766169853767233, y: 0.13846005343528733, z: -2.220446049250313e-16 }],
-    parts: [
-        { name: "ramp-3.0.1", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.4.1", i: -2, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "flatjoin", i: 0, j: 0, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: 1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "elevator-7", i: -3, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-    ],
-};
+var test = { "balls": [{ "x": -0.5766096541939383, "y": 0.4087908683675662, "z": 0 }], "parts": [{ "name": "join", "i": -1, "j": -1, "k": 1, "mirrorX": false, "mirrorZ": false }, { "name": "split", "i": -1, "j": -3, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturnlayer-0.2", "i": -2, "j": -1, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "uturnlayer-0.2", "i": 0, "j": -1, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturnlayer-0.2", "i": 0, "j": 0, "k": 1, "mirrorX": false, "mirrorZ": false }, { "name": "uturnlayer-0.2", "i": -1, "j": 0, "k": 2, "mirrorX": true, "mirrorZ": false }, { "name": "uturnlayer-2.4", "i": 0, "j": 0, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "elevator-16", "i": -4, "j": -14, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.0.1", "i": -3, "j": 2, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-2.10.1", "i": -3, "j": -13, "k": 0, "mirrorX": false, "mirrorZ": false }] };
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1353,7 +1344,7 @@ class MachineEditor {
                 this.game.focusMachineParts(...this._selectedObjects);
             }
         };
-        this.container = document.getElementById("machine-editor-menu");
+        this.container = document.getElementById("machine-editor-objects");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
@@ -1472,7 +1463,7 @@ class MachineEditor {
         this.updateFloatingElements();
     }
     async instantiate() {
-        document.getElementById("machine-editor-menu").style.display = "block";
+        document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
         let ballItem = document.createElement("div");
@@ -1529,6 +1520,8 @@ class MachineEditor {
                 }
             });
         }
+        var r = document.querySelector(':root');
+        r.style.setProperty("--machine-editor-item-container-width", (Math.ceil(TrackNames.length / 2 + 1) * 16.8).toFixed(0) + "vw");
         document.addEventListener("keydown", this._onKeyDown);
         document.addEventListener("keyup", this._onKeyUp);
         this.game.canvas.addEventListener("pointerdown", this.pointerDown);
@@ -1771,7 +1764,7 @@ class MachineEditor {
         return button;
     }
     dispose() {
-        document.getElementById("machine-editor-menu").style.display = "none";
+        document.getElementById("machine-editor-objects").style.display = "none";
         this.setSelectedObject(undefined);
         this.game.toolbar.resize();
         if (this.machinePartEditorMenu) {
@@ -2390,7 +2383,7 @@ class Game {
             await this.mainMenu.hide();
             await this.optionsPage.hide();
             await this.creditsPage.hide();
-            this.machineEditor.instantiate();
+            await this.machineEditor.instantiate();
         }
         if (mode === GameMode.DemoMode) {
             this.setCameraMode(CameraMode.Landscape);
@@ -2712,6 +2705,11 @@ class Sound {
         if (this._audioElement) {
             this._audioElement.pause();
         }
+    }
+}
+class Tools {
+    static V3Dir(angleInDegrees, length = 1) {
+        return new BABYLON.Vector3(Math.sin(angleInDegrees / 180 * Math.PI) * length, Math.cos(angleInDegrees / 180 * Math.PI) * length, 0);
     }
 }
 class Wire extends BABYLON.Mesh {
@@ -4507,14 +4505,15 @@ class Split extends MachinePart {
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
         let rCurb = this.pivotL * 0.3;
-        let pEnd = new BABYLON.Vector3(0, -tileHeight, 0);
-        pEnd.x -= this.pivotL / Math.SQRT2;
-        pEnd.y += this.pivotL / Math.SQRT2;
-        let dirEnd = (new BABYLON.Vector3(1, -1, 0)).normalize();
-        let nEnd = (new BABYLON.Vector3(1, 1, 0)).normalize();
+        let pEndLeft = new BABYLON.Vector3(0, -tileHeight, 0);
+        pEndLeft.x -= this.pivotL / Math.SQRT2;
+        pEndLeft.y += this.pivotL / Math.SQRT2;
+        let pEndRight = pEndLeft.multiplyByFloats(-1, 1, 1);
+        let dirEnd = Tools.V3Dir(135);
+        let nEnd = Tools.V3Dir(45);
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), dirEnd)
+            new TrackPoint(this.tracks[0], pEndLeft.subtract(dirEnd.scale(0.001)), dirEnd)
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
@@ -4526,12 +4525,13 @@ class Split extends MachinePart {
         this.tracks[2] = new Track(this);
         this.tracks[2].trackpoints = [
             new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+            new TrackPoint(this.tracks[2], pEndLeft.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
         this.tracks[3] = new Track(this);
         this.tracks[3].trackpoints = [
-            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).add(nEnd.scale(0.014)), dirEnd, new BABYLON.Vector3(0, -1, 0)),
-            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1).add(nEnd.scale(0.014).multiplyByFloats(-1, 1, 1)), dirEnd.multiplyByFloats(1, -1, 1), new BABYLON.Vector3(0, -1, 0))
+            new TrackPoint(this.tracks[3], pEndLeft.add(Tools.V3Dir(315, 0.02)).add(Tools.V3Dir(45, 0.014)), Tools.V3Dir(150), new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(this.tracks[3], new BABYLON.Vector3(0, -0.003, 0)),
+            new TrackPoint(this.tracks[3], pEndRight.add(Tools.V3Dir(45, 0.02)).add(Tools.V3Dir(315, 0.014)), Tools.V3Dir(30), new BABYLON.Vector3(0, -1, 0))
         ];
         this.tracks[3].drawStartTip = true;
         this.tracks[3].drawEndTip = true;
@@ -5727,10 +5727,13 @@ class Topbar {
                 this.container.style.left = w.toFixed(0) + "px";
                 this.container.style.width = "";
             }
+            else {
+                this.container.style.left = "0";
+            }
         }
         else {
             this.container.style.left = "0px";
-            this.container.style.width = "12.5vh";
+            this.container.style.width = "13.5vh";
         }
         this.camModeButtons.forEach(button => {
             button.classList.remove("active");

@@ -184,7 +184,7 @@ class MachineEditor {
     }
 
     constructor(public game: Game) {
-        this.container = document.getElementById("machine-editor-menu") as HTMLDivElement;
+        this.container = document.getElementById("machine-editor-objects") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
         this.layerMesh.isVisible = false;
@@ -192,7 +192,7 @@ class MachineEditor {
     }
 
     public async instantiate(): Promise<void> {
-        document.getElementById("machine-editor-menu").style.display = "block";
+        document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
 
@@ -253,6 +253,9 @@ class MachineEditor {
                 }
             });
         }
+        
+        var r = document.querySelector(':root') as HTMLElement;
+        r.style.setProperty("--machine-editor-item-container-width", (Math.ceil(TrackNames.length / 2 + 1) * 16.8).toFixed(0) + "vw");
 
         document.addEventListener("keydown", this._onKeyDown);
         document.addEventListener("keyup", this._onKeyUp);
@@ -542,7 +545,7 @@ class MachineEditor {
     }
 
     public dispose(): void {
-        document.getElementById("machine-editor-menu").style.display = "none";
+        document.getElementById("machine-editor-objects").style.display = "none";
         this.setSelectedObject(undefined);
         this.game.toolbar.resize();
         if (this.machinePartEditorMenu) {

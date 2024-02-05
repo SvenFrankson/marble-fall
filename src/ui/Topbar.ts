@@ -55,10 +55,13 @@ class Topbar {
                 this.container.style.left = w.toFixed(0) + "px";
                 this.container.style.width = "";
             }
+            else {
+                this.container.style.left = "0";
+            }
         }
         else {
             this.container.style.left = "0px";
-            this.container.style.width = "12.5vh";
+            this.container.style.width = "13.5vh";
         }
 
         this.camModeButtons.forEach(button => {

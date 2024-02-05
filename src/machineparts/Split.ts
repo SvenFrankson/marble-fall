@@ -18,15 +18,16 @@ class Split extends MachinePart {
         n.normalize();
 
         let rCurb = this.pivotL * 0.3;
-        let pEnd = new BABYLON.Vector3(0, - tileHeight, 0);
-        pEnd.x -= this.pivotL / Math.SQRT2;
-        pEnd.y += this.pivotL / Math.SQRT2;
-        let dirEnd = (new BABYLON.Vector3(1, -1, 0)).normalize();
-        let nEnd = (new BABYLON.Vector3(1, 1, 0)).normalize();
+        let pEndLeft = new BABYLON.Vector3(0, - tileHeight, 0);
+        pEndLeft.x -= this.pivotL / Math.SQRT2;
+        pEndLeft.y += this.pivotL / Math.SQRT2;
+        let pEndRight = pEndLeft.multiplyByFloats(-1, 1, 1);
+        let dirEnd = Tools.V3Dir(135);
+        let nEnd = Tools.V3Dir(45);
 
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], pEnd.subtract(dirEnd.scale(0.001)), dirEnd)
+            new TrackPoint(this.tracks[0], pEndLeft.subtract(dirEnd.scale(0.001)), dirEnd)
         ];
 
         this.tracks[1] = new Track(this);
@@ -40,13 +41,14 @@ class Split extends MachinePart {
         this.tracks[2] = new Track(this);
         this.tracks[2].trackpoints = [
             new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+            new TrackPoint(this.tracks[2], pEndLeft.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
 
         this.tracks[3] = new Track(this);
         this.tracks[3].trackpoints = [
-            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).add(nEnd.scale(0.014)), dirEnd, new BABYLON.Vector3(0, -1, 0)),
-            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1).add(nEnd.scale(0.014).multiplyByFloats(-1, 1, 1)), dirEnd.multiplyByFloats(1, -1, 1), new BABYLON.Vector3(0, -1, 0))
+            new TrackPoint(this.tracks[3], pEndLeft.add(Tools.V3Dir(315, 0.02)).add(Tools.V3Dir(45, 0.014)), Tools.V3Dir(150), new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(this.tracks[3], new BABYLON.Vector3(0, -0.003, 0)),
+            new TrackPoint(this.tracks[3], pEndRight.add(Tools.V3Dir(45, 0.02)).add(Tools.V3Dir(315, 0.014)), Tools.V3Dir(30), new BABYLON.Vector3(0, -1, 0))
         ]
         this.tracks[3].drawStartTip = true;
         this.tracks[3].drawEndTip = true;
