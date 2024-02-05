@@ -310,6 +310,16 @@ body {
     z-index: 3;
 }
 
+#topbar {
+    position: fixed;
+    top: 0;
+    left: 400px;
+    z-index: 3;
+    background-color: #42484d7e;
+    padding: 0.5vh;
+    border-bottom-right-radius: var(--half-button-height);
+}
+
 #machine-editor-part-menu {
     position: fixed;
     top: 0;
@@ -372,6 +382,21 @@ body {
     margin: 2px;
 }
 
+.btn.inactive {
+    background-color: #42484d7e;
+    color: #b8b8b8;
+}
+
+.btn.active {
+    background-color: #272b2e;
+    outline: 2px solid white;
+}
+
+.btn.icon {
+    background: none;
+    outline: none;
+}
+
 .btn.xxs {
     width: var(--button-xxs-size);
     height: var(--button-xxs-size);
@@ -394,6 +419,12 @@ body {
     width: var(--button-m-size);
     height: var(--button-height);
     border-radius: var(--button-height);
+}
+
+.btn.slimL {
+    width: var(--button-l-size);
+    height: var(--button-xs-size);
+    border-radius: var(--button-xs-size);
 }
 
 .btn.xxs .label {

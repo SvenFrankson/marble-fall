@@ -2210,6 +2210,9 @@ class Game {
         this.optionsPage.hide();
         this.creditsPage = new CreditsPage(this);
         this.creditsPage.hide();
+        this.topbar = new Topbar(this);
+        this.topbar.initialize();
+        this.topbar.resize();
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
@@ -2270,6 +2273,7 @@ class Game {
         window.addEventListener("resize", () => {
             this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             this.engine.resize();
+            this.topbar.resize();
             this.toolbar.resize();
             this.mainMenu.resize();
         });
@@ -2357,6 +2361,8 @@ class Game {
     async setPageMode(mode) {
         this.toolbar.closeAllDropdowns();
         this.machineEditor.dispose();
+        this.mode = mode;
+        this.topbar.resize();
         if (mode === GameMode.MainMenu) {
             this.setCameraMode(this.menuCameraMode);
             await this.optionsPage.hide();
@@ -2393,7 +2399,7 @@ class Game {
             await this.optionsPage.hide();
             await this.creditsPage.hide();
         }
-        this.mode = mode;
+        this.topbar.resize();
         this.toolbar.resize();
     }
     async makeScreenshot(objectName) {
@@ -5602,7 +5608,6 @@ class Toolbar {
     }
     updateButtonsVisibility() {
         if (this.game.mode === GameMode.MainMenu) {
-            this.camButton.style.display = "none";
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -5621,18 +5626,17 @@ class Toolbar {
             this.backButton.style.display = "";
         }
         else if (this.game.mode === GameMode.CreateMode) {
-            this.camButton.style.display = "";
             this.saveButton.style.display = "";
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
         else if (this.game.mode === GameMode.DemoMode) {
-            this.camButton.style.display = "";
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
             this.backButton.style.display = "";
         }
+        this.camButton.style.display = "none";
     }
     resize() {
         this.updateButtonsVisibility();
@@ -5672,5 +5676,65 @@ class Toolbar {
         rectContainer = this.zoomInputContainer.getBoundingClientRect();
         this.zoomInputContainer.style.left = (rectButton.left).toFixed(0) + "px";
         this.zoomInputContainer.style.top = (rectButton.top - rectContainer.height - margin).toFixed(0) + "px";
+    }
+}
+class Topbar {
+    constructor(game) {
+        this.game = game;
+        this.camModeButtons = [];
+        this._udpate = () => {
+        };
+    }
+    initialize() {
+        this.container = document.querySelector("#topbar");
+        this.container.style.display = "block";
+        this.camModeButtons[CameraMode.None] = this.container.querySelector(".cam-mode-none");
+        this.camModeButtons[CameraMode.Landscape] = this.container.querySelector(".cam-mode-landscape");
+        this.camModeButtons[CameraMode.Ball] = this.container.querySelector(".cam-mode-ball");
+        this.camModeButtons[CameraMode.Selected] = this.container.querySelector(".cam-mode-selected");
+        for (let i = CameraMode.None; i <= CameraMode.Selected; i++) {
+            let mode = i;
+            this.camModeButtons[mode].onclick = () => {
+                this.game.setCameraMode(mode);
+                this.resize();
+            };
+        }
+        this.game.scene.onBeforeRenderObservable.add(this._udpate);
+    }
+    dispose() {
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._udpate);
+    }
+    updateButtonsVisibility() {
+        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.DemoMode) {
+            this.container.style.display = "block";
+            if (this.game.mode === GameMode.CreateMode) {
+                this.camModeButtons[CameraMode.Selected].style.display = "";
+            }
+            else {
+                this.camModeButtons[CameraMode.Selected].style.display = "none";
+            }
+        }
+        else {
+            this.container.style.display = "none";
+        }
+    }
+    resize() {
+        this.updateButtonsVisibility();
+        if (this.game.screenRatio > 1) {
+            let objectsElement = document.getElementById("machine-editor-objects");
+            if (objectsElement.style.display != "none") {
+                let w = objectsElement.getBoundingClientRect().width;
+                this.container.style.left = w.toFixed(0) + "px";
+                this.container.style.width = "";
+            }
+        }
+        else {
+            this.container.style.left = "0px";
+            this.container.style.width = "12.5vh";
+        }
+        this.camModeButtons.forEach(button => {
+            button.classList.remove("active");
+        });
+        this.camModeButtons[this.game.cameraMode].classList.add("active");
     }
 }

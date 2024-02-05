@@ -57,6 +57,7 @@ class Game {
     public mainMenu: MainMenu;
     public optionsPage: OptionsPage;
     public creditsPage: CreditsPage;
+    public topbar: Topbar;
     public toolbar: Toolbar;
 
     public cameraOrtho: boolean = false;
@@ -278,6 +279,10 @@ class Game {
         this.creditsPage = new CreditsPage(this);
         this.creditsPage.hide();
 
+        this.topbar = new Topbar(this);
+        this.topbar.initialize();
+        this.topbar.resize();
+
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
@@ -342,6 +347,7 @@ class Game {
 		window.addEventListener("resize", () => {
             this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
 			this.engine.resize();
+            this.topbar.resize();
             this.toolbar.resize();
             this.mainMenu.resize();
 		});
@@ -440,6 +446,8 @@ class Game {
     public async setPageMode(mode: GameMode): Promise<void> {
         this.toolbar.closeAllDropdowns();
         this.machineEditor.dispose();
+        this.mode = mode;
+        this.topbar.resize();
         if (mode === GameMode.MainMenu) {
             this.setCameraMode(this.menuCameraMode);
             await this.optionsPage.hide();
@@ -480,7 +488,7 @@ class Game {
             await this.optionsPage.hide();
             await this.creditsPage.hide();
         }
-        this.mode = mode;
+        this.topbar.resize();
         this.toolbar.resize();
     }
 

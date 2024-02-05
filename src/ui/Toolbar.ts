@@ -122,7 +122,6 @@ class Toolbar {
 
     public updateButtonsVisibility(): void {
         if (this.game.mode === GameMode.MainMenu) {
-            this.camButton.style.display = "none";
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -141,18 +140,17 @@ class Toolbar {
             this.backButton.style.display = "";
         }
         else if (this.game.mode === GameMode.CreateMode) {
-            this.camButton.style.display = "";
             this.saveButton.style.display = "";
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
         else if (this.game.mode === GameMode.DemoMode) {
-            this.camButton.style.display = "";
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
             this.backButton.style.display = "";
         }
+        this.camButton.style.display = "none";
     }
 
     public resize(): void {
