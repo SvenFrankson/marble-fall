@@ -336,6 +336,10 @@ class Game {
             //    await this.makeScreenshot(trackname);
             //}
         })
+
+        this.canvas.addEventListener("pointerdown", this.onPointerDown);
+        this.canvas.addEventListener("pointerup", this.onPointerUp);
+        this.canvas.addEventListener("wheel", this.onWheelEvent);
 	}
 
 	public animate(): void {
@@ -612,6 +616,7 @@ class Game {
                 this.targetCamTarget.copyFrom(this.camera.target);
             }
         }
+        this.topbar.resize();
     }
 
     public async focusMachineParts(...machineParts: MachinePart[]): Promise<void> {
@@ -661,6 +666,29 @@ class Game {
             this.cameraMode = CameraMode.Focusing;
         }
         this.camera.detachControl();
+    }
+
+    private _pointerDownX: number = 0;
+    private _pointerDownY: number = 0;
+    public onPointerDown = (event: PointerEvent) => {
+        this._pointerDownX = this.scene.pointerX;
+        this._pointerDownY = this.scene.pointerY;
+    }
+
+    public onPointerUp = (event: PointerEvent) => {
+        if (this.cameraMode === CameraMode.Ball || this.cameraMode === CameraMode.Landscape) {
+            let dx = (this._pointerDownX - this.scene.pointerX);
+            let dy = (this._pointerDownY - this.scene.pointerY);
+            if (dx * dx + dy * dy > 10 * 10) {
+                this.setCameraMode(CameraMode.None);
+            }
+        }
+    }
+
+    public onWheelEvent = (event: WheelEvent) => {
+        if (this.cameraMode === CameraMode.Ball || this.cameraMode === CameraMode.Landscape) {
+            this.setCameraMode(CameraMode.None);
+        }
     }
 }
 
