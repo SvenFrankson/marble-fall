@@ -1499,7 +1499,7 @@ class MachineEditor {
 
     public _onFocus = () => {
         if (this.selectedObjectsCount > 0) {
-            this.game.focusMachineParts(...this._selectedObjects as MachinePart[]);
+            this.game.focusMachineParts(false, ...this._selectedObjects as MachinePart[]);
         }
     }
 }

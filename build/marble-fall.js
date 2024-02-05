@@ -1341,7 +1341,7 @@ class MachineEditor {
         };
         this._onFocus = () => {
             if (this.selectedObjectsCount > 0) {
-                this.game.focusMachineParts(...this._selectedObjects);
+                this.game.focusMachineParts(false, ...this._selectedObjects);
             }
         };
         this.container = document.getElementById("machine-editor-objects");
@@ -2286,13 +2286,21 @@ class Game {
             this.scene.render();
             this.update();
         });
-        window.addEventListener("resize", () => {
+        window.onresize = () => {
+            console.log("a");
             this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             this.engine.resize();
-            this.topbar.resize();
-            this.toolbar.resize();
-            this.mainMenu.resize();
-        });
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    console.log("b");
+                    this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
+                    this.engine.resize();
+                    this.topbar.resize();
+                    this.toolbar.resize();
+                    this.mainMenu.resize();
+                });
+            });
+        };
     }
     async initialize() {
     }
@@ -2524,7 +2532,7 @@ class Game {
         }
         this.topbar.resize();
     }
-    async focusMachineParts(...machineParts) {
+    async focusMachineParts(updateAlphaBetaRadius, ...machineParts) {
         let start = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
         let end = new BABYLON.Vector3(-Infinity, Infinity, Infinity);
         machineParts.forEach(part => {
@@ -2553,10 +2561,17 @@ class Game {
             distW *= 1.5;
             distH *= 2.5;
         }
-        this.targetCamRadius = Math.max(distW, distH);
+        if (updateAlphaBetaRadius) {
+            this.targetCamRadius = Math.max(distW, distH);
+            this.targetCamAlpha = -Math.PI / 2;
+            this.targetCamBeta = Math.PI / 2;
+        }
+        else {
+            this.targetCamRadius = this.camera.radius;
+            this.targetCamAlpha = this.camera.alpha;
+            this.targetCamBeta = this.camera.beta;
+        }
         this.targetCamTarget.copyFrom(center);
-        this.targetCamAlpha = -Math.PI / 2;
-        this.targetCamBeta = Math.PI / 2;
         if (this.cameraMode === CameraMode.Selected) {
             this.cameraMode = CameraMode.FocusingSelected;
         }
@@ -5099,7 +5114,7 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
-        earlyAccessDisclaimer.innerHTML = "> v0.1 early access";
+        earlyAccessDisclaimer.innerHTML = "> v0.1.2 early access";
         this.container.appendChild(earlyAccessDisclaimer);
     }
 }
@@ -5705,6 +5720,7 @@ class Toolbar {
 class Topbar {
     constructor(game) {
         this.game = game;
+        this._shown = true;
         this.camModeButtons = [];
         this._udpate = () => {
         };
@@ -5712,10 +5728,15 @@ class Topbar {
     initialize() {
         this.container = document.querySelector("#topbar");
         this.container.style.display = "block";
+        this.showHideButton = this.container.querySelector(".cam-mode");
         this.camModeButtons[CameraMode.None] = this.container.querySelector(".cam-mode-none");
         this.camModeButtons[CameraMode.Landscape] = this.container.querySelector(".cam-mode-landscape");
         this.camModeButtons[CameraMode.Ball] = this.container.querySelector(".cam-mode-ball");
         this.camModeButtons[CameraMode.Selected] = this.container.querySelector(".cam-mode-selected");
+        this.showHideButton.onclick = () => {
+            this._shown = !this._shown;
+            this.resize();
+        };
         for (let i = CameraMode.None; i <= CameraMode.Selected; i++) {
             let mode = i;
             this.camModeButtons[mode].onclick = () => {
@@ -5729,13 +5750,18 @@ class Topbar {
         this.game.scene.onBeforeRenderObservable.removeCallback(this._udpate);
     }
     updateButtonsVisibility() {
+        for (let i = 0; i < this.camModeButtons.length; i++) {
+            this.camModeButtons[i].style.display = this._shown ? "" : "none";
+        }
         if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.DemoMode) {
             this.container.style.display = "block";
-            if (this.game.mode === GameMode.CreateMode) {
-                this.camModeButtons[CameraMode.Selected].style.display = "";
-            }
-            else {
-                this.camModeButtons[CameraMode.Selected].style.display = "none";
+            if (this._shown) {
+                if (this.game.mode === GameMode.CreateMode) {
+                    this.camModeButtons[CameraMode.Selected].style.display = "";
+                }
+                else {
+                    this.camModeButtons[CameraMode.Selected].style.display = "none";
+                }
             }
         }
         else {

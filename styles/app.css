@@ -308,6 +308,7 @@ body {
     bottom: 1vh;
     left: 50px;
     z-index: 3;
+    white-space: nowrap;
 }
 
 #topbar {

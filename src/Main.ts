@@ -348,13 +348,21 @@ class Game {
 			this.update();
 		});
 
-		window.addEventListener("resize", () => {
+		window.onresize = () => {
+            console.log("a");
             this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
-			this.engine.resize();
-            this.topbar.resize();
-            this.toolbar.resize();
-            this.mainMenu.resize();
-		});
+            this.engine.resize();
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    console.log("b");
+                    this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
+                    this.engine.resize();
+                    this.topbar.resize();
+                    this.toolbar.resize();
+                    this.mainMenu.resize();
+                })
+            })
+		};
 	}
 
     public async initialize(): Promise<void> {
@@ -619,7 +627,7 @@ class Game {
         this.topbar.resize();
     }
 
-    public async focusMachineParts(...machineParts: MachinePart[]): Promise<void> {
+    public async focusMachineParts(updateAlphaBetaRadius: boolean, ...machineParts: MachinePart[]): Promise<void> {
         let start: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, - Infinity, - Infinity);
         let end: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, Infinity, Infinity);
         machineParts.forEach(part => {
@@ -653,11 +661,18 @@ class Game {
             distW *= 1.5;
             distH *= 2.5;
         }
-        this.targetCamRadius = Math.max(distW, distH);
+        if (updateAlphaBetaRadius) {
+            this.targetCamRadius = Math.max(distW, distH);
+            this.targetCamAlpha = - Math.PI / 2;
+            this.targetCamBeta = Math.PI / 2;
+        }
+        else {
+            this.targetCamRadius = this.camera.radius;
+            this.targetCamAlpha = this.camera.alpha;
+            this.targetCamBeta = this.camera.beta;
+        }
 
         this.targetCamTarget.copyFrom(center);
-        this.targetCamAlpha = - Math.PI / 2;
-        this.targetCamBeta = Math.PI / 2;
 
         if (this.cameraMode === CameraMode.Selected) {
             this.cameraMode = CameraMode.FocusingSelected;
