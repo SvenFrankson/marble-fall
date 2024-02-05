@@ -3847,14 +3847,14 @@ class Track {
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.part.getWorldMatrix(), this.AABBMin);
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.part.getWorldMatrix(), this.AABBMax);
         if (this.drawStartTip) {
-            this.wires[0].startTipCenter = this.trackpoints[0].position;
-            this.wires[0].startTipNormal = this.trackpoints[0].normal;
-            this.wires[0].startTipDir = this.trackpoints[0].dir;
+            this.wires[0].startTipCenter = this.trackpoints[0].position.clone();
+            this.wires[0].startTipNormal = this.trackpoints[0].normal.clone();
+            this.wires[0].startTipDir = this.trackpoints[0].dir.clone();
         }
         if (this.drawEndTip) {
-            this.wires[0].endTipCenter = this.trackpoints[this.trackpoints.length - 1].position;
-            this.wires[0].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
-            this.wires[0].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+            this.wires[0].endTipCenter = this.trackpoints[this.trackpoints.length - 1].position.clone();
+            this.wires[0].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal.clone();
+            this.wires[0].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir.clone();
         }
         /*
         if (this.wires[1].drawStartTip) {
