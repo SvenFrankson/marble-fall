@@ -223,13 +223,13 @@ class Game {
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
         this.camera.wheelPrecision = 1000;
-        this.camera.panningSensibility = 2000;
-        this.camera.panningInertia *= 0.1;
+        this.camera.panningSensibility = 4000;
+        this.camera.panningInertia *= 0.5;
         this.camera.lowerRadiusLimit = 0.05;
         this.camera.upperRadiusLimit = 1.5;
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
-        this.camera.pinchPrecision = 10000;
+        this.camera.pinchPrecision = 5000;
         
         let alternateMenuCamMode = () => {
             if (this.menuCameraMode === CameraMode.Ball) {
@@ -251,8 +251,8 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        //this.machine.deserialize(demo1);
-        this.machine.deserialize(test);
+        this.machine.deserialize(demo1);
+        //this.machine.deserialize(test);
 
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -316,12 +316,12 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        await this.setPageMode(GameMode.CreateMode);
+        await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
-            await this.makeScreenshot("join");
-            await this.makeScreenshot("split");
+            //await this.makeScreenshot("join");
+            //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
@@ -364,20 +364,20 @@ class Game {
             let speed = 0.01;
             let camTarget = this.targetCamTarget;
             if (this.cameraMode === CameraMode.Ball && this.machine && this.machine.balls && this.machine.balls[0]) {
-                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 20 * 0.0005;
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.9995 + 30 * 0.0005;
                 camTarget = this.machine.balls[0].position;
             }
             else if (this.cameraMode >= CameraMode.Focusing) {
-                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.95 + 20 * 0.05;
+                this._trackTargetCamSpeed = this._trackTargetCamSpeed * 0.995 + 30 * 0.005;
                 speed = 0.5;
             }
             else {
-                this._trackTargetCamSpeed = 0.1;
+                this._trackTargetCamSpeed = 0.2;
             }
             let target = BABYLON.Vector3.Lerp(this.camera.target, camTarget, this._trackTargetCamSpeed * dt);
             let alpha = Nabu.Step(this.camera.alpha, this.targetCamAlpha, Math.PI * speed * dt);
             let beta = Nabu.Step(this.camera.beta, this.targetCamBeta, Math.PI * speed * dt);
-            let radius = Nabu.Step(this.camera.radius, this.targetCamRadius, 5 * speed * dt);
+            let radius = Nabu.Step(this.camera.radius, this.targetCamRadius, 10 * speed * dt);
     
             this.camera.target.copyFrom(target);
             this.camera.alpha = alpha;
