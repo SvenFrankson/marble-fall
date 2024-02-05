@@ -1,6 +1,7 @@
 var TrackNames = [
     "ramp-1.1.1",
     "join",
+    "flatjoin",
     "split",
     "uturn-s",
     "uturn-l",
@@ -72,6 +73,9 @@ class MachinePartFactory {
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
+        }
+        if (trackname === "flatjoin") {
+            return new FlatJoin(this.machine, i, j, k, mirrorX);
         }
         if (trackname === "split") {
             return new Split(this.machine, i, j, k, mirrorX);

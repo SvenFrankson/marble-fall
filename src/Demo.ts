@@ -326,11 +326,12 @@ var logoCircuit = {
 };
 
 var test = {
-    balls: [{ x: -0.02018245896596964, y: 0.14564353971825716, z: -1.1102230246251565e-16 }],
+    balls: [{ x: -0.42766169853767233, y: 0.13846005343528733, z: -2.220446049250313e-16 }],
     parts: [
-        { name: "elevator-7", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "join", i: -3, j: 0, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.4.1", i: -2, j: -4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-2.1.1", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.0.1", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.4.1", i: -2, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "flatjoin", i: 0, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-l", i: 1, j: 1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "elevator-7", i: -3, j: -5, k: 0, mirrorX: true, mirrorZ: false },
     ],
 };

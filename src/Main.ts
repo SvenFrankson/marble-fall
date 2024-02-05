@@ -315,6 +315,8 @@ class Game {
         this.machine.play();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
+            await this.makeScreenshot("join");
+            await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
