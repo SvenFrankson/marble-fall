@@ -607,6 +607,15 @@ var logoCircuit = {
         { name: "ramp-2.1.2", i: -2, j: 1, k: 3, mirrorX: true, mirrorZ: false },
     ],
 };
+var test = {
+    balls: [{ x: -0.02018245896596964, y: 0.14564353971825716, z: -1.1102230246251565e-16 }],
+    parts: [
+        { name: "elevator-7", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "join", i: -3, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.4.1", i: -2, j: -4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2180,7 +2189,8 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(demo1);
+        //this.machine.deserialize(demo1);
+        this.machine.deserialize(test);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
         let screenshotButton = document.querySelector("#toolbar-screenshot");
@@ -2231,7 +2241,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.MainMenu);
+        await this.setPageMode(GameMode.CreateMode);
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
             if (event.code === "KeyP") {
@@ -2773,6 +2783,26 @@ class Wire extends BABYLON.Mesh {
                         path.push(this.path[i]);
                     }
                 }
+            }
+            if (this.startTipDir) {
+                let d = this.startTipDir.normalize().scaleInPlace(-1).scaleInPlace(this.track.wireGauge * 0.5);
+                Mummu.RotateInPlace(d, this.startTipNormal, -Math.PI / 2);
+                let tipPath = [d.add(this.startTipCenter)];
+                for (let i = 0; i < 8 - 1; i++) {
+                    Mummu.RotateInPlace(d, this.startTipNormal, Math.PI / 8);
+                    tipPath.push(d.add(this.startTipCenter));
+                }
+                path = [...tipPath, ...path];
+            }
+            if (this.endTipDir) {
+                let d = this.endTipDir.normalize().scaleInPlace(this.track.wireGauge * 0.5);
+                Mummu.RotateInPlace(d, this.endTipNormal, -Math.PI / 2);
+                let tipPath = [];
+                for (let i = 0; i < 8; i++) {
+                    Mummu.RotateInPlace(d, this.endTipNormal, Math.PI / 8);
+                    tipPath.push(d.add(this.endTipCenter));
+                }
+                path.push(...tipPath);
             }
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
@@ -3539,6 +3569,8 @@ class Track {
     constructor(part) {
         this.part = part;
         this.trackpoints = [];
+        this.drawStartTip = false;
+        this.drawEndTip = false;
         this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
@@ -3801,6 +3833,26 @@ class Track {
         this.AABBMax.z += this.part.wireSize * 0.5;
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.part.getWorldMatrix(), this.AABBMin);
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.part.getWorldMatrix(), this.AABBMax);
+        if (this.drawStartTip) {
+            this.wires[0].startTipCenter = this.trackpoints[0].position;
+            this.wires[0].startTipNormal = this.trackpoints[0].normal;
+            this.wires[0].startTipDir = this.trackpoints[0].dir;
+        }
+        if (this.drawEndTip) {
+            this.wires[0].endTipCenter = this.trackpoints[this.trackpoints.length - 1].position;
+            this.wires[0].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
+            this.wires[0].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+        }
+        /*
+        if (this.wires[1].drawStartTip) {
+            this.wires[1].startTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
+            this.wires[1].startTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+        }
+        if (this.wires[1].drawEndTip) {
+            this.wires[1].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
+            this.wires[1].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+        }
+        */
     }
     recomputeAbsolutePath() {
         this.wires.forEach(wire => {
@@ -3909,6 +3961,7 @@ class Elevator extends MachinePart {
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), n),
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
         ];
+        this.tracks[0].drawEndTip = true;
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), dirLeft),
@@ -4079,13 +4132,25 @@ class Join extends MachinePart {
         let nJoin = (new BABYLON.Vector3(-1, 2, 0)).normalize();
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, 0), dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth / 3, 0, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth / 3, -tileHeight, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight, 0), dir)
         ];
         this.tracks[1] = new Track(this);
         this.tracks[1].trackpoints = [
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.scale(-1)),
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, -tileHeight * 0.25, 0), dirJoin)
         ];
+        let center = new BABYLON.Vector3(0.0135, 0.0165, 0);
+        let r = 0.02;
+        this.tracks[2] = new Track(this);
+        this.tracks[2].trackpoints = [
+            new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(-r * Math.sqrt(3) / 2, -r * 1 / 2, 0)), new BABYLON.Vector3(0.5, -Math.sqrt(3) / 2, 0), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(0, -r, 0))),
+            new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(r * Math.sqrt(3) / 2, -r * 1 / 2, 0)), new BABYLON.Vector3(0.5, Math.sqrt(3) / 2, 0), new BABYLON.Vector3(1, 0, 0)),
+        ];
+        this.tracks[2].drawStartTip = true;
+        this.tracks[2].drawEndTip = true;
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
         }
@@ -4413,6 +4478,13 @@ class Split extends MachinePart {
             new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
             new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
+        this.tracks[3] = new Track(this);
+        this.tracks[3].trackpoints = [
+            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).add(nEnd.scale(0.014)), dirEnd, new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1).add(nEnd.scale(0.014).multiplyByFloats(-1, 1, 1)), dirEnd.multiplyByFloats(1, -1, 1), new BABYLON.Vector3(0, -1, 0))
+        ];
+        this.tracks[3].drawStartTip = true;
+        this.tracks[3].drawEndTip = true;
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
         }

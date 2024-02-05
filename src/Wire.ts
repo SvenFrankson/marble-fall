@@ -18,6 +18,13 @@ class Wire extends BABYLON.Mesh {
         return this.size * 0.5;
     }
 
+    public startTipCenter: BABYLON.Vector3;
+    public startTipNormal: BABYLON.Vector3;
+    public startTipDir: BABYLON.Vector3;
+    public endTipCenter: BABYLON.Vector3;
+    public endTipNormal: BABYLON.Vector3;
+    public endTipDir: BABYLON.Vector3;
+
     constructor(public track: MachinePart) {
         super("wire");
         this.parent = this.track;
@@ -90,6 +97,29 @@ class Wire extends BABYLON.Mesh {
                     }
                 }
             }
+
+            if (this.startTipDir) {
+                let d = this.startTipDir.normalize().scaleInPlace(-1).scaleInPlace(this.track.wireGauge * 0.5);
+                Mummu.RotateInPlace(d, this.startTipNormal, - Math.PI / 2);
+                let tipPath: BABYLON.Vector3[] = [d.add(this.startTipCenter)]
+                for (let i = 0; i < 8 - 1; i++) {
+                    Mummu.RotateInPlace(d, this.startTipNormal, Math.PI / 8);
+                    tipPath.push(d.add(this.startTipCenter));
+                }
+                path = [...tipPath, ...path];
+            }
+
+            if (this.endTipDir) {
+                let d = this.endTipDir.normalize().scaleInPlace(this.track.wireGauge * 0.5);
+                Mummu.RotateInPlace(d, this.endTipNormal, - Math.PI / 2);
+                let tipPath: BABYLON.Vector3[] = []
+                for (let i = 0; i < 8; i++) {
+                    Mummu.RotateInPlace(d, this.endTipNormal, Math.PI / 8);
+                    tipPath.push(d.add(this.endTipCenter));
+                }
+                path.push(...tipPath);
+            }
+
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
             wire.material = this.track.game.steelMaterial;

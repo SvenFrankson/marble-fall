@@ -324,3 +324,13 @@ var logoCircuit = {
         { name: "ramp-2.1.2", i: -2, j: 1, k: 3, mirrorX: true, mirrorZ: false },
     ],
 };
+
+var test = {
+    balls: [{ x: -0.02018245896596964, y: 0.14564353971825716, z: -1.1102230246251565e-16 }],
+    parts: [
+        { name: "elevator-7", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "join", i: -3, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.4.1", i: -2, j: -4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.1.1", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};

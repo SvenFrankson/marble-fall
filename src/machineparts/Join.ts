@@ -16,7 +16,9 @@ class Join extends MachinePart {
 
         this.tracks[0].trackpoints = [
             new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), - tileHeight * this.h, 0), dir)
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth / 3, 0, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth / 3, - tileHeight, 0), dir),
+            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight, 0), dir)
         ];
 
         this.tracks[1] = new Track(this);
@@ -24,6 +26,19 @@ class Join extends MachinePart {
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.scale(-1)),
             new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.25, - tileHeight * 0.25, 0), dirJoin)
         ];
+
+        let center = new BABYLON.Vector3(0.0135, 0.0165, 0);
+        let r = 0.02;
+        
+        this.tracks[2] = new Track(this);
+        this.tracks[2].trackpoints = [
+            new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(-r * Math.sqrt(3) / 2, -r * 1 / 2, 0)), new BABYLON.Vector3(0.5, -Math.sqrt(3) / 2, 0), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(0, -r, 0))),
+            new TrackPoint(this.tracks[2], center.add(new BABYLON.Vector3(r * Math.sqrt(3) / 2, -r * 1 / 2, 0)), new BABYLON.Vector3(0.5, Math.sqrt(3) / 2, 0), new BABYLON.Vector3(1, 0, 0)),
+        ];
+        this.tracks[2].drawStartTip = true;
+        this.tracks[2].drawEndTip = true;
+        
 
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();

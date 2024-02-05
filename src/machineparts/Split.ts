@@ -43,6 +43,14 @@ class Split extends MachinePart {
             new TrackPoint(this.tracks[2], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
         ];
 
+        this.tracks[3] = new Track(this);
+        this.tracks[3].trackpoints = [
+            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).add(nEnd.scale(0.014)), dirEnd, new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(this.tracks[3], pEnd.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1).add(nEnd.scale(0.014).multiplyByFloats(-1, 1, 1)), dirEnd.multiplyByFloats(1, -1, 1), new BABYLON.Vector3(0, -1, 0))
+        ]
+        this.tracks[3].drawStartTip = true;
+        this.tracks[3].drawEndTip = true;
+
         if (mirrorX) {
             this.mirrorXTrackPointsInPlace();
         }

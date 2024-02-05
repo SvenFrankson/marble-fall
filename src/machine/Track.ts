@@ -6,6 +6,9 @@ class Track {
     public interpolatedPoints: BABYLON.Vector3[];
     public interpolatedNormals: BABYLON.Vector3[];
 
+    public drawStartTip: boolean = false;
+    public drawEndTip: boolean = false;
+
     public summedLength: number[] = [0];
     public totalLength: number = 0
     public globalSlope: number = 0;
@@ -314,6 +317,27 @@ class Track {
         this.AABBMax.z += this.part.wireSize * 0.5;
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.part.getWorldMatrix(), this.AABBMin);
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.part.getWorldMatrix(), this.AABBMax);
+
+        if (this.drawStartTip) {
+            this.wires[0].startTipCenter = this.trackpoints[0].position;
+            this.wires[0].startTipNormal = this.trackpoints[0].normal;
+            this.wires[0].startTipDir = this.trackpoints[0].dir;
+        }
+        if (this.drawEndTip) {
+            this.wires[0].endTipCenter = this.trackpoints[this.trackpoints.length - 1].position;
+            this.wires[0].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
+            this.wires[0].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+        }
+        /*
+        if (this.wires[1].drawStartTip) {
+            this.wires[1].startTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
+            this.wires[1].startTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+        }
+        if (this.wires[1].drawEndTip) {
+            this.wires[1].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
+            this.wires[1].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
+        }
+        */
     }
 
     public recomputeAbsolutePath(): void {

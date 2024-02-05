@@ -250,7 +250,8 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        this.machine.deserialize(demo1);
+        //this.machine.deserialize(demo1);
+        this.machine.deserialize(test);
 
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -310,7 +311,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        await this.setPageMode(GameMode.MainMenu);
+        await this.setPageMode(GameMode.CreateMode);
         this.machine.play();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
