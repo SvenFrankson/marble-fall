@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "esnext",
-        "outFile": "./build/marble-fall.js",
+        "outFile": "./marble-fall.js",
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "strict": false
