@@ -1378,6 +1378,20 @@ class MachineEditor {
             part.partVisibilityMode = PartVisibilityMode.Default;
         });
     }
+    get hoveredObject() {
+        return this._hoveredObject;
+    }
+    set hoveredObject(o) {
+        if (o != this._hoveredObject) {
+            if (this._hoveredObject) {
+                this._hoveredObject.unlit();
+            }
+            this._hoveredObject = o;
+            if (this._hoveredObject) {
+                this._hoveredObject.highlight();
+            }
+        }
+    }
     get selectedItem() {
         return this._selectedItem;
     }
@@ -1803,6 +1817,18 @@ class MachineEditor {
         else {
             this.container.classList.add("bottom");
             this.container.classList.remove("left");
+        }
+        let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+            if (mesh instanceof Arrow && mesh.isVisible) {
+                return true;
+            }
+            return false;
+        });
+        if (pick.hit && pick.pickedMesh instanceof Arrow) {
+            this.hoveredObject = pick.pickedMesh;
+        }
+        else {
+            this.hoveredObject = undefined;
         }
     }
     async editTrackInPlace(track, i, j, k, w, h, d) {
@@ -2258,7 +2284,7 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.MainMenu);
+        await this.setPageMode(GameMode.CreateMode);
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
@@ -4865,6 +4891,14 @@ class Arrow extends BABYLON.Mesh {
             data.applyToMesh(this);
         }
         this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+    highlight() {
+        this.renderOutline = true;
+        this.outlineColor = BABYLON.Color3.White();
+        this.outlineWidth = 0.05 * this.size;
+    }
+    unlit() {
+        this.renderOutline = false;
     }
     dispose() {
         super.dispose();

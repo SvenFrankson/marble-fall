@@ -27,6 +27,16 @@ class Arrow extends BABYLON.Mesh {
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
 
+    public highlight(): void {
+        this.renderOutline = true;
+        this.outlineColor = BABYLON.Color3.White();
+        this.outlineWidth = 0.05 * this.size;
+    }
+    
+    public unlit(): void {
+        this.renderOutline = false;
+    }
+
     public dispose(): void {
         super.dispose();
         this.game.scene.onBeforeRenderObservable.removeCallback(this._update);

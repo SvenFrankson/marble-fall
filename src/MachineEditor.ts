@@ -88,6 +88,22 @@ class MachineEditor {
         })
     }
 
+    private _hoveredObject: Arrow;
+    public get hoveredObject(): Arrow {
+        return this._hoveredObject;
+    }
+    public set hoveredObject(o: Arrow) {
+        if (o != this._hoveredObject) {
+            if (this._hoveredObject) {
+                this._hoveredObject.unlit();
+            }
+            this._hoveredObject = o;
+            if (this._hoveredObject) {
+                this._hoveredObject.highlight();
+            }
+        }
+    }
+
     private _selectedItem: string = "";
     public get selectedItem(): string {
         return this._selectedItem;
@@ -588,6 +604,23 @@ class MachineEditor {
         else {
             this.container.classList.add("bottom");
             this.container.classList.remove("left");
+        }
+
+        let pick = this.game.scene.pick(
+            this.game.scene.pointerX,
+            this.game.scene.pointerY,
+            (mesh) => {
+                if (mesh instanceof Arrow && mesh.isVisible) {
+                    return true;
+                }
+                return false;
+            }
+        )
+        if (pick.hit && pick.pickedMesh instanceof Arrow) {
+            this.hoveredObject = pick.pickedMesh;
+        }
+        else {
+            this.hoveredObject = undefined;
         }
     }
 
