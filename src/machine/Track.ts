@@ -9,6 +9,7 @@ class Track {
     public drawStartTip: boolean = false;
     public drawEndTip: boolean = false;
 
+    public maxTwist: number = Math.PI / 0.1;
     public summedLength: number[] = [0];
     public totalLength: number = 0
     public globalSlope: number = 0;
@@ -239,6 +240,57 @@ class Track {
         }
         angles.push(0);
 
+        let f = 0.5;
+        for (let n = 0; n < 100; n++) {
+            for (let i = 0; i < N; i++) {
+                let aPrev = angles[i - 1];
+                let a = angles[i];
+                let point = this.interpolatedPoints[i];
+                let aNext = angles[i + 1];
+
+                if (isFinite(aPrev) && isFinite(aNext)) {
+                    let prevPoint = this.interpolatedPoints[i - 1];
+                    let distPrev = BABYLON.Vector3.Distance(prevPoint, point);
+                    if (false && aPrev != 0) {
+                        let weightFactorPrev = Math.abs(aPrev) / (Math.PI / 4);
+                        distPrev /= weightFactorPrev;
+                    }
+
+                    let nextPoint = this.interpolatedPoints[i + 1];
+                    let distNext = BABYLON.Vector3.Distance(nextPoint, point);
+                    if (false && aNext != 0) {
+                        let weightFactorNext = Math.abs(aNext) / (Math.PI / 4);
+                        distNext /= weightFactorNext;
+                    }
+
+                    let d = distPrev / (distPrev + distNext);
+
+                    angles[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
+                }
+                else if (isFinite(aPrev)) {
+                    angles[i] = (1 - f) * a + f * aPrev;
+                }
+                else if (isFinite(aNext)) {
+                    angles[i] = (1 - f) * a + f * aNext;
+                }
+            }
+
+            for (let i = N - 2; i >= 1; i--) {
+                let a = angles[i];
+                let aNext = angles[i + 1];
+
+                if (Math.abs(a) < Math.abs(aNext)) {
+                    let point = this.interpolatedPoints[i];
+                    let nextPoint = this.interpolatedPoints[i + 1];
+    
+                    let dist = BABYLON.Vector3.Distance(point, nextPoint);
+                    let maxDeltaBank = this.maxTwist * dist;
+    
+                    angles[i] = angles[i] * 0.95 + Nabu.Step(aNext, a, maxDeltaBank) * 0.05;
+                }
+            }
+        }
+        /*
         for (let n = 0; n < 50; n++) {
             let newAngles = [...angles];
             for (let i = 1; i < N - 1; i++) {
@@ -250,13 +302,27 @@ class Track {
             }
             angles = newAngles;
         }
+        */
 
-        for (let i = 1; i < N - 1; i++) {
+        for (let i = 0; i < N; i++) {
+            let prevPoint = this.interpolatedPoints[i - 1];
             let point = this.interpolatedPoints[i];
             let nextPoint = this.interpolatedPoints[i + 1];
-            let dirNext = nextPoint.subtract(point);
+            let dir: BABYLON.Vector3;
+            if (nextPoint) {
+                dir = nextPoint;
+            }
+            else {
+                dir = point;
+            }
+            if (prevPoint) {
+                dir = dir.subtract(prevPoint);
+            }
+            else {
+                dir = dir.subtract(point);
+            }
     
-            Mummu.RotateInPlace(this.interpolatedNormals[i], dirNext, angles[i]);
+            Mummu.RotateInPlace(this.interpolatedNormals[i], dir, angles[i]);
         }
 
         this.summedLength = [0];

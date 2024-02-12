@@ -29,6 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
+    public savedCamPosToLocalStorage: boolean = true;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -230,6 +231,20 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
+
+        if (this.savedCamPosToLocalStorage) {
+            if (window.localStorage.getItem("camera-target")) {
+                let target = JSON.parse(window.localStorage.getItem("camera-target"));
+                this.camera.target.x = target.x;
+                this.camera.target.y = target.y;
+                this.camera.target.z = target.z;
+            }
+            if (window.localStorage.getItem("camera-position")) {
+                let positionItem = JSON.parse(window.localStorage.getItem("camera-position"));
+                let position = new BABYLON.Vector3(positionItem.x, positionItem.y, positionItem.z);
+                this.camera.setPosition(position);
+            }
+        }
         
         let alternateMenuCamMode = () => {
             if (this.menuCameraMode === CameraMode.Ball) {
@@ -371,6 +386,13 @@ class Game {
 
     public update(): void {
         let dt = this.scene.deltaTime / 1000;
+
+        if (this.savedCamPosToLocalStorage) {
+            let camPos = this.camera.position;
+            let camTarget = this.camera.target;
+            window.localStorage.setItem("camera-position", JSON.stringify({ x: camPos.x, y: camPos.y, z: camPos.z }));
+            window.localStorage.setItem("camera-target", JSON.stringify({ x: camTarget.x, y: camTarget.y, z: camTarget.z }));
+        }
 
         if (this.cameraMode != CameraMode.None && this.cameraMode != CameraMode.Selected && isFinite(dt)) {
             let speed = 0.01;

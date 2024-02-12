@@ -2063,6 +2063,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
+        this.savedCamPosToLocalStorage = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -2212,6 +2213,19 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
+        if (this.savedCamPosToLocalStorage) {
+            if (window.localStorage.getItem("camera-target")) {
+                let target = JSON.parse(window.localStorage.getItem("camera-target"));
+                this.camera.target.x = target.x;
+                this.camera.target.y = target.y;
+                this.camera.target.z = target.z;
+            }
+            if (window.localStorage.getItem("camera-position")) {
+                let positionItem = JSON.parse(window.localStorage.getItem("camera-position"));
+                let position = new BABYLON.Vector3(positionItem.x, positionItem.y, positionItem.z);
+                this.camera.setPosition(position);
+            }
+        }
         let alternateMenuCamMode = () => {
             if (this.menuCameraMode === CameraMode.Ball) {
                 this.menuCameraMode = CameraMode.Landscape;
@@ -2332,6 +2346,12 @@ class Game {
     }
     update() {
         let dt = this.scene.deltaTime / 1000;
+        if (this.savedCamPosToLocalStorage) {
+            let camPos = this.camera.position;
+            let camTarget = this.camera.target;
+            window.localStorage.setItem("camera-position", JSON.stringify({ x: camPos.x, y: camPos.y, z: camPos.z }));
+            window.localStorage.setItem("camera-target", JSON.stringify({ x: camTarget.x, y: camTarget.y, z: camTarget.z }));
+        }
         if (this.cameraMode != CameraMode.None && this.cameraMode != CameraMode.Selected && isFinite(dt)) {
             let speed = 0.01;
             let camTarget = this.targetCamTarget;
@@ -3647,6 +3667,7 @@ class Track {
         this.trackpoints = [];
         this.drawStartTip = false;
         this.drawEndTip = false;
+        this.maxTwist = Math.PI / 0.1;
         this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
@@ -3843,21 +3864,79 @@ class Track {
             }
         }
         angles.push(0);
+        let f = 0.5;
+        for (let n = 0; n < 100; n++) {
+            for (let i = 0; i < N; i++) {
+                let aPrev = angles[i - 1];
+                let a = angles[i];
+                let point = this.interpolatedPoints[i];
+                let aNext = angles[i + 1];
+                if (isFinite(aPrev) && isFinite(aNext)) {
+                    let prevPoint = this.interpolatedPoints[i - 1];
+                    let distPrev = BABYLON.Vector3.Distance(prevPoint, point);
+                    if (false && aPrev != 0) {
+                        let weightFactorPrev = Math.abs(aPrev) / (Math.PI / 4);
+                        distPrev /= weightFactorPrev;
+                    }
+                    let nextPoint = this.interpolatedPoints[i + 1];
+                    let distNext = BABYLON.Vector3.Distance(nextPoint, point);
+                    if (false && aNext != 0) {
+                        let weightFactorNext = Math.abs(aNext) / (Math.PI / 4);
+                        distNext /= weightFactorNext;
+                    }
+                    let d = distPrev / (distPrev + distNext);
+                    angles[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
+                }
+                else if (isFinite(aPrev)) {
+                    angles[i] = (1 - f) * a + f * aPrev;
+                }
+                else if (isFinite(aNext)) {
+                    angles[i] = (1 - f) * a + f * aNext;
+                }
+            }
+            for (let i = N - 2; i >= 1; i--) {
+                let a = angles[i];
+                let aNext = angles[i + 1];
+                if (Math.abs(a) < Math.abs(aNext)) {
+                    let point = this.interpolatedPoints[i];
+                    let nextPoint = this.interpolatedPoints[i + 1];
+                    let dist = BABYLON.Vector3.Distance(point, nextPoint);
+                    let maxDeltaBank = this.maxTwist * dist;
+                    angles[i] = angles[i] * 0.95 + Nabu.Step(aNext, a, maxDeltaBank) * 0.05;
+                }
+            }
+        }
+        /*
         for (let n = 0; n < 50; n++) {
             let newAngles = [...angles];
             for (let i = 1; i < N - 1; i++) {
                 let aPrev = angles[i - 1];
                 let a = angles[i];
                 let aNext = angles[i + 1];
+
                 newAngles[i] = (aPrev + a + aNext) / 3;
             }
             angles = newAngles;
         }
-        for (let i = 1; i < N - 1; i++) {
+        */
+        for (let i = 0; i < N; i++) {
+            let prevPoint = this.interpolatedPoints[i - 1];
             let point = this.interpolatedPoints[i];
             let nextPoint = this.interpolatedPoints[i + 1];
-            let dirNext = nextPoint.subtract(point);
-            Mummu.RotateInPlace(this.interpolatedNormals[i], dirNext, angles[i]);
+            let dir;
+            if (nextPoint) {
+                dir = nextPoint;
+            }
+            else {
+                dir = point;
+            }
+            if (prevPoint) {
+                dir = dir.subtract(prevPoint);
+            }
+            else {
+                dir = dir.subtract(point);
+            }
+            Mummu.RotateInPlace(this.interpolatedNormals[i], dir, angles[i]);
         }
         this.summedLength = [0];
         this.totalLength = 0;
