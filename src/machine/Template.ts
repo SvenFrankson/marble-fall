@@ -242,3 +242,38 @@ class MachinePartTemplate {
         });
     }
 }
+
+class TemplateManager {
+
+    private _dictionary: Map<string, MachinePartTemplate[]> = new Map<string, MachinePartTemplate[]>();
+
+    constructor(public machine: Machine) {
+
+    }
+
+    public getTemplate(partName: string, mirrorX: boolean, mirrorZ: boolean): MachinePartTemplate {
+        let mirrorIndex = (mirrorX ? 0 : 1) + (mirrorZ ? 0 : 2);
+        let data: MachinePartTemplate;
+        let datas = this._dictionary.get(partName);
+        if (datas && datas[mirrorIndex]) {
+            data = datas[mirrorIndex];
+        }
+        else {
+            if (!datas) {
+                datas = [];
+            }
+            this._dictionary.set(partName, datas);
+        }
+
+        if (!data) {
+            if (partName.startsWith("uturnlayer-")) {
+                let h = parseInt(partName.split("-")[1].split(".")[0]);
+                let d = parseInt(partName.split("-")[1].split(".")[1]);
+                data = UTurnLayer.GenerateTemplate(h, d, mirrorX, mirrorZ);
+            }
+            datas[mirrorIndex] = data;
+        }
+
+        return data;
+    }
+}

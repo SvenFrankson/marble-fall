@@ -2948,6 +2948,7 @@ class Machine {
         this.onStopCallbacks = new Nabu.UniqueList();
         this.trackFactory = new MachinePartFactory(this);
         this.trackSharedDataManager = new TrackSharedDataManager(this);
+        this.templateManager = new TemplateManager(this);
     }
     async instantiate() {
         for (let i = 0; i < this.balls.length; i++) {
@@ -3207,6 +3208,18 @@ class MachinePart extends BABYLON.Mesh {
     }
     get game() {
         return this.machine.game;
+    }
+    get template() {
+        return this._template;
+    }
+    setTemplate(template) {
+        this._template = template;
+        this.partName = this._template.partName;
+        this.yExtendable = this._template.yExtendable;
+        this.zExtendable = this._template.zExtendable;
+        this.minD = this._template.minD;
+        this.xMirrorable = this._template.xMirrorable;
+        this.zMirrorable = this._template.zMirrorable;
     }
     get i() {
         return this._i;
@@ -3521,7 +3534,7 @@ class MachinePartFactory {
         if (trackname.startsWith("uturnlayer-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new UTurnLayerFromTemplate(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3893,6 +3906,35 @@ class MachinePartTemplate {
         this.trackTemplates.forEach(trackTemplate => {
             trackTemplate.initialize();
         });
+    }
+}
+class TemplateManager {
+    constructor(machine) {
+        this.machine = machine;
+        this._dictionary = new Map();
+    }
+    getTemplate(partName, mirrorX, mirrorZ) {
+        let mirrorIndex = (mirrorX ? 0 : 1) + (mirrorZ ? 0 : 2);
+        let data;
+        let datas = this._dictionary.get(partName);
+        if (datas && datas[mirrorIndex]) {
+            data = datas[mirrorIndex];
+        }
+        else {
+            if (!datas) {
+                datas = [];
+            }
+            this._dictionary.set(partName, datas);
+        }
+        if (!data) {
+            if (partName.startsWith("uturnlayer-")) {
+                let h = parseInt(partName.split("-")[1].split(".")[0]);
+                let d = parseInt(partName.split("-")[1].split(".")[1]);
+                data = UTurnLayer.GenerateTemplate(h, d, mirrorX, mirrorZ);
+            }
+            datas[mirrorIndex] = data;
+        }
+        return data;
     }
 }
 class Track {
@@ -5165,57 +5207,8 @@ class UTurnLayer extends MachinePart {
             mirrorX: mirrorX,
             mirrorZ: mirrorZ
         });
-        this.yExtendable = true;
-        this.zExtendable = true;
-        this.minD = 2;
-        this.xMirrorable = true;
-        this.zMirrorable = true;
-        this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let r = tileDepth * (d - 1) * 0.5;
-        let x0 = -tileWidth * 0.5 + 2 * Math.PI * r / 6;
-        let r2 = r / Math.SQRT2;
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + 0, 0, 0)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + r2, 0, -r + r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + r, 0, -r)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + r2, 0, -r - r2)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(x0 + 0, 0, -2 * r)),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, -2 * r), new BABYLON.Vector3(-1, 0, 0)),
-        ];
-        for (let n = 0; n < this.tracks[0].trackpoints.length; n++) {
-            let f = n / (this.tracks[0].trackpoints.length - 1);
-            this.tracks[0].trackpoints[n].position.y = -f * this.h * tileHeight;
-        }
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-        if (mirrorZ) {
-            this.mirrorZTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-class UTurnLayerFromTemplate extends MachinePart {
-    constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
-        super(machine, i, j, k, {
-            w: Math.ceil(d / 3),
-            h: h,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ
-        });
-        this.yExtendable = true;
-        this.zExtendable = true;
-        this.minD = 2;
-        this.xMirrorable = true;
-        this.zMirrorable = true;
-        this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
-        this.template = UTurnLayerFromTemplate.GenerateTemplate(h, d, mirrorX, mirrorZ);
+        let partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(h, d, mirrorX, mirrorZ) {

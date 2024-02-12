@@ -89,7 +89,22 @@ class MachinePart extends BABYLON.Mesh {
     public xMirrorable: boolean = false;
     public zMirrorable: boolean = false;
 
-    public template: MachinePartTemplate;
+    private _template: MachinePartTemplate;
+    public get template(): MachinePartTemplate {
+        return this._template;
+    }
+    public setTemplate(template: MachinePartTemplate) {
+        this._template = template;
+
+        this.partName = this._template.partName;
+
+        this.yExtendable = this._template.yExtendable;
+        this.zExtendable = this._template.zExtendable;
+        this.minD = this._template.minD;
+        
+        this.xMirrorable = this._template.xMirrorable;
+        this.zMirrorable = this._template.zMirrorable;
+    }
 
     constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, prop?: IMachinePartProp) {
         super("track", machine.game.scene);

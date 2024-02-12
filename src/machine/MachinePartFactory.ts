@@ -52,7 +52,7 @@ class MachinePartFactory {
         if (trackname.startsWith("uturnlayer-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new UTurnLayerFromTemplate(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);

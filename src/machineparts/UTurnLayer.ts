@@ -1,4 +1,4 @@
-class UTurnLayerFromTemplate extends MachinePart {
+class UTurnLayer extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, h: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
         super(machine, i, j, k, {
@@ -8,13 +8,8 @@ class UTurnLayerFromTemplate extends MachinePart {
             mirrorX: mirrorX,
             mirrorZ: mirrorZ
         });
-        this.yExtendable = true;
-        this.zExtendable = true;
-        this.minD = 2;
-        this.xMirrorable = true;
-        this.zMirrorable = true;
-        this.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
-        this.template = UTurnLayerFromTemplate.GenerateTemplate(h, d, mirrorX, mirrorZ);
+        let partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
 
@@ -26,6 +21,7 @@ class UTurnLayerFromTemplate extends MachinePart {
         template.d = d,
         template.mirrorX = mirrorX,
         template.mirrorZ = mirrorZ
+
         template.yExtendable = true;
         template.zExtendable = true;
         template.minD = 2;
