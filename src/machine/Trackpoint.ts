@@ -7,7 +7,7 @@ class TrackPoint {
     public summedLength: number = 0;
 
     constructor(
-        public track: Track,
+        public track: Track | TrackTemplate,
         public position: BABYLON.Vector3,
         public dir?: BABYLON.Vector3,
         public normal?: BABYLON.Vector3,

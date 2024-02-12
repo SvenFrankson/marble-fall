@@ -160,27 +160,6 @@ class TrackSharedDataManager {
             }
         }
 
-        for (let i = 0; i < N; i++) {
-            let prevPoint = data.sharedInterpolatedPoints[i - 1];
-            let point = data.sharedInterpolatedPoints[i];
-            let nextPoint = data.sharedInterpolatedPoints[i + 1];
-            let dir: BABYLON.Vector3;
-            if (nextPoint) {
-                dir = nextPoint;
-            }
-            else {
-                dir = point;
-            }
-            if (prevPoint) {
-                dir = dir.subtract(prevPoint);
-            }
-            else {
-                dir = dir.subtract(point);
-            }
-    
-            Mummu.RotateInPlace(data.sharedInterpolatedNormals[i], dir, data.sharedBaseAngle[i]);
-        }
-
         return data;
     }
 }

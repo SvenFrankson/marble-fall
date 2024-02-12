@@ -266,7 +266,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        this.machine.deserialize(demo1);
+        this.machine.deserialize(test2);
         //this.machine.deserialize(test);
 
         await this.machine.instantiate();

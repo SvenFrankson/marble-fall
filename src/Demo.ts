@@ -325,4 +325,28 @@ var logoCircuit = {
     ],
 };
 
-var test = {"balls":[{"x":-0.5766096541939383,"y":0.4087908683675662,"z":0}],"parts":[{"name":"join","i":-1,"j":-1,"k":1,"mirrorX":false,"mirrorZ":false},{"name":"split","i":-1,"j":-3,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"uturnlayer-0.2","i":-2,"j":-1,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"uturnlayer-0.2","i":0,"j":-1,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"uturnlayer-0.2","i":0,"j":0,"k":1,"mirrorX":false,"mirrorZ":false},{"name":"uturnlayer-0.2","i":-1,"j":0,"k":2,"mirrorX":true,"mirrorZ":false},{"name":"uturnlayer-2.4","i":0,"j":0,"k":0,"mirrorX":false,"mirrorZ":true},{"name":"elevator-16","i":-4,"j":-14,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-3.0.1","i":-3,"j":2,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"ramp-2.10.1","i":-3,"j":-13,"k":0,"mirrorX":false,"mirrorZ":false}]};
+var test = {
+    balls: [{ x: -0.5766096541939383, y: 0.4087908683675662, z: 0 }],
+    parts: [
+        { name: "join", i: -1, j: -1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "split", i: -1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 0, j: 0, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: -1, j: 0, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-2.4", i: 0, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "elevator-16", i: -4, j: -14, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.0.1", i: -3, j: 2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.10.1", i: -3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};
+
+var test2 = {
+    balls: [],
+    parts: [
+        { name: "uturnlayer-0.2", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 1, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: 0, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};

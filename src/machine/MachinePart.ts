@@ -89,6 +89,8 @@ class MachinePart extends BABYLON.Mesh {
     public xMirrorable: boolean = false;
     public zMirrorable: boolean = false;
 
+    public template: MachinePartTemplate;
+
     constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, prop?: IMachinePartProp) {
         super("track", machine.game.scene);
         this.position.x = this._i * tileWidth;
@@ -208,18 +210,6 @@ class MachinePart extends BABYLON.Mesh {
         return 0;
     }
 
-    public splitTrackPointAt(index: number, trackIndex: number = 0): void {
-        if (this.tracks[trackIndex]) {
-            this.tracks[trackIndex].splitTrackPointAt(index);
-        }
-    }
-
-    public deleteTrackPointAt(index: number, trackIndex: number = 0): void {
-        if (this.tracks[trackIndex]) {
-            this.tracks[trackIndex].deleteTrackPointAt(index);
-        }
-    }
-
     public getBarycenter(): BABYLON.Vector3 {
         if (this.tracks[0].trackpoints.length < 2) {
             return this.position.clone();
@@ -325,13 +315,24 @@ class MachinePart extends BABYLON.Mesh {
         this.AABBMax.copyFromFloats(- Infinity, - Infinity, - Infinity);
 
         this.allWires = [...this.wires];
-        this.tracks.forEach(track => {
-            track.generateTrackpointsInterpolatedData();
-            track.generateWires();
-            this.AABBMin.minimizeInPlace(track.AABBMin);
-            this.AABBMax.maximizeInPlace(track.AABBMax);
-            this.allWires.push(track.wires[0], track.wires[1]);
-        });
+        if (this.template) {
+            for (let i = 0; i < this.template.trackTemplates.length; i++) {
+                let track = this.tracks[i];
+                track.initializeFromTemplate(this.template.trackTemplates[i]);
+                this.AABBMin.minimizeInPlace(track.AABBMin);
+                this.AABBMax.maximizeInPlace(track.AABBMax);
+                this.allWires.push(track.wires[0], track.wires[1]);
+            }
+        }
+        else {
+            this.tracks.forEach(track => {
+                track.generateTrackpointsInterpolatedData();
+                track.initialize();
+                this.AABBMin.minimizeInPlace(track.AABBMin);
+                this.AABBMax.maximizeInPlace(track.AABBMax);
+                this.allWires.push(track.wires[0], track.wires[1]);
+            });
+        }
     }
 
     public update(dt: number): void {}
