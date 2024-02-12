@@ -8,6 +8,7 @@ class UTurnLayer extends MachinePart {
             mirrorX: mirrorX,
             mirrorZ: mirrorZ
         });
+        
         let partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();

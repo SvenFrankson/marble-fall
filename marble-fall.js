@@ -3932,6 +3932,12 @@ class TemplateManager {
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 data = UTurnLayer.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
+            else if (partName.startsWith("ramp-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                let d = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Ramp.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
             datas[mirrorIndex] = data;
         }
         return data;
@@ -4777,27 +4783,40 @@ class Ramp extends MachinePart {
             mirrorX: mirrorX,
             mirrorZ: mirrorZ,
         });
-        this.xExtendable = true;
-        this.yExtendable = true;
-        this.zExtendable = true;
-        this.xMirrorable = true;
-        this.zMirrorable = true;
-        this.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        let partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.w = w;
+        template.h = h;
+        template.d = d;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+        template.xExtendable = true;
+        template.yExtendable = true;
+        template.zExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -tileHeight * this.h, -tileDepth * (this.d - 1)), dir)
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -tileHeight * template.h, -tileDepth * (template.d - 1)), dir)
         ];
         if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
+            template.mirrorXTrackPointsInPlace();
         }
         if (mirrorZ) {
-            this.mirrorZTrackPointsInPlace();
+            template.mirrorZTrackPointsInPlace();
         }
-        this.generateWires();
+        template.initialize();
+        return template;
     }
     static CreateFromOriginDestination(origin, dest, machine) {
         let i = Math.min(origin.i, dest.i);

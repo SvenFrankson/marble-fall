@@ -271,6 +271,12 @@ class TemplateManager {
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 data = UTurnLayer.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
+            else if (partName.startsWith("ramp-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                let d = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Ramp.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
             datas[mirrorIndex] = data;
         }
 
