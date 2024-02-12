@@ -290,6 +290,11 @@ class TemplateManager {
             else if (partName === "join") {
                 data = Join.GenerateTemplate(mirrorX);
             }
+            else if (partName.startsWith("loop-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let d = parseInt(partName.split("-")[1].split(".")[1]);
+                data = Loop.GenerateTemplate(w, d, mirrorX, mirrorZ);
+            }
             datas[mirrorIndex] = data;
         }
 

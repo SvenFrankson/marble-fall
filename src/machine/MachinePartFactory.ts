@@ -58,15 +58,6 @@ class MachinePartFactory {
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             return new Loop(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
         }
-        if (trackname === "wave") {
-            return new Wave(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname === "snake") {
-            return new Snake(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname === "spiral") {
-            return new Spiral(this.machine, i, j, k, mirrorX);
-        }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
         }

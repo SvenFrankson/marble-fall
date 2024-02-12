@@ -1,28 +1,40 @@
 /// <reference path="../machine/MachinePart.ts"/>
 
 class Loop extends MachinePart {
-    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, d: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k, {
-            w: w,
-            h: 4 * w,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ,
-        });
-        this.xExtendable = true;
-        this.zExtendable = true;
-        this.xMirrorable = true;
-        this.zMirrorable = true;
 
-        this.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+
+    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, d: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
+        super(machine, i, j, k);
+
+        let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+
+    public static GenerateTemplate(w: number, d: number, mirrorX: boolean, mirrorZ: boolean): MachinePartTemplate {
+        let template = new MachinePartTemplate();
+
+        template.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+
+        template.w = w;
+        template.h = 4 * w;
+        template.d = d;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+            
+        template.xExtendable = true;
+        template.zExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
 
-
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, - this.h * tileHeight, 0), dir)
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.5, - template.h * tileHeight, 0), dir)
         ];
 
         let nLoops = 1;
@@ -35,23 +47,23 @@ class Loop extends MachinePart {
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
 
-            this.tracks[0].trackpoints.push(
+            template.trackTemplates[0].trackpoints.push(
                 new TrackPoint(
-                    this.tracks[0],
+                    template.trackTemplates[0],
                     new BABYLON.Vector3(
-                        sina * r + 0.5 * tileWidth * (this.w - 1),
-                        r * 1 - cosa * r - this.h * tileHeight,
-                        - tileDepth * (this.d - 1) * (n + 0) / (8 * nLoops)
+                        sina * r + 0.5 * tileWidth * (template.w - 1),
+                        r * 1 - cosa * r - template.h * tileHeight,
+                        - tileDepth * (template.d - 1) * (n + 0) / (8 * nLoops)
                     )
                 )
             );
         }
 
-        this.tracks[0].trackpoints.push(
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), - this.h * tileHeight, - tileDepth * (this.d - 1)), dir)
+        template.trackTemplates[0].trackpoints.push(
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), - template.h * tileHeight, - tileDepth * (template.d - 1)), dir)
         );
 
-        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone() });
+        let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone() });
         let f = 3;
         for (let n = 0; n < 2; n++) {
             let smoothedPoints = [...points].map(p => { return p.clone() });
@@ -62,16 +74,18 @@ class Loop extends MachinePart {
         }
 
         for (let i = 0; i < points.length; i++) {
-            this.tracks[0].trackpoints[i].position.copyFrom(points[i]);
+            template.trackTemplates[0].trackpoints[i].position.copyFrom(points[i]);
         }
 
         if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
+            template.mirrorXTrackPointsInPlace();
         }
         if (mirrorZ) {
-            this.mirrorZTrackPointsInPlace();
+            template.mirrorZTrackPointsInPlace();
         }
 
-        this.generateWires();
+        template.initialize();
+
+        return template;
     }
 }

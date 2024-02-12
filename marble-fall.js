@@ -626,14 +626,10 @@ var test2 = {
     balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
     parts: [
         { name: "elevator-7", i: 1, j: -6, k: 0, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: -3, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "flatjoin", i: -2, j: -3, k: 1, mirrorZ: false },
-        { name: "join", i: -1, j: -5, k: 0, mirrorZ: false },
-        { name: "join", i: 0, j: -4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.1.2", i: -1, j: -3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.2", i: -2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.1.2", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "loop-1.2", i: -1, j: -5, k: 1, mirrorZ: true },
+        { name: "ramp-1.4.2", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: -2, j: -1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.2.2", i: -1, j: -1, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
 class HelperShape {
@@ -3573,15 +3569,6 @@ class MachinePartFactory {
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             return new Loop(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
         }
-        if (trackname === "wave") {
-            return new Wave(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname === "snake") {
-            return new Snake(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname === "spiral") {
-            return new Spiral(this.machine, i, j, k, mirrorX);
-        }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
         }
@@ -3978,6 +3965,11 @@ class TemplateManager {
             }
             else if (partName === "join") {
                 data = Join.GenerateTemplate(mirrorX);
+            }
+            else if (partName.startsWith("loop-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let d = parseInt(partName.split("-")[1].split(".")[1]);
+                data = Loop.GenerateTemplate(w, d, mirrorX, mirrorZ);
             }
             datas[mirrorIndex] = data;
         }
@@ -4791,24 +4783,30 @@ class Join extends MachinePart {
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
     constructor(machine, i, j, k, w = 1, d = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k, {
-            w: w,
-            h: 4 * w,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ,
-        });
-        this.xExtendable = true;
-        this.zExtendable = true;
-        this.xMirrorable = true;
-        this.zMirrorable = true;
-        this.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        super(machine, i, j, k);
+        let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(w, d, mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        template.w = w;
+        template.h = 4 * w;
+        template.d = d;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+        template.xExtendable = true;
+        template.zExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
         n.normalize();
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -this.h * tileHeight, 0), dir)
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -template.h * tileHeight, 0), dir)
         ];
         let nLoops = 1;
         let rStart = tileWidth * 0.5 * w * 0.7;
@@ -4819,10 +4817,10 @@ class Loop extends MachinePart {
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
-            this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(sina * r + 0.5 * tileWidth * (this.w - 1), r * 1 - cosa * r - this.h * tileHeight, -tileDepth * (this.d - 1) * (n + 0) / (8 * nLoops))));
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(sina * r + 0.5 * tileWidth * (template.w - 1), r * 1 - cosa * r - template.h * tileHeight, -tileDepth * (template.d - 1) * (n + 0) / (8 * nLoops))));
         }
-        this.tracks[0].trackpoints.push(new TrackPoint(this.tracks[0], new BABYLON.Vector3(tileWidth * (this.w - 0.5), -this.h * tileHeight, -tileDepth * (this.d - 1)), dir));
-        let points = this.tracks[0].trackpoints.map(tp => { return tp.position.clone(); });
+        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -template.h * tileHeight, -tileDepth * (template.d - 1)), dir));
+        let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone(); });
         let f = 3;
         for (let n = 0; n < 2; n++) {
             let smoothedPoints = [...points].map(p => { return p.clone(); });
@@ -4832,15 +4830,16 @@ class Loop extends MachinePart {
             points = smoothedPoints;
         }
         for (let i = 0; i < points.length; i++) {
-            this.tracks[0].trackpoints[i].position.copyFrom(points[i]);
+            template.trackTemplates[0].trackpoints[i].position.copyFrom(points[i]);
         }
         if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
+            template.mirrorXTrackPointsInPlace();
         }
         if (mirrorZ) {
-            this.mirrorZTrackPointsInPlace();
+            template.mirrorZTrackPointsInPlace();
         }
-        this.generateWires();
+        template.initialize();
+        return template;
     }
 }
 class Ramp extends MachinePart {
@@ -4965,74 +4964,6 @@ class Ramp extends MachinePart {
             j: j,
             k: k
         };
-    }
-}
-/// <reference path="../machine/MachinePart.ts"/>
-class Snake extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            w: 2,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "snake";
-        this.deserialize({
-            points: [
-                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: 0.015, y: -0.0006, z: -0.02 }, normal: { x: 0, y: 0.983976396926608, z: 0.17829876693721267 } },
-                { position: { x: 0.075, y: 0, z: 0 }, normal: { x: -0.0008909764600687716, y: 0.9800741060756494, z: -0.1986301909603991 } },
-                { position: { x: 0.125, y: -0.0005, z: -0.02 }, normal: { x: 0, y: 0.9797898655773956, z: 0.20002954609714332 } },
-                { position: { x: 0.225, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-            ],
-        });
-        this.generateWires();
-    }
-}
-/// <reference path="../machine/MachinePart.ts"/>
-class Spiral extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            h: 3,
-            d: 3,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "spiral";
-        this.deserialize({
-            points: [
-                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: 0.016, y: -0.0046, z: -0.003 }, normal: { x: -0.015717737727546616, y: 0.9540837723373087, z: -0.2991272439670763 } },
-                { position: { x: 0.0539, y: -0.007, z: -0.0291 }, normal: { x: -0.23440514155513867, y: 0.9572137575720567, z: -0.16969399496534734 } },
-                { position: { x: 0.0587, y: -0.0104, z: -0.0947 }, normal: { x: -0.26108911497483256, y: 0.962603890274194, z: 0.07229263081840669 } },
-                { position: { x: -0.0004, y: -0.014, z: -0.132 }, normal: { x: -0.05669056122664204, y: 0.9496966537903617, z: 0.307997477339017 } },
-                { position: { x: -0.0592, y: -0.0176, z: -0.0942 }, normal: { x: 0.2271455627956944, y: 0.956270760554333, z: 0.18425831273260118 } },
-                { position: { x: -0.05457944698749076, y: -0.02093380924123054, z: -0.029224609659455173 }, normal: { x: 0.2828470950098421, y: 0.9527277009365863, z: -0.11093894137127873 } },
-                { position: { x: -0.0001, y: -0.0242, z: -0.0002 }, normal: { x: 0.05761736284437951, y: 0.9614294117737494, z: -0.2689492994511073 } },
-                { position: { x: 0.0539, y: -0.0274, z: -0.0291 }, normal: { x: -0.2056041140599629, y: 0.9592796231163523, z: -0.19367383136440203 } },
-                { position: { x: 0.0585, y: -0.0308, z: -0.0951 }, normal: { x: -0.2760246393306465, y: 0.9577600466606554, z: 0.08066034653388042 } },
-                { position: { x: -0.0004, y: -0.0344, z: -0.1318 }, normal: { x: -0.05646125432587785, y: 0.9628151753392908, z: 0.2641951265567164 } },
-                { position: { x: -0.0596, y: -0.038, z: -0.0941 }, normal: { x: 0.207215385873428, y: 0.9626195991602705, z: 0.1744284700668061 } },
-                { position: { x: -0.0545, y: -0.0414, z: -0.0289 }, normal: { x: 0.25683498853746184, y: 0.961760534367209, z: -0.09514443334563788 } },
-                { position: { x: -0.0001, y: -0.0446, z: -0.0002 }, normal: { x: 0.05638334684224795, y: 0.9532309575517539, z: -0.29693713099549046 } },
-                { position: { x: 0.0537, y: -0.0478, z: -0.0289 }, normal: { x: -0.2235635179648617, y: 0.9523438291486475, z: -0.20751044435802915 } },
-                { position: { x: 0.0582, y: -0.0512, z: -0.0933 }, normal: { x: -0.2777348824891539, y: 0.9572384789896519, z: 0.08098042597019127 } },
-                { position: { x: -0.0004, y: -0.0548, z: -0.1317 }, normal: { x: -0.059760670464650514, y: 0.9561892328648884, z: 0.28658474003141166 } },
-                { position: { x: -0.0594, y: -0.0584, z: -0.0938 }, normal: { x: 0.2333172321844389, y: 0.9540226282981233, z: 0.18815922475641142 } },
-                { position: { x: -0.0546, y: -0.0618, z: -0.029 }, normal: { x: 0.27002249679763296, y: 0.9572406097255708, z: -0.10381842955559523 } },
-                { position: { x: 0.0001, y: -0.065, z: 0.0001 }, normal: { x: 0.056820314112295565, y: 0.9531047312532147, z: -0.2972588487613405 } },
-                { position: { x: 0.0538, y: -0.0682, z: -0.0288 }, normal: { x: -0.22241380697343624, y: 0.9531421193320655, z: -0.2050663278618935 } },
-                { position: { x: 0.0583, y: -0.0716, z: -0.0937 }, normal: { x: -0.26972561388849237, y: 0.9599379519312946, z: 0.07594222576687933 } },
-                { position: { x: 0, y: -0.0752, z: -0.1314 }, normal: { x: -0.05845262320389176, y: 0.9606457375292047, z: 0.27155673036688727 } },
-                { position: { x: -0.0591, y: -0.0788, z: -0.0935 }, normal: { x: 0.21156040971579268, y: 0.9609976130263491, z: 0.17811732312873305 } },
-                { position: { x: -0.0545, y: -0.0822, z: -0.0289 }, normal: { x: 0.2585951718617067, y: 0.9642143266760841, z: -0.05847451857347828 } },
-                { position: { x: -0.0171, y: -0.0846, z: -0.0034 }, normal: { x: 0.1212412050387472, y: 0.950287799276933, z: -0.2867990040885013 } },
-                { position: { x: 0.075, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-        this.generateWires();
     }
 }
 class Split extends MachinePart {
@@ -5329,32 +5260,6 @@ class UTurnLayer extends MachinePart {
         }
         template.initialize();
         return template;
-    }
-}
-/// <reference path="../machine/MachinePart.ts"/>
-class Wave extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            w: 2,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "wave";
-        this.deserialize({
-            points: [
-                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: -0.02574170106019552, y: -0.02331256943245867, z: -1.3457124303783985e-10 }, normal: { x: 0.09980015069654494, y: 0.9950075024445529, z: 2.9746223976965384e-11 } },
-                { position: { x: 0.0247, y: -0.01, z: 0 }, normal: { x: 0.06997826494958422, y: 0.9975485163312338, z: 7.031366138779832e-11 } },
-                { position: { x: 0.07405330047633624, y: -0.030313212452661144, z: -1.1598073586596702e-10 }, normal: { x: 0.09950371902099892, y: 0.9950371902099892, z: -5.235549835316916e-10 } },
-                { position: { x: 0.1247, y: -0.02, z: 0 }, normal: { x: 0.12353766744973763, y: 0.9923398836694403, z: 6.989528287372397e-12 } },
-                { position: { x: 0.1734746589421829, y: -0.04269030514205091, z: 1.6954757086143357e-10 }, normal: { x: 0.09920903435744811, y: 0.9950666146052045, z: 8.515907414511131e-11 } },
-                { position: { x: 0.22499999999999998, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-        this.generateWires();
     }
 }
 class Arrow extends BABYLON.Mesh {

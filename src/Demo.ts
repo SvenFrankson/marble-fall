@@ -345,13 +345,9 @@ var test2 = {
     balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
     parts: [
         { name: "elevator-7", i: 1, j: -6, k: 0, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: -3, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "flatjoin", i: -2, j: -3, k: 1, mirrorZ: false },
-        { name: "join", i: -1, j: -5, k: 0, mirrorZ: false },
-        { name: "join", i: 0, j: -4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.1.2", i: -1, j: -3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.2", i: -2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.1.2", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "loop-1.2", i: -1, j: -5, k: 1, mirrorZ: true },
+        { name: "ramp-1.4.2", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: -2, j: -1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.2.2", i: -1, j: -1, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
