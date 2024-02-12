@@ -171,6 +171,23 @@ class Machine {
         data.applyToMesh(this.baseFrame);
     }
 
+    public getBankAt(pos: BABYLON.Vector3, exclude: MachinePart): { isEnd: boolean, bank: number } {
+        for (let i = 0; i < this.parts.length; i++) {
+            let part = this.parts[i];
+            if (part != exclude) {
+                for (let j = 0; j < part.tracks.length; j++) {
+                    let track = part.tracks[j];
+                    if (BABYLON.Vector3.DistanceSquared(track.startWorldPosition, pos) < 0.001) {
+                        return { isEnd: false, bank: track.preferedStartBank }
+                    }
+                    if (BABYLON.Vector3.DistanceSquared(track.endWorldPosition, pos) < 0.001) {
+                        return { isEnd: true, bank: track.preferedEndBank }
+                    }
+                }
+            }
+        }
+    }
+
     public serialize(): IMachineData {
         let data: IMachineData = {
             balls: [],

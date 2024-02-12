@@ -344,9 +344,11 @@ var test = {
 var test2 = {
     balls: [],
     parts: [
-        { name: "uturnlayer-0.2", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 1, j: -1, k: 0, mirrorX: false, mirrorZ: false },
         { name: "uturnlayer-0.2", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 0, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturnlayer-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -1, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.2.2", i: 0, j: -4, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "ramp-1.2.3", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -4, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };

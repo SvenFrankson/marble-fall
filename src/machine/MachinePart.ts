@@ -101,7 +101,7 @@ class MachinePart extends BABYLON.Mesh {
         this.yExtendable = this._template.yExtendable;
         this.zExtendable = this._template.zExtendable;
         this.minD = this._template.minD;
-        
+
         this.xMirrorable = this._template.xMirrorable;
         this.zMirrorable = this._template.zMirrorable;
     }
@@ -378,8 +378,10 @@ class MachinePart extends BABYLON.Mesh {
                 wire.show();
             })
             
-            SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
             this.tracks.forEach(track => {
+                if (track.template) {
+                    track.recomputeWiresPath();
+                }
                 track.wires.forEach(wire => {
                     wire.instantiate();
                 })
@@ -387,6 +389,8 @@ class MachinePart extends BABYLON.Mesh {
             this.wires.forEach(wire => {
                 wire.instantiate();
             })
+            
+            SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
         }
     }
 

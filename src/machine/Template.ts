@@ -158,13 +158,14 @@ class TrackTemplate {
         }
         this.angles.push(0);
 
+        let tmpAngles = [...this.angles];
         let f = 1;
         for (let n = 0; n < 2 * N; n++) {
             for (let i = 0; i < N; i++) {
-                let aPrev = this.angles[i - 1];
-                let a = this.angles[i];
+                let aPrev = tmpAngles[i - 1];
+                let a = tmpAngles[i];
                 let point = this.interpolatedPoints[i];
-                let aNext = this.angles[i + 1];
+                let aNext = tmpAngles[i + 1];
 
                 if (isFinite(aPrev) && isFinite(aNext)) {
                     let prevPoint = this.interpolatedPoints[i - 1];
@@ -175,16 +176,19 @@ class TrackTemplate {
 
                     let d = distPrev / (distPrev + distNext);
 
-                    this.angles[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
+                    tmpAngles[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
                 }
                 else if (isFinite(aPrev)) {
-                    this.angles[i] = (1 - f) * a + f * aPrev;
+                    tmpAngles[i] = (1 - f) * a + f * aPrev;
                 }
                 else if (isFinite(aNext)) {
-                    this.angles[i] = (1 - f) * a + f * aNext;
+                    tmpAngles[i] = (1 - f) * a + f * aNext;
                 }
             }
         }
+
+        this.preferedStartBank = tmpAngles[0];
+        this.preferedEndBank = tmpAngles[tmpAngles.length - 1];
 
         this.summedLength = [0];
         this.totalLength = 0;
