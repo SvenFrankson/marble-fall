@@ -269,10 +269,10 @@ class TemplateManager {
         }
 
         if (!data) {
-            if (partName.startsWith("uturnlayer-")) {
+            if (partName.startsWith("uturn-")) {
                 let h = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
-                data = UTurnLayer.GenerateTemplate(h, d, mirrorX, mirrorZ);
+                data = uturn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("ramp-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
@@ -283,6 +283,9 @@ class TemplateManager {
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
                 data = Elevator.GenerateTemplate(h, mirrorX);
+            }
+            else if (partName === "split") {
+                data = Split.GenerateTemplate(mirrorX);
             }
             else if (partName === "flatjoin") {
                 data = FlatJoin.GenerateTemplate(mirrorX);

@@ -174,7 +174,7 @@ class Ball extends BABYLON.Mesh {
                     part.AABBMax.z + this.radius
                 )) {
                     part.allWires.forEach(wire => {
-                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, !(part instanceof UTurnLarge));
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
                         if (col.hit) {
                             let colDig = col.normal.scale(-1);
                             // Move away from collision

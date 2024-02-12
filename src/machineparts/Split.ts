@@ -3,59 +3,15 @@ class Split extends MachinePart {
     private _animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
 
     public pivot: BABYLON.Mesh;
-    public pivotL: number = 0.025;
+    public static pivotL: number = 0.025;
 
     constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
-        super(machine, i, j, k, {
-            h: 2,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "split";
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
+        super(machine, i, j, k);
 
-        let rCurb = this.pivotL * 0.3;
-        let pEndLeft = new BABYLON.Vector3(0, - tileHeight, 0);
-        pEndLeft.x -= this.pivotL / Math.SQRT2;
-        pEndLeft.y += this.pivotL / Math.SQRT2;
-        let pEndRight = pEndLeft.multiplyByFloats(-1, 1, 1);
-        let dirEnd = Tools.V3Dir(135);
-        let nEnd = Tools.V3Dir(45);
-
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], pEndLeft.subtract(dirEnd.scale(0.001)), dirEnd)
-        ];
-
-        this.tracks[1] = new Track(this);
-        this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight * this.h, 0), dir),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd.multiplyByFloats(1, -1, 1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, - tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight * this.h, 0), dir)
-        ];
-
-        this.tracks[2] = new Track(this);
-        this.tracks[2].trackpoints = [
-            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEndLeft.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
-        ];
-
-        this.tracks[3] = new Track(this);
-        this.tracks[3].trackpoints = [
-            new TrackPoint(this.tracks[3], pEndLeft.add(Tools.V3Dir(315, 0.02)).add(Tools.V3Dir(45, 0.014)), Tools.V3Dir(150), new BABYLON.Vector3(0, -1, 0)),
-            new TrackPoint(this.tracks[3], new BABYLON.Vector3(0, -0.003, 0)),
-            new TrackPoint(this.tracks[3], pEndRight.add(Tools.V3Dir(45, 0.02)).add(Tools.V3Dir(315, 0.014)), Tools.V3Dir(30), new BABYLON.Vector3(0, -1, 0))
-        ]
-        this.tracks[3].drawStartTip = true;
-        this.tracks[3].drawEndTip = true;
-
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
+        let partName = "split";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+       
+        let rCurb = Split.pivotL * 0.3;
 
         let anchorDatas: BABYLON.VertexData[] = [];
         let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
@@ -94,19 +50,19 @@ class Split extends MachinePart {
 
         let wireHorizontal0 = new Wire(this);
         wireHorizontal0.parent = this.pivot;
-        wireHorizontal0.path = [new BABYLON.Vector3(-this.pivotL, 0, - dz), new BABYLON.Vector3(this.pivotL, 0, -dz)];
+        wireHorizontal0.path = [new BABYLON.Vector3(-Split.pivotL, 0, - dz), new BABYLON.Vector3(Split.pivotL, 0, -dz)];
 
         let wireHorizontal1 = new Wire(this);
         wireHorizontal1.parent = this.pivot;
-        wireHorizontal1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(this.pivotL, 0, dz)];
+        wireHorizontal1.path = [new BABYLON.Vector3(-Split.pivotL, 0, dz), new BABYLON.Vector3(Split.pivotL, 0, dz)];
 
         let wireVertical0 = new Wire(this);
         wireVertical0.parent = this.pivot;
-        wireVertical0.path = [new BABYLON.Vector3(0, this.pivotL, - dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
+        wireVertical0.path = [new BABYLON.Vector3(0, Split.pivotL, - dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
 
         let wireVertical1 = new Wire(this);
         wireVertical1.parent = this.pivot;
-        wireVertical1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
+        wireVertical1.path = [new BABYLON.Vector3(0, Split.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
 
         let curbLeft0 = new Wire(this);
         curbLeft0.wireSize = this.wireSize * 0.8;
@@ -167,6 +123,66 @@ class Split extends MachinePart {
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
     }
+
+    
+    public static GenerateTemplate(mirrorX: boolean) {
+        let template = new MachinePartTemplate();
+
+        template.partName = "split";
+        
+        template.h = 2;
+
+        template.xMirrorable = true;
+
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+
+        let pEndLeft = new BABYLON.Vector3(0, - tileHeight, 0);
+        pEndLeft.x -= Split.pivotL / Math.SQRT2;
+        pEndLeft.y += Split.pivotL / Math.SQRT2;
+        let pEndRight = pEndLeft.multiplyByFloats(-1, 1, 1);
+        let dirEnd = Tools.V3Dir(135);
+        let nEnd = Tools.V3Dir(45);
+
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(template.trackTemplates[0], pEndLeft.subtract(dirEnd.scale(0.001)), dirEnd)
+        ];
+
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight * template.h, 0), dir),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(- Split.pivotL / Math.SQRT2, - tileHeight - Split.pivotL / Math.SQRT2 - 0.0015 * 1.5, 0), dirEnd.multiplyByFloats(1, -1, 1)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(Split.pivotL / Math.SQRT2, - tileHeight - Split.pivotL / Math.SQRT2 - 0.0015 * 1.5, 0), dirEnd),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight * template.h, 0), dir)
+        ];
+
+        template.trackTemplates[2] = new TrackTemplate(template);
+        template.trackTemplates[2].trackpoints = [
+            new TrackPoint(template.trackTemplates[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
+            new TrackPoint(template.trackTemplates[2], pEndLeft.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+        ];
+
+        template.trackTemplates[3] = new TrackTemplate(template);
+        template.trackTemplates[3].trackpoints = [
+            new TrackPoint(template.trackTemplates[3], pEndLeft.add(Tools.V3Dir(315, 0.02)).add(Tools.V3Dir(45, 0.014)), Tools.V3Dir(150), new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(template.trackTemplates[3], new BABYLON.Vector3(0, -0.003, 0)),
+            new TrackPoint(template.trackTemplates[3], pEndRight.add(Tools.V3Dir(45, 0.02)).add(Tools.V3Dir(315, 0.014)), Tools.V3Dir(30), new BABYLON.Vector3(0, -1, 0))
+        ]
+        template.trackTemplates[3].drawStartTip = true;
+        template.trackTemplates[3].drawEndTip = true;
+
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+
+        template.initialize();
+
+        return template;
+    }
         
     public dispose(): void {
         super.dispose();
@@ -191,14 +207,14 @@ class Split extends MachinePart {
                 if (BABYLON.Vector3.Distance(ball.position, this.pivot.absolutePosition) < 0.05) {
                     let local = BABYLON.Vector3.TransformCoordinates(ball.position, this.pivot.getWorldMatrix().clone().invert());
                     if (local.y < ball.radius * 0.9) {
-                        if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
+                        if (local.x > ball.radius * 0.5 && local.x < Split.pivotL) {
                             this._moving = true;
                             this._animatePivot(- Math.PI / 4, 0.3 / this.game.currentTimeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
                         }
-                        else if (local.x > - this.pivotL && local.x < - ball.radius * 0.5) {
+                        else if (local.x > - Split.pivotL && local.x < - ball.radius * 0.5) {
                             this._moving = true;
                             this._animatePivot(Math.PI / 4, 0.3 / this.game.currentTimeFactor).then(() => {
                                 this._moving = false;

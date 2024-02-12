@@ -139,7 +139,7 @@ class Ball extends BABYLON.Mesh {
             this.machine.parts.forEach(part => {
                 if (Mummu.SphereAABBCheck(this.position, this.radius, part.AABBMin.x - this.radius, part.AABBMax.x + this.radius, part.AABBMin.y - this.radius, part.AABBMax.y + this.radius, part.AABBMin.z - this.radius, part.AABBMax.z + this.radius)) {
                     part.allWires.forEach(wire => {
-                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, !(part instanceof UTurnLarge));
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
                         if (col.hit) {
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
@@ -296,12 +296,12 @@ class Configuration {
 var simpleLoop = {
     balls: [{ x: 0.003999999664723874, y: -0.061500001311302184, z: 0 }],
     parts: [
-        { name: "uturnlayer-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
         { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false },
     ],
 };
@@ -321,10 +321,10 @@ var demo1 = {
         { name: "ramp-2.1.1", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "uturn-l", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-0.3", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: 4, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.2.2", i: -1, j: 4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: 2, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.3", i: 2, j: 0, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-3.1.1", i: -1, j: -1, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.4.1", i: 0, j: 1, k: 0, mirrorX: true, mirrorZ: false },
     ],
@@ -342,17 +342,17 @@ var demoLoops = {
         { name: "loop", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false },
         { name: "elevator-17", i: 2, j: -9, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 1, j: -8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: -2, j: -6, k: 0, mirrorX: true, mirrorZ: true },
-        { name: "uturnlayer-1.3", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.3", i: -2, j: -6, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.3", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: true },
         { name: "loop", i: -1, j: -2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: false },
         { name: "loop", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: -2, j: 2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.3", i: -2, j: 2, k: 0, mirrorX: true, mirrorZ: true },
         { name: "loop", i: -1, j: 2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.3", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
         { name: "loop", i: -1, j: 4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: -2, j: 7, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturn-0.3", i: -2, j: 7, k: 0, mirrorX: true, mirrorZ: true },
         { name: "ramp-3.1.3", i: -1, j: 7, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
@@ -417,23 +417,23 @@ var demo3 = {
         { name: "loop", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
         { name: "join", i: -1, j: 2, k: 1, mirrorX: false, mirrorZ: false },
         { name: "loop", i: -2, j: 0, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: -1, j: -3, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.0.1", i: -1, j: -2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-1.2", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: 1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.2", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.1.1", i: -1, j: 0, k: 0, mirrorX: true, mirrorZ: false },
         { name: "join", i: 0, j: 3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.3", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: 1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
         { name: "elevator-12", i: -3, j: -7, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: -2, j: 4, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.0.1", i: -1, j: 4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 4, j: -1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.2", i: 4, j: -1, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-2.3.1", i: 0, j: -1, k: 1, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.0.1", i: 2, j: -1, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 3, j: 0, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.2", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: true },
         { name: "ramp-3.1.1", i: -2, j: 2, k: 3, mirrorX: false, mirrorZ: false },
     ],
 };
@@ -463,16 +463,16 @@ var demo3D = {
         { x: 0.3756430183403636, y: 0.044253335357509804 },
     ],
     parts: [
-        { name: "uturnlayer-1.2", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.2", i: 0, j: -4, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.2", i: 5, j: 0, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.3", i: 1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.2", i: 5, j: -5, k: 1, mirrorX: false, mirrorZ: false },
         { name: "elevator-8", i: 3, j: -9, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-4.1.1", i: 1, j: -5, k: 2, mirrorX: true, mirrorZ: false },
         { name: "ramp-4.4.1", i: 1, j: -4, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.2.1", i: 2, j: -2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-2.3", i: 1, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-2.3", i: 1, j: -7, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: 2, j: -8, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-3.1.2", i: 2, j: -6, k: 1, mirrorX: false, mirrorZ: true },
     ],
@@ -496,12 +496,12 @@ var demoLoop = {
         { name: "ramp-1.5.1", i: 2, j: -9, k: 1, mirrorX: false, mirrorZ: false },
         { name: "spiral", i: 0, j: -9, k: 1, mirrorX: true, mirrorZ: false },
         { name: "join", i: 1, j: -3, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.4", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.4", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: true },
         { name: "ramp-2.0.1", i: 1, j: -1, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.1.1", i: -1, j: -4, k: 3, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.1.1", i: -1, j: -6, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.3", i: -2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.3", i: -2, j: -5, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.1.1", i: 2, j: -4, k: 3, mirrorX: true, mirrorZ: false },
     ],
 };
@@ -517,25 +517,25 @@ var demoXXL = {
         { name: "split", i: -1, j: -12, k: 4, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: 0, j: -12, k: 4, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.0.2", i: 0, j: -10, k: 4, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 2, j: -10, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.3", i: 2, j: -10, k: 3, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2", i: 0, j: -9, k: 3, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.4", i: -3, j: -10, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.4", i: -3, j: -10, k: 4, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.5.1", i: 1, j: -10, k: 3, mirrorX: true, mirrorZ: false },
         { name: "join", i: 1, j: 0, k: 6, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: 0, j: 1, k: 4, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.5", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.3", i: 0, j: 1, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.5", i: 2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
         { name: "elevator-14", i: 1, j: -13, k: 4, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.3.1", i: 0, j: -6, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.2", i: -4, j: -7, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.5", i: -1, j: -1, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.5", i: 0, j: -7, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.6", i: 2, j: -8, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.2", i: -4, j: -7, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.5", i: -1, j: -1, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.5", i: 0, j: -7, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.6", i: 2, j: -8, k: 2, mirrorX: false, mirrorZ: true },
         { name: "ramp-3.1.1", i: -1, j: -9, k: 7, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.6", i: 2, j: -7, k: 1, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-1.6", i: -4, j: -6, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.6", i: 2, j: -7, k: 1, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.6", i: -4, j: -6, k: 1, mirrorX: true, mirrorZ: false },
         { name: "ramp-4.0.1", i: -2, j: -6, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-4.1.1", i: -2, j: -5, k: 6, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.5", i: 2, j: -4, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.5", i: 2, j: -4, k: 2, mirrorX: false, mirrorZ: true },
         { name: "ramp-3.1.1", i: -3, j: -7, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.1.1", i: -1, j: -5, k: 4, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.2", i: -3, j: -6, k: 3, mirrorX: false, mirrorZ: false },
@@ -552,21 +552,21 @@ var largeTornado = {
         { x: 0.15400000655651092, y: 0.1534900631904602, z: 0 },
     ],
     parts: [
-        { name: "uturnlayer-1.5", i: -1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.5", i: 1, j: -5, k: 4, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.8", i: -2, j: -4, k: 1, mirrorX: true, mirrorZ: true },
-        { name: "uturnlayer-1.7", i: 1, j: -3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.7", i: -2, j: -2, k: 1, mirrorX: true, mirrorZ: true },
-        { name: "uturnlayer-1.6", i: 1, j: -1, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.6", i: -1, j: 0, k: 1, mirrorX: true, mirrorZ: true },
-        { name: "uturnlayer-1.5", i: 1, j: 1, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.5", i: -1, j: 2, k: 1, mirrorX: true, mirrorZ: true },
-        { name: "uturnlayer-1.4", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.4", i: -1, j: 4, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.5", i: -1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.5", i: 1, j: -5, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.8", i: -2, j: -4, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.7", i: 1, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.7", i: -2, j: -2, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.6", i: 1, j: -1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.6", i: -1, j: 0, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.5", i: 1, j: 1, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.5", i: -1, j: 2, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturn-1.4", i: 1, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.4", i: -1, j: 4, k: 1, mirrorX: true, mirrorZ: true },
         { name: "elevator-15", i: 1, j: -7, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-1.5", i: 1, j: 5, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.5", i: 1, j: 5, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.4.1", i: -1, j: 6, k: 5, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.5", i: -4, j: 10, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "uturn-0.5", i: -4, j: 10, k: 0, mirrorX: true, mirrorZ: true },
         { name: "loop-1.2", i: -2, j: 6, k: 4, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.2.1", i: -2, j: 8, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.0.1", i: 0, j: 8, k: 0, mirrorX: false, mirrorZ: false },
@@ -584,7 +584,7 @@ var twoLoops = {
         { name: "loop-2.2", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
         { name: "loop-1.2", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.1.1", i: -3, j: 5, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.4", i: -5, j: 5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.4", i: -5, j: 5, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-3.3.4", i: -3, j: 5, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-3.3.1", i: 0, j: 5, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-3.12.1", i: 1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
@@ -598,9 +598,9 @@ var logoCircuit = {
         { x: -0.4920541867386349, y: -0.05544158273924758, z: -0.18 },
     ],
     parts: [
-        { name: "uturnlayer-0.4", i: -3, j: 0, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-1.4", i: -1, j: 0, k: 2, mirrorX: false, mirrorZ: true },
-        { name: "uturnlayer-0.3", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.4", i: -3, j: 0, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.4", i: -1, j: 0, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.3", i: -3, j: 2, k: 2, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.1.1", i: -2, j: 1, k: 2, mirrorX: true, mirrorZ: false },
         { name: "loop-1.2", i: -1, j: -4, k: 2, mirrorX: false, mirrorZ: false },
         { name: "uturn-s", i: 0, j: 0, k: 3, mirrorX: false, mirrorZ: false },
@@ -612,11 +612,11 @@ var test = {
     parts: [
         { name: "join", i: -1, j: -1, k: 1, mirrorX: false, mirrorZ: false },
         { name: "split", i: -1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: 0, j: 0, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: -1, j: 0, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-2.4", i: 0, j: 0, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.2", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: 0, j: 0, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: -1, j: 0, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-2.4", i: 0, j: 0, k: 0, mirrorX: false, mirrorZ: true },
         { name: "elevator-16", i: -4, j: -14, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-3.0.1", i: -3, j: 2, k: 0, mirrorX: false, mirrorZ: false },
         { name: "ramp-2.10.1", i: -3, j: -13, k: 0, mirrorX: false, mirrorZ: false },
@@ -628,8 +628,21 @@ var test2 = {
         { name: "elevator-7", i: 1, j: -6, k: 0, mirrorZ: false },
         { name: "loop-1.2", i: -1, j: -5, k: 1, mirrorZ: true },
         { name: "ramp-1.4.2", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturnlayer-0.2", i: -2, j: -1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: -2, j: -1, k: 1, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.2", i: -1, j: -1, k: 0, mirrorX: false, mirrorZ: true },
+    ],
+};
+var test3 = {
+    balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
+    parts: [
+        { name: "loop-1.2", i: -1, j: -5, k: 1, mirrorZ: true },
+        { name: "ramp-1.4.2", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: -3, j: 1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "split", i: -2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "elevator-8", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "flatjoin", i: 0, j: 1, k: 0, mirrorZ: false },
+        { name: "ramp-2.0.2", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
 class HelperShape {
@@ -2267,7 +2280,7 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(test2);
+        this.machine.deserialize(test3);
         //this.machine.deserialize(test);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -3518,12 +3531,8 @@ var TrackNames = [
     "join",
     "flatjoin",
     "split",
-    "uturn-s",
-    "uturn-l",
-    "uturnlayer-0.2",
+    "uturn-0.2",
     "loop-1.2",
-    "wave",
-    "snake",
     "elevator-4"
 ];
 class MachinePartFactory {
@@ -3553,16 +3562,10 @@ class MachinePartFactory {
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
             return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
         }
-        if (trackname === "uturn-s") {
-            return new UTurn(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname === "uturn-l") {
-            return new UTurnLarge(this.machine, i, j, k, mirrorX);
-        }
-        if (trackname.startsWith("uturnlayer-")) {
+        if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new UTurnLayer(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            return new uturn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3945,10 +3948,10 @@ class TemplateManager {
             this._dictionary.set(partName, datas);
         }
         if (!data) {
-            if (partName.startsWith("uturnlayer-")) {
+            if (partName.startsWith("uturn-")) {
                 let h = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
-                data = UTurnLayer.GenerateTemplate(h, d, mirrorX, mirrorZ);
+                data = uturn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("ramp-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
@@ -3959,6 +3962,9 @@ class TemplateManager {
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
                 data = Elevator.GenerateTemplate(h, mirrorX);
+            }
+            else if (partName === "split") {
+                data = Split.GenerateTemplate(mirrorX);
             }
             else if (partName === "flatjoin") {
                 data = FlatJoin.GenerateTemplate(mirrorX);
@@ -4968,12 +4974,8 @@ class Ramp extends MachinePart {
 }
 class Split extends MachinePart {
     constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            h: 2,
-            mirrorX: mirrorX
-        });
+        super(machine, i, j, k);
         this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
-        this.pivotL = 0.025;
         this.reset = () => {
             this._moving = false;
             if (this.mirrorX) {
@@ -4984,46 +4986,9 @@ class Split extends MachinePart {
             }
         };
         this._moving = false;
-        this.xMirrorable = true;
-        this.partName = "split";
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let rCurb = this.pivotL * 0.3;
-        let pEndLeft = new BABYLON.Vector3(0, -tileHeight, 0);
-        pEndLeft.x -= this.pivotL / Math.SQRT2;
-        pEndLeft.y += this.pivotL / Math.SQRT2;
-        let pEndRight = pEndLeft.multiplyByFloats(-1, 1, 1);
-        let dirEnd = Tools.V3Dir(135);
-        let nEnd = Tools.V3Dir(45);
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(this.tracks[0], pEndLeft.subtract(dirEnd.scale(0.001)), dirEnd)
-        ];
-        this.tracks[1] = new Track(this);
-        this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), dir),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd.multiplyByFloats(1, -1, 1)),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(this.pivotL / Math.SQRT2, -tileHeight - this.pivotL / Math.SQRT2 - this.wireSize * 1.5, 0), dirEnd),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * this.h, 0), dir)
-        ];
-        this.tracks[2] = new Track(this);
-        this.tracks[2].trackpoints = [
-            new TrackPoint(this.tracks[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
-            new TrackPoint(this.tracks[2], pEndLeft.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
-        ];
-        this.tracks[3] = new Track(this);
-        this.tracks[3].trackpoints = [
-            new TrackPoint(this.tracks[3], pEndLeft.add(Tools.V3Dir(315, 0.02)).add(Tools.V3Dir(45, 0.014)), Tools.V3Dir(150), new BABYLON.Vector3(0, -1, 0)),
-            new TrackPoint(this.tracks[3], new BABYLON.Vector3(0, -0.003, 0)),
-            new TrackPoint(this.tracks[3], pEndRight.add(Tools.V3Dir(45, 0.02)).add(Tools.V3Dir(315, 0.014)), Tools.V3Dir(30), new BABYLON.Vector3(0, -1, 0))
-        ];
-        this.tracks[3].drawStartTip = true;
-        this.tracks[3].drawEndTip = true;
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
+        let partName = "split";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        let rCurb = Split.pivotL * 0.3;
         let anchorDatas = [];
         let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
         let q = BABYLON.Quaternion.Identity();
@@ -5057,16 +5022,16 @@ class Split extends MachinePart {
         });
         let wireHorizontal0 = new Wire(this);
         wireHorizontal0.parent = this.pivot;
-        wireHorizontal0.path = [new BABYLON.Vector3(-this.pivotL, 0, -dz), new BABYLON.Vector3(this.pivotL, 0, -dz)];
+        wireHorizontal0.path = [new BABYLON.Vector3(-Split.pivotL, 0, -dz), new BABYLON.Vector3(Split.pivotL, 0, -dz)];
         let wireHorizontal1 = new Wire(this);
         wireHorizontal1.parent = this.pivot;
-        wireHorizontal1.path = [new BABYLON.Vector3(-this.pivotL, 0, dz), new BABYLON.Vector3(this.pivotL, 0, dz)];
+        wireHorizontal1.path = [new BABYLON.Vector3(-Split.pivotL, 0, dz), new BABYLON.Vector3(Split.pivotL, 0, dz)];
         let wireVertical0 = new Wire(this);
         wireVertical0.parent = this.pivot;
-        wireVertical0.path = [new BABYLON.Vector3(0, this.pivotL, -dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
+        wireVertical0.path = [new BABYLON.Vector3(0, Split.pivotL, -dz), new BABYLON.Vector3(0, rCurb * 0.3, -dz)];
         let wireVertical1 = new Wire(this);
         wireVertical1.parent = this.pivot;
-        wireVertical1.path = [new BABYLON.Vector3(0, this.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
+        wireVertical1.path = [new BABYLON.Vector3(0, Split.pivotL, dz), new BABYLON.Vector3(0, rCurb * 0.3, dz)];
         let curbLeft0 = new Wire(this);
         curbLeft0.wireSize = this.wireSize * 0.8;
         curbLeft0.parent = this.pivot;
@@ -5120,6 +5085,52 @@ class Split extends MachinePart {
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
     }
+    static GenerateTemplate(mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "split";
+        template.h = 2;
+        template.xMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let pEndLeft = new BABYLON.Vector3(0, -tileHeight, 0);
+        pEndLeft.x -= Split.pivotL / Math.SQRT2;
+        pEndLeft.y += Split.pivotL / Math.SQRT2;
+        let pEndRight = pEndLeft.multiplyByFloats(-1, 1, 1);
+        let dirEnd = Tools.V3Dir(135);
+        let nEnd = Tools.V3Dir(45);
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(template.trackTemplates[0], pEndLeft.subtract(dirEnd.scale(0.001)), dirEnd)
+        ];
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * template.h, 0), dir),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(-Split.pivotL / Math.SQRT2, -tileHeight - Split.pivotL / Math.SQRT2 - 0.0015 * 1.5, 0), dirEnd.multiplyByFloats(1, -1, 1)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(Split.pivotL / Math.SQRT2, -tileHeight - Split.pivotL / Math.SQRT2 - 0.0015 * 1.5, 0), dirEnd),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * template.h, 0), dir)
+        ];
+        template.trackTemplates[2] = new TrackTemplate(template);
+        template.trackTemplates[2].trackpoints = [
+            new TrackPoint(template.trackTemplates[2], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir.multiplyByFloats(-1, 1, 1)),
+            new TrackPoint(template.trackTemplates[2], pEndLeft.subtract(dirEnd.scale(0.001)).multiplyByFloats(-1, 1, 1), dirEnd.multiplyByFloats(-1, 1, 1))
+        ];
+        template.trackTemplates[3] = new TrackTemplate(template);
+        template.trackTemplates[3].trackpoints = [
+            new TrackPoint(template.trackTemplates[3], pEndLeft.add(Tools.V3Dir(315, 0.02)).add(Tools.V3Dir(45, 0.014)), Tools.V3Dir(150), new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(template.trackTemplates[3], new BABYLON.Vector3(0, -0.003, 0)),
+            new TrackPoint(template.trackTemplates[3], pEndRight.add(Tools.V3Dir(45, 0.02)).add(Tools.V3Dir(315, 0.014)), Tools.V3Dir(30), new BABYLON.Vector3(0, -1, 0))
+        ];
+        template.trackTemplates[3].drawStartTip = true;
+        template.trackTemplates[3].drawEndTip = true;
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
     dispose() {
         super.dispose();
         this.machine.onStopCallbacks.remove(this.reset);
@@ -5131,14 +5142,14 @@ class Split extends MachinePart {
                 if (BABYLON.Vector3.Distance(ball.position, this.pivot.absolutePosition) < 0.05) {
                     let local = BABYLON.Vector3.TransformCoordinates(ball.position, this.pivot.getWorldMatrix().clone().invert());
                     if (local.y < ball.radius * 0.9) {
-                        if (local.x > ball.radius * 0.5 && local.x < this.pivotL) {
+                        if (local.x > ball.radius * 0.5 && local.x < Split.pivotL) {
                             this._moving = true;
                             this._animatePivot(-Math.PI / 4, 0.3 / this.game.currentTimeFactor).then(() => {
                                 this._moving = false;
                             });
                             return;
                         }
-                        else if (local.x > -this.pivotL && local.x < -ball.radius * 0.5) {
+                        else if (local.x > -Split.pivotL && local.x < -ball.radius * 0.5) {
                             this._moving = true;
                             this._animatePivot(Math.PI / 4, 0.3 / this.game.currentTimeFactor).then(() => {
                                 this._moving = false;
@@ -5151,76 +5162,17 @@ class Split extends MachinePart {
         }
     }
 }
-class UTurnLarge extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            w: 2,
-            d: 3,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "uturn-l";
-        this.deserialize({
-            points: [
-                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: 0.13394933569683048, y: -0.008441899296066684, z: 0.00026137674993623877 }, normal: { x: 0.032306075793350764, y: 0.9833195664766373, z: -0.17899426708984922 } },
-                { position: { x: 0.1712, y: -0.01, z: -0.0105 }, normal: { x: -0.11360563098237532, y: 0.9568855505453798, z: -0.2673271474552511 } },
-                { position: { x: 0.1955, y: -0.0116, z: -0.0372 }, normal: { x: -0.20660883087432497, y: 0.9643838758298143, z: -0.16515608085750325 } },
-                { position: { x: 0.2038, y: -0.013, z: -0.0688 }, normal: { x: -0.25848323253959904, y: 0.9647301065787487, z: -0.049822083019837024 } },
-                { position: { x: 0.197, y: -0.0144, z: -0.0992 }, normal: { x: -0.274874420263502, y: 0.9572314992222168, z: 0.09028792821629655 } },
-                { position: { x: 0.1744, y: -0.016, z: -0.1265 }, normal: { x: -0.18804611436208896, y: 0.956335180137496, z: 0.22374468061767094 } },
-                { position: { x: 0.1339, y: -0.0178, z: -0.1377 }, normal: { x: -0.051765501746220265, y: 0.9550181735779958, z: 0.29199421392334324 } },
-                { position: { x: 0.0987, y: -0.0194, z: -0.1288 }, normal: { x: 0.11311928184404368, y: 0.954449314514888, z: 0.2760987759790836 } },
-                { position: { x: 0.0723, y: -0.021, z: -0.1014 }, normal: { x: 0.2540510175431706, y: 0.9536388488664376, z: 0.16134133511898094 } },
-                { position: { x: 0.055, y: -0.024, z: -0.0328 }, normal: { x: -0.2934267273272182, y: 0.9518591565545972, z: -0.08868428143255824 } },
-                { position: { x: 0.0301, y: -0.0254, z: -0.009 }, normal: { x: -0.16527157396712613, y: 0.9629216416134613, z: -0.2132304362675873 } },
-                { position: { x: -0.0057, y: -0.027, z: 0.0007 }, normal: { x: -0.056169210068177, y: 0.9868539889112726, z: -0.1515395143526165 } },
-                { position: { x: -0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: -1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-class UTurn extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            d: 2,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "uturn-s";
-        this.deserialize({
-            points: [
-                { position: { x: -0.075, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: 0.0193, y: -0.0084, z: 0.0003 }, normal: { x: -0.05500779973536025, y: 0.925151067399511, z: -0.37559239137370676 } },
-                { position: { x: 0.05180769566226052, y: 0.0056684545036756045, z: -0.004609346816050227 }, normal: { x: -0.6257808486659882, y: 0.6834386999132468, z: -0.37591205474654144 }, tangentOut: 1.275 },
-                { position: { x: 0.0638, y: 0.0181, z: -0.0256 }, normal: { x: -0.985533398197922, y: -0.018330358969221288, z: -0.16848714780812155 } },
-                { position: { x: 0.0586, y: 0.0099, z: -0.0448 }, normal: { x: -0.8873689664333703, y: 0.20446962902517424, z: 0.4132414405856218 } },
-                { position: { x: 0.0454, y: -0.0086, z: -0.0519 }, normal: { x: -0.5726089695906795, y: 0.5162041363475339, z: 0.6369083588413618 } },
-                { position: { x: 0.0262, y: -0.0253, z: -0.0454 }, normal: { x: -0.01778258232366703, y: 0.911265522044504, z: 0.41143520522539134 } },
-                { position: { x: -0.0152, y: -0.0301, z: -0.0069 }, normal: { x: -0.18431426214031815, y: 0.931209421797995, z: -0.31444755608259073 } },
-                { position: { x: -0.075, y: -0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: -1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-class UTurnLayer extends MachinePart {
+Split.pivotL = 0.025;
+class uturn extends MachinePart {
     constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
         super(machine, i, j, k);
-        let partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
+        let partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(h, d, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
-        template.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
+        template.partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);
         template.w = Math.ceil(d / 3),
             template.h = h,
             template.d = d,
