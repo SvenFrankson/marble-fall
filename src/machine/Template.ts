@@ -49,7 +49,6 @@ class TrackTemplate {
     }
     
     public initialize(): void {
-        console.log("initialize template");
         for (let i = 1; i < this.trackpoints.length - 1; i++) {
 
             let prevTrackPoint = this.trackpoints[i - 1];
@@ -284,6 +283,9 @@ class TemplateManager {
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
                 data = Elevator.GenerateTemplate(h, mirrorX);
+            }
+            else if (partName === "flatjoin") {
+                data = FlatJoin.GenerateTemplate(mirrorX);
             }
             datas[mirrorIndex] = data;
         }

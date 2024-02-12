@@ -177,10 +177,10 @@ class Machine {
             if (part != exclude) {
                 for (let j = 0; j < part.tracks.length; j++) {
                     let track = part.tracks[j];
-                    if (BABYLON.Vector3.DistanceSquared(track.startWorldPosition, pos) < 0.001) {
+                    if (BABYLON.Vector3.DistanceSquared(track.startWorldPosition, pos) < 0.000001) {
                         return { isEnd: false, bank: track.preferedStartBank }
                     }
-                    if (BABYLON.Vector3.DistanceSquared(track.endWorldPosition, pos) < 0.001) {
+                    if (BABYLON.Vector3.DistanceSquared(track.endWorldPosition, pos) < 0.000001) {
                         return { isEnd: true, bank: track.preferedEndBank }
                     }
                 }

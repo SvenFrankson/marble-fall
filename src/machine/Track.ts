@@ -266,6 +266,7 @@ class Track {
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
+            Mummu.DrawDebugPoint(this.startWorldPosition, 60, BABYLON.Color3.Green());
             let otherBank = otherS.bank * (otherS.isEnd ? 1 : - 1);
             if (this.preferedStartBank * otherBank >= 0) {
                 startBank = Math.sign(this.preferedStartBank + otherBank) * Math.max(Math.abs(this.preferedStartBank), Math.abs(otherBank));
@@ -278,6 +279,7 @@ class Track {
         let endBank = 0;
         let otherE = this.part.machine.getBankAt(this.endWorldPosition, this.part);
         if (otherE) {
+            Mummu.DrawDebugPoint(this.endWorldPosition, 60, BABYLON.Color3.Red());
             let otherBank = otherE.bank * (otherE.isEnd ? - 1 : 1);
             if (this.preferedEndBank * otherBank >= 0) {
                 endBank = Math.sign(this.preferedEndBank + otherBank) * Math.max(Math.abs(this.preferedEndBank), Math.abs(otherBank));
@@ -285,6 +287,10 @@ class Track {
             else {
                 endBank = this.preferedEndBank * 0.5 + otherBank * 0.5;
             }
+        }
+
+        if (this.part.partName === "flatjoin") {
+            console.log(startBank + " " + endBank);
         }
 
         angles[0] = startBank;
@@ -365,12 +371,12 @@ class Track {
         Mummu.DecimatePathInPlace(this.wires[0].path, 2 / 180 * Math.PI);
         Mummu.DecimatePathInPlace(this.wires[1].path, 2 / 180 * Math.PI);
 
-        if (this.drawStartTip) {
+        if (this.template.drawStartTip) {
             this.wires[0].startTipCenter = this.template.trackpoints[0].position.clone();
             this.wires[0].startTipNormal = this.template.trackpoints[0].normal.clone();
             this.wires[0].startTipDir = this.template.trackpoints[0].dir.clone();
         }
-        if (this.drawEndTip) {
+        if (this.template.drawEndTip) {
             this.wires[0].endTipCenter = this.template.trackpoints[this.template.trackpoints.length - 1].position.clone();
             this.wires[0].endTipNormal = this.template.trackpoints[this.template.trackpoints.length - 1].normal.clone();
             this.wires[0].endTipDir = this.template.trackpoints[this.template.trackpoints.length - 1].dir.clone();
