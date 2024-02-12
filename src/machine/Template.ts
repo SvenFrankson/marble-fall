@@ -272,7 +272,7 @@ class TemplateManager {
             if (partName.startsWith("uturn-")) {
                 let h = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
-                data = uturn.GenerateTemplate(h, d, mirrorX, mirrorZ);
+                data = UTurn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("ramp-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);

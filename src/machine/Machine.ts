@@ -27,7 +27,6 @@ class Machine {
     public balls: Ball[] = [];
 
     public trackFactory: MachinePartFactory;
-    public trackSharedDataManager: TrackSharedDataManager;
     public templateManager: TemplateManager;
 
     public instantiated: boolean = false;
@@ -36,7 +35,6 @@ class Machine {
 
     constructor(public game: Game) {
         this.trackFactory = new MachinePartFactory(this);
-        this.trackSharedDataManager = new TrackSharedDataManager(this);
         this.templateManager = new TemplateManager(this);
     }
 
@@ -229,7 +227,9 @@ class Machine {
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
             let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror ? true : part.mirrorX, part.mirrorZ);
-            this.parts.push(track);
+            if (track) {
+                this.parts.push(track);
+            }
         }
     }
 

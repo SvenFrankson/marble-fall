@@ -344,20 +344,15 @@ class MachinePart extends BABYLON.Mesh {
                     track = new Track(this);
                     this.tracks[i] = track;
                 }
-                track.initializeFromTemplate(this.template.trackTemplates[i]);
+                track.initialize(this.template.trackTemplates[i]);
                 this.AABBMin.minimizeInPlace(track.AABBMin);
                 this.AABBMax.maximizeInPlace(track.AABBMax);
                 this.allWires.push(track.wires[0], track.wires[1]);
             }
         }
         else {
-            this.tracks.forEach(track => {
-                track.generateTrackpointsInterpolatedData();
-                track.initialize();
-                this.AABBMin.minimizeInPlace(track.AABBMin);
-                this.AABBMax.maximizeInPlace(track.AABBMax);
-                this.allWires.push(track.wires[0], track.wires[1]);
-            });
+            console.error("Can't generate wires, no template provided for " + this.partName);
+            console.log(this);
         }
     }
 
@@ -402,55 +397,6 @@ class MachinePart extends BABYLON.Mesh {
             })
             
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
-        }
-    }
-
-    public serialize(): ITrackData {
-        let data: ITrackData = { points: []};
-
-        for (let i = 0; i < this.tracks[0].trackpoints.length; i++) {
-            data.points[i] = {
-                position: { x: this.tracks[0].trackpoints[i].position.x, y: this.tracks[0].trackpoints[i].position.y, z: this.tracks[0].trackpoints[i].position.z }
-            };
-            if (this.tracks[0].trackpoints[i].fixedNormal) {
-                data.points[i].normal = { x: this.tracks[0].trackpoints[i].normal.x, y: this.tracks[0].trackpoints[i].normal.y, z: this.tracks[0].trackpoints[i].normal.z }
-            }
-            if (this.tracks[0].trackpoints[i].fixedDir) {
-                data.points[i].dir = { x: this.tracks[0].trackpoints[i].dir.x, y: this.tracks[0].trackpoints[i].dir.y, z: this.tracks[0].trackpoints[i].dir.z }
-            }
-            if (this.tracks[0].trackpoints[i].fixedTangentIn) {
-                data.points[i].tangentIn = this.tracks[0].trackpoints[i].tangentIn;
-            }
-            if (this.tracks[0].trackpoints[i].fixedTangentOut) {
-                data.points[i].tangentOut = this.tracks[0].trackpoints[i].tangentOut;
-            }
-        }
-
-        return data;
-    }
-
-    public deserialize(data: ITrackData): void {
-        this.tracks = [new Track(this)];
-        for (let i = 0; i < data.points.length; i++) {
-            let pointData = data.points[i];
-            let direction: BABYLON.Vector3;
-            if (pointData.dir) {
-                direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
-            }
-            let normal: BABYLON.Vector3;
-            if (pointData.normal) {
-                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
-            }
-
-            let trackPoint = new TrackPoint(
-                this.tracks[0],
-                new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z),
-                direction,
-                normal,
-                pointData.tangentIn,
-                pointData.tangentOut
-            );
-            this.tracks[0].trackpoints[i] = trackPoint;
         }
     }
 }

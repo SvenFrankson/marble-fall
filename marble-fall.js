@@ -2961,7 +2961,6 @@ class Machine {
         this.playing = false;
         this.onStopCallbacks = new Nabu.UniqueList();
         this.trackFactory = new MachinePartFactory(this);
-        this.trackSharedDataManager = new TrackSharedDataManager(this);
         this.templateManager = new TemplateManager(this);
     }
     async instantiate() {
@@ -3132,7 +3131,9 @@ class Machine {
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
             let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror ? true : part.mirrorX, part.mirrorZ);
-            this.parts.push(track);
+            if (track) {
+                this.parts.push(track);
+            }
         }
     }
     getEncloseStart() {
@@ -3435,20 +3436,15 @@ class MachinePart extends BABYLON.Mesh {
                     track = new Track(this);
                     this.tracks[i] = track;
                 }
-                track.initializeFromTemplate(this.template.trackTemplates[i]);
+                track.initialize(this.template.trackTemplates[i]);
                 this.AABBMin.minimizeInPlace(track.AABBMin);
                 this.AABBMax.maximizeInPlace(track.AABBMax);
                 this.allWires.push(track.wires[0], track.wires[1]);
             }
         }
         else {
-            this.tracks.forEach(track => {
-                track.generateTrackpointsInterpolatedData();
-                track.initialize();
-                this.AABBMin.minimizeInPlace(track.AABBMin);
-                this.AABBMax.maximizeInPlace(track.AABBMax);
-                this.allWires.push(track.wires[0], track.wires[1]);
-            });
+            console.error("Can't generate wires, no template provided for " + this.partName);
+            console.log(this);
         }
     }
     update(dt) { }
@@ -3486,43 +3482,6 @@ class MachinePart extends BABYLON.Mesh {
                 wire.instantiate();
             });
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
-        }
-    }
-    serialize() {
-        let data = { points: [] };
-        for (let i = 0; i < this.tracks[0].trackpoints.length; i++) {
-            data.points[i] = {
-                position: { x: this.tracks[0].trackpoints[i].position.x, y: this.tracks[0].trackpoints[i].position.y, z: this.tracks[0].trackpoints[i].position.z }
-            };
-            if (this.tracks[0].trackpoints[i].fixedNormal) {
-                data.points[i].normal = { x: this.tracks[0].trackpoints[i].normal.x, y: this.tracks[0].trackpoints[i].normal.y, z: this.tracks[0].trackpoints[i].normal.z };
-            }
-            if (this.tracks[0].trackpoints[i].fixedDir) {
-                data.points[i].dir = { x: this.tracks[0].trackpoints[i].dir.x, y: this.tracks[0].trackpoints[i].dir.y, z: this.tracks[0].trackpoints[i].dir.z };
-            }
-            if (this.tracks[0].trackpoints[i].fixedTangentIn) {
-                data.points[i].tangentIn = this.tracks[0].trackpoints[i].tangentIn;
-            }
-            if (this.tracks[0].trackpoints[i].fixedTangentOut) {
-                data.points[i].tangentOut = this.tracks[0].trackpoints[i].tangentOut;
-            }
-        }
-        return data;
-    }
-    deserialize(data) {
-        this.tracks = [new Track(this)];
-        for (let i = 0; i < data.points.length; i++) {
-            let pointData = data.points[i];
-            let direction;
-            if (pointData.dir) {
-                direction = new BABYLON.Vector3(pointData.dir.x, pointData.dir.y, pointData.dir.z);
-            }
-            let normal;
-            if (pointData.normal) {
-                normal = new BABYLON.Vector3(pointData.normal.x, pointData.normal.y, pointData.normal.z);
-            }
-            let trackPoint = new TrackPoint(this.tracks[0], new BABYLON.Vector3(pointData.position.x, pointData.position.y, pointData.position.z), direction, normal, pointData.tangentIn, pointData.tangentOut);
-            this.tracks[0].trackpoints[i] = trackPoint;
         }
     }
 }
@@ -3565,7 +3524,9 @@ class MachinePartFactory {
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new uturn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            if (isFinite(h) && isFinite(d)) {
+                return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            }
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3951,7 +3912,7 @@ class TemplateManager {
             if (partName.startsWith("uturn-")) {
                 let h = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
-                data = uturn.GenerateTemplate(h, d, mirrorX, mirrorZ);
+                data = UTurn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("ramp-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
@@ -4067,119 +4028,7 @@ class Track {
         }
         return 0;
     }
-    generateTrackpointsInterpolatedData() {
-        for (let i = 1; i < this.trackpoints.length - 1; i++) {
-            let prevTrackPoint = this.trackpoints[i - 1];
-            let trackPoint = this.trackpoints[i];
-            let nextTrackPoint = this.trackpoints[i + 1];
-            if (!trackPoint.fixedDir) {
-                trackPoint.dir.copyFrom(nextTrackPoint.position).subtractInPlace(prevTrackPoint.position).normalize();
-            }
-            if (!trackPoint.fixedTangentIn) {
-                trackPoint.tangentIn = 1;
-            }
-            if (!trackPoint.fixedTangentOut) {
-                trackPoint.tangentOut = 1;
-            }
-        }
-    }
-    initialize() {
-        let sharedData = this.part.machine.trackSharedDataManager.getSharedData(this.part, this.trackIndex);
-        this.interpolatedPoints = sharedData.sharedInterpolatedPoints.map(v => { return v.clone(); });
-        console.log("Init : " + this.interpolatedPoints.length + " interpolated points");
-        this.interpolatedNormals = sharedData.sharedInterpolatedNormals.map(v => { return v.clone(); });
-        let N = this.interpolatedPoints.length;
-        for (let i = 0; i < N; i++) {
-            let prevPoint = this.interpolatedPoints[i - 1];
-            let point = this.interpolatedPoints[i];
-            let nextPoint = this.interpolatedPoints[i + 1];
-            let dir;
-            if (nextPoint) {
-                dir = nextPoint;
-            }
-            else {
-                dir = point;
-            }
-            if (prevPoint) {
-                dir = dir.subtract(prevPoint);
-            }
-            else {
-                dir = dir.subtract(point);
-            }
-            Mummu.RotateInPlace(this.interpolatedNormals[i], dir, sharedData.sharedBaseAngle[i]);
-        }
-        this.summedLength = [0];
-        this.totalLength = 0;
-        for (let i = 0; i < N - 1; i++) {
-            let p = this.interpolatedPoints[i];
-            let pNext = this.interpolatedPoints[i + 1];
-            let dir = pNext.subtract(p);
-            let d = dir.length();
-            dir.scaleInPlace(1 / d);
-            let right = BABYLON.Vector3.Cross(this.interpolatedNormals[i], dir);
-            this.interpolatedNormals[i] = BABYLON.Vector3.Cross(dir, right).normalize();
-            this.summedLength[i + 1] = this.summedLength[i] + d;
-        }
-        this.totalLength = this.summedLength[N - 1];
-        let dh = this.interpolatedPoints[this.interpolatedPoints.length - 1].y - this.interpolatedPoints[0].y;
-        this.globalSlope = dh / this.totalLength * 100;
-        // Compute wire path and Update AABB values.
-        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
-        this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
-        for (let i = 0; i < N; i++) {
-            let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
-            let p = this.interpolatedPoints[i];
-            let pNext = this.interpolatedPoints[i + 1] ? this.interpolatedPoints[i + 1] : undefined;
-            if (!pPrev) {
-                pPrev = p.subtract(pNext.subtract(p));
-            }
-            if (!pNext) {
-                pNext = p.add(p.subtract(pPrev));
-            }
-            let dir = pNext.subtract(pPrev).normalize();
-            let up = this.interpolatedNormals[i];
-            let rotation = BABYLON.Quaternion.Identity();
-            Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
-            let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
-            this.wires[0].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-this.part.wireGauge * 0.5, 0, 0), matrix);
-            this.wires[1].path[i] = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this.part.wireGauge * 0.5, 0, 0), matrix);
-            this.AABBMin.minimizeInPlace(this.wires[0].path[i]);
-            this.AABBMin.minimizeInPlace(this.wires[1].path[i]);
-            this.AABBMax.maximizeInPlace(this.wires[0].path[i]);
-            this.AABBMax.maximizeInPlace(this.wires[1].path[i]);
-        }
-        Mummu.DecimatePathInPlace(this.wires[0].path, 2 / 180 * Math.PI);
-        Mummu.DecimatePathInPlace(this.wires[1].path, 2 / 180 * Math.PI);
-        this.AABBMin.x -= this.part.wireSize * 0.5;
-        this.AABBMin.y -= this.part.wireSize * 0.5;
-        this.AABBMin.z -= this.part.wireSize * 0.5;
-        this.AABBMax.x += this.part.wireSize * 0.5;
-        this.AABBMax.y += this.part.wireSize * 0.5;
-        this.AABBMax.z += this.part.wireSize * 0.5;
-        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMin, this.part.getWorldMatrix(), this.AABBMin);
-        BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.part.getWorldMatrix(), this.AABBMax);
-        if (this.drawStartTip) {
-            this.wires[0].startTipCenter = this.trackpoints[0].position.clone();
-            this.wires[0].startTipNormal = this.trackpoints[0].normal.clone();
-            this.wires[0].startTipDir = this.trackpoints[0].dir.clone();
-        }
-        if (this.drawEndTip) {
-            this.wires[0].endTipCenter = this.trackpoints[this.trackpoints.length - 1].position.clone();
-            this.wires[0].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal.clone();
-            this.wires[0].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir.clone();
-        }
-        /*
-        if (this.wires[1].drawStartTip) {
-            this.wires[1].startTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
-            this.wires[1].startTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
-        }
-        if (this.wires[1].drawEndTip) {
-            this.wires[1].endTipNormal = this.trackpoints[this.trackpoints.length - 1].normal;
-            this.wires[1].endTipDir = this.trackpoints[this.trackpoints.length - 1].dir;
-        }
-        */
-    }
-    initializeFromTemplate(template) {
+    initialize(template) {
         this.template = template;
         this.interpolatedPoints = template.interpolatedPoints;
         this.interpolatedNormals = template.interpolatedNormals.map(v => { return v.clone(); });
@@ -4230,9 +4079,6 @@ class Track {
             else {
                 endBank = this.preferedEndBank * 0.5 + otherBank * 0.5;
             }
-        }
-        if (this.part.partName === "flatjoin") {
-            console.log(startBank + " " + endBank);
         }
         angles[0] = startBank;
         angles[angles.length - 1] = endBank;
@@ -4314,146 +4160,6 @@ class Track {
         this.wires.forEach(wire => {
             wire.recomputeAbsolutePath();
         });
-    }
-}
-class TrackSharedData {
-    constructor() {
-        this.sharedInterpolatedPoints = [];
-        this.sharedInterpolatedNormals = [];
-        this.sharedBaseAngle = [];
-    }
-}
-class TrackSharedDataManager {
-    constructor(machine) {
-        this.machine = machine;
-        this._dictionary = new Map();
-    }
-    getSharedData(part, trackIndex) {
-        let mirrorIndex = (part.mirrorX ? 0 : 1) + (part.mirrorZ ? 0 : 2);
-        let data;
-        let datas = this._dictionary.get(part.partName);
-        if (datas && datas[trackIndex] && datas[trackIndex][mirrorIndex]) {
-            data = datas[trackIndex][mirrorIndex];
-        }
-        else {
-            if (!datas) {
-                datas = [];
-            }
-            if (!datas[trackIndex]) {
-                datas[trackIndex] = [];
-            }
-            this._dictionary.set(part.partName, datas);
-        }
-        if (!data) {
-            data = this.generateTrackSharedData(part.tracks[trackIndex]);
-            datas[trackIndex][mirrorIndex] = data;
-        }
-        return data;
-    }
-    generateTrackSharedData(track) {
-        let data = new TrackSharedData();
-        track.trackpoints[0].summedLength = 0;
-        for (let i = 0; i < track.trackpoints.length - 1; i++) {
-            let trackPoint = track.trackpoints[i];
-            let nextTrackPoint = track.trackpoints[i + 1];
-            let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
-            let tanIn = track.trackpoints[i].dir.scale(dist * trackPoint.tangentOut);
-            let tanOut = track.trackpoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
-            let count = Math.round(dist / 0.003);
-            count = Math.max(0, count);
-            data.sharedInterpolatedPoints.push(trackPoint.position);
-            nextTrackPoint.summedLength = trackPoint.summedLength;
-            for (let k = 1; k < count; k++) {
-                let amount = k / count;
-                let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
-                data.sharedInterpolatedPoints.push(point);
-                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(data.sharedInterpolatedPoints[data.sharedInterpolatedPoints.length - 2], data.sharedInterpolatedPoints[data.sharedInterpolatedPoints.length - 1]);
-            }
-            nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, data.sharedInterpolatedPoints[data.sharedInterpolatedPoints.length - 1]);
-        }
-        data.sharedInterpolatedPoints.push(track.trackpoints[track.trackpoints.length - 1].position);
-        let N = data.sharedInterpolatedPoints.length;
-        let normalsForward = [];
-        let normalsBackward = [];
-        normalsForward.push(track.trackpoints[0].normal);
-        for (let i = 1; i < data.sharedInterpolatedPoints.length - 1; i++) {
-            let prevNormal = normalsForward[i - 1];
-            let point = data.sharedInterpolatedPoints[i];
-            let nextPoint = data.sharedInterpolatedPoints[i + 1];
-            let dir = nextPoint.subtract(point).normalize();
-            let n = prevNormal;
-            let right = BABYLON.Vector3.Cross(n, dir);
-            n = BABYLON.Vector3.Cross(dir, right).normalize();
-            normalsForward.push(n);
-        }
-        normalsForward.push(track.trackpoints[track.trackpoints.length - 1].normal);
-        normalsBackward[data.sharedInterpolatedPoints.length - 1] = track.trackpoints[track.trackpoints.length - 1].normal;
-        for (let i = data.sharedInterpolatedPoints.length - 2; i >= 1; i--) {
-            let prevNormal = normalsBackward[i + 1];
-            let point = data.sharedInterpolatedPoints[i];
-            let prevPoint = data.sharedInterpolatedPoints[i - 1];
-            let dir = prevPoint.subtract(point).normalize();
-            let n = prevNormal;
-            let right = BABYLON.Vector3.Cross(n, dir);
-            n = BABYLON.Vector3.Cross(dir, right).normalize();
-            normalsBackward[i] = n;
-        }
-        normalsBackward[0] = track.trackpoints[0].normal;
-        for (let i = 0; i < N; i++) {
-            let f = i / (N - 1);
-            data.sharedInterpolatedNormals.push(BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize());
-        }
-        let maxR = 0;
-        data.sharedBaseAngle = [0];
-        for (let i = 1; i < N - 1; i++) {
-            let n = data.sharedInterpolatedNormals[i];
-            let prevPoint = data.sharedInterpolatedPoints[i - 1];
-            let point = data.sharedInterpolatedPoints[i];
-            let nextPoint = data.sharedInterpolatedPoints[i + 1];
-            let dirPrev = point.subtract(prevPoint);
-            let dPrev = dirPrev.length();
-            let dirNext = nextPoint.subtract(point);
-            let dNext = dirNext.length();
-            let a = Mummu.AngleFromToAround(dirPrev.scale(-1), dirNext, n);
-            if (Math.abs(a) < Math.PI * 0.9999999) {
-                let sign = Math.sign(a);
-                let rPrev = Math.tan(Math.abs(a) / 2) * (dPrev * 0.5);
-                let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
-                let r = (rPrev + rNext) * 0.5;
-                maxR = Math.max(r, maxR);
-                let f = 0.06 / r;
-                f = Math.max(Math.min(f, 1), 0);
-                data.sharedBaseAngle[i] = Math.PI / 4 * sign * f;
-            }
-            else {
-                data.sharedBaseAngle[i] = 0;
-            }
-        }
-        data.sharedBaseAngle.push(0);
-        let f = 1;
-        for (let n = 0; n < 2 * N; n++) {
-            for (let i = 0; i < N; i++) {
-                let aPrev = data.sharedBaseAngle[i - 1];
-                let a = data.sharedBaseAngle[i];
-                let point = data.sharedInterpolatedPoints[i];
-                let aNext = data.sharedBaseAngle[i + 1];
-                if (isFinite(aPrev) && isFinite(aNext)) {
-                    let prevPoint = data.sharedInterpolatedPoints[i - 1];
-                    let distPrev = BABYLON.Vector3.Distance(prevPoint, point);
-                    let nextPoint = data.sharedInterpolatedPoints[i + 1];
-                    let distNext = BABYLON.Vector3.Distance(nextPoint, point);
-                    let d = distPrev / (distPrev + distNext);
-                    data.sharedBaseAngle[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
-                }
-                else if (isFinite(aPrev)) {
-                    data.sharedBaseAngle[i] = (1 - f) * a + f * aPrev;
-                }
-                else if (isFinite(aNext)) {
-                    data.sharedBaseAngle[i] = (1 - f) * a + f * aNext;
-                }
-            }
-        }
-        return data;
     }
 }
 class TrackPoint {
@@ -5163,7 +4869,7 @@ class Split extends MachinePart {
     }
 }
 Split.pivotL = 0.025;
-class uturn extends MachinePart {
+class UTurn extends MachinePart {
     constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
         super(machine, i, j, k);
         let partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);

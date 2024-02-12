@@ -41,7 +41,9 @@ class MachinePartFactory {
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new uturn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            if (isFinite(h) && isFinite(d)) {
+                return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+            }
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
