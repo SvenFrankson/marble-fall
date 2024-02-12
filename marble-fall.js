@@ -3180,13 +3180,12 @@ class MachinePartSelectorMesh extends BABYLON.Mesh {
     }
 }
 class MachinePart extends BABYLON.Mesh {
-    constructor(machine, _i, _j, _k, prop) {
+    constructor(machine, _i, _j, _k) {
         super("track", machine.game.scene);
         this.machine = machine;
         this._i = _i;
         this._j = _j;
         this._k = _k;
-        this.partName = "machine-part";
         this.tracks = [];
         this.wires = [];
         this.allWires = [];
@@ -3203,59 +3202,56 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMid = BABYLON.Vector3.One().scaleInPlace(0.5);
         this.enclose23 = BABYLON.Vector3.One().scaleInPlace(2 / 3);
         this.encloseEnd = BABYLON.Vector3.One();
-        this.w = 1;
-        this.h = 1;
-        this.d = 1;
-        this.mirrorX = false;
-        this.mirrorZ = false;
-        this.xExtendable = false;
-        this.yExtendable = false;
-        this.zExtendable = false;
-        this.minD = 1;
-        this.xMirrorable = false;
-        this.zMirrorable = false;
         this._partVisibilityMode = PartVisibilityMode.Default;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.position.z = -this._k * tileDepth;
-        if (prop) {
-            if (isFinite(prop.w)) {
-                this.w = prop.w;
-            }
-            if (isFinite(prop.h)) {
-                this.h = prop.h;
-            }
-            if (isFinite(prop.d)) {
-                this.d = prop.d;
-            }
-            if (prop.mirrorX) {
-                this.mirrorX = true;
-            }
-            if (prop.mirrorZ) {
-                this.mirrorZ = true;
-            }
-        }
         this.tracks = [new Track(this)];
+    }
+    get partName() {
+        return this.template ? this.template.partName : "machine-part-no-template";
     }
     get game() {
         return this.machine.game;
+    }
+    get w() {
+        return this.template.w;
+    }
+    get h() {
+        return this.template.h;
+    }
+    get d() {
+        return this.template.d;
+    }
+    get mirrorX() {
+        return this.template.mirrorX;
+    }
+    get mirrorZ() {
+        return this.template.mirrorZ;
+    }
+    get xExtendable() {
+        return this.template.mirrorX;
+    }
+    get yExtendable() {
+        return this.template.yExtendable;
+    }
+    get zExtendable() {
+        return this.template.zExtendable;
+    }
+    get minD() {
+        return this.template.minD;
+    }
+    get xMirrorable() {
+        return this.template.xMirrorable;
+    }
+    get zMirrorable() {
+        return this.template.zMirrorable;
     }
     get template() {
         return this._template;
     }
     setTemplate(template) {
         this._template = template;
-        this.partName = this._template.partName;
-        this.w = this._template.w;
-        this.h = this._template.h;
-        this.d = this._template.d;
-        this.mirrorX = this._template.mirrorX;
-        this.mirrorZ = this._template.mirrorZ;
-        this.yExtendable = this._template.yExtendable;
-        this.zExtendable = this._template.zExtendable;
-        this.minD = this._template.minD;
-        this.xMirrorable = this._template.xMirrorable;
-        this.zMirrorable = this._template.zMirrorable;
     }
     get i() {
         return this._i;
@@ -3315,16 +3311,6 @@ class MachinePart extends BABYLON.Mesh {
         this.selectorMesh.visibility = 0;
         this.encloseMesh.visibility = 0;
     }
-    mirrorXTrackPointsInPlace() {
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].mirrorXTrackPointsInPlace();
-        }
-    }
-    mirrorZTrackPointsInPlace() {
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].mirrorZTrackPointsInPlace();
-        }
-    }
     getSlopeAt(index, trackIndex = 0) {
         if (this.tracks[trackIndex]) {
             return this.tracks[trackIndex].getSlopeAt(index);
@@ -3338,14 +3324,14 @@ class MachinePart extends BABYLON.Mesh {
         return 0;
     }
     getBarycenter() {
-        if (this.tracks[0].trackpoints.length < 2) {
+        if (this.tracks[0].template.trackpoints.length < 2) {
             return this.position.clone();
         }
-        let barycenter = this.tracks[0].trackpoints.map(trackpoint => {
+        let barycenter = this.tracks[0].template.trackpoints.map(trackpoint => {
             return trackpoint.position;
         }).reduce((pos1, pos2) => {
             return pos1.add(pos2);
-        }).scaleInPlace(1 / this.tracks[0].trackpoints.length);
+        }).scaleInPlace(1 / this.tracks[0].template.trackpoints.length);
         return BABYLON.Vector3.TransformCoordinates(barycenter, this.getWorldMatrix());
     }
     recomputeAbsolutePath() {
@@ -3366,13 +3352,13 @@ class MachinePart extends BABYLON.Mesh {
         this.sleepersMesh.parent = this;
         let datas = [];
         for (let n = 0; n < this.tracks.length; n++) {
-            let points = [...this.tracks[n].interpolatedPoints].map(p => { return p.clone(); });
+            let points = [...this.tracks[n].templateInterpolatedPoints].map(p => { return p.clone(); });
             Mummu.DecimatePathInPlace(points, 10 / 180 * Math.PI);
             let dirStart = points[1].subtract(points[0]).normalize();
             let dirEnd = points[points.length - 1].subtract(points[points.length - 2]).normalize();
             points[0].subtractInPlace(dirStart.scale(this.wireGauge * 0.5));
             points[points.length - 1].addInPlace(dirEnd.scale(this.wireGauge * 0.5));
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].templateInterpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let data = BABYLON.VertexData.ExtractFromMesh(tmp);
             datas.push(data);
             tmp.dispose();
@@ -3458,7 +3444,7 @@ class MachinePart extends BABYLON.Mesh {
                 let sina = Math.sin(a);
                 shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
             }
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].templateInterpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();
@@ -3553,7 +3539,7 @@ class SleeperMeshBuilder {
         let q = part.game.config.graphicQ;
         let partialsDatas = [];
         for (let j = 0; j < part.tracks.length; j++) {
-            let interpolatedPoints = part.tracks[j].interpolatedPoints;
+            let interpolatedPoints = part.tracks[j].templateInterpolatedPoints;
             let summedLength = [0];
             for (let i = 1; i < interpolatedPoints.length; i++) {
                 let prev = interpolatedPoints[i - 1];
@@ -3625,7 +3611,7 @@ class SleeperMeshBuilder {
                     let path = basePath.map(v => { return v.clone(); });
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, quat);
+                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].trackInterpolatedNormals[i], dir, quat);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     for (let j = 0; j < path.length; j++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
@@ -3946,16 +3932,8 @@ class TemplateManager {
 class Track {
     constructor(part) {
         this.part = part;
-        this.trackpoints = [];
-        this.drawStartTip = false;
-        this.drawEndTip = false;
-        this.preferedStartBank = 0;
         this._startWorldPosition = BABYLON.Vector3.Zero();
-        this.preferedEndBank = 0;
         this._endWorldPosition = BABYLON.Vector3.Zero();
-        this.summedLength = [0];
-        this.totalLength = 0;
-        this.globalSlope = 0;
         this.AABBMin = BABYLON.Vector3.Zero();
         this.AABBMax = BABYLON.Vector3.Zero();
         this.wires = [
@@ -3963,45 +3941,29 @@ class Track {
             new Wire(this.part)
         ];
     }
+    get templateInterpolatedPoints() {
+        return this.template.interpolatedPoints;
+    }
+    get preferedStartBank() {
+        return this.template ? this.template.preferedStartBank : 0;
+    }
     get startWorldPosition() {
-        this._startWorldPosition.copyFrom(this.part.position).addInPlace(this.interpolatedPoints[0]);
+        this._startWorldPosition.copyFrom(this.part.position).addInPlace(this.templateInterpolatedPoints[0]);
         return this._startWorldPosition;
     }
+    get preferedEndBank() {
+        return this.template ? this.template.preferedEndBank : 0;
+    }
     get endWorldPosition() {
-        this._endWorldPosition.copyFrom(this.part.position).addInPlace(this.interpolatedPoints[this.interpolatedPoints.length - 1]);
+        this._endWorldPosition.copyFrom(this.part.position).addInPlace(this.templateInterpolatedPoints[this.templateInterpolatedPoints.length - 1]);
         return this._endWorldPosition;
     }
     get trackIndex() {
         return this.part.tracks.indexOf(this);
     }
-    mirrorXTrackPointsInPlace() {
-        for (let i = 0; i < this.trackpoints.length; i++) {
-            this.trackpoints[i].position.x *= -1;
-            this.trackpoints[i].position.x += (this.part.w - 1) * tileWidth;
-            if (this.trackpoints[i].normal) {
-                this.trackpoints[i].normal.x *= -1;
-            }
-            if (this.trackpoints[i].dir) {
-                this.trackpoints[i].dir.x *= -1;
-            }
-        }
-    }
-    mirrorZTrackPointsInPlace() {
-        for (let i = 0; i < this.trackpoints.length; i++) {
-            this.trackpoints[i].position.z += (this.part.d - 1) * tileDepth * 0.5;
-            this.trackpoints[i].position.z *= -1;
-            this.trackpoints[i].position.z -= (this.part.d - 1) * tileDepth * 0.5;
-            if (this.trackpoints[i].normal) {
-                this.trackpoints[i].normal.z *= -1;
-            }
-            if (this.trackpoints[i].dir) {
-                this.trackpoints[i].dir.z *= -1;
-            }
-        }
-    }
     getSlopeAt(index) {
-        let trackpoint = this.trackpoints[index];
-        let nextTrackPoint = this.trackpoints[index + 1];
+        let trackpoint = this.template.trackpoints[index];
+        let nextTrackPoint = this.template.trackpoints[index + 1];
         if (trackpoint) {
             if (nextTrackPoint) {
                 let dy = nextTrackPoint.position.y - trackpoint.position.y;
@@ -4017,7 +3979,7 @@ class Track {
         return 0;
     }
     getBankAt(index) {
-        let trackpoint = this.trackpoints[index];
+        let trackpoint = this.template.trackpoints[index];
         if (trackpoint) {
             let n = trackpoint.normal;
             if (n.y < 0) {
@@ -4030,16 +3992,13 @@ class Track {
     }
     initialize(template) {
         this.template = template;
-        this.interpolatedPoints = template.interpolatedPoints;
-        this.interpolatedNormals = template.interpolatedNormals.map(v => { return v.clone(); });
-        this.preferedStartBank = template.preferedStartBank;
-        this.preferedEndBank = template.preferedEndBank;
+        this.trackInterpolatedNormals = template.interpolatedNormals.map(v => { return v.clone(); });
         // Update AABB values.
-        let N = this.interpolatedPoints.length;
+        let N = this.templateInterpolatedPoints.length;
         this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
         this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
         for (let i = 0; i < N; i++) {
-            let p = this.interpolatedPoints[i];
+            let p = this.templateInterpolatedPoints[i];
             this.AABBMin.minimizeInPlace(p);
             this.AABBMax.maximizeInPlace(p);
         }
@@ -4053,9 +4012,9 @@ class Track {
         BABYLON.Vector3.TransformCoordinatesToRef(this.AABBMax, this.part.getWorldMatrix(), this.AABBMax);
     }
     recomputeWiresPath() {
-        let N = this.interpolatedPoints.length;
+        let N = this.templateInterpolatedPoints.length;
         let angles = [...this.template.angles];
-        this.interpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
+        this.trackInterpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
@@ -4087,12 +4046,12 @@ class Track {
             for (let i = 1; i < N - 1; i++) {
                 let aPrev = angles[i - 1];
                 let a = angles[i];
-                let point = this.interpolatedPoints[i];
+                let point = this.templateInterpolatedPoints[i];
                 let aNext = angles[i + 1];
                 if (isFinite(aPrev) && isFinite(aNext)) {
-                    let prevPoint = this.interpolatedPoints[i - 1];
+                    let prevPoint = this.templateInterpolatedPoints[i - 1];
                     let distPrev = BABYLON.Vector3.Distance(prevPoint, point);
-                    let nextPoint = this.interpolatedPoints[i + 1];
+                    let nextPoint = this.templateInterpolatedPoints[i + 1];
                     let distNext = BABYLON.Vector3.Distance(nextPoint, point);
                     let d = distPrev / (distPrev + distNext);
                     angles[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
@@ -4106,9 +4065,9 @@ class Track {
             }
         }
         for (let i = 0; i < N; i++) {
-            let prevPoint = this.interpolatedPoints[i - 1];
-            let point = this.interpolatedPoints[i];
-            let nextPoint = this.interpolatedPoints[i + 1];
+            let prevPoint = this.templateInterpolatedPoints[i - 1];
+            let point = this.templateInterpolatedPoints[i];
+            let nextPoint = this.templateInterpolatedPoints[i + 1];
             let dir;
             if (nextPoint) {
                 dir = nextPoint;
@@ -4122,13 +4081,13 @@ class Track {
             else {
                 dir = dir.subtract(point);
             }
-            Mummu.RotateInPlace(this.interpolatedNormals[i], dir, angles[i]);
+            Mummu.RotateInPlace(this.trackInterpolatedNormals[i], dir, angles[i]);
         }
         // Compute wire path
         for (let i = 0; i < N; i++) {
-            let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
-            let p = this.interpolatedPoints[i];
-            let pNext = this.interpolatedPoints[i + 1] ? this.interpolatedPoints[i + 1] : undefined;
+            let pPrev = this.templateInterpolatedPoints[i - 1] ? this.templateInterpolatedPoints[i - 1] : undefined;
+            let p = this.templateInterpolatedPoints[i];
+            let pNext = this.templateInterpolatedPoints[i + 1] ? this.templateInterpolatedPoints[i + 1] : undefined;
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
             }
@@ -4136,7 +4095,7 @@ class Track {
                 pNext = p.add(p.subtract(pPrev));
             }
             let dir = pNext.subtract(pPrev).normalize();
-            let up = this.interpolatedNormals[i];
+            let up = this.trackInterpolatedNormals[i];
             let rotation = BABYLON.Quaternion.Identity();
             Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);
             let matrix = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), rotation, p);
@@ -4163,8 +4122,8 @@ class Track {
     }
 }
 class TrackPoint {
-    constructor(track, position, dir, normal, tangentIn, tangentOut) {
-        this.track = track;
+    constructor(template, position, dir, normal, tangentIn, tangentOut) {
+        this.template = template;
         this.position = position;
         this.dir = dir;
         this.normal = normal;
@@ -4210,8 +4169,8 @@ class TrackPoint {
         this.normal.normalize();
     }
     isFirstOrLast() {
-        let index = this.track.trackpoints.indexOf(this);
-        if (index === 0 || index === this.track.trackpoints.length - 1) {
+        let index = this.template.trackpoints.indexOf(this);
+        if (index === 0 || index === this.template.trackpoints.length - 1) {
             return true;
         }
         return false;

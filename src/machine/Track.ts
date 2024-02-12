@@ -1,30 +1,30 @@
 
 class Track {
     
-    public trackpoints: TrackPoint[] = [];
     public wires: Wire[];
-    public interpolatedPoints: BABYLON.Vector3[];
-    public interpolatedNormals: BABYLON.Vector3[];
+    public get templateInterpolatedPoints(): BABYLON.Vector3[] {
+        return this.template.interpolatedPoints;
+    }
+    public trackInterpolatedNormals: BABYLON.Vector3[];
 
-    public drawStartTip: boolean = false;
-    public drawEndTip: boolean = false;
-
-    public preferedStartBank: number = 0;
+    public get preferedStartBank(): number {
+        return this.template ? this.template.preferedStartBank : 0;
+    }
     private _startWorldPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public get startWorldPosition(): BABYLON.Vector3 {
-        this._startWorldPosition.copyFrom(this.part.position).addInPlace(this.interpolatedPoints[0]);
+        this._startWorldPosition.copyFrom(this.part.position).addInPlace(this.templateInterpolatedPoints[0]);
         return this._startWorldPosition;
     }
-    public preferedEndBank: number = 0;
+
+    public get preferedEndBank(): number {
+        return this.template ? this.template.preferedEndBank : 0;
+    }
     private _endWorldPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public get endWorldPosition(): BABYLON.Vector3 {
-        this._endWorldPosition.copyFrom(this.part.position).addInPlace(this.interpolatedPoints[this.interpolatedPoints.length - 1]);
+        this._endWorldPosition.copyFrom(this.part.position).addInPlace(this.templateInterpolatedPoints[this.templateInterpolatedPoints.length - 1]);
         return this._endWorldPosition;
     }
 
-    public summedLength: number[] = [0];
-    public totalLength: number = 0
-    public globalSlope: number = 0;
     public AABBMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public AABBMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
@@ -41,36 +41,9 @@ class Track {
         return this.part.tracks.indexOf(this);
     }
 
-    public mirrorXTrackPointsInPlace(): void {
-        for (let i = 0; i < this.trackpoints.length; i++) {
-            this.trackpoints[i].position.x *= - 1;
-            this.trackpoints[i].position.x += (this.part.w - 1) * tileWidth;
-            if (this.trackpoints[i].normal) {
-                this.trackpoints[i].normal.x *= - 1;
-            }
-            if (this.trackpoints[i].dir) {
-                this.trackpoints[i].dir.x *= - 1;
-            }
-        }
-    }
-
-    public mirrorZTrackPointsInPlace(): void {
-        for (let i = 0; i < this.trackpoints.length; i++) {
-            this.trackpoints[i].position.z += (this.part.d - 1) * tileDepth * 0.5;
-            this.trackpoints[i].position.z *= - 1;
-            this.trackpoints[i].position.z -= (this.part.d - 1) * tileDepth * 0.5;
-            if (this.trackpoints[i].normal) {
-                this.trackpoints[i].normal.z *= - 1;
-            }
-            if (this.trackpoints[i].dir) {
-                this.trackpoints[i].dir.z *= - 1;
-            }
-        }
-    }
-
     public getSlopeAt(index: number): number {
-        let trackpoint = this.trackpoints[index];
-        let nextTrackPoint = this.trackpoints[index + 1];
+        let trackpoint = this.template.trackpoints[index];
+        let nextTrackPoint = this.template.trackpoints[index + 1];
         if (trackpoint) {
             if (nextTrackPoint) {
                 let dy = nextTrackPoint.position.y - trackpoint.position.y;
@@ -87,7 +60,7 @@ class Track {
     }
 
     public getBankAt(index: number): number {
-        let trackpoint = this.trackpoints[index];
+        let trackpoint = this.template.trackpoints[index];
         if (trackpoint) {
             let n = trackpoint.normal;
             if (n.y < 0) {
@@ -102,18 +75,14 @@ class Track {
     public initialize(template: TrackTemplate): void {
         this.template = template;
 
-        this.interpolatedPoints = template.interpolatedPoints;
-        this.interpolatedNormals = template.interpolatedNormals.map(v => { return v.clone(); });
-
-        this.preferedStartBank = template.preferedStartBank;
-        this.preferedEndBank = template.preferedEndBank;
+        this.trackInterpolatedNormals = template.interpolatedNormals.map(v => { return v.clone(); });
 
         // Update AABB values.
-        let N = this.interpolatedPoints.length;
+        let N = this.templateInterpolatedPoints.length;
         this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
         this.AABBMax.copyFromFloats(- Infinity, - Infinity, - Infinity);
         for (let i = 0; i < N; i++) {
-            let p = this.interpolatedPoints[i];
+            let p = this.templateInterpolatedPoints[i];
             this.AABBMin.minimizeInPlace(p);
             this.AABBMax.maximizeInPlace(p);
         }
@@ -128,10 +97,10 @@ class Track {
     }
 
     public recomputeWiresPath(): void {
-        let N = this.interpolatedPoints.length;
+        let N = this.templateInterpolatedPoints.length;
 
         let angles = [...this.template.angles];
-        this.interpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
+        this.trackInterpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
 
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
@@ -166,14 +135,14 @@ class Track {
             for (let i = 1; i < N - 1; i++) {
                 let aPrev = angles[i - 1];
                 let a = angles[i];
-                let point = this.interpolatedPoints[i];
+                let point = this.templateInterpolatedPoints[i];
                 let aNext = angles[i + 1];
 
                 if (isFinite(aPrev) && isFinite(aNext)) {
-                    let prevPoint = this.interpolatedPoints[i - 1];
+                    let prevPoint = this.templateInterpolatedPoints[i - 1];
                     let distPrev = BABYLON.Vector3.Distance(prevPoint, point);
 
-                    let nextPoint = this.interpolatedPoints[i + 1];
+                    let nextPoint = this.templateInterpolatedPoints[i + 1];
                     let distNext = BABYLON.Vector3.Distance(nextPoint, point);
 
                     let d = distPrev / (distPrev + distNext);
@@ -190,9 +159,9 @@ class Track {
         }
 
         for (let i = 0; i < N; i++) {
-            let prevPoint = this.interpolatedPoints[i - 1];
-            let point = this.interpolatedPoints[i];
-            let nextPoint = this.interpolatedPoints[i + 1];
+            let prevPoint = this.templateInterpolatedPoints[i - 1];
+            let point = this.templateInterpolatedPoints[i];
+            let nextPoint = this.templateInterpolatedPoints[i + 1];
             let dir: BABYLON.Vector3;
             if (nextPoint) {
                 dir = nextPoint;
@@ -207,14 +176,14 @@ class Track {
                 dir = dir.subtract(point);
             }
     
-            Mummu.RotateInPlace(this.interpolatedNormals[i], dir, angles[i]);
+            Mummu.RotateInPlace(this.trackInterpolatedNormals[i], dir, angles[i]);
         }
 
         // Compute wire path
         for (let i = 0; i < N; i++) {
-            let pPrev = this.interpolatedPoints[i - 1] ? this.interpolatedPoints[i - 1] : undefined;
-            let p = this.interpolatedPoints[i];
-            let pNext = this.interpolatedPoints[i + 1] ? this.interpolatedPoints[i + 1] : undefined;
+            let pPrev = this.templateInterpolatedPoints[i - 1] ? this.templateInterpolatedPoints[i - 1] : undefined;
+            let p = this.templateInterpolatedPoints[i];
+            let pNext = this.templateInterpolatedPoints[i + 1] ? this.templateInterpolatedPoints[i + 1] : undefined;
 
             if (!pPrev) {
                 pPrev = p.subtract(pNext.subtract(p));
@@ -224,7 +193,7 @@ class Track {
             }
 
             let dir = pNext.subtract(pPrev).normalize();
-            let up = this.interpolatedNormals[i];
+            let up = this.trackInterpolatedNormals[i];
 
             let rotation = BABYLON.Quaternion.Identity();
             Mummu.QuaternionFromZYAxisToRef(dir, up, rotation);

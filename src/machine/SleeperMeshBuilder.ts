@@ -5,7 +5,7 @@ class SleeperMeshBuilder {
         let partialsDatas: BABYLON.VertexData[] = [];
 
         for (let j = 0; j < part.tracks.length; j++) {
-            let interpolatedPoints = part.tracks[j].interpolatedPoints;
+            let interpolatedPoints = part.tracks[j].templateInterpolatedPoints;
             let summedLength: number[] = [0];
             for (let i = 1; i < interpolatedPoints.length; i++) {
                 let prev = interpolatedPoints[i - 1];
@@ -83,7 +83,7 @@ class SleeperMeshBuilder {
         
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].interpolatedNormals[i], dir, quat);
+                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].trackInterpolatedNormals[i], dir, quat);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     
                     for (let j = 0; j < path.length; j++) {

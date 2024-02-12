@@ -37,17 +37,11 @@ class MachinePartSelectorMesh extends BABYLON.Mesh {
     }
 }
 
-interface IMachinePartProp {
-    w?: number;
-    h?: number;
-    d?: number;
-    mirrorX?: boolean;
-    mirrorZ?: boolean;
-}
-
 class MachinePart extends BABYLON.Mesh {
 
-    public partName: string = "machine-part";
+    public get partName(): string {
+        return this.template ? this.template.partName : "machine-part-no-template";
+    }
 
     public get game(): Game {
         return this.machine.game;
@@ -76,18 +70,40 @@ class MachinePart extends BABYLON.Mesh {
     public enclose23: BABYLON.Vector3 = BABYLON.Vector3.One().scaleInPlace(2 / 3);
     public encloseEnd: BABYLON.Vector3 = BABYLON.Vector3.One();
 
-    public w: number = 1;
-    public h: number = 1;
-    public d: number = 1;
-    public mirrorX: boolean = false;
-    public mirrorZ: boolean = false;
+    public get w(): number {
+        return this.template.w;
+    }
+    public get h(): number {
+        return this.template.h;
+    }
+    public get d(): number {
+        return this.template.d;
+    }
+    public get mirrorX(): boolean {
+        return this.template.mirrorX;
+    }
+    public get mirrorZ(): boolean {
+        return this.template.mirrorZ;
+    }
 
-    public xExtendable: boolean = false;
-    public yExtendable: boolean = false;
-    public zExtendable: boolean = false;
-    public minD: number = 1;
-    public xMirrorable: boolean = false;
-    public zMirrorable: boolean = false;
+    public get xExtendable(): boolean {
+        return this.template.mirrorX;
+    }
+    public get yExtendable(): boolean {
+        return this.template.yExtendable;
+    }
+    public get zExtendable(): boolean {
+        return this.template.zExtendable;
+    }
+    public get minD(): number {
+        return this.template.minD;
+    }
+    public get xMirrorable(): boolean {
+        return this.template.xMirrorable;
+    }
+    public get zMirrorable(): boolean {
+        return this.template.zMirrorable;
+    }
 
     private _template: MachinePartTemplate;
     public get template(): MachinePartTemplate {
@@ -95,47 +111,14 @@ class MachinePart extends BABYLON.Mesh {
     }
     public setTemplate(template: MachinePartTemplate) {
         this._template = template;
-
-        this.partName = this._template.partName;
-
-        this.w = this._template.w;
-        this.h = this._template.h;
-        this.d = this._template.d;
-        
-        this.mirrorX = this._template.mirrorX;
-        this.mirrorZ = this._template.mirrorZ;
-
-        this.yExtendable = this._template.yExtendable;
-        this.zExtendable = this._template.zExtendable;
-        this.minD = this._template.minD;
-
-        this.xMirrorable = this._template.xMirrorable;
-        this.zMirrorable = this._template.zMirrorable;
     }
 
-    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, prop?: IMachinePartProp) {
+    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number) {
         super("track", machine.game.scene);
+        
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
         this.position.z = - this._k * tileDepth;
-
-        if (prop) {
-            if (isFinite(prop.w)) {
-                this.w = prop.w
-            }
-            if (isFinite(prop.h)) {
-                this.h = prop.h
-            }
-            if (isFinite(prop.d)) {
-                this.d = prop.d
-            }
-            if (prop.mirrorX) {
-                this.mirrorX = true;
-            }
-            if (prop.mirrorZ) {
-                this.mirrorZ = true;
-            }
-        }
 
         this.tracks = [new Track(this)];
     }
@@ -206,18 +189,6 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMesh.visibility = 0;
     }
 
-    protected mirrorXTrackPointsInPlace(): void {
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].mirrorXTrackPointsInPlace();
-        }
-    }
-
-    protected mirrorZTrackPointsInPlace(): void {
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].mirrorZTrackPointsInPlace();
-        }
-    }
-
     public getSlopeAt(index: number, trackIndex: number = 0): number {
         if (this.tracks[trackIndex]) {
             return this.tracks[trackIndex].getSlopeAt(index);
@@ -233,10 +204,10 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public getBarycenter(): BABYLON.Vector3 {
-        if (this.tracks[0].trackpoints.length < 2) {
+        if (this.tracks[0].template.trackpoints.length < 2) {
             return this.position.clone();
         }
-        let barycenter = this.tracks[0].trackpoints.map(
+        let barycenter = this.tracks[0].template.trackpoints.map(
             trackpoint => {
                 return trackpoint.position;
             }
@@ -244,7 +215,7 @@ class MachinePart extends BABYLON.Mesh {
             (pos1, pos2) => {
                 return pos1.add(pos2);
             }
-        ).scaleInPlace(1 / this.tracks[0].trackpoints.length);
+        ).scaleInPlace(1 / this.tracks[0].template.trackpoints.length);
         return BABYLON.Vector3.TransformCoordinates(barycenter, this.getWorldMatrix());
     }
 
@@ -268,13 +239,13 @@ class MachinePart extends BABYLON.Mesh {
 
         let datas: BABYLON.VertexData[] = [];
         for (let n = 0; n < this.tracks.length; n++) {
-            let points = [...this.tracks[n].interpolatedPoints].map(p => { return p.clone()});
+            let points = [...this.tracks[n].templateInterpolatedPoints].map(p => { return p.clone()});
             Mummu.DecimatePathInPlace(points, 10 / 180 * Math.PI);
             let dirStart = points[1].subtract(points[0]).normalize();
             let dirEnd = points[points.length - 1].subtract(points[points.length - 2]).normalize();
             points[0].subtractInPlace(dirStart.scale(this.wireGauge * 0.5));
             points[points.length - 1].addInPlace(dirEnd.scale(this.wireGauge * 0.5));
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: selectorHullShape, path: this.tracks[n].templateInterpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let data = BABYLON.VertexData.ExtractFromMesh(tmp);
             datas.push(data);
             tmp.dispose();
@@ -369,7 +340,7 @@ class MachinePart extends BABYLON.Mesh {
                 shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
             }
 
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].interpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].templateInterpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
             vertexData.applyToMesh(this.sleepersMesh);
             tmp.dispose();

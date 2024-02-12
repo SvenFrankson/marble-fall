@@ -7,7 +7,7 @@ class TrackPoint {
     public summedLength: number = 0;
 
     constructor(
-        public track: Track | TrackTemplate,
+        public template: TrackTemplate,
         public position: BABYLON.Vector3,
         public dir?: BABYLON.Vector3,
         public normal?: BABYLON.Vector3,
@@ -54,8 +54,8 @@ class TrackPoint {
     }
 
     public isFirstOrLast(): boolean {
-        let index = this.track.trackpoints.indexOf(this);
-        if (index === 0 || index === this.track.trackpoints.length - 1) {
+        let index = this.template.trackpoints.indexOf(this);
+        if (index === 0 || index === this.template.trackpoints.length - 1) {
             return true;
         }
         return false;
