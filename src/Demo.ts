@@ -346,8 +346,12 @@ var test2 = {
     parts: [
         { name: "elevator-7", i: 1, j: -6, k: 0, mirrorZ: false },
         { name: "uturnlayer-0.2", i: -3, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.3.1", i: -2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
         { name: "flatjoin", i: -2, j: -3, k: 1, mirrorZ: false },
-        { name: "ramp-2.3.2", i: -1, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "join", i: -1, j: -5, k: 0, mirrorZ: false },
+        { name: "join", i: 0, j: -4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.2", i: -1, j: -3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -5, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.2.2", i: -2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.1.2", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };

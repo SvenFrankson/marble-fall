@@ -287,6 +287,9 @@ class TemplateManager {
             else if (partName === "flatjoin") {
                 data = FlatJoin.GenerateTemplate(mirrorX);
             }
+            else if (partName === "join") {
+                data = Join.GenerateTemplate(mirrorX);
+            }
             datas[mirrorIndex] = data;
         }
 
