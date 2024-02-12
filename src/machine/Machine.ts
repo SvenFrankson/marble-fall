@@ -27,6 +27,7 @@ class Machine {
     public balls: Ball[] = [];
 
     public trackFactory: MachinePartFactory;
+    public trackSharedDataManager: TrackSharedDataManager;
 
     public instantiated: boolean = false;
 
@@ -34,6 +35,7 @@ class Machine {
 
     constructor(public game: Game) {
         this.trackFactory = new MachinePartFactory(this);
+        this.trackSharedDataManager = new TrackSharedDataManager(this);
     }
 
     public async instantiate(): Promise<void> {

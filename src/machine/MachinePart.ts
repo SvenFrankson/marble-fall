@@ -326,6 +326,7 @@ class MachinePart extends BABYLON.Mesh {
 
         this.allWires = [...this.wires];
         this.tracks.forEach(track => {
+            track.generateTrackpointsInterpolatedData();
             track.generateWires();
             this.AABBMin.minimizeInPlace(track.AABBMin);
             this.AABBMax.maximizeInPlace(track.AABBMax);

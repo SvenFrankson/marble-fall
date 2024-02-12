@@ -9,6 +9,9 @@ class Track {
     public drawStartTip: boolean = false;
     public drawEndTip: boolean = false;
 
+    public preferedStartBank: number = 0;
+    public preferedEndBank: number = 0;
+
     public maxTwist: number = Math.PI / 0.1;
     public summedLength: number[] = [0];
     public totalLength: number = 0
@@ -21,6 +24,10 @@ class Track {
             new Wire(this.part),
             new Wire(this.part)
         ];
+    }
+
+    public get trackIndex(): number {
+        return this.part.tracks.indexOf(this);
     }
 
     public mirrorXTrackPointsInPlace(): void {
@@ -126,11 +133,7 @@ class Track {
         }
     }
 
-    public generateWires(): void {
-        this.interpolatedPoints = [];
-        this.interpolatedNormals = [];
-
-        // Update normals and tangents
+    public generateTrackpointsInterpolatedData(): void {    
         for (let i = 1; i < this.trackpoints.length - 1; i++) {
 
             let prevTrackPoint = this.trackpoints[i - 1];
@@ -147,183 +150,23 @@ class Track {
                 trackPoint.tangentOut = 1;
             }
         }
+    }
 
-        this.wires[0].path = [];
-        this.wires[1].path = [];
+    public generateWires(): void {
+        let sharedData = this.part.machine.trackSharedDataManager.getSharedData(this.part, this.trackIndex);
 
-        this.trackpoints[0].summedLength = 0;
-        for (let i = 0; i < this.trackpoints.length - 1; i++) {
-            let trackPoint = this.trackpoints[i];
-            let nextTrackPoint = this.trackpoints[i + 1];
-            let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
-            let tanIn = this.trackpoints[i].dir.scale(dist * trackPoint.tangentOut);
-            let tanOut = this.trackpoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
-            let count = Math.round(dist / 0.003);
-            count = Math.max(0, count);
-            this.interpolatedPoints.push(trackPoint.position);
-            nextTrackPoint.summedLength = trackPoint.summedLength;
-            for (let k = 1; k < count; k++) {
-                let amount = k / count;
-                let point = BABYLON.Vector3.Hermite(trackPoint.position, tanIn, nextTrackPoint.position, tanOut, amount);
-                this.interpolatedPoints.push(point);
-                nextTrackPoint.summedLength += BABYLON.Vector3.Distance(this.interpolatedPoints[this.interpolatedPoints.length - 2], this.interpolatedPoints[this.interpolatedPoints.length - 1]);
-            }
-            nextTrackPoint.summedLength += BABYLON.Vector3.Distance(nextTrackPoint.position, this.interpolatedPoints[this.interpolatedPoints.length - 1]);
+        this.interpolatedPoints = sharedData.sharedInterpolatedPoints.map(v => { return v.clone(); });
+        if (this.part.mirrorX) {
+            this.interpolatedPoints.forEach(p => {
+                p.x
+            })
         }
-
-        this.interpolatedPoints.push(this.trackpoints[this.trackpoints.length - 1].position);
+        this.interpolatedNormals = sharedData.sharedInterpolatedNormals.map(v => { return v.clone(); });
 
         let N = this.interpolatedPoints.length;
         
-        let normalsForward: BABYLON.Vector3[] = [];
-        let normalsBackward: BABYLON.Vector3[] = [];
-        normalsForward.push(this.trackpoints[0].normal);
-        for (let i = 1; i < this.interpolatedPoints.length - 1; i++) {
-            let prevNormal = normalsForward[i - 1];
-            let point = this.interpolatedPoints[i];
-            let nextPoint = this.interpolatedPoints[i + 1];
-            let dir = nextPoint.subtract(point).normalize();
-            let n = prevNormal;
-            let right = BABYLON.Vector3.Cross(n, dir);
-            n = BABYLON.Vector3.Cross(dir, right).normalize();
-            normalsForward.push(n);
-        }
-        normalsForward.push(this.trackpoints[this.trackpoints.length - 1].normal);
-        
-        normalsBackward[this.interpolatedPoints.length - 1] = this.trackpoints[this.trackpoints.length - 1].normal;
-        for (let i = this.interpolatedPoints.length - 2; i >= 1; i--) {
-            let prevNormal = normalsBackward[i + 1];
-            let point = this.interpolatedPoints[i];
-            let prevPoint = this.interpolatedPoints[i - 1];
-            let dir = prevPoint.subtract(point).normalize();
-            let n = prevNormal;
-            let right = BABYLON.Vector3.Cross(n, dir);
-            n = BABYLON.Vector3.Cross(dir, right).normalize();
-            normalsBackward[i] = n;
-        }
-        normalsBackward[0] = this.trackpoints[0].normal;
-
-        for (let i = 0; i < N; i++) {
-            let f = i / (N - 1);
-            this.interpolatedNormals.push(BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize());
-        }
-
-        let angles: number[] = [0];
-        for (let i = 1; i < N - 1; i++) {
-            let n = this.interpolatedNormals[i];
-
-            let prevPoint = this.interpolatedPoints[i - 1];
-            let point = this.interpolatedPoints[i];
-            let nextPoint = this.interpolatedPoints[i + 1];
-
-            let dirPrev = point.subtract(prevPoint);
-            let dPrev = dirPrev.length();
-
-            let dirNext = nextPoint.subtract(point);
-            let dNext = dirNext.length();
-
-            let a = Mummu.AngleFromToAround(dirPrev.scale(-1), dirNext, n);
-            if (Math.abs(a) < Math.PI * 0.9999) {
-                let sign = Math.sign(a);
-    
-                let rPrev = Math.tan(Math.abs(a) / 2) * (dPrev * 0.5);
-                let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
-                let r = (rPrev + rNext) * 0.5;
-
-                let f = 0.06 / r;
-                f = Math.max(Math.min(f, 1), 0);
-                angles[i] = Math.PI / 4 * sign * f;
-            }
-            else {
-                angles[i] = 0;
-            }
-        }
-        angles.push(0);
-
-        let f = 0.5;
-        for (let n = 0; n < 100; n++) {
-            for (let i = 0; i < N; i++) {
-                let aPrev = angles[i - 1];
-                let a = angles[i];
-                let point = this.interpolatedPoints[i];
-                let aNext = angles[i + 1];
-
-                if (isFinite(aPrev) && isFinite(aNext)) {
-                    let prevPoint = this.interpolatedPoints[i - 1];
-                    let distPrev = BABYLON.Vector3.Distance(prevPoint, point);
-                    if (false && aPrev != 0) {
-                        let weightFactorPrev = Math.abs(aPrev) / (Math.PI / 4);
-                        distPrev /= weightFactorPrev;
-                    }
-
-                    let nextPoint = this.interpolatedPoints[i + 1];
-                    let distNext = BABYLON.Vector3.Distance(nextPoint, point);
-                    if (false && aNext != 0) {
-                        let weightFactorNext = Math.abs(aNext) / (Math.PI / 4);
-                        distNext /= weightFactorNext;
-                    }
-
-                    let d = distPrev / (distPrev + distNext);
-
-                    angles[i] = (1 - f) * a + f * ((1 - d) * aPrev + d * aNext);
-                }
-                else if (isFinite(aPrev)) {
-                    angles[i] = (1 - f) * a + f * aPrev;
-                }
-                else if (isFinite(aNext)) {
-                    angles[i] = (1 - f) * a + f * aNext;
-                }
-            }
-
-            for (let i = N - 2; i >= 1; i--) {
-                let a = angles[i];
-                let aNext = angles[i + 1];
-
-                if (Math.abs(a) < Math.abs(aNext)) {
-                    let point = this.interpolatedPoints[i];
-                    let nextPoint = this.interpolatedPoints[i + 1];
-    
-                    let dist = BABYLON.Vector3.Distance(point, nextPoint);
-                    let maxDeltaBank = this.maxTwist * dist;
-    
-                    angles[i] = angles[i] * 0.95 + Nabu.Step(aNext, a, maxDeltaBank) * 0.05;
-                }
-            }
-        }
-        /*
-        for (let n = 0; n < 50; n++) {
-            let newAngles = [...angles];
-            for (let i = 1; i < N - 1; i++) {
-                let aPrev = angles[i - 1];
-                let a = angles[i];
-                let aNext = angles[i + 1];
-
-                newAngles[i] = (aPrev + a + aNext) / 3;
-            }
-            angles = newAngles;
-        }
-        */
-
-        for (let i = 0; i < N; i++) {
-            let prevPoint = this.interpolatedPoints[i - 1];
-            let point = this.interpolatedPoints[i];
-            let nextPoint = this.interpolatedPoints[i + 1];
-            let dir: BABYLON.Vector3;
-            if (nextPoint) {
-                dir = nextPoint;
-            }
-            else {
-                dir = point;
-            }
-            if (prevPoint) {
-                dir = dir.subtract(prevPoint);
-            }
-            else {
-                dir = dir.subtract(point);
-            }
-    
-            Mummu.RotateInPlace(this.interpolatedNormals[i], dir, angles[i]);
-        }
+        this.preferedStartBank = sharedData.sharedBaseAngle[0];
+        this.preferedEndBank = sharedData.sharedBaseAngle[sharedData.sharedBaseAngle.length - 1];
 
         this.summedLength = [0];
         this.totalLength = 0;
