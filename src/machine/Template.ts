@@ -148,7 +148,7 @@ class TrackTemplate {
                 let r = (rPrev + rNext) * 0.5;
                 maxR = Math.max(r, maxR);
 
-                let f = 0.06 / r;
+                let f = 0.1 / r;
                 f = Math.max(Math.min(f, 1), 0);
                 this.angles[i] = Math.PI / 4 * sign * f;
             }
@@ -255,7 +255,7 @@ class TemplateManager {
 
     }
 
-    public getTemplate(partName: string, mirrorX: boolean, mirrorZ: boolean): MachinePartTemplate {
+    public getTemplate(partName: string, mirrorX?: boolean, mirrorZ?: boolean): MachinePartTemplate {
         let mirrorIndex = (mirrorX ? 0 : 1) + (mirrorZ ? 0 : 2);
         let data: MachinePartTemplate;
         let datas = this._dictionary.get(partName);
@@ -280,6 +280,10 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let d = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Ramp.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("elevator-")) {
+                let h = parseInt(partName.split("-")[1]);
+                data = Elevator.GenerateTemplate(h, mirrorX);
             }
             datas[mirrorIndex] = data;
         }

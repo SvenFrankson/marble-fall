@@ -1,14 +1,8 @@
 class Ramp extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, d: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k, {
-            w: w,
-            h: h,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ,
-        });
-        
+        super(machine, i, j, k);
+
         let partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
@@ -16,18 +10,20 @@ class Ramp extends MachinePart {
     
     public static GenerateTemplate(w: number = 1, h: number = 1, d: number = 1, mirrorX?: boolean, mirrorZ?: boolean): MachinePartTemplate {
         let template = new MachinePartTemplate();
+
+        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+
         template.w = w;
         template.h = h;
         template.d = d;
         template.mirrorX = mirrorX;
         template.mirrorZ = mirrorZ;
+        
         template.xExtendable = true;
         template.yExtendable = true;
         template.zExtendable = true;
         template.xMirrorable = true;
         template.zMirrorable = true;
-
-        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
 
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

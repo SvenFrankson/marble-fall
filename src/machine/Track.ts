@@ -266,16 +266,25 @@ class Track {
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
-            startBank = this.preferedStartBank * 0.5 + otherS.bank * 0.5 * (otherS.isEnd ? 1 : - 1);
-            console.log("StartBank = " + startBank);
+            let otherBank = otherS.bank * (otherS.isEnd ? 1 : - 1);
+            if (this.preferedStartBank * otherBank >= 0) {
+                startBank = Math.sign(this.preferedStartBank + otherBank) * Math.max(Math.abs(this.preferedStartBank), Math.abs(otherBank));
+            }
+            else {
+                startBank = this.preferedStartBank * 0.5 + otherBank * 0.5;
+            }
         }
 
         let endBank = 0;
-        let otherEndBank = this.part.machine.getBankAt(this.endWorldPosition, this.part);
-        if (otherEndBank) {
-            console.log("bravo");
-            endBank = this.preferedEndBank * 0.5 + otherEndBank.bank * 0.5 * (otherEndBank.isEnd ? -1 : 1);
-            console.log("EndBank = " + endBank);
+        let otherE = this.part.machine.getBankAt(this.endWorldPosition, this.part);
+        if (otherE) {
+            let otherBank = otherE.bank * (otherE.isEnd ? - 1 : 1);
+            if (this.preferedEndBank * otherBank >= 0) {
+                endBank = Math.sign(this.preferedEndBank + otherBank) * Math.max(Math.abs(this.preferedEndBank), Math.abs(otherBank));
+            }
+            else {
+                endBank = this.preferedEndBank * 0.5 + otherBank * 0.5;
+            }
         }
 
         angles[0] = startBank;

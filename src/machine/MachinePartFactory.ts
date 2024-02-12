@@ -7,7 +7,6 @@ var TrackNames = [
     "uturn-l",
     "uturnlayer-0.2",
     "loop-1.2",
-    "loop",
     "wave",
     "snake",
     "elevator-4"
@@ -57,10 +56,7 @@ class MachinePartFactory {
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Loop2(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
-        }
-        if (trackname === "loop") {
-            return new Loop(this.machine, i, j, k, mirrorX);
+            return new Loop(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
         }
         if (trackname === "wave") {
             return new Wave(this.machine, i, j, k, mirrorX);

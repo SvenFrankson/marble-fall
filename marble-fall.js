@@ -623,14 +623,12 @@ var test = {
     ],
 };
 var test2 = {
-    balls: [],
+    balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
     parts: [
-        { name: "uturnlayer-0.2", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: -1, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.2", i: 0, j: -4, k: 0, mirrorX: true, mirrorZ: true },
-        { name: "ramp-1.2.3", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 0, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "elevator-7", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.3.2", i: -1, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.3.1", i: -1, j: -2, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -3233,6 +3231,11 @@ class MachinePart extends BABYLON.Mesh {
     setTemplate(template) {
         this._template = template;
         this.partName = this._template.partName;
+        this.w = this._template.w;
+        this.h = this._template.h;
+        this.d = this._template.d;
+        this.mirrorX = this._template.mirrorX;
+        this.mirrorZ = this._template.mirrorZ;
         this.yExtendable = this._template.yExtendable;
         this.zExtendable = this._template.zExtendable;
         this.minD = this._template.minD;
@@ -3414,6 +3417,10 @@ class MachinePart extends BABYLON.Mesh {
         if (this.template) {
             for (let i = 0; i < this.template.trackTemplates.length; i++) {
                 let track = this.tracks[i];
+                if (!track) {
+                    track = new Track(this);
+                    this.tracks[i] = track;
+                }
                 track.initializeFromTemplate(this.template.trackTemplates[i]);
                 this.AABBMin.minimizeInPlace(track.AABBMin);
                 this.AABBMax.maximizeInPlace(track.AABBMax);
@@ -3514,7 +3521,6 @@ var TrackNames = [
     "uturn-l",
     "uturnlayer-0.2",
     "loop-1.2",
-    "loop",
     "wave",
     "snake",
     "elevator-4"
@@ -3560,10 +3566,7 @@ class MachinePartFactory {
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Loop2(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
-        }
-        if (trackname === "loop") {
-            return new Loop(this.machine, i, j, k, mirrorX);
+            return new Loop(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
         }
         if (trackname === "wave") {
             return new Wave(this.machine, i, j, k, mirrorX);
@@ -3848,7 +3851,7 @@ class TrackTemplate {
                 let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
                 let r = (rPrev + rNext) * 0.5;
                 maxR = Math.max(r, maxR);
-                let f = 0.06 / r;
+                let f = 0.1 / r;
                 f = Math.max(Math.min(f, 1), 0);
                 this.angles[i] = Math.PI / 4 * sign * f;
             }
@@ -3961,6 +3964,10 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let d = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Ramp.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("elevator-")) {
+                let h = parseInt(partName.split("-")[1]);
+                data = Elevator.GenerateTemplate(h, mirrorX);
             }
             datas[mirrorIndex] = data;
         }
@@ -4195,15 +4202,24 @@ class Track {
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
-            startBank = this.preferedStartBank * 0.5 + otherS.bank * 0.5 * (otherS.isEnd ? 1 : -1);
-            console.log("StartBank = " + startBank);
+            let otherBank = otherS.bank * (otherS.isEnd ? 1 : -1);
+            if (this.preferedStartBank * otherBank >= 0) {
+                startBank = Math.sign(this.preferedStartBank + otherBank) * Math.max(Math.abs(this.preferedStartBank), Math.abs(otherBank));
+            }
+            else {
+                startBank = this.preferedStartBank * 0.5 + otherBank * 0.5;
+            }
         }
         let endBank = 0;
-        let otherEndBank = this.part.machine.getBankAt(this.endWorldPosition, this.part);
-        if (otherEndBank) {
-            console.log("bravo");
-            endBank = this.preferedEndBank * 0.5 + otherEndBank.bank * 0.5 * (otherEndBank.isEnd ? -1 : 1);
-            console.log("EndBank = " + endBank);
+        let otherE = this.part.machine.getBankAt(this.endWorldPosition, this.part);
+        if (otherE) {
+            let otherBank = otherE.bank * (otherE.isEnd ? -1 : 1);
+            if (this.preferedEndBank * otherBank >= 0) {
+                endBank = Math.sign(this.preferedEndBank + otherBank) * Math.max(Math.abs(this.preferedEndBank), Math.abs(otherBank));
+            }
+            else {
+                endBank = this.preferedEndBank * 0.5 + otherBank * 0.5;
+            }
         }
         angles[0] = startBank;
         angles[angles.length - 1] = endBank;
@@ -4484,11 +4500,7 @@ class TrackPoint {
 }
 class Elevator extends MachinePart {
     constructor(machine, i, j, k, h = 1, mirrorX) {
-        super(machine, i, j, k, {
-            h: 1,
-            mirrorX: mirrorX
-        });
-        this.h = h;
+        super(machine, i, j, k);
         this.boxesCount = 4;
         this.rWheel = 0.015;
         this.boxX = [];
@@ -4504,39 +4516,10 @@ class Elevator extends MachinePart {
         this.p = 0;
         this.chainLength = 0;
         this.speed = 0.04; // in m/s
-        this.boxesCount;
-        this.yExtendable = true;
-        this.xMirrorable = true;
-        this.partName = "elevator-" + h.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let dirLeft = new BABYLON.Vector3(1, 0, 0);
-        dirLeft.normalize();
-        let nLeft = new BABYLON.Vector3(0, 1, 0);
-        nLeft.normalize();
-        let dirRight = new BABYLON.Vector3(1, 1, 0);
-        dirRight.normalize();
-        let nRight = new BABYLON.Vector3(-1, 1, 0);
-        nRight.normalize();
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * this.h, 0), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (this.h + 0.15), 0), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0, -tileHeight * (this.h + 0.35), 0), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (this.h + 0.35) + 0.01, 0), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
-        ];
-        this.tracks[0].drawEndTip = true;
-        this.tracks[1] = new Track(this);
-        this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), dirLeft),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), dirRight)
-        ];
+        let partName = "elevator-" + h.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
         let x = 1;
         if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
             x = -1;
         }
         this.wheels = [
@@ -4612,6 +4595,46 @@ class Elevator extends MachinePart {
         this.generateWires();
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
+    }
+    static GenerateTemplate(h, mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "elevator-" + h.toFixed(0);
+        template.h = h;
+        template.mirrorX = mirrorX;
+        template.yExtendable = true;
+        template.xMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(-1, 1, 0);
+        nRight.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * h, 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * (h + 0.15), 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0, -tileHeight * (h + 0.35), 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0 + 0.01, -tileHeight * (h + 0.35) + 0.01, 0), n),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0 + 0.01, 0 - tileHeight, 0), n),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-0.005, 0.035 - tileHeight, 0), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
+        ];
+        template.trackTemplates[0].drawEndTip = true;
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight, 0), dirLeft),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(-0.008, -tileHeight * 0.5, 0), dirRight)
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
     }
     dispose() {
         super.dispose();
@@ -4763,41 +4786,6 @@ class FlatJoin extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k, {
-            w: 2,
-            h: 3,
-            d: 1,
-            mirrorX: mirrorX
-        });
-        this.xMirrorable = true;
-        this.partName = "loop";
-        this.deserialize({
-            points: [
-                { position: { x: -0.07499999999999998, y: 0, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-                { position: { x: -0.021400000000000002, y: -0.0158, z: 0 }, normal: { x: 0.4396275545392263, y: 0.8981638211016448, z: -0.0054188332648665 } },
-                { position: { x: 0.01999999999999999, y: -0.0465, z: 0 }, normal: { x: 0.5982436505113027, y: 0.8012971523271827, z: -0.005235293235149783 } },
-                { position: { x: 0.05199999999999999, y: -0.0706, z: 0 }, normal: { x: 0.4741604675908546, y: 0.878895570768095, z: -0.05210015986776756 } },
-                { position: { x: 0.0795, y: -0.0786, z: 0 }, normal: { x: 0.09449201595693026, y: 0.9944340313908211, z: -0.0466070395133045 } },
-                { position: { x: 0.10065375229916038, y: -0.07522312329722819, z: 1.1529110999219938e-11 }, normal: { x: -0.5164966685450393, y: 0.8544407592437108, z: -0.05623326706592006 } },
-                { position: { x: 0.11519302709514871, y: -0.05708879183907972, z: -0.0009829866651905254 }, normal: { x: -0.9589534906617966, y: 0.25476375646906013, z: -0.12451357812435228 } },
-                { position: { x: 0.11218277110706124, y: -0.03280312921665407, z: -0.0019974993144583333 }, normal: { x: -0.8687142251904587, y: -0.4874405932158047, z: -0.08796171347333712 } },
-                { position: { x: 0.09431741317667067, y: -0.018836421903859007, z: -0.006790230548899395 }, normal: { x: -0.2827692887364913, y: -0.9591460712007929, z: -0.008963450649307923 } },
-                { position: { x: 0.0715028480454771, y: -0.02070606642307432, z: -0.013133538933271394 }, normal: { x: 0.44191323501249113, y: -0.8959028193766404, z: 0.045506383659676526 } },
-                { position: { x: 0.05679978340718872, y: -0.03791636105629381, z: -0.018090494323189286 }, normal: { x: 0.9547976002539688, y: -0.29720598940938536, z: -0.005490210237409393 } },
-                { position: { x: 0.05785498312066663, y: -0.06445088096471263, z: -0.01854822983510782 }, normal: { x: 0.8764619011291043, y: 0.452593339877206, z: 0.16423703774713058 } },
-                { position: { x: 0.08849293866937, y: -0.10093496548854738, z: -0.013560714982744127 }, normal: { x: 0.4579284797457813, y: 0.879998331714446, z: 0.12611282098783305 } },
-                { position: { x: 0.1453843264203472, y: -0.11222087303501635, z: -0.003043587228636343 }, normal: { x: -0.0774630913932069, y: 0.99670764505399, z: -0.023944514251439668 } },
-                { position: { x: 0.225, y: -0.09, z: 0 }, normal: { x: 0, y: 1, z: 0 }, dir: { x: 1, y: 0, z: 0 } },
-            ],
-        });
-        if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
-        }
-        this.generateWires();
-    }
-}
-class Loop2 extends MachinePart {
     constructor(machine, i, j, k, w = 1, d = 1, mirrorX, mirrorZ) {
         super(machine, i, j, k, {
             w: w,
@@ -4853,19 +4841,14 @@ class Loop2 extends MachinePart {
 }
 class Ramp extends MachinePart {
     constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k, {
-            w: w,
-            h: h,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ,
-        });
+        super(machine, i, j, k);
         let partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
+        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
         template.w = w;
         template.h = h;
         template.d = d;
@@ -4876,7 +4859,6 @@ class Ramp extends MachinePart {
         template.zExtendable = true;
         template.xMirrorable = true;
         template.zMirrorable = true;
-        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);
@@ -5296,19 +5278,14 @@ class UTurn extends MachinePart {
 }
 class UTurnLayer extends MachinePart {
     constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
-        super(machine, i, j, k, {
-            w: Math.ceil(d / 3),
-            h: h,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ
-        });
+        super(machine, i, j, k);
         let partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(h, d, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
+        template.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
         template.w = Math.ceil(d / 3),
             template.h = h,
             template.d = d,
@@ -5319,7 +5296,6 @@ class UTurnLayer extends MachinePart {
         template.minD = 2;
         template.xMirrorable = true;
         template.zMirrorable = true;
-        template.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
         let n = new BABYLON.Vector3(0, 1, 0);

@@ -1,14 +1,8 @@
 class UTurnLayer extends MachinePart {
 
     constructor(machine: Machine, i: number, j: number, k: number, h: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k, {
-            w: Math.ceil(d / 3),
-            h: h,
-            d: d,
-            mirrorX: mirrorX,
-            mirrorZ: mirrorZ
-        });
-        
+        super(machine, i, j, k);
+
         let partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
@@ -17,6 +11,8 @@ class UTurnLayer extends MachinePart {
     public static GenerateTemplate(h: number, d: number, mirrorX?: boolean, mirrorZ?: boolean): MachinePartTemplate {
         let template = new MachinePartTemplate();
 
+        template.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
+        
         template.w = Math.ceil(d / 3),
         template.h = h,
         template.d = d,
@@ -28,7 +24,6 @@ class UTurnLayer extends MachinePart {
         template.minD = 2;
         template.xMirrorable = true;
         template.zMirrorable = true;
-        template.partName = "uturnlayer-" + h.toFixed(0) + "." + d.toFixed(0);
 
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();

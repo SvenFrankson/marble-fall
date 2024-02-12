@@ -7,72 +7,14 @@ class Elevator extends MachinePart {
     public wheels: BABYLON.Mesh[] = [];
     public cable: BABYLON.Mesh;
 
-    constructor(machine: Machine, i: number, j: number, k: number, public h: number = 1, mirrorX?: boolean) {
-        super(machine, i, j, k, {
-            h: 1,
-            mirrorX: mirrorX
-        })
-        this.boxesCount
-        this.yExtendable = true;
-        this.xMirrorable = true;
-        this.partName = "elevator-" + h.toFixed(0);
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
+    constructor(machine: Machine, i: number, j: number, k: number, h: number = 1, mirrorX?: boolean) {
+        super(machine, i, j, k);
 
-        let dirLeft = new BABYLON.Vector3(1, 0, 0);
-        dirLeft.normalize();
-        let nLeft = new BABYLON.Vector3(0, 1, 0);
-        nLeft.normalize();
-        
-        let dirRight = new BABYLON.Vector3(1, 1, 0);
-        dirRight.normalize();
-        let nRight = new BABYLON.Vector3(- 1, 1, 0);
-        nRight.normalize();
+        let partName = "elevator-" + h.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
 
-        this.tracks[0].trackpoints = [
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
-                - tileWidth * 0.5,
-                - tileHeight * this.h,
-                0
-            ), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
-                - tileWidth * 0.1,
-                - tileHeight * (this.h + 0.15),
-                0
-            ), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
-                0,
-                - tileHeight * (this.h + 0.35),
-                0
-            ), dir),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
-                0 + 0.01,
-                - tileHeight * (this.h + 0.35) + 0.01,
-                0
-            ), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
-                0 + 0.01,
-                0 - tileHeight,
-                0
-            ), n),
-            new TrackPoint(this.tracks[0], new BABYLON.Vector3(
-                -0.005,
-                0.035 - tileHeight,
-                0
-            ), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
-        ];
-        this.tracks[0].drawEndTip = true;
-        this.tracks[1] = new Track(this);
-        this.tracks[1].trackpoints = [
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), dirLeft),
-            new TrackPoint(this.tracks[1], new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), dirRight)
-        ];
-        
         let x = 1;
         if (mirrorX) {
-            this.mirrorXTrackPointsInPlace();
             x = - 1;
         }
 
@@ -159,6 +101,82 @@ class Elevator extends MachinePart {
         
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
+    }
+
+    public static GenerateTemplate(h: number, mirrorX: boolean) {
+        let template = new MachinePartTemplate();
+
+        template.partName = "elevator-" + h.toFixed(0);
+
+        template.h = h;
+        template.mirrorX = mirrorX;
+
+        template.yExtendable = true;
+        template.xMirrorable = true;
+
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(- 1, 1, 0);
+        nRight.normalize();
+
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(
+                - tileWidth * 0.5,
+                - tileHeight * h,
+                0
+            ), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(
+                - tileWidth * 0.1,
+                - tileHeight * (h + 0.15),
+                0
+            ), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(
+                0,
+                - tileHeight * (h + 0.35),
+                0
+            ), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(
+                0 + 0.01,
+                - tileHeight * (h + 0.35) + 0.01,
+                0
+            ), n),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(
+                0 + 0.01,
+                0 - tileHeight,
+                0
+            ), n),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(
+                -0.005,
+                0.035 - tileHeight,
+                0
+            ), (new BABYLON.Vector3(-1, 1, 0)).normalize(), new BABYLON.Vector3(-1, -1, 0).normalize())
+        ];
+        template.trackTemplates[0].drawEndTip = true;
+        
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(- tileWidth * 0.5, - tileHeight, 0), dirLeft),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(- 0.008, - tileHeight * 0.5, 0), dirRight)
+        ];
+        
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        
+        template.initialize();
+
+        return template;
     }
 
     public dispose(): void {

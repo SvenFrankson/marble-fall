@@ -342,13 +342,11 @@ var test = {
 };
 
 var test2 = {
-    balls: [],
+    balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
     parts: [
-        { name: "uturnlayer-0.2", i: 1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturnlayer-0.3", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: -1, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.2", i: 0, j: -4, k: 0, mirrorX: true, mirrorZ: true },
-        { name: "ramp-1.2.3", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 0, j: -4, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "elevator-7", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "uturnlayer-0.2", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.3.2", i: -1, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.3.1", i: -1, j: -2, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };

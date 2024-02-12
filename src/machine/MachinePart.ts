@@ -98,6 +98,13 @@ class MachinePart extends BABYLON.Mesh {
 
         this.partName = this._template.partName;
 
+        this.w = this._template.w;
+        this.h = this._template.h;
+        this.d = this._template.d;
+        
+        this.mirrorX = this._template.mirrorX;
+        this.mirrorZ = this._template.mirrorZ;
+
         this.yExtendable = this._template.yExtendable;
         this.zExtendable = this._template.zExtendable;
         this.minD = this._template.minD;
@@ -333,6 +340,10 @@ class MachinePart extends BABYLON.Mesh {
         if (this.template) {
             for (let i = 0; i < this.template.trackTemplates.length; i++) {
                 let track = this.tracks[i];
+                if (!track) {
+                    track = new Track(this);
+                    this.tracks[i] = track;
+                }
                 track.initializeFromTemplate(this.template.trackTemplates[i]);
                 this.AABBMin.minimizeInPlace(track.AABBMin);
                 this.AABBMax.maximizeInPlace(track.AABBMax);
