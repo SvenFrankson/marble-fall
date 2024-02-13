@@ -350,8 +350,8 @@ var test3 = {
         { name: "flatjoin", i: 0, j: 1, k: 0, mirrorZ: false },
         { name: "ramp-2.0.2", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "ramp-1.1.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "wave-1.0.2", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "snake-2.0.1", i: -3, j: -4, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnsharp", i: -1, j: -3, k: 0, mirrorX: true },
+        { name: "ramp-1.2.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 0, j: -2, k: 0 },
     ],
 };

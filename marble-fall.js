@@ -630,9 +630,9 @@ var test3 = {
         { name: "flatjoin", i: 0, j: 1, k: 0, mirrorZ: false },
         { name: "ramp-2.0.2", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "ramp-1.1.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "wave-1.0.2", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "snake-2.0.1", i: -3, j: -4, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturnsharp", i: -1, j: -3, k: 0, mirrorX: true },
+        { name: "ramp-1.2.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 0, j: -2, k: 0 },
     ],
 };
 class HelperShape {
@@ -3501,6 +3501,7 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
+    "uturnsharp",
     "loop-1.2",
     "elevator-4"
 ];
@@ -3549,6 +3550,9 @@ class MachinePartFactory {
             if (isFinite(h) && isFinite(d)) {
                 return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
             }
+        }
+        if (trackname === "uturnsharp") {
+            return new UTurnSharp(this.machine, i, j, k, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3937,6 +3941,9 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 data = UTurn.GenerateTemplate(h, d, mirrorX, mirrorZ);
+            }
+            else if (partName === "uturnsharp") {
+                data = UTurnSharp.GenerateTemplate(mirrorX);
             }
             else if (partName.startsWith("ramp-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
@@ -4690,6 +4697,43 @@ class Ramp extends MachinePartWithOriginDestination {
             }
         }
         return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+    }
+}
+class UTurnSharp extends MachinePart {
+    constructor(machine, i, j, k, mirrorX, mirrorZ) {
+        super(machine, i, j, k);
+        let partName = "uturnsharp";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.angleSmoothFactor = 0.1;
+        template.partName = "uturnsharp";
+        template.mirrorX = mirrorX,
+            template.mirrorZ = mirrorZ;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-0.075, 0, 0), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0.0193, -0.0084, 0.000)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0.0518, 0.0057, -0.0046)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0.0638, 0.0181, -0.0256)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0.0586, 0.0099, -0.0448)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0.0454, -0.0086, -0.0519)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0.0262, -0.0253, -0.0454)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-0.0152, -0.0301, 0), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-0.075, -0.03, 0), new BABYLON.Vector3(-1, 0, 0))
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            template.mirrorZTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
     }
 }
 class Snake extends MachinePartWithOriginDestination {

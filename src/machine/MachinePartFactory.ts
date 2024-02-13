@@ -6,6 +6,7 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
+    "uturnsharp",
     "loop-1.2",
     "elevator-4"
 ];
@@ -58,6 +59,9 @@ class MachinePartFactory {
             if (isFinite(h) && isFinite(d)) {
                 return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
             }
+        }
+        if (trackname === "uturnsharp") {
+            return new UTurnSharp(this.machine, i, j, k, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);

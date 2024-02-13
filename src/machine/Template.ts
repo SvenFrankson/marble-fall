@@ -276,6 +276,9 @@ class TemplateManager {
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 data = UTurn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
+            else if (partName === "uturnsharp") {
+                data = UTurnSharp.GenerateTemplate(mirrorX);
+            }
             else if (partName.startsWith("ramp-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
