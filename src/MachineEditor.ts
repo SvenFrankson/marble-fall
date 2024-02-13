@@ -261,7 +261,7 @@ class MachineEditor {
                 else {
                     this.setSelectedItem(trackname);
                     let track = this.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10, this.currentLayer);
-                    track.instantiate().then(() => {
+                    track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
                     this.setDraggedObject(track);
@@ -798,7 +798,7 @@ class MachineEditor {
                 }
                 draggedTrack.setIsVisible(true);
                 draggedTrack.generateWires();
-                draggedTrack.instantiate().then(() => {
+                draggedTrack.instantiate(true).then(() => {
                     draggedTrack.recomputeAbsolutePath();
                     this.setSelectedObject(draggedTrack);
                     this.setDraggedObject(undefined);
@@ -859,7 +859,7 @@ class MachineEditor {
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
         editedTrack.generateWires();
-        await editedTrack.instantiate();
+        await editedTrack.instantiate(true);
         editedTrack.recomputeAbsolutePath();
         this.machine.generateBaseMesh();
         return editedTrack;
@@ -884,7 +884,7 @@ class MachineEditor {
         this.machine.parts.push(editedPart);
         editedPart.setIsVisible(true);
         editedPart.generateWires();
-        await editedPart.instantiate();
+        await editedPart.instantiate(true);
         editedPart.recomputeAbsolutePath();
         this.machine.generateBaseMesh();
         return editedPart;
@@ -896,7 +896,7 @@ class MachineEditor {
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
-        await mirroredTrack.instantiate();
+        await mirroredTrack.instantiate(true);
         mirroredTrack.recomputeAbsolutePath();
         return mirroredTrack;
     }
@@ -907,7 +907,7 @@ class MachineEditor {
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
-        await mirroredTrack.instantiate();
+        await mirroredTrack.instantiate(true);
         mirroredTrack.recomputeAbsolutePath();
         return mirroredTrack;
     }
@@ -1354,7 +1354,7 @@ class MachineEditor {
                 selectedTrack.setI(selectedTrack.i + 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
-                await selectedTrack.instantiate();
+                await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
                 if (this.game.cameraMode === CameraMode.Selected) {
@@ -1375,7 +1375,7 @@ class MachineEditor {
                 selectedTrack.setI(selectedTrack.i - 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
-                await selectedTrack.instantiate();
+                await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
                 if (this.game.cameraMode === CameraMode.Selected) {
@@ -1396,7 +1396,7 @@ class MachineEditor {
                 selectedTrack.setJ(selectedTrack.j + 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
-                await selectedTrack.instantiate();
+                await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
                 if (this.game.cameraMode === CameraMode.Selected) {
@@ -1417,7 +1417,7 @@ class MachineEditor {
                 selectedTrack.setJ(selectedTrack.j - 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
-                await selectedTrack.instantiate();
+                await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
                 if (this.game.cameraMode === CameraMode.Selected) {
@@ -1439,7 +1439,7 @@ class MachineEditor {
                     selectedTrack.setK(selectedTrack.k + 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
-                    await selectedTrack.instantiate();
+                    await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -1470,7 +1470,7 @@ class MachineEditor {
                     selectedTrack.setK(selectedTrack.k - 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
-                    await selectedTrack.instantiate();
+                    await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {

@@ -70,6 +70,21 @@ class MachinePart extends BABYLON.Mesh {
     public enclose23: BABYLON.Vector3 = BABYLON.Vector3.One().scaleInPlace(2 / 3);
     public encloseEnd: BABYLON.Vector3 = BABYLON.Vector3.One();
 
+    public neighbours: Nabu.UniqueList<MachinePart> = new Nabu.UniqueList<MachinePart>();
+    public addNeighbour(other: MachinePart): void {
+        this.neighbours.push(other);
+        other.neighbours.push(this);
+    }
+    public removeNeighbour(other: MachinePart): void {
+        this.neighbours.remove(other);
+        other.neighbours.remove(this);
+    }
+    public removeAllNeighbours(): void {
+        while (this.neighbours.length > 0) {
+            this.removeNeighbour(this.neighbours.get(0));
+        }
+    }
+
     public get w(): number {
         return this.template.w;
     }
@@ -232,7 +247,7 @@ class MachinePart extends BABYLON.Mesh {
         })
     }
 
-    public async instantiate(): Promise<void> {
+    public async instantiate(rebuildNeighboursWireMeshes?: boolean): Promise<void> {
         if (this.sleepersMesh) {
             this.sleepersMesh.dispose();
         }
@@ -295,11 +310,12 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMesh.parent = this;
         this.encloseMesh.visibility = 0;
 
-        this.rebuildWireMeshes();
+        this.rebuildWireMeshes(rebuildNeighboursWireMeshes);
     }
     
     public dispose(): void {
         super.dispose();
+        this.removeAllNeighbours();
         let index = this.machine.parts.indexOf(this);
         if (index > - 1) {
             this.machine.parts.splice(index, 1);
@@ -332,7 +348,7 @@ class MachinePart extends BABYLON.Mesh {
 
     public update(dt: number): void {}
 
-    public rebuildWireMeshes(): void {
+    public rebuildWireMeshes(rebuildNeighboursWireMeshes?: boolean): void {
         if (this.renderOnlyPath) {
             let n = 8;
             let shape: BABYLON.Vector3[] = [];
@@ -353,11 +369,19 @@ class MachinePart extends BABYLON.Mesh {
             })
         }
         else {
-            
+            let neighboursToUpdate: MachinePart[];
+            if (rebuildNeighboursWireMeshes) {
+                neighboursToUpdate = this.neighbours.cloneAsArray();
+                for (let i = 0; i < neighboursToUpdate.length; i++) {
+                    neighboursToUpdate[i].rebuildWireMeshes();
+                }
+            }
+
             this.allWires.forEach(wire => {
                 wire.show();
             })
             
+            this.removeAllNeighbours();
             this.tracks.forEach(track => {
                 if (track.template) {
                     track.recomputeWiresPath();
@@ -371,6 +395,13 @@ class MachinePart extends BABYLON.Mesh {
             })
             
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+
+            if (rebuildNeighboursWireMeshes) {
+                neighboursToUpdate = this.neighbours.cloneAsArray();
+                for (let i = 0; i < neighboursToUpdate.length; i++) {
+                    neighboursToUpdate[i].rebuildWireMeshes();
+                }
+            }
         }
     }
 }

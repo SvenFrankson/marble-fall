@@ -916,7 +916,7 @@ class MachineEditor {
                     }
                     draggedTrack.setIsVisible(true);
                     draggedTrack.generateWires();
-                    draggedTrack.instantiate().then(() => {
+                    draggedTrack.instantiate(true).then(() => {
                         draggedTrack.recomputeAbsolutePath();
                         this.setSelectedObject(draggedTrack);
                         this.setDraggedObject(undefined);
@@ -1198,7 +1198,7 @@ class MachineEditor {
                     selectedTrack.setI(selectedTrack.i + 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
-                    await selectedTrack.instantiate();
+                    await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -1218,7 +1218,7 @@ class MachineEditor {
                     selectedTrack.setI(selectedTrack.i - 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
-                    await selectedTrack.instantiate();
+                    await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -1238,7 +1238,7 @@ class MachineEditor {
                     selectedTrack.setJ(selectedTrack.j + 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
-                    await selectedTrack.instantiate();
+                    await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -1258,7 +1258,7 @@ class MachineEditor {
                     selectedTrack.setJ(selectedTrack.j - 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
-                    await selectedTrack.instantiate();
+                    await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -1279,7 +1279,7 @@ class MachineEditor {
                         selectedTrack.setK(selectedTrack.k + 1);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.generateWires();
-                        await selectedTrack.instantiate();
+                        await selectedTrack.instantiate(true);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
                         if (this.game.cameraMode === CameraMode.Selected) {
@@ -1309,7 +1309,7 @@ class MachineEditor {
                         selectedTrack.setK(selectedTrack.k - 1);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.generateWires();
-                        await selectedTrack.instantiate();
+                        await selectedTrack.instantiate(true);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
                         if (this.game.cameraMode === CameraMode.Selected) {
@@ -1553,7 +1553,7 @@ class MachineEditor {
                 else {
                     this.setSelectedItem(trackname);
                     let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10, this.currentLayer);
-                    track.instantiate().then(() => {
+                    track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
                     this.setDraggedObject(track);
@@ -1873,7 +1873,7 @@ class MachineEditor {
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
         editedTrack.generateWires();
-        await editedTrack.instantiate();
+        await editedTrack.instantiate(true);
         editedTrack.recomputeAbsolutePath();
         this.machine.generateBaseMesh();
         return editedTrack;
@@ -1895,7 +1895,7 @@ class MachineEditor {
         this.machine.parts.push(editedPart);
         editedPart.setIsVisible(true);
         editedPart.generateWires();
-        await editedPart.instantiate();
+        await editedPart.instantiate(true);
         editedPart.recomputeAbsolutePath();
         this.machine.generateBaseMesh();
         return editedPart;
@@ -1906,7 +1906,7 @@ class MachineEditor {
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
-        await mirroredTrack.instantiate();
+        await mirroredTrack.instantiate(true);
         mirroredTrack.recomputeAbsolutePath();
         return mirroredTrack;
     }
@@ -1916,7 +1916,7 @@ class MachineEditor {
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
         mirroredTrack.generateWires();
-        await mirroredTrack.instantiate();
+        await mirroredTrack.instantiate(true);
         mirroredTrack.recomputeAbsolutePath();
         return mirroredTrack;
     }
@@ -3077,10 +3077,10 @@ class Machine {
                 for (let j = 0; j < part.tracks.length; j++) {
                     let track = part.tracks[j];
                     if (BABYLON.Vector3.DistanceSquared(track.startWorldPosition, pos) < 0.000001) {
-                        return { isEnd: false, bank: track.preferedStartBank };
+                        return { isEnd: false, bank: track.preferedStartBank, part: part };
                     }
                     if (BABYLON.Vector3.DistanceSquared(track.endWorldPosition, pos) < 0.000001) {
-                        return { isEnd: true, bank: track.preferedEndBank };
+                        return { isEnd: true, bank: track.preferedEndBank, part: part };
                     }
                 }
             }
@@ -3192,6 +3192,7 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMid = BABYLON.Vector3.One().scaleInPlace(0.5);
         this.enclose23 = BABYLON.Vector3.One().scaleInPlace(2 / 3);
         this.encloseEnd = BABYLON.Vector3.One();
+        this.neighbours = new Nabu.UniqueList();
         this._partVisibilityMode = PartVisibilityMode.Default;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
@@ -3203,6 +3204,19 @@ class MachinePart extends BABYLON.Mesh {
     }
     get game() {
         return this.machine.game;
+    }
+    addNeighbour(other) {
+        this.neighbours.push(other);
+        other.neighbours.push(this);
+    }
+    removeNeighbour(other) {
+        this.neighbours.remove(other);
+        other.neighbours.remove(this);
+    }
+    removeAllNeighbours() {
+        while (this.neighbours.length > 0) {
+            this.removeNeighbour(this.neighbours.get(0));
+        }
     }
     get w() {
         return this.template.w;
@@ -3336,7 +3350,7 @@ class MachinePart extends BABYLON.Mesh {
             wire.recomputeAbsolutePath();
         });
     }
-    async instantiate() {
+    async instantiate(rebuildNeighboursWireMeshes) {
         if (this.sleepersMesh) {
             this.sleepersMesh.dispose();
         }
@@ -3395,10 +3409,11 @@ class MachinePart extends BABYLON.Mesh {
         }, this.getScene());
         this.encloseMesh.parent = this;
         this.encloseMesh.visibility = 0;
-        this.rebuildWireMeshes();
+        this.rebuildWireMeshes(rebuildNeighboursWireMeshes);
     }
     dispose() {
         super.dispose();
+        this.removeAllNeighbours();
         let index = this.machine.parts.indexOf(this);
         if (index > -1) {
             this.machine.parts.splice(index, 1);
@@ -3427,7 +3442,7 @@ class MachinePart extends BABYLON.Mesh {
         }
     }
     update(dt) { }
-    rebuildWireMeshes() {
+    rebuildWireMeshes(rebuildNeighboursWireMeshes) {
         if (this.renderOnlyPath) {
             let n = 8;
             let shape = [];
@@ -3446,9 +3461,17 @@ class MachinePart extends BABYLON.Mesh {
             });
         }
         else {
+            let neighboursToUpdate;
+            if (rebuildNeighboursWireMeshes) {
+                neighboursToUpdate = this.neighbours.cloneAsArray();
+                for (let i = 0; i < neighboursToUpdate.length; i++) {
+                    neighboursToUpdate[i].rebuildWireMeshes();
+                }
+            }
             this.allWires.forEach(wire => {
                 wire.show();
             });
+            this.removeAllNeighbours();
             this.tracks.forEach(track => {
                 if (track.template) {
                     track.recomputeWiresPath();
@@ -3461,6 +3484,12 @@ class MachinePart extends BABYLON.Mesh {
                 wire.instantiate();
             });
             SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+            if (rebuildNeighboursWireMeshes) {
+                neighboursToUpdate = this.neighbours.cloneAsArray();
+                for (let i = 0; i < neighboursToUpdate.length; i++) {
+                    neighboursToUpdate[i].rebuildWireMeshes();
+                }
+            }
         }
     }
 }
@@ -4036,9 +4065,11 @@ class Track {
         let N = this.templateInterpolatedPoints.length;
         let angles = [...this.template.angles];
         this.trackInterpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
+        Mummu.DrawDebugPoint(this.startWorldPosition.add(this.endWorldPosition).scale(0.5), 60, BABYLON.Color3.Blue());
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
+            this.part.addNeighbour(otherS.part);
             Mummu.DrawDebugPoint(this.startWorldPosition, 60, BABYLON.Color3.Green());
             let otherBank = otherS.bank * (otherS.isEnd ? 1 : -1);
             if (this.preferedStartBank * otherBank >= 0) {
@@ -4051,6 +4082,7 @@ class Track {
         let endBank = 0;
         let otherE = this.part.machine.getBankAt(this.endWorldPosition, this.part);
         if (otherE) {
+            this.part.addNeighbour(otherE.part);
             Mummu.DrawDebugPoint(this.endWorldPosition, 60, BABYLON.Color3.Red());
             let otherBank = otherE.bank * (otherE.isEnd ? -1 : 1);
             if (this.preferedEndBank * otherBank >= 0) {
