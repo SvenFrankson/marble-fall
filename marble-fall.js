@@ -2352,7 +2352,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -2381,13 +2381,12 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.CreateMode);
+        await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                /*
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -2395,11 +2394,12 @@ class Game {
                 else {
                     this.makeCircuitScreenshot();
                 }
-                */
+                /*
                 for (let i = 0; i < TrackNames.length; i++) {
                     let trackname = TrackNames[i];
                     await this.makeScreenshot(trackname);
                 }
+                */
             }
         });
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
@@ -5702,6 +5702,8 @@ class MachinePartEditorMenu {
 class MainMenu {
     constructor(game) {
         this.game = game;
+        this.xCount = 1;
+        this.yCount = 1;
         this.container = document.getElementById("main-menu");
         this.updateNode = new BABYLON.Node("main-menu-update-node");
     }
@@ -5727,71 +5729,160 @@ class MainMenu {
         this.container.style.pointerEvents = "none";
     }
     resize() {
-        let requestedTileCount = this.container.querySelectorAll(".panel.demo").length + 3;
+        let requestedTileCount = 0;
+        let requestedFullLines = 0;
+        let panels = [];
+        let elements = this.container.querySelectorAll("menu-panel");
+        for (let i = 0; i < elements.length; i++) {
+            let panel = elements[i];
+            panels[i] = panel;
+            panel.w = parseInt(panel.getAttribute("w"));
+            panel.h = parseInt(panel.getAttribute("h"));
+            let area = panel.w * panel.h;
+            requestedTileCount += area;
+        }
         let rect = this.container.getBoundingClientRect();
         let containerW = rect.width;
         let containerH = rect.height;
-        let bestValue = 0;
-        let xCount;
-        let yCount;
-        for (let xC = 1; xC <= 10; xC++) {
-            for (let yC = 1; yC <= 10; yC++) {
-                let count = xC * yC;
-                if (count >= requestedTileCount) {
-                    let w = containerW / xC;
-                    let h = containerH / yC;
-                    let area = w * h;
-                    let squareness = Math.min(w / h, h / w);
-                    let value = area * squareness;
-                    if (value > bestValue) {
-                        xCount = xC;
-                        yCount = yC;
-                        bestValue = value;
+        let min = 0;
+        let ok = false;
+        let emptyLinesBottom = 0;
+        while (!ok) {
+            ok = true;
+            min++;
+            let bestValue = 0;
+            for (let xC = min; xC <= 10; xC++) {
+                for (let yC = min; yC <= 10; yC++) {
+                    let count = xC * yC;
+                    if (count >= requestedTileCount) {
+                        let w = containerW / xC;
+                        let h = containerH / (yC + requestedFullLines);
+                        let area = w * h;
+                        let squareness = Math.min(w / h, h / w);
+                        let value = area * squareness;
+                        if (value > bestValue) {
+                            this.xCount = xC;
+                            this.yCount = yC + requestedFullLines;
+                            bestValue = value;
+                        }
+                    }
+                }
+            }
+            console.log("test " + this.xCount + " " + this.yCount);
+            let grid = [];
+            for (let y = 0; y <= this.yCount; y++) {
+                grid[y] = [];
+                for (let x = 0; x <= this.xCount; x++) {
+                    grid[y][x] = (x < this.xCount && y < this.yCount);
+                }
+            }
+            for (let n = 0; n < panels.length; n++) {
+                let panel = panels[n];
+                panel.x = -1;
+                panel.y = -1;
+                for (let line = 0; line < this.yCount && panel.x === -1; line++) {
+                    for (let col = 0; col < this.xCount && panel.x === -1; col++) {
+                        let fit = true;
+                        for (let x = 0; x < panel.w; x++) {
+                            for (let y = 0; y < panel.h; y++) {
+                                fit = fit && grid[line + y][col + x];
+                            }
+                        }
+                        if (fit) {
+                            panel.x = col;
+                            panel.y = line;
+                            for (let x = 0; x < panel.w; x++) {
+                                for (let y = 0; y < panel.h; y++) {
+                                    grid[line + y][col + x] = false;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (panel.x === -1) {
+                    ok = false;
+                }
+            }
+            if (!ok) {
+                console.log("can't find a way to make a menu layout");
+            }
+            else {
+                console.log("now it's ok");
+                let empty = true;
+                emptyLinesBottom = 0;
+                for (let y = this.yCount - 1; y > 0 && empty; y--) {
+                    for (let x = 0; x < this.xCount && empty; x++) {
+                        if (!grid[y][x]) {
+                            empty = false;
+                        }
+                    }
+                    if (empty) {
+                        emptyLinesBottom++;
                     }
                 }
             }
         }
-        let tileW = containerW / xCount;
-        let tileH = containerH / yCount;
-        let m = Math.min(tileW, tileH) / 20;
-        let demoButtons = this.container.querySelectorAll(".panel.demo");
-        for (let i = 0; i < demoButtons.length; i++) {
-            let pos = i + 2;
-            let button = demoButtons[i];
-            button.style.display = "block";
-            button.style.width = (tileW - 2 * m).toFixed(0) + "px";
-            button.style.height = (tileH - 2 * m).toFixed(0) + "px";
-            button.style.position = "absolute";
-            button.style.left = ((pos % xCount) * tileW + m).toFixed(0) + "px";
-            button.style.top = (Math.floor(pos / xCount) * tileH + m).toFixed(0) + "px";
-            button.style.backgroundImage = "url(./datas/icons/demo-" + (i + 1).toFixed(0) + ".png)";
+        let tileW = containerW / this.xCount;
+        let tileH = containerH / this.yCount;
+        let m = Math.min(tileW, tileH) / 15;
+        for (let i = 0; i < panels.length; i++) {
+            let panel = panels[i];
+            panel.style.display = "block";
+            panel.style.width = (panel.w * tileW - 2 * m).toFixed(0) + "px";
+            panel.style.height = (panel.h * tileH - 2 * m).toFixed(0) + "px";
+            panel.style.position = "absolute";
+            panel.computedLeft = (panel.x * tileW + m);
+            if (panel.style.display != "none") {
+                panel.style.left = panel.computedLeft.toFixed(0) + "px";
+            }
+            panel.computedTop = (panel.y * tileH + m + emptyLinesBottom * 0.5 * tileH);
+            panel.style.top = panel.computedTop.toFixed(0) + "px";
+            let label = panel.querySelector(".label");
+            if (label) {
+                label.style.fontSize = (tileW / 4).toFixed(0) + "px";
+            }
+            let label2 = panel.querySelector(".label-2");
+            if (label2) {
+                label2.style.fontSize = (tileW / 7).toFixed(0) + "px";
+            }
         }
-        let n = demoButtons.length;
-        let buttonCreate = this.container.querySelector(".panel.create");
-        buttonCreate.style.display = "block";
-        buttonCreate.style.width = (2 * tileW - 2 * m).toFixed(0) + "px";
-        buttonCreate.style.height = (tileH - 2 * m).toFixed(0) + "px";
-        buttonCreate.style.position = "absolute";
-        buttonCreate.style.left = m.toFixed(0) + "px";
-        buttonCreate.style.top = m.toFixed(0) + "px";
-        buttonCreate.style.backgroundImage = "url(./datas/icons/create.png)";
-        buttonCreate.style.backgroundPosition = "bottom right";
-        let buttonOption = this.container.querySelector(".panel.option");
-        buttonOption.style.display = "block";
-        buttonOption.style.width = (tileW - 2 * m).toFixed(0) + "px";
-        buttonOption.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
-        buttonOption.style.position = "absolute";
-        buttonOption.style.right = (m).toFixed(0) + "px";
-        buttonOption.style.bottom = (0.5 * tileH + m).toFixed(0) + "px";
-        let buttonCredit = this.container.querySelector(".panel.credit");
-        buttonCredit.style.display = "block";
-        buttonCredit.style.width = (tileW - 2 * m).toFixed(0) + "px";
-        buttonCredit.style.height = (tileH * 0.5 - 2 * m).toFixed(0) + "px";
-        buttonCredit.style.position = "absolute";
-        buttonCredit.style.right = (m).toFixed(0) + "px";
-        buttonCredit.style.bottom = m.toFixed(0) + "px";
+        this.container.querySelector("menu-panel.create").style.backgroundImage = "url(./datas/icons/create.png)";
+        let demoPanels = this.container.querySelectorAll("menu-panel.demo");
+        demoPanels.forEach((e, i) => {
+            if (e instanceof HTMLElement) {
+                e.style.backgroundImage = "url(./datas/icons/demo-" + (i + 1).toFixed(0) + ".png)";
+            }
+        });
     }
 }
+class MainMenuPanel extends HTMLElement {
+    constructor() {
+        super(...arguments);
+        this.x = 0;
+        this.y = 0;
+        this.w = 1;
+        this.h = 1;
+        this.computedTop = 0;
+        this.computedLeft = 0;
+    }
+    get top() {
+        return parseFloat(this.style.top);
+    }
+    set top(v) {
+        if (this) {
+            this.style.top = v.toFixed(1) + "px";
+        }
+    }
+    get left() {
+        return parseFloat(this.style.left);
+    }
+    set left(v) {
+        if (this) {
+            this.style.left = v.toFixed(1) + "px";
+        }
+    }
+}
+customElements.define("menu-panel", MainMenuPanel);
 class OptionsPage {
     constructor(game) {
         this.game = game;

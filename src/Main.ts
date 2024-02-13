@@ -304,7 +304,7 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
 
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -333,14 +333,13 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
-        await this.setPageMode(GameMode.CreateMode);
+        await this.setPageMode(GameMode.MainMenu);
         this.machine.play();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                /*
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -348,11 +347,12 @@ class Game {
                 else {
                     this.makeCircuitScreenshot();
                 }
-                */
+                /*
                 for (let i = 0; i < TrackNames.length; i++) {
                     let trackname = TrackNames[i];
                     await this.makeScreenshot(trackname);
                 }
+                */
             }
         })
 
