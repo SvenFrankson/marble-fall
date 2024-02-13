@@ -48,6 +48,7 @@ class TrackTemplate {
         }
     }
     
+    public onNormalEvaluated: (n: BABYLON.Vector3) => void;
     public initialize(): void {
         for (let i = 1; i < this.trackpoints.length - 1; i++) {
 
@@ -101,6 +102,9 @@ class TrackTemplate {
             let n = prevNormal;
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
+            if (this.onNormalEvaluated) {
+                this.onNormalEvaluated(n);
+            }
             normalsForward.push(n);
         }
         normalsForward.push(this.trackpoints[this.trackpoints.length - 1].normal);
@@ -114,13 +118,16 @@ class TrackTemplate {
             let n = prevNormal;
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
+            if (this.onNormalEvaluated) {
+                this.onNormalEvaluated(n);
+            }
             normalsBackward[i] = n;
         }
         normalsBackward[0] = this.trackpoints[0].normal;
 
         for (let i = 0; i < N; i++) {
             let f = i / (N - 1);
-            this.interpolatedNormals.push(BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize());
+            this.interpolatedNormals[i] = BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize();
         }
 
         let maxR = 0;
@@ -215,6 +222,7 @@ class MachinePartTemplate {
     public w: number = 1;
     public h: number = 1;
     public d: number = 1;
+    public n: number = 1;
     public mirrorX: boolean = false;
     public mirrorZ: boolean = false;
     public angleSmoothFactor: number = 2;
@@ -222,6 +230,7 @@ class MachinePartTemplate {
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
     public zExtendable: boolean = false;
+    public nExtendable: boolean = false;
     public minD: number = 1;
     public xMirrorable: boolean = false;
     public zMirrorable: boolean = false;
@@ -313,7 +322,8 @@ class TemplateManager {
             else if (partName.startsWith("loop-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
-                data = Loop.GenerateTemplate(w, d, mirrorX, mirrorZ);
+                let n = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Loop.GenerateTemplate(w, d, n, mirrorX, mirrorZ);
             }
             datas[mirrorIndex] = data;
         }

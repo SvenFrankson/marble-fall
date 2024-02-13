@@ -94,6 +94,9 @@ class MachinePart extends BABYLON.Mesh {
     public get d(): number {
         return this.template.d;
     }
+    public get n(): number {
+        return this.template.n;
+    }
     public get mirrorX(): boolean {
         return this.template.mirrorX;
     }
@@ -109,6 +112,9 @@ class MachinePart extends BABYLON.Mesh {
     }
     public get zExtendable(): boolean {
         return this.template.zExtendable;
+    }
+    public get nExtendable(): boolean {
+        return this.template.nExtendable;
     }
     public get minD(): number {
         return this.template.minD;

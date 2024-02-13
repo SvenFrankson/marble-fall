@@ -11,28 +11,46 @@ var TrackNames = [
     "elevator-4"
 ];
 
+interface ICreateTrackWHDNProp {
+    i?: number;
+    j?: number;
+    k?: number;
+    w?: number;
+    h?: number;
+    d?: number;
+    n?: number;
+    mirrorX?: boolean;
+    mirrorZ?: boolean;
+}
+
 class MachinePartFactory {
 
     constructor(public machine: Machine) {
 
     }
 
-    public createTrackWHD(trackname: string, i: number, j: number, k: number = 0, w?: number, h?: number, d?: number, mirrorX?: boolean, mirrorZ?: boolean): MachinePart {
+    public createTrackWHDN(trackname: string, props?: ICreateTrackWHDNProp): MachinePart {
+        if (!props) {
+            props = {};
+        }
         trackname = trackname.split("-")[0];
         let whd = "";
-        if (isFinite(w)) {
-            whd += w.toFixed(0) + ".";
+        if (isFinite(props.w)) {
+            whd += props.w.toFixed(0) + ".";
         }
-        if (isFinite(h)) {
-            whd += h.toFixed(0) + ".";
+        if (isFinite(props.h)) {
+            whd += props.h.toFixed(0) + ".";
         }
-        if (isFinite(d)) {
-            whd += d.toFixed(0) + ".";
+        if (isFinite(props.d)) {
+            whd += props.d.toFixed(0) + ".";
+        }
+        if (isFinite(props.n)) {
+            whd += props.n.toFixed(0) + ".";
         }
         whd = whd.substring(0, whd.length - 1);
         trackname += "-" + whd;
         console.log(trackname);
-        return this.createTrack(trackname, i, j, k, mirrorX, mirrorZ);
+        return this.createTrack(trackname, props.i, props.j, props.k, props.mirrorX, props.mirrorZ);
     }
 
     public createTrack(trackname: string, i: number, j: number, k: number = 0, mirrorX?: boolean, mirrorZ?: boolean): MachinePart {
@@ -67,7 +85,8 @@ class MachinePartFactory {
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Loop(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
+            let n = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Loop(this.machine, i, j, k, w, d, n, mirrorX, mirrorZ);
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);

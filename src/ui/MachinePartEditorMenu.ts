@@ -9,6 +9,7 @@ class MachinePartEditorMenu {
     public widthLine: HTMLDivElement;
     public heightLine: HTMLDivElement;
     public depthLine: HTMLDivElement;
+    public countLine: HTMLDivElement;
     public mirrorXLine: HTMLDivElement;
     public mirrorZLine: HTMLDivElement;
     public fillLine: HTMLDivElement;
@@ -29,6 +30,9 @@ class MachinePartEditorMenu {
     public dPlusButton: HTMLButtonElement;
     public dMinusButton: HTMLButtonElement;
     public dValue: HTMLSpanElement;
+    public nPlusButton: HTMLButtonElement;
+    public nMinusButton: HTMLButtonElement;
+    public nValue: HTMLSpanElement;
     public mirrorXButton: HTMLButtonElement;
     public mirrorZButton: HTMLButtonElement;
     public fillButton: HTMLButtonElement;
@@ -82,7 +86,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.xExtendable) {
                 let w = this.currentObject.w + 1;
     
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, w, this.currentObject.yExtendable ? this.currentObject.h : undefined, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { w: w });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         }
@@ -92,7 +96,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.xExtendable) {
                 let w = this.currentObject.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, w, this.currentObject.yExtendable ? this.currentObject.h : undefined, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { w: w });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -107,7 +111,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
                 let h = this.currentObject.h + 1;
     
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, h, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { h: h });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         }
@@ -117,7 +121,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
                 let h = this.currentObject.h - 1;
                 if (h >= 0) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, h, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { h: h });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -132,7 +136,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
                 let d = this.currentObject.d + 1;
     
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, this.currentObject.yExtendable ? this.currentObject.h : undefined, d);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         }
@@ -142,13 +146,38 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
                 let d = this.currentObject.d - 1;
                 if (d >= this.currentObject.minD) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, this.currentObject.yExtendable ? this.currentObject.h : undefined, d);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
         }
 
         this.dValue = document.querySelector("#machine-editor-part-menu-depth .value") as HTMLSpanElement;
+
+        this.countLine = document.getElementById("machine-editor-part-menu-count") as HTMLDivElement;
+    
+        this.nPlusButton = document.querySelector("#machine-editor-part-menu-count button.plus") as HTMLButtonElement;
+        this.nPlusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart && this.currentObject.nExtendable) {
+                let n = this.currentObject.n + 1;
+    
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { n: n });
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
+        }
+
+        this.nMinusButton = document.querySelector("#machine-editor-part-menu-count button.minus") as HTMLButtonElement;
+        this.nMinusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart && this.currentObject.nExtendable) {
+                let n = this.currentObject.n - 1;
+                if (n > 0) {
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { n: n });
+                    this.machineEditor.setSelectedObject(editedTrack);
+                }
+            }
+        }
+
+        this.nValue = document.querySelector("#machine-editor-part-menu-count .value") as HTMLSpanElement;
 
         this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX") as HTMLDivElement;
 
@@ -208,6 +237,7 @@ class MachinePartEditorMenu {
                 this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
                 this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
                 this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
+                this.countLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.nExtendable ? "" : "none";
                 this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
                 this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
                 this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
@@ -222,6 +252,7 @@ class MachinePartEditorMenu {
                     this.wValue.innerText = this.currentObject.w.toFixed(0);
                     this.hValue.innerText = this.currentObject.h.toFixed(0);
                     this.dValue.innerText = this.currentObject.d.toFixed(0);
+                    this.nValue.innerText = this.currentObject.n.toFixed(0);
                 }
                 else if (this.currentObject instanceof Ball) {
                     this.titleElement.innerText = "Marble";

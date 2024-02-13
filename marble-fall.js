@@ -621,16 +621,17 @@ var test2 = {
         { name: "ramp-2.2.2", i: -1, j: -1, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
+var deathLoop = { "balls": [{ "x": 0.1536945360339952, "y": 0.23797038772510937, "z": 3.0531133177191805e-16 }], "parts": [{ "name": "ramp-3.13.1", "i": -2, "j": -10, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "elevator-14", "i": 1, "j": -11, "k": 0, "mirrorZ": false }, { "name": "loop-1.5.2", "i": -3, "j": -1, "k": 0, "mirrorX": true }, { "name": "loop-1.5.1", "i": -4, "j": -1, "k": 0 }, { "name": "uturn-0.3", "i": -6, "j": 2, "k": 0, "mirrorX": true }, { "name": "uturn-0.2", "i": -2, "j": 1, "k": 2 }, { "name": "uturn-1.3", "i": -3, "j": 1, "k": 3, "mirrorX": true }, { "name": "ramp-3.1.6", "i": -2, "j": 2, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "ramp-3.1.1", "i": -5, "j": 1, "k": 2, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.1.1", "i": -5, "j": 2, "k": 0 }] };
 var test3 = {
     balls: [{ x: 0.15141078307665115, y: -0.06119131474246342, z: 1.1102230246251565e-16 }],
     parts: [
-        { name: "loop-1.2", i: -2, j: -1, k: 0, mirrorZ: true },
         { name: "ramp-2.8.1", i: -1, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: -3, j: 3, k: 1, mirrorX: false, mirrorZ: false },
-        { name: "uturn-0.3", i: -4, j: 3, k: 1, mirrorX: true, mirrorZ: true },
         { name: "elevator-9", i: 1, j: -6, k: 0, mirrorZ: false },
-        { name: "ramp-2.0.4", i: -1, j: 3, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "ramp-2.0.1", i: -3, j: 3, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.0.1", i: -3, j: 3, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.0.3", i: -1, j: 3, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-1.0.1", i: -3, j: 3, k: 7, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.8.1", i: -2, j: -1, k: 0, mirrorZ: true },
+        { name: "uturn-0.6", i: -5, j: 3, k: 2, mirrorX: true, mirrorZ: true },
     ],
 };
 class HelperShape {
@@ -1019,7 +1020,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h + 1;
                 let j = track.j - 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { j: j });
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -1029,7 +1030,7 @@ class MachineEditor {
                 let h = track.h - 1;
                 let j = track.j + 1;
                 if (h >= 0) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+                    let editedTrack = await this.editTrackInPlace(track, { j: j });
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -1038,7 +1039,7 @@ class MachineEditor {
             let track = this.selectedObject;
             if (track instanceof MachinePart && track.xExtendable) {
                 let w = track.w + 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { w: w });
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -1047,7 +1048,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.xExtendable) {
                 let w = track.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+                    let editedTrack = await this.editTrackInPlace(track, { w: w });
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -1056,7 +1057,7 @@ class MachineEditor {
             let track = this.selectedObject;
             if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h + 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { h: h });
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -1065,7 +1066,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.yExtendable) {
                 let h = track.h - 1;
                 if (h >= 0) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+                    let editedTrack = await this.editTrackInPlace(track, { h: h });
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -1075,7 +1076,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.xExtendable) {
                 let i = track.i - 1;
                 let w = track.w + 1;
-                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { i: i });
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -1085,7 +1086,7 @@ class MachineEditor {
                 let i = track.i + 1;
                 let w = track.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+                    let editedTrack = await this.editTrackInPlace(track, { i: i });
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -1094,7 +1095,7 @@ class MachineEditor {
             let track = this.selectedObject;
             if (track instanceof MachinePart && track.zExtendable) {
                 let d = track.d + 1;
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+                let editedTrack = await this.editTrackInPlace(track, { d: d });
                 this.setSelectedObject(editedTrack);
             }
         };
@@ -1103,7 +1104,7 @@ class MachineEditor {
             if (track instanceof MachinePart && track.zExtendable) {
                 let d = track.d - 1;
                 if (d >= 1) {
-                    let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+                    let editedTrack = await this.editTrackInPlace(track, { d: d });
                     this.setSelectedObject(editedTrack);
                 }
             }
@@ -1856,17 +1857,34 @@ class MachineEditor {
             this.hoveredObject = undefined;
         }
     }
-    async editTrackInPlace(track, i, j, k, w, h, d) {
-        if (!isFinite(i)) {
-            i = track.i;
+    async editTrackInPlace(track, props) {
+        if (!props) {
+            props = {};
         }
-        if (!isFinite(j)) {
-            j = track.j;
+        if (!isFinite(props.i)) {
+            props.i = track.i;
         }
-        if (!isFinite(k)) {
-            k = track.k;
+        if (!isFinite(props.j)) {
+            props.j = track.j;
         }
-        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, track.mirrorX, track.mirrorZ);
+        if (!isFinite(props.k)) {
+            props.k = track.k;
+        }
+        if (!isFinite(props.w) && track.xExtendable) {
+            props.w = track.w;
+        }
+        if (!isFinite(props.h) && track.yExtendable) {
+            props.h = track.h;
+        }
+        if (!isFinite(props.d) && track.zExtendable) {
+            props.d = track.d;
+        }
+        if (!isFinite(props.n) && track.nExtendable) {
+            props.n = track.n;
+        }
+        props.mirrorX = track.mirrorX;
+        props.mirrorZ = track.mirrorZ;
+        let editedTrack = this.machine.trackFactory.createTrackWHDN(track.partName, props);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -2268,7 +2286,7 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(test3);
+        this.machine.deserialize(deathLoop);
         //this.machine.deserialize(test);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -3225,6 +3243,9 @@ class MachinePart extends BABYLON.Mesh {
     get d() {
         return this.template.d;
     }
+    get n() {
+        return this.template.n;
+    }
     get mirrorX() {
         return this.template.mirrorX;
     }
@@ -3239,6 +3260,9 @@ class MachinePart extends BABYLON.Mesh {
     }
     get zExtendable() {
         return this.template.zExtendable;
+    }
+    get nExtendable() {
+        return this.template.nExtendable;
     }
     get minD() {
         return this.template.minD;
@@ -3508,22 +3532,28 @@ class MachinePartFactory {
     constructor(machine) {
         this.machine = machine;
     }
-    createTrackWHD(trackname, i, j, k = 0, w, h, d, mirrorX, mirrorZ) {
+    createTrackWHDN(trackname, props) {
+        if (!props) {
+            props = {};
+        }
         trackname = trackname.split("-")[0];
         let whd = "";
-        if (isFinite(w)) {
-            whd += w.toFixed(0) + ".";
+        if (isFinite(props.w)) {
+            whd += props.w.toFixed(0) + ".";
         }
-        if (isFinite(h)) {
-            whd += h.toFixed(0) + ".";
+        if (isFinite(props.h)) {
+            whd += props.h.toFixed(0) + ".";
         }
-        if (isFinite(d)) {
-            whd += d.toFixed(0) + ".";
+        if (isFinite(props.d)) {
+            whd += props.d.toFixed(0) + ".";
+        }
+        if (isFinite(props.n)) {
+            whd += props.n.toFixed(0) + ".";
         }
         whd = whd.substring(0, whd.length - 1);
         trackname += "-" + whd;
         console.log(trackname);
-        return this.createTrack(trackname, i, j, k, mirrorX, mirrorZ);
+        return this.createTrack(trackname, props.i, props.j, props.k, props.mirrorX, props.mirrorZ);
     }
     createTrack(trackname, i, j, k = 0, mirrorX, mirrorZ) {
         if (trackname.startsWith("ramp-")) {
@@ -3557,7 +3587,8 @@ class MachinePartFactory {
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Loop(this.machine, i, j, k, w, d, mirrorX, mirrorZ);
+            let n = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Loop(this.machine, i, j, k, w, d, n, mirrorX, mirrorZ);
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
@@ -3795,6 +3826,9 @@ class TrackTemplate {
             let n = prevNormal;
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
+            if (this.onNormalEvaluated) {
+                this.onNormalEvaluated(n);
+            }
             normalsForward.push(n);
         }
         normalsForward.push(this.trackpoints[this.trackpoints.length - 1].normal);
@@ -3807,12 +3841,15 @@ class TrackTemplate {
             let n = prevNormal;
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
+            if (this.onNormalEvaluated) {
+                this.onNormalEvaluated(n);
+            }
             normalsBackward[i] = n;
         }
         normalsBackward[0] = this.trackpoints[0].normal;
         for (let i = 0; i < N; i++) {
             let f = i / (N - 1);
-            this.interpolatedNormals.push(BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize());
+            this.interpolatedNormals[i] = BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize();
         }
         let maxR = 0;
         this.angles = [0];
@@ -3890,12 +3927,14 @@ class MachinePartTemplate {
         this.w = 1;
         this.h = 1;
         this.d = 1;
+        this.n = 1;
         this.mirrorX = false;
         this.mirrorZ = false;
         this.angleSmoothFactor = 2;
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
+        this.nExtendable = false;
         this.minD = 1;
         this.xMirrorable = false;
         this.zMirrorable = false;
@@ -3979,7 +4018,8 @@ class TemplateManager {
             else if (partName.startsWith("loop-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
-                data = Loop.GenerateTemplate(w, d, mirrorX, mirrorZ);
+                let n = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Loop.GenerateTemplate(w, d, n, mirrorX, mirrorZ);
             }
             datas[mirrorIndex] = data;
         }
@@ -4513,44 +4553,59 @@ class Join extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
-    constructor(machine, i, j, k, w = 1, d = 1, mirrorX, mirrorZ) {
+    constructor(machine, i, j, k, w = 1, d = 1, n = 1, mirrorX, mirrorZ) {
         super(machine, i, j, k);
-        let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        if (!isFinite(n)) {
+            n = 1;
+        }
+        let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
-    static GenerateTemplate(w, d, mirrorX, mirrorZ) {
+    static GenerateTemplate(w, d, n, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
-        template.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0);
+        template.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
         template.w = w;
-        template.h = 4 * w;
+        template.h = 4;
         template.d = d;
+        template.n = n;
         template.mirrorX = mirrorX;
         template.mirrorZ = mirrorZ;
         template.xExtendable = true;
         template.zExtendable = true;
+        template.nExtendable = true;
         template.xMirrorable = true;
         template.zMirrorable = true;
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
         template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].onNormalEvaluated = (n => {
+            n.z = 0;
+            n.normalize();
+        });
         template.trackTemplates[0].trackpoints = [
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -template.h * tileHeight, 0), dir)
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -template.h * tileHeight, 0), Tools.V3Dir(90))
         ];
-        let nLoops = 2;
-        let rStart = tileWidth * 0.5 * w * 0.7;
-        let rEnd = rStart;
+        let nLoops = n;
+        let xCenterStart = 0;
+        let xCenterEnd = tileWidth * (template.w - 1);
+        let r = tileWidth * 0.5 * 0.7;
+        let depthStart = 0.013;
+        let depthEnd = -0.013;
+        if (d > 1) {
+            depthStart = 0;
+            depthEnd = -tileDepth * (template.d - 1);
+        }
         for (let n = 0; n <= 8 * nLoops; n++) {
-            let f = Math.floor(n / 8) / nLoops;
-            let r = rStart * (1 - f) + rEnd * f;
+            let f = (n + 0) / (8 * nLoops);
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
-            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(sina * r + 0.5 * tileWidth * (template.w - 1), r * 1 - cosa * r - template.h * tileHeight, -tileDepth * (template.d - 1) * (n + 0) / (8 * nLoops))));
+            let normal;
+            if (n % 8 === 4) {
+                normal = Tools.V3Dir(180, 1);
+            }
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(sina * r + f * (xCenterEnd - xCenterStart) + xCenterStart, r * 1 - cosa * r - template.h * tileHeight, f * (depthEnd - depthStart) + depthStart), undefined, normal));
         }
-        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -template.h * tileHeight, -tileDepth * (template.d - 1)), dir));
+        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -template.h * tileHeight, -tileDepth * (template.d - 1)), Tools.V3Dir(90)));
         let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone(); });
         let f = 3;
         for (let n = 0; n < 2; n++) {
@@ -5449,7 +5504,7 @@ class MachinePartEditorMenu {
         this.wPlusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart && this.currentObject.xExtendable) {
                 let w = this.currentObject.w + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, w, this.currentObject.yExtendable ? this.currentObject.h : undefined, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { w: w });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
@@ -5458,7 +5513,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.xExtendable) {
                 let w = this.currentObject.w - 1;
                 if (w >= 1) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, w, this.currentObject.yExtendable ? this.currentObject.h : undefined, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { w: w });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -5469,7 +5524,7 @@ class MachinePartEditorMenu {
         this.hPlusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
                 let h = this.currentObject.h + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, h, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { h: h });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
@@ -5478,7 +5533,7 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
                 let h = this.currentObject.h - 1;
                 if (h >= 0) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, h, this.currentObject.zExtendable ? this.currentObject.d : undefined);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { h: h });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
@@ -5489,7 +5544,7 @@ class MachinePartEditorMenu {
         this.dPlusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
                 let d = this.currentObject.d + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, this.currentObject.yExtendable ? this.currentObject.h : undefined, d);
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
         };
@@ -5498,12 +5553,32 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
                 let d = this.currentObject.d - 1;
                 if (d >= this.currentObject.minD) {
-                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, undefined, undefined, undefined, this.currentObject.xExtendable ? this.currentObject.w : undefined, this.currentObject.yExtendable ? this.currentObject.h : undefined, d);
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
             }
         };
         this.dValue = document.querySelector("#machine-editor-part-menu-depth .value");
+        this.countLine = document.getElementById("machine-editor-part-menu-count");
+        this.nPlusButton = document.querySelector("#machine-editor-part-menu-count button.plus");
+        this.nPlusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart && this.currentObject.nExtendable) {
+                let n = this.currentObject.n + 1;
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { n: n });
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
+        };
+        this.nMinusButton = document.querySelector("#machine-editor-part-menu-count button.minus");
+        this.nMinusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart && this.currentObject.nExtendable) {
+                let n = this.currentObject.n - 1;
+                if (n > 0) {
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { n: n });
+                    this.machineEditor.setSelectedObject(editedTrack);
+                }
+            }
+        };
+        this.nValue = document.querySelector("#machine-editor-part-menu-count .value");
         this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX");
         this.mirrorXButton = document.querySelector("#machine-editor-part-menu-mirrorX button");
         this.mirrorXButton.onclick = async () => {
@@ -5551,6 +5626,7 @@ class MachinePartEditorMenu {
                 this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
                 this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
                 this.depthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zExtendable ? "" : "none";
+                this.countLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.nExtendable ? "" : "none";
                 this.mirrorXLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xMirrorable ? "" : "none";
                 this.mirrorZLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.zMirrorable ? "" : "none";
                 this.fillLine.style.display = this._shown && this.currentObject instanceof Elevator ? "" : "none";
@@ -5564,6 +5640,7 @@ class MachinePartEditorMenu {
                     this.wValue.innerText = this.currentObject.w.toFixed(0);
                     this.hValue.innerText = this.currentObject.h.toFixed(0);
                     this.dValue.innerText = this.currentObject.d.toFixed(0);
+                    this.nValue.innerText = this.currentObject.n.toFixed(0);
                 }
                 else if (this.currentObject instanceof Ball) {
                     this.titleElement.innerText = "Marble";

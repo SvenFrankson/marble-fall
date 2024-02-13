@@ -843,18 +843,36 @@ class MachineEditor {
         }
     }
 
-    public async editTrackInPlace(track: MachinePart, i?: number, j?: number, k?: number, w?: number, h?: number, d?: number): Promise<MachinePart> {
-        if (!isFinite(i)) {
-            i = track.i;
+    public async editTrackInPlace(track: MachinePart, props?: ICreateTrackWHDNProp): Promise<MachinePart> {
+        if (!props) {
+            props = {};
         }
-        if (!isFinite(j)) {
-            j = track.j;
+        if (!isFinite(props.i)) {
+            props.i = track.i;
         }
-        if (!isFinite(k)) {
-            k = track.k;
+        if (!isFinite(props.j)) {
+            props.j = track.j;
+        }
+        if (!isFinite(props.k)) {
+            props.k = track.k;
+        }
+        if (!isFinite(props.w) && track.xExtendable) {
+            props.w = track.w;
+        }
+        if (!isFinite(props.h) && track.yExtendable) {
+            props.h = track.h;
+        }
+        if (!isFinite(props.d) && track.zExtendable) {
+            props.d = track.d;
+        }
+        if (!isFinite(props.n) && track.nExtendable) {
+            props.n = track.n;
         }
 
-        let editedTrack = this.machine.trackFactory.createTrackWHD(track.partName, i, j, k, w, h, d, track.mirrorX, track.mirrorZ);
+        props.mirrorX = track.mirrorX;
+        props.mirrorZ = track.mirrorZ;
+
+        let editedTrack = this.machine.trackFactory.createTrackWHDN(track.partName, props);
         track.dispose();
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
@@ -1146,7 +1164,7 @@ class MachineEditor {
             let h = track.h + 1;
             let j = track.j - 1;
 
-            let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+            let editedTrack = await this.editTrackInPlace(track, { j: j });
             this.setSelectedObject(editedTrack);
         }
     }
@@ -1158,7 +1176,7 @@ class MachineEditor {
             let j = track.j + 1;
 
             if (h >= 0) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, j, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { j: j });
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -1169,7 +1187,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.xExtendable) {
             let w = track.w + 1;
 
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+            let editedTrack = await this.editTrackInPlace(track, { w: w });
             this.setSelectedObject(editedTrack);
         }
     }
@@ -1180,7 +1198,7 @@ class MachineEditor {
             let w = track.w - 1;
 
             if (w >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { w: w });
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -1191,7 +1209,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h + 1;
             
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+            let editedTrack = await this.editTrackInPlace(track, { h: h });
             this.setSelectedObject(editedTrack);
         }
     }
@@ -1201,7 +1219,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.yExtendable) {
             let h = track.h - 1;
             if (h >= 0) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, h, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { h: h });
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -1213,7 +1231,7 @@ class MachineEditor {
             let i = track.i - 1;
             let w = track.w + 1;
 
-            let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+            let editedTrack = await this.editTrackInPlace(track, { i : i });
             this.setSelectedObject(editedTrack);
         }
     }
@@ -1225,7 +1243,7 @@ class MachineEditor {
             let w = track.w - 1;
 
             if (w >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, i, undefined, undefined, w, track.yExtendable ? track.h : undefined, track.zExtendable ? track.d : undefined);
+                let editedTrack = await this.editTrackInPlace(track, { i : i });
                 this.setSelectedObject(editedTrack);
             }
         }
@@ -1235,7 +1253,7 @@ class MachineEditor {
         let track = this.selectedObject;
         if (track instanceof MachinePart && track.zExtendable) {
             let d = track.d + 1;
-            let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+            let editedTrack = await this.editTrackInPlace(track, { d : d });
             this.setSelectedObject(editedTrack);
         }
     }
@@ -1245,7 +1263,7 @@ class MachineEditor {
         if (track instanceof MachinePart && track.zExtendable) {
             let d = track.d - 1;
             if (d >= 1) {
-                let editedTrack = await this.editTrackInPlace(track, undefined, undefined, undefined, track.xExtendable ? track.w : undefined, track.yExtendable ? track.h : undefined, d);
+                let editedTrack = await this.editTrackInPlace(track, { d : d });
                 this.setSelectedObject(editedTrack);
             }
         }
