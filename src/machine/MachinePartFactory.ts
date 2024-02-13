@@ -31,6 +31,7 @@ class MachinePartFactory {
         }
         whd = whd.substring(0, whd.length - 1);
         trackname += "-" + whd;
+        console.log(trackname);
         return this.createTrack(trackname, i, j, k, mirrorX, mirrorZ);
     }
 

@@ -102,7 +102,7 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public get xExtendable(): boolean {
-        return this.template.mirrorX;
+        return this.template.xExtendable;
     }
     public get yExtendable(): boolean {
         return this.template.yExtendable;

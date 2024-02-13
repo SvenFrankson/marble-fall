@@ -3234,7 +3234,7 @@ class MachinePart extends BABYLON.Mesh {
         return this.template.mirrorZ;
     }
     get xExtendable() {
-        return this.template.mirrorX;
+        return this.template.xExtendable;
     }
     get yExtendable() {
         return this.template.yExtendable;
@@ -3523,6 +3523,7 @@ class MachinePartFactory {
         }
         whd = whd.substring(0, whd.length - 1);
         trackname += "-" + whd;
+        console.log(trackname);
         return this.createTrack(trackname, i, j, k, mirrorX, mirrorZ);
     }
     createTrack(trackname, i, j, k = 0, mirrorX, mirrorZ) {
