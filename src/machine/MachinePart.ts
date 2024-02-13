@@ -104,6 +104,9 @@ class MachinePart extends BABYLON.Mesh {
     public get zMirrorable(): boolean {
         return this.template.zMirrorable;
     }
+    public get hasOriginDestinationHandles(): boolean {
+        return this.template.hasOriginDestinationHandles;
+    }
 
     private _template: MachinePartTemplate;
     public get template(): MachinePartTemplate {

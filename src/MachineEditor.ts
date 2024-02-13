@@ -865,29 +865,29 @@ class MachineEditor {
         return editedTrack;
     }
 
-    public async editRampOriginDestInPlace(ramp: Ramp, dOrigin: Nabu.IJK, dDestination: Nabu.IJK): Promise<Ramp> {
-        let origin = ramp.getOrigin();
+    public async editPartOriginDestInPlace(part: MachinePartWithOriginDestination, dOrigin: Nabu.IJK, dDestination: Nabu.IJK): Promise<MachinePartWithOriginDestination> {
+        let origin = part.getOrigin();
         origin.i += dOrigin.i;
         origin.j += dOrigin.j;
         origin.k += dOrigin.k;
-        let destination = ramp.getDestination();
+        let destination = part.getDestination();
         destination.i += dDestination.i;
         destination.j += dDestination.j;
         destination.k += dDestination.k;
 
         if (origin.i >= destination.i) {
-            return ramp;
+            return part;
         }
 
-        let editedRamp = Ramp.CreateFromOriginDestination(origin, destination, this.machine);
-        ramp.dispose();
-        this.machine.parts.push(editedRamp);
-        editedRamp.setIsVisible(true);
-        editedRamp.generateWires();
-        await editedRamp.instantiate();
-        editedRamp.recomputeAbsolutePath();
+        let editedPart = part.recreateFromOriginDestination(origin, destination, this.machine);
+        part.dispose();
+        this.machine.parts.push(editedPart);
+        editedPart.setIsVisible(true);
+        editedPart.generateWires();
+        await editedPart.instantiate();
+        editedPart.recomputeAbsolutePath();
         this.machine.generateBaseMesh();
-        return editedRamp;
+        return editedPart;
     }
 
     public async mirrorXTrackInPlace(track: MachinePart): Promise<MachinePart> {
@@ -943,7 +943,7 @@ class MachineEditor {
             }
             else if (this.selectedObject instanceof MachinePart) {
                 
-                if (this.selectedObject instanceof Ramp && this.selectedObjectsCount === 1) {
+                if (this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(
                         origin.i * tileWidth - 0.5 * tileWidth,
@@ -1276,74 +1276,74 @@ class MachineEditor {
     }
 
     private _onOriginIPlus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
         }
     }
 
     private _onOriginIMinus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: - 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: - 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
         }
     }
 
     private _onOriginJPlus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 1, k: 0 }, { i: 0, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 1, k: 0 }, { i: 0, j: 0, k: 0 }));
         }
     }
 
     private _onOriginJMinus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: - 1, k: 0 }, { i: 0, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: - 1, k: 0 }, { i: 0, j: 0, k: 0 }));
         }
     }
 
     private _onOriginKPlus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 1 }, { i: 0, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 1 }, { i: 0, j: 0, k: 0 }));
         }
     }
 
     private _onOriginKMinus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: - 1 }, { i: 0, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: - 1 }, { i: 0, j: 0, k: 0 }));
         }
     }
 
     private _onDestinationIPlus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 1, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 1, j: 0, k: 0 }));
         }
     }
 
     private _onDestinationIMinus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: - 1, j: 0, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: - 1, j: 0, k: 0 }));
         }
     }
 
     private _onDestinationJPlus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 1, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 1, k: 0 }));
         }
     }
 
     private _onDestinationJMinus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: - 1, k: 0 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: - 1, k: 0 }));
         }
     }
 
     private _onDestinationKPlus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: 1 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: 1 }));
         }
     }
 
     private _onDestinationKMinus = async () => {
-        if (this.selectedObject instanceof Ramp) {
-            this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: - 1 }));
+        if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+            this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: - 1 }));
         }
     }
 

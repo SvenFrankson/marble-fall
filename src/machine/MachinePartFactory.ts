@@ -1,5 +1,6 @@
 var TrackNames = [
     "ramp-1.1.1",
+    "wave-1.1.1",
     "join",
     "flatjoin",
     "split",
@@ -37,6 +38,12 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
             return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("wave-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            let d = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Wave(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);

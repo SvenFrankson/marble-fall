@@ -306,27 +306,16 @@ var simpleLoop = {
     ],
 };
 var demo1 = {
-    balls: [
-        { x: 0.4539999737739563, y: -0.15150000488758086, z: 0 },
-        { x: 0.4539999737739563, y: 0.002181407451629638, z: 0 },
-        { x: 0.4539999737739563, y: 0.15586281979084016, z: 0 },
-    ],
+    balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
     parts: [
-        { name: "ramp-3.1.1", i: -1, j: -6, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-s", i: -2, j: 5, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturn-s", i: -2, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "elevator-12", i: 3, j: -7, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 2, j: -6, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "wave", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.1.1", i: -1, j: -2, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-l", i: 1, j: -3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.2", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturn-0.3", i: -2, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 2, j: 4, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-3.2.2", i: -1, j: 4, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-1.3", i: 2, j: 0, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "ramp-3.1.1", i: -1, j: -1, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.4.1", i: 0, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.2", i: -1, j: -5, k: 1, mirrorZ: true },
+        { name: "uturn-0.2", i: -3, j: 1, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "split", i: -2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "elevator-8", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "flatjoin", i: 0, j: 1, k: 0, mirrorZ: false },
+        { name: "ramp-2.0.2", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "wave-1.4.2", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
     ],
 };
 var demoLoops = {
@@ -635,14 +624,14 @@ var test2 = {
 var test3 = {
     balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
     parts: [
-        { name: "loop-1.2", i: -1, j: -5, k: 1, mirrorZ: true },
-        { name: "ramp-1.4.2", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
         { name: "uturn-0.2", i: -3, j: 1, k: 1, mirrorX: true, mirrorZ: false },
         { name: "split", i: -2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
         { name: "elevator-8", i: 1, j: -6, k: 0, mirrorZ: false },
         { name: "flatjoin", i: 0, j: 1, k: 0, mirrorZ: false },
         { name: "ramp-2.0.2", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-1.1.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "wave-1.0.2", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
 class HelperShape {
@@ -1142,63 +1131,63 @@ class MachineEditor {
             }
         };
         this._onOriginIPlus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
             }
         };
         this._onOriginIMinus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: -1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: -1, j: 0, k: 0 }, { i: 0, j: 0, k: 0 }));
             }
         };
         this._onOriginJPlus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 1, k: 0 }, { i: 0, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 1, k: 0 }, { i: 0, j: 0, k: 0 }));
             }
         };
         this._onOriginJMinus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: -1, k: 0 }, { i: 0, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: -1, k: 0 }, { i: 0, j: 0, k: 0 }));
             }
         };
         this._onOriginKPlus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 1 }, { i: 0, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 1 }, { i: 0, j: 0, k: 0 }));
             }
         };
         this._onOriginKMinus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: -1 }, { i: 0, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: -1 }, { i: 0, j: 0, k: 0 }));
             }
         };
         this._onDestinationIPlus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 1, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 1, j: 0, k: 0 }));
             }
         };
         this._onDestinationIMinus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: -1, j: 0, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: -1, j: 0, k: 0 }));
             }
         };
         this._onDestinationJPlus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 1, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 1, k: 0 }));
             }
         };
         this._onDestinationJMinus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: -1, k: 0 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: -1, k: 0 }));
             }
         };
         this._onDestinationKPlus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: 1 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: 1 }));
             }
         };
         this._onDestinationKMinus = async () => {
-            if (this.selectedObject instanceof Ramp) {
-                this.setSelectedObject(await this.editRampOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: -1 }));
+            if (this.selectedObject instanceof MachinePartWithOriginDestination) {
+                this.setSelectedObject(await this.editPartOriginDestInPlace(this.selectedObject, { i: 0, j: 0, k: 0 }, { i: 0, j: 0, k: -1 }));
             }
         };
         this._onIPlus = async () => {
@@ -1888,27 +1877,27 @@ class MachineEditor {
         this.machine.generateBaseMesh();
         return editedTrack;
     }
-    async editRampOriginDestInPlace(ramp, dOrigin, dDestination) {
-        let origin = ramp.getOrigin();
+    async editPartOriginDestInPlace(part, dOrigin, dDestination) {
+        let origin = part.getOrigin();
         origin.i += dOrigin.i;
         origin.j += dOrigin.j;
         origin.k += dOrigin.k;
-        let destination = ramp.getDestination();
+        let destination = part.getDestination();
         destination.i += dDestination.i;
         destination.j += dDestination.j;
         destination.k += dDestination.k;
         if (origin.i >= destination.i) {
-            return ramp;
+            return part;
         }
-        let editedRamp = Ramp.CreateFromOriginDestination(origin, destination, this.machine);
-        ramp.dispose();
-        this.machine.parts.push(editedRamp);
-        editedRamp.setIsVisible(true);
-        editedRamp.generateWires();
-        await editedRamp.instantiate();
-        editedRamp.recomputeAbsolutePath();
+        let editedPart = part.recreateFromOriginDestination(origin, destination, this.machine);
+        part.dispose();
+        this.machine.parts.push(editedPart);
+        editedPart.setIsVisible(true);
+        editedPart.generateWires();
+        await editedPart.instantiate();
+        editedPart.recomputeAbsolutePath();
         this.machine.generateBaseMesh();
-        return editedRamp;
+        return editedPart;
     }
     async mirrorXTrackInPlace(track) {
         let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
@@ -1957,7 +1946,7 @@ class MachineEditor {
                 this.KMinusHandle.isVisible = true;
             }
             else if (this.selectedObject instanceof MachinePart) {
-                if (this.selectedObject instanceof Ramp && this.selectedObjectsCount === 1) {
+                if (this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth);
                     this.originIPlusHandle.position.copyFrom(pOrigin);
@@ -3247,6 +3236,9 @@ class MachinePart extends BABYLON.Mesh {
     get zMirrorable() {
         return this.template.zMirrorable;
     }
+    get hasOriginDestinationHandles() {
+        return this.template.hasOriginDestinationHandles;
+    }
     get template() {
         return this._template;
     }
@@ -3473,6 +3465,7 @@ class MachinePart extends BABYLON.Mesh {
 }
 var TrackNames = [
     "ramp-1.1.1",
+    "wave-1.1.1",
     "join",
     "flatjoin",
     "split",
@@ -3506,6 +3499,12 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
             return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("wave-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            let d = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Wave(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3858,6 +3857,7 @@ class MachinePartTemplate {
         this.minD = 1;
         this.xMirrorable = false;
         this.zMirrorable = false;
+        this.hasOriginDestinationHandles = false;
         this.trackTemplates = [];
     }
     mirrorXTrackPointsInPlace() {
@@ -3905,6 +3905,12 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let d = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Ramp.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("wave-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                let d = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Wave.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
@@ -4513,65 +4519,7 @@ class Loop extends MachinePart {
         return template;
     }
 }
-class Ramp extends MachinePart {
-    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        let partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
-        this.generateWires();
-    }
-    static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
-        let template = new MachinePartTemplate();
-        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        template.w = w;
-        template.h = h;
-        template.d = d;
-        template.mirrorX = mirrorX;
-        template.mirrorZ = mirrorZ;
-        template.xExtendable = true;
-        template.yExtendable = true;
-        template.zExtendable = true;
-        template.xMirrorable = true;
-        template.zMirrorable = true;
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        template.trackTemplates[0] = new TrackTemplate(template);
-        template.trackTemplates[0].trackpoints = [
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -tileHeight * template.h, -tileDepth * (template.d - 1)), dir)
-        ];
-        if (mirrorX) {
-            template.mirrorXTrackPointsInPlace();
-        }
-        if (mirrorZ) {
-            template.mirrorZTrackPointsInPlace();
-        }
-        template.initialize();
-        return template;
-    }
-    static CreateFromOriginDestination(origin, dest, machine) {
-        let i = Math.min(origin.i, dest.i);
-        let j = Math.min(origin.j, dest.j);
-        let k = Math.min(origin.k, dest.k);
-        let w = dest.i - origin.i;
-        let h = Math.abs(dest.j - origin.j);
-        let d = Math.abs(dest.k - origin.k) + 1;
-        let mirrorX = dest.j < origin.j;
-        let mirrorZ = false;
-        if (mirrorX) {
-            if (origin.k < dest.k) {
-                mirrorZ = true;
-            }
-        }
-        else {
-            if (origin.k > dest.k) {
-                mirrorZ = true;
-            }
-        }
-        return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
-    }
+class MachinePartWithOriginDestination extends MachinePart {
     getOrigin() {
         let i = this.i;
         let j;
@@ -4635,6 +4583,66 @@ class Ramp extends MachinePart {
             j: j,
             k: k
         };
+    }
+}
+class Ramp extends MachinePartWithOriginDestination {
+    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        super(machine, i, j, k);
+        let partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        template.w = w;
+        template.h = h;
+        template.d = d;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+        template.xExtendable = true;
+        template.yExtendable = true;
+        template.zExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -tileHeight * template.h, -tileDepth * (template.d - 1)), dir)
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            template.mirrorZTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+    recreateFromOriginDestination(origin, dest, machine) {
+        let i = Math.min(origin.i, dest.i);
+        let j = Math.min(origin.j, dest.j);
+        let k = Math.min(origin.k, dest.k);
+        let w = dest.i - origin.i;
+        let h = Math.abs(dest.j - origin.j);
+        let d = Math.abs(dest.k - origin.k) + 1;
+        let mirrorX = dest.j < origin.j;
+        let mirrorZ = false;
+        if (mirrorX) {
+            if (origin.k < dest.k) {
+                mirrorZ = true;
+            }
+        }
+        else {
+            if (origin.k > dest.k) {
+                mirrorZ = true;
+            }
+        }
+        return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
     }
 }
 class Split extends MachinePart {
@@ -4877,6 +4885,77 @@ class UTurn extends MachinePart {
         }
         template.initialize();
         return template;
+    }
+}
+class Wave extends MachinePartWithOriginDestination {
+    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        super(machine, i, j, k);
+        let partName = "wave-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.partName = "wave-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        template.w = w;
+        template.h = h;
+        template.d = d;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+        template.xExtendable = true;
+        template.yExtendable = true;
+        template.zExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        let start = new BABYLON.Vector3(-tileWidth * 0.5, 0, 0);
+        let end = new BABYLON.Vector3(tileWidth * (template.w - 0.5), -tileHeight * template.h, -tileDepth * (template.d - 1));
+        let tanVector = dir.scale(BABYLON.Vector3.Distance(start, end));
+        template.trackTemplates[0].trackpoints = [new TrackPoint(template.trackTemplates[0], start, dir, undefined, undefined, 1)];
+        for (let i = 1; i < 2 * (w + 1); i++) {
+            let p1 = BABYLON.Vector3.Hermite(start, tanVector, end, tanVector, i / (2 * (w + 1)));
+            if (i % 2 === 1) {
+                p1.y -= 0.008;
+            }
+            else {
+                p1.y += 0.008;
+            }
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], p1));
+        }
+        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], end, dir, undefined, 1));
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            template.mirrorZTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+    recreateFromOriginDestination(origin, dest, machine) {
+        let i = Math.min(origin.i, dest.i);
+        let j = Math.min(origin.j, dest.j);
+        let k = Math.min(origin.k, dest.k);
+        let w = dest.i - origin.i;
+        let h = Math.abs(dest.j - origin.j);
+        let d = Math.abs(dest.k - origin.k) + 1;
+        let mirrorX = dest.j < origin.j;
+        let mirrorZ = false;
+        if (mirrorX) {
+            if (origin.k < dest.k) {
+                mirrorZ = true;
+            }
+        }
+        else {
+            if (origin.k > dest.k) {
+                mirrorZ = true;
+            }
+        }
+        return new Wave(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
     }
 }
 class Arrow extends BABYLON.Mesh {

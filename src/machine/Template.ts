@@ -224,6 +224,7 @@ class MachinePartTemplate {
     public minD: number = 1;
     public xMirrorable: boolean = false;
     public zMirrorable: boolean = false;
+    public hasOriginDestinationHandles: boolean = false;
 
     public trackTemplates: TrackTemplate[] = [];
     
@@ -279,6 +280,12 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let d = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Ramp.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("wave-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                let d = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Wave.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
