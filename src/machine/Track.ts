@@ -102,14 +102,14 @@ class Track {
         let angles = [...this.template.angles];
         this.trackInterpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
 
-        Mummu.DrawDebugPoint(this.startWorldPosition.add(this.endWorldPosition).scale(0.5), 60, BABYLON.Color3.Blue());
+        //Mummu.DrawDebugPoint(this.startWorldPosition.add(this.endWorldPosition).scale(0.5), 60, BABYLON.Color3.Blue());
 
         let startBank = 0;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
             this.part.addNeighbour(otherS.part);
 
-            Mummu.DrawDebugPoint(this.startWorldPosition, 60, BABYLON.Color3.Green());
+            //Mummu.DrawDebugPoint(this.startWorldPosition, 60, BABYLON.Color3.Green());
             let otherBank = otherS.bank * (otherS.isEnd ? 1 : - 1);
             if (this.preferedStartBank * otherBank >= 0) {
                 startBank = Math.sign(this.preferedStartBank + otherBank) * Math.max(Math.abs(this.preferedStartBank), Math.abs(otherBank));
@@ -124,7 +124,7 @@ class Track {
         if (otherE) {
             this.part.addNeighbour(otherE.part);
 
-            Mummu.DrawDebugPoint(this.endWorldPosition, 60, BABYLON.Color3.Red());
+            //Mummu.DrawDebugPoint(this.endWorldPosition, 60, BABYLON.Color3.Red());
             let otherBank = otherE.bank * (otherE.isEnd ? - 1 : 1);
             if (this.preferedEndBank * otherBank >= 0) {
                 endBank = Math.sign(this.preferedEndBank + otherBank) * Math.max(Math.abs(this.preferedEndBank), Math.abs(otherBank));

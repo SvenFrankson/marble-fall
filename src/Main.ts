@@ -338,6 +338,7 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
+                /*
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -345,11 +346,12 @@ class Game {
                 else {
                     this.makeCircuitScreenshot();
                 }
+                */
+                for (let i = 0; i < TrackNames.length; i++) {
+                    let trackname = TrackNames[i];
+                    await this.makeScreenshot(trackname);
+                }
             }
-            //for (let i = 0; i < TrackNames.length; i++) {
-            //    let trackname = TrackNames[i];
-            //    await this.makeScreenshot(trackname);
-            //}
         })
 
         this.canvas.addEventListener("pointerdown", this.onPointerDown);

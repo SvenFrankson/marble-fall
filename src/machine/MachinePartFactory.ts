@@ -1,13 +1,13 @@
 var TrackNames = [
     "ramp-1.1.1",
-    "wave-1.1.1",
+    "wave-2.1.1",
     "snake-2.1.1",
     "join",
     "flatjoin",
     "split",
     "uturn-0.2",
     "uturnsharp",
-    "loop-1.2",
+    "loop-1.1",
     "elevator-4"
 ];
 

@@ -12,7 +12,7 @@ class Snake extends MachinePartWithOriginDestination {
         let template = new MachinePartTemplate();
 
         template.partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        template.angleSmoothFactor = 0.2;
+        template.angleSmoothFactor = 0.5;
 
         template.w = w;
         template.h = h;
