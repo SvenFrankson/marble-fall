@@ -632,6 +632,7 @@ var test3 = {
         { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
         { name: "ramp-1.1.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
         { name: "wave-1.0.2", i: -1, j: -4, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "snake-2.0.1", i: -3, j: -4, k: 1, mirrorX: false, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -3466,6 +3467,7 @@ class MachinePart extends BABYLON.Mesh {
 var TrackNames = [
     "ramp-1.1.1",
     "wave-1.1.1",
+    "snake-2.1.1",
     "join",
     "flatjoin",
     "split",
@@ -3505,6 +3507,12 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
             return new Wave(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("snake-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            let d = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Snake(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
         }
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3802,7 +3810,7 @@ class TrackTemplate {
         this.angles.push(0);
         let tmpAngles = [...this.angles];
         let f = 1;
-        for (let n = 0; n < 2 * N; n++) {
+        for (let n = 0; n < this.partTemplate.angleSmoothFactor * N; n++) {
             for (let i = 0; i < N; i++) {
                 let aPrev = tmpAngles[i - 1];
                 let a = tmpAngles[i];
@@ -3851,6 +3859,7 @@ class MachinePartTemplate {
         this.d = 1;
         this.mirrorX = false;
         this.mirrorZ = false;
+        this.angleSmoothFactor = 2;
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
@@ -3911,6 +3920,12 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let d = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Wave.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("snake-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                let d = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Snake.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
@@ -4048,7 +4063,7 @@ class Track {
         angles[0] = startBank;
         angles[angles.length - 1] = endBank;
         let f = 1;
-        for (let n = 0; n < 2 * N; n++) {
+        for (let n = 0; n < this.template.partTemplate.angleSmoothFactor * N; n++) {
             for (let i = 1; i < N - 1; i++) {
                 let aPrev = angles[i - 1];
                 let a = angles[i];
@@ -4643,6 +4658,78 @@ class Ramp extends MachinePartWithOriginDestination {
             }
         }
         return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+    }
+}
+class Snake extends MachinePartWithOriginDestination {
+    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        super(machine, i, j, k);
+        let partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
+        template.angleSmoothFactor = 0.2;
+        template.w = w;
+        template.h = h;
+        template.d = d;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+        template.xExtendable = true;
+        template.yExtendable = true;
+        template.zExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        let start = new BABYLON.Vector3(-tileWidth * 0.5, 0, 0);
+        let end = new BABYLON.Vector3(tileWidth * (template.w - 0.5), -tileHeight * template.h, -tileDepth * (template.d - 1));
+        let tanVector = dir.scale(BABYLON.Vector3.Distance(start, end));
+        template.trackTemplates[0].trackpoints = [new TrackPoint(template.trackTemplates[0], start, dir, undefined, undefined, 1)];
+        for (let i = 1; i < 2 * (w + 1); i++) {
+            let p1 = BABYLON.Vector3.Hermite(start, tanVector, end, tanVector, i / (2 * (w + 1)));
+            if (i % 2 === 1) {
+                p1.z -= 0.015;
+            }
+            else {
+                p1.z += 0.015;
+            }
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], p1));
+        }
+        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], end, dir, undefined, 1));
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            template.mirrorZTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+    recreateFromOriginDestination(origin, dest, machine) {
+        let i = Math.min(origin.i, dest.i);
+        let j = Math.min(origin.j, dest.j);
+        let k = Math.min(origin.k, dest.k);
+        let w = dest.i - origin.i;
+        let h = Math.abs(dest.j - origin.j);
+        let d = Math.abs(dest.k - origin.k) + 1;
+        let mirrorX = dest.j < origin.j;
+        let mirrorZ = false;
+        if (mirrorX) {
+            if (origin.k < dest.k) {
+                mirrorZ = true;
+            }
+        }
+        else {
+            if (origin.k > dest.k) {
+                mirrorZ = true;
+            }
+        }
+        return new Snake(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
     }
 }
 class Split extends MachinePart {
