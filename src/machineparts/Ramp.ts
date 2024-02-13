@@ -1,6 +1,5 @@
 abstract class MachinePartWithOriginDestination extends MachinePart {
     
-    
     public abstract recreateFromOriginDestination(origin: Nabu.IJK, dest: Nabu.IJK, machine: Machine): MachinePartWithOriginDestination;
     
     public getOrigin(): Nabu.IJK {

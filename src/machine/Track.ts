@@ -131,7 +131,7 @@ class Track {
         angles[0] = startBank;
         angles[angles.length - 1] = endBank;
         let f = 1;
-        for (let n = 0; n < 2 * N; n++) {
+        for (let n = 0; n < this.template.partTemplate.angleSmoothFactor * N; n++) {
             for (let i = 1; i < N - 1; i++) {
                 let aPrev = angles[i - 1];
                 let a = angles[i];

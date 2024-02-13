@@ -159,7 +159,7 @@ class TrackTemplate {
 
         let tmpAngles = [...this.angles];
         let f = 1;
-        for (let n = 0; n < 2 * N; n++) {
+        for (let n = 0; n < this.partTemplate.angleSmoothFactor * N; n++) {
             for (let i = 0; i < N; i++) {
                 let aPrev = tmpAngles[i - 1];
                 let a = tmpAngles[i];
@@ -217,6 +217,7 @@ class MachinePartTemplate {
     public d: number = 1;
     public mirrorX: boolean = false;
     public mirrorZ: boolean = false;
+    public angleSmoothFactor: number = 2;
 
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;
@@ -286,6 +287,12 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let d = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Wave.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("snake-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                let d = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Snake.GenerateTemplate(w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
             }
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
