@@ -109,22 +109,26 @@ class Machine {
         this.playing = false;
     }
 
+    public baseMeshMinX: number = - 0.15;
+    public baseMeshMaxX: number = - 0.15;
+    public baseMeshMinY: number = - 0.15;
+    public baseMeshMaxY: number = - 0.15;
     public async generateBaseMesh(): Promise<void> {
 
-        let minX = - 0.15;
-        let maxX = 0.15;
-        let minY = - 0.15;
-        let maxY = 0.15;
+        this.baseMeshMinX = - 0.15;
+        this.baseMeshMaxX = 0.15;
+        this.baseMeshMinY = - 0.15;
+        this.baseMeshMaxY = 0.15;
         for (let i = 0; i < this.parts.length; i++) {
             let track = this.parts[i];
-            minX = Math.min(minX, track.position.x - tileWidth * 0.5);
-            maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
-            minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
-            maxY = Math.max(maxY, track.position.y);
+            this.baseMeshMinX = Math.min(this.baseMeshMinX, track.position.x - tileWidth * 0.5);
+            this.baseMeshMaxX = Math.max(this.baseMeshMaxX, track.position.x + tileWidth * (track.w - 0.5));
+            this.baseMeshMinY = Math.min(this.baseMeshMinY, track.position.y - tileHeight * (track.h + 1));
+            this.baseMeshMaxY = Math.max(this.baseMeshMaxY, track.position.y);
         }
         
-        let w = maxX - minX;
-        let h = maxY - minY;
+        let w = this.baseMeshMaxX - this.baseMeshMinX;
+        let h = this.baseMeshMaxY - this.baseMeshMinY;
         let u = w * 4;
         let v = h * 4;
 
@@ -132,8 +136,8 @@ class Machine {
             this.baseWall.dispose();
         }
         this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation:BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-        this.baseWall.position.x = (maxX + minX) * 0.5;
-        this.baseWall.position.y = (maxY + minY) * 0.5;
+        this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+        this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
         this.baseWall.position.z += 0.016;
         this.baseWall.rotation.z = Math.PI / 2;
         this.baseWall.material = this.game.woodMaterial;

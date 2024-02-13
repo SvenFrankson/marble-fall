@@ -223,6 +223,8 @@ class Game {
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
+        this.camera.lowerAlphaLimit = - Math.PI * 0.98;
+        this.camera.upperAlphaLimit = - Math.PI * 0.02;
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 4000;
         this.camera.panningInertia *= 0.5;
@@ -447,6 +449,10 @@ class Game {
                 }
             }
         }
+
+        this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
+        this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
+        this.camera.target.z = Nabu.MinMax(this.camera.target.z, - 1, 0);
 
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));

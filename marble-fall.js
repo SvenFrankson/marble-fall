@@ -120,7 +120,7 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.volume = 0;
     }
     update(dt) {
-        if (this.position.y < -10) {
+        if (this.position.y < this.machine.baseMeshMinY - 0.5) {
             return;
         }
         this._timer += dt * this.game.currentTimeFactor;
@@ -2286,6 +2286,8 @@ class Game {
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
+        this.camera.lowerAlphaLimit = -Math.PI * 0.98;
+        this.camera.upperAlphaLimit = -Math.PI * 0.02;
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 4000;
         this.camera.panningInertia *= 0.5;
@@ -2484,6 +2486,9 @@ class Game {
                 }
             }
         }
+        this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
+        this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
+        this.camera.target.z = Nabu.MinMax(this.camera.target.z, -1, 0);
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
         if (this.cameraOrtho) {
@@ -3006,6 +3011,10 @@ class Machine {
         this.instantiated = false;
         this.playing = false;
         this.onStopCallbacks = new Nabu.UniqueList();
+        this.baseMeshMinX = -0.15;
+        this.baseMeshMaxX = -0.15;
+        this.baseMeshMinY = -0.15;
+        this.baseMeshMaxY = -0.15;
         this.trackFactory = new MachinePartFactory(this);
         this.templateManager = new TemplateManager(this);
     }
@@ -3074,27 +3083,27 @@ class Machine {
         this.playing = false;
     }
     async generateBaseMesh() {
-        let minX = -0.15;
-        let maxX = 0.15;
-        let minY = -0.15;
-        let maxY = 0.15;
+        this.baseMeshMinX = -0.15;
+        this.baseMeshMaxX = 0.15;
+        this.baseMeshMinY = -0.15;
+        this.baseMeshMaxY = 0.15;
         for (let i = 0; i < this.parts.length; i++) {
             let track = this.parts[i];
-            minX = Math.min(minX, track.position.x - tileWidth * 0.5);
-            maxX = Math.max(maxX, track.position.x + tileWidth * (track.w - 0.5));
-            minY = Math.min(minY, track.position.y - tileHeight * (track.h + 1));
-            maxY = Math.max(maxY, track.position.y);
+            this.baseMeshMinX = Math.min(this.baseMeshMinX, track.position.x - tileWidth * 0.5);
+            this.baseMeshMaxX = Math.max(this.baseMeshMaxX, track.position.x + tileWidth * (track.w - 0.5));
+            this.baseMeshMinY = Math.min(this.baseMeshMinY, track.position.y - tileHeight * (track.h + 1));
+            this.baseMeshMaxY = Math.max(this.baseMeshMaxY, track.position.y);
         }
-        let w = maxX - minX;
-        let h = maxY - minY;
+        let w = this.baseMeshMaxX - this.baseMeshMinX;
+        let h = this.baseMeshMaxY - this.baseMeshMinY;
         let u = w * 4;
         let v = h * 4;
         if (this.baseWall) {
             this.baseWall.dispose();
         }
         this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-        this.baseWall.position.x = (maxX + minX) * 0.5;
-        this.baseWall.position.y = (maxY + minY) * 0.5;
+        this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+        this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
         this.baseWall.position.z += 0.016;
         this.baseWall.rotation.z = Math.PI / 2;
         this.baseWall.material = this.game.woodMaterial;
