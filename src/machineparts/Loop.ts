@@ -37,9 +37,9 @@ class Loop extends MachinePart {
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.5, - template.h * tileHeight, 0), dir)
         ];
 
-        let nLoops = 1;
+        let nLoops = 2;
         let rStart = tileWidth * 0.5 * w * 0.7;
-        let rEnd = rStart / (nLoops * 0.7);
+        let rEnd = rStart;
         for (let n = 0; n <= 8 * nLoops; n++) {
             let f = Math.floor(n / 8) / nLoops;
             let r = rStart * (1 - f) + rEnd * f;

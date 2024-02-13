@@ -385,6 +385,7 @@ class MachinePart extends BABYLON.Mesh {
             this.tracks.forEach(track => {
                 if (track.template) {
                     track.recomputeWiresPath();
+                    track.recomputeAbsolutePath();
                 }
                 track.wires.forEach(wire => {
                     wire.instantiate();

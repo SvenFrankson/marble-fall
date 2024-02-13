@@ -342,16 +342,14 @@ var test2 = {
 };
 
 var test3 = {
-    balls: [{ x: 0.1470751372356046, y: -0.021790127870097292, z: -1.1102230246251565e-16 }],
+    balls: [{ x: 0.15141078307665115, y: -0.06119131474246342, z: 1.1102230246251565e-16 }],
     parts: [
-        { name: "uturn-0.2", i: -3, j: 1, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "split", i: -2, j: -1, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "elevator-8", i: 1, j: -6, k: 0, mirrorZ: false },
-        { name: "flatjoin", i: 0, j: 1, k: 0, mirrorZ: false },
-        { name: "ramp-2.0.2", i: -2, j: 1, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "ramp-1.1.3", i: -1, j: 1, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturnsharp", i: -1, j: -3, k: 0, mirrorX: true },
-        { name: "ramp-1.2.1", i: 0, j: -5, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.1.1", i: 0, j: -2, k: 0 },
+        { name: "loop-1.2", i: -2, j: -1, k: 0, mirrorZ: true },
+        { name: "ramp-2.8.1", i: -1, j: -5, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -3, j: 3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.3", i: -4, j: 3, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "elevator-9", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "ramp-2.0.4", i: -1, j: 3, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "ramp-2.0.1", i: -3, j: 3, k: 3, mirrorX: false, mirrorZ: false },
     ],
 };
