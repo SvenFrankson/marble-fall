@@ -109,16 +109,17 @@ class Machine {
         this.playing = false;
     }
 
-    public baseMeshMinX: number = - 0.15;
-    public baseMeshMaxX: number = - 0.15;
-    public baseMeshMinY: number = - 0.15;
-    public baseMeshMaxY: number = - 0.15;
+    public margin: number = 0.05;
+    public baseMeshMinX: number = - this.margin;
+    public baseMeshMaxX: number = this.margin;
+    public baseMeshMinY: number = - this.margin;
+    public baseMeshMaxY: number = this.margin;
     public async generateBaseMesh(): Promise<void> {
 
-        this.baseMeshMinX = - 0.15;
-        this.baseMeshMaxX = 0.15;
-        this.baseMeshMinY = - 0.15;
-        this.baseMeshMaxY = 0.15;
+        this.baseMeshMinX = - this.margin;
+        this.baseMeshMaxX = this.margin;
+        this.baseMeshMinY = - this.margin;
+        this.baseMeshMaxY = this.margin;
         for (let i = 0; i < this.parts.length; i++) {
             let track = this.parts[i];
             this.baseMeshMinX = Math.min(this.baseMeshMinX, track.position.x - tileWidth * 0.5);
@@ -135,7 +136,7 @@ class Machine {
         if (this.baseWall) {
             this.baseWall.dispose();
         }
-        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation:BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 2 * this.margin, height: w + 2 * this.margin, sideOrientation:BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
         this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
         this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
         this.baseWall.position.z += 0.016;
@@ -157,16 +158,16 @@ class Machine {
             let y = positions[3 * i + 1];
             
             if (x > 0) {
-                positions[3 * i] += w * 0.5 - 0.01 + 0.1;
+                positions[3 * i] += w * 0.5 - 0.01 + this.margin;
             }
             else if (x < 0) {
-                positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
+                positions[3 * i] -= w * 0.5 - 0.01 + this.margin;
             }
             if (y > 0) {
-                positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
+                positions[3 * i + 1] += h * 0.5 - 0.01 + this.margin;
             }
             else if (y < 0) {
-                positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
+                positions[3 * i + 1] -= h * 0.5 - 0.01 + this.margin;
             }
         }
         data.positions = positions;

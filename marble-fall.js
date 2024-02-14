@@ -2174,7 +2174,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.savedCamPosToLocalStorage = true;
+        this.DEBUG_MODE = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -2303,30 +2303,40 @@ class Game {
         this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 10 / Math.sqrt(3) }, this.scene);
-        this.skybox.rotation.y = Math.PI / 2;
+        this.skybox = Mummu.CreateSphereCut("skybox", {
+            dir: BABYLON.Axis.Z,
+            rMin: 8,
+            rMax: 9,
+            alpha: Math.PI,
+            beta: 0.8 * Math.PI
+        });
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.CubeTexture("./datas/skyboxes/skybox", this.scene, ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"]);
-        skyboxMaterial.reflectionTexture = skyTexture;
-        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/outside_2.jpg");
+        skyboxMaterial.diffuseTexture = skyTexture;
+        skyboxMaterial.emissiveColor = BABYLON.Color3.White();
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         this.skybox.material = skyboxMaterial;
+        if (this.DEBUG_MODE) {
+            let room = new Room(this);
+            room.instantiate();
+        }
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
         this.camera.maxZ = 10;
-        this.camera.lowerAlphaLimit = -Math.PI * 0.98;
-        this.camera.upperAlphaLimit = -Math.PI * 0.02;
+        if (!this.DEBUG_MODE) {
+            this.camera.lowerAlphaLimit = -Math.PI * 0.98;
+            this.camera.upperAlphaLimit = -Math.PI * 0.02;
+            this.camera.lowerRadiusLimit = 0.05;
+            this.camera.upperRadiusLimit = 1.5;
+        }
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 4000;
         this.camera.panningInertia *= 0.5;
-        this.camera.lowerRadiusLimit = 0.05;
-        this.camera.upperRadiusLimit = 1.5;
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
-        if (this.savedCamPosToLocalStorage) {
+        if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));
                 this.camera.target.x = target.x;
@@ -2356,7 +2366,7 @@ class Game {
         this.camera.getScene();
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(deathLoop);
+        this.machine.deserialize(simpleLoop);
         //this.machine.deserialize(test);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
@@ -2411,7 +2421,12 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         };
-        await this.setPageMode(GameMode.MainMenu);
+        if (this.DEBUG_MODE) {
+            await this.setPageMode(GameMode.CreateMode);
+        }
+        else {
+            await this.setPageMode(GameMode.MainMenu);
+        }
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
@@ -2461,7 +2476,7 @@ class Game {
     }
     update() {
         let dt = this.scene.deltaTime / 1000;
-        if (this.savedCamPosToLocalStorage) {
+        if (this.DEBUG_MODE) {
             let camPos = this.camera.position;
             let camTarget = this.camera.target;
             window.localStorage.setItem("camera-position", JSON.stringify({ x: camPos.x, y: camPos.y, z: camPos.z }));
@@ -2868,6 +2883,29 @@ class MenuTile extends BABYLON.Mesh {
     }
 }
 MenuTile.ppc = 60;
+class Room {
+    constructor(game) {
+        this.game = game;
+        this.ground = new BABYLON.Mesh("ground");
+        this.ground.position.z = 0.1;
+        this.ground.position.y = -1.5;
+        this.wall = new BABYLON.Mesh("wall");
+        this.wall.position.z = 0.1;
+        this.wall.position.y = -1.5;
+    }
+    async instantiate() {
+        Mummu.CreateQuadVertexData({
+            p1: new BABYLON.Vector3(-3, 0, -6),
+            p2: new BABYLON.Vector3(3, 0, -6),
+            p3: new BABYLON.Vector3(3, 0, 0),
+            p4: new BABYLON.Vector3(-3, 0, 0)
+        }).applyToMesh(this.ground);
+        let datas = await this.game.vertexDataLoader.get("./meshes/wall.babylon");
+        if (datas && datas[0]) {
+            datas[0].applyToMesh(this.wall);
+        }
+    }
+}
 class Sound {
     constructor(prop) {
         if (prop) {
@@ -3041,10 +3079,11 @@ class Machine {
         this.instantiated = false;
         this.playing = false;
         this.onStopCallbacks = new Nabu.UniqueList();
-        this.baseMeshMinX = -0.15;
-        this.baseMeshMaxX = -0.15;
-        this.baseMeshMinY = -0.15;
-        this.baseMeshMaxY = -0.15;
+        this.margin = 0.05;
+        this.baseMeshMinX = -this.margin;
+        this.baseMeshMaxX = this.margin;
+        this.baseMeshMinY = -this.margin;
+        this.baseMeshMaxY = this.margin;
         this.trackFactory = new MachinePartFactory(this);
         this.templateManager = new TemplateManager(this);
     }
@@ -3113,10 +3152,10 @@ class Machine {
         this.playing = false;
     }
     async generateBaseMesh() {
-        this.baseMeshMinX = -0.15;
-        this.baseMeshMaxX = 0.15;
-        this.baseMeshMinY = -0.15;
-        this.baseMeshMaxY = 0.15;
+        this.baseMeshMinX = -this.margin;
+        this.baseMeshMaxX = this.margin;
+        this.baseMeshMinY = -this.margin;
+        this.baseMeshMaxY = this.margin;
         for (let i = 0; i < this.parts.length; i++) {
             let track = this.parts[i];
             this.baseMeshMinX = Math.min(this.baseMeshMinX, track.position.x - tileWidth * 0.5);
@@ -3131,7 +3170,7 @@ class Machine {
         if (this.baseWall) {
             this.baseWall.dispose();
         }
-        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 0.2, height: w + 0.2, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 2 * this.margin, height: w + 2 * this.margin, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
         this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
         this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
         this.baseWall.position.z += 0.016;
@@ -3150,16 +3189,16 @@ class Machine {
             let x = positions[3 * i];
             let y = positions[3 * i + 1];
             if (x > 0) {
-                positions[3 * i] += w * 0.5 - 0.01 + 0.1;
+                positions[3 * i] += w * 0.5 - 0.01 + this.margin;
             }
             else if (x < 0) {
-                positions[3 * i] -= w * 0.5 - 0.01 + 0.1;
+                positions[3 * i] -= w * 0.5 - 0.01 + this.margin;
             }
             if (y > 0) {
-                positions[3 * i + 1] += h * 0.5 - 0.01 + 0.1;
+                positions[3 * i + 1] += h * 0.5 - 0.01 + this.margin;
             }
             else if (y < 0) {
-                positions[3 * i + 1] -= h * 0.5 - 0.01 + 0.1;
+                positions[3 * i + 1] -= h * 0.5 - 0.01 + this.margin;
             }
         }
         data.positions = positions;
