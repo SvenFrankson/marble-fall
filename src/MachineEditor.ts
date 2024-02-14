@@ -271,7 +271,7 @@ class MachineEditor {
         }
         
         var r = document.querySelector(':root') as HTMLElement;
-        r.style.setProperty("--machine-editor-item-container-width", (Math.ceil(TrackNames.length / 2 + 1) * 16.8).toFixed(0) + "vw");
+        r.style.setProperty("--machine-editor-item-container-width", (Math.ceil(TrackNames.length / 2 + 1) * 16.7).toFixed(0) + "vw");
 
         document.addEventListener("keydown", this._onKeyDown);
         document.addEventListener("keyup", this._onKeyUp);

@@ -12,7 +12,7 @@
     top: 0;
     left: 0;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 #machine-editor-objects.bottom {
@@ -20,7 +20,7 @@
     height: 36vw;
     bottom: 0;
     left: 0;
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: hidden;
 }
 
@@ -67,5 +67,5 @@
 
 #machine-editor-objects.bottom .machine-editor-item{
     height: 13.6vw;
-    aspect-ratio: 1;
+    width: 13.6vw;
 }

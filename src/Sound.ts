@@ -35,7 +35,7 @@ class Sound {
                 this._audioElement.currentTime = 0;
             }
             try {
-                //this._audioElement.play();
+                this._audioElement.play();
             } catch (error) {
                 requestAnimationFrame(() => {
                     this._audioElement.play();
