@@ -304,7 +304,7 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
 
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {

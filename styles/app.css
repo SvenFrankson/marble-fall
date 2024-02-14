@@ -108,7 +108,7 @@ body {
 
 .panel {
     background-color: rgba(39, 43, 46, 80%);
-    outline: calc(min(0.1vh, 0.1vw))  solid white;
+    outline: calc(min(0.1vh, 0.1vw)) solid white;
     border-radius: calc(min(1.5vh, 1.5vw));
     margin: 0;
     padding: 0;
@@ -120,6 +120,8 @@ body {
 
 .panel:hover { 
     background-color: rgba(78, 86, 92, 90%);
+    outline: calc(min(0.3vh, 0.3vw)) solid white;
+    cursor: pointer;
 }
 
 .panel.studio {
@@ -137,7 +139,7 @@ body {
 .panel .label {
     text-align: right;
     display: block;
-    margin: 10%;
+    margin: 0.5vh 1.5vh 0.5vh 1.5vh;
     font-size: 3vh;
 }
 
@@ -154,22 +156,16 @@ body {
 .panel.create .label {
     text-align: left;
     display: block;
-    margin: 3vh;
-    font-size: 6vh;
 }
 
 .panel.option .label {
     text-align: left;
     display: block;
-    margin: 2vh;
-    font-size: 2vh;
 }
 
 .panel.credit .label {
     text-align: left;
     display: block;
-    margin: 2vh;
-    font-size: 2vh;
 }
 
 .page {
