@@ -6,7 +6,7 @@ if (Test-Path "../marble-fall-build") {
 New-Item "../marble-fall-build" -ItemType "directory"
 
 
-Copy-Item -Path "./*" -Destination "../marble-fall-build/" -Recurse -Force -Exclude ".git", "src", "lib"
+Copy-Item -Path "./*" -Destination "../marble-fall-build/" -Recurse -Force -Exclude ".git", "src", "lib", ".vscode"
 
 New-Item "../marble-fall-build/lib" -ItemType "directory"
 New-Item "../marble-fall-build/lib/mummu" -ItemType "directory"
