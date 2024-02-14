@@ -1,6 +1,15 @@
+interface ISleeperMeshProps {
+    spacing?: number;
+    drawWallAnchors?: boolean;
+}
+
 class SleeperMeshBuilder {
 
-    public static GenerateSleepersVertexData(part: MachinePart, spacing: number): BABYLON.VertexData {
+    public static GenerateSleepersVertexData(part: MachinePart, props: ISleeperMeshProps): BABYLON.VertexData {
+        if (!isFinite(props.spacing)) {
+            props.spacing = 0.03;
+        }
+
         let q = part.game.config.graphicQ;
         let partialsDatas: BABYLON.VertexData[] = [];
 
@@ -14,7 +23,7 @@ class SleeperMeshBuilder {
                 summedLength[i] = summedLength[i - 1] + dist;
             }
 
-            let count = Math.round(summedLength[summedLength.length - 1] / spacing / 3) * 3;
+            let count = Math.round(summedLength[summedLength.length - 1] / props.spacing / 3) * 3;
             count = Math.max(1, count);
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
 
@@ -94,49 +103,51 @@ class SleeperMeshBuilder {
                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
 
-                    let addAnchor = false;
-                    if (part.k === 0 && (n - 1.5) % 3 === 0) {
-                        let anchor = path[nPath / 2 - 1];
-                        if (anchor.z > - 0.01) {
-                            addAnchor = true;
+                    if (props.drawWallAnchors) {
+                        let addAnchor = false;
+                        if (part.k === 0 && (n - 1.5) % 3 === 0) {
+                            let anchor = path[nPath / 2 - 1];
+                            if (anchor.z > - 0.01) {
+                                addAnchor = true;
+                            }
                         }
-                    }
-
-                    if (addAnchor) {
-                        let anchor = path[nPath / 2 - 1];
-                        let anchorCenter = anchor.clone();
-                        anchorCenter.z = 0.015;
-                        let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
-                        let anchorWall = anchorCenter.clone();
-                        anchorWall.y -= radiusFixation * 0.5;
-                        let nFixation = 2;
-                        if (q === 2) {
-                            nFixation = 6;
+    
+                        if (addAnchor) {
+                            let anchor = path[nPath / 2 - 1];
+                            let anchorCenter = anchor.clone();
+                            anchorCenter.z = 0.015;
+                            let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
+                            let anchorWall = anchorCenter.clone();
+                            anchorWall.y -= radiusFixation * 0.5;
+                            let nFixation = 2;
+                            if (q === 2) {
+                                nFixation = 6;
+                            }
+                            else if (q === 3) {
+                                nFixation = 10;
+                            }
+                            let fixationPath: BABYLON.Vector3[] = [];
+                            for (let i = 0; i <= nFixation; i++) {
+                                let a = i / nFixation * 0.5 * Math.PI;
+                                let cosa = Math.cos(a);
+                                let sina = Math.sin(a);
+                                fixationPath[i] = new BABYLON.Vector3(0, - sina * radiusFixation * 0.5, - cosa * radiusFixation);
+                                fixationPath[i].addInPlace(anchorCenter);  
+                            }
+                            
+                            let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                            partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                            tmp.dispose();
+    
+                            let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
+                            let quat = BABYLON.Quaternion.Identity();
+                            Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
+                            Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
+                            Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
+                            partialsDatas.push(tmpVertexData);
+                            tmp.dispose();
+    
                         }
-                        else if (q === 3) {
-                            nFixation = 10;
-                        }
-                        let fixationPath: BABYLON.Vector3[] = [];
-                        for (let i = 0; i <= nFixation; i++) {
-                            let a = i / nFixation * 0.5 * Math.PI;
-                            let cosa = Math.cos(a);
-                            let sina = Math.sin(a);
-                            fixationPath[i] = new BABYLON.Vector3(0, - sina * radiusFixation * 0.5, - cosa * radiusFixation);
-                            fixationPath[i].addInPlace(anchorCenter);  
-                        }
-                        
-                        let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                        partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
-                        tmp.dispose();
-
-                        let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
-                        let quat = BABYLON.Quaternion.Identity();
-                        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
-                        Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
-                        Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
-                        partialsDatas.push(tmpVertexData);
-                        tmp.dispose();
-
                     }
                     n++;
                 }

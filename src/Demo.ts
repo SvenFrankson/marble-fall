@@ -424,3 +424,36 @@ var popopo = {
         { name: "ramp-1.1.5", i: 0, j: -2, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
+
+var aerial = {
+    balls: [
+        { x: 0.3039999976158142, y: -0.36149999833106994, z: 0 },
+        { x: 0.3039999976158142, y: -0.28106269574165343, z: 0 },
+        { x: 0.3039999976158142, y: -0.20062536334991454, z: 0 },
+        { x: 0.3039999976158142, y: -0.12018804585933686, z: 0 },
+        { x: 0.3039999976158142, y: -0.03975073954463005, z: 0 },
+        { x: 0.3039999976158142, y: 0.04068657422065735, z: 0 },
+    ],
+    parts: [
+        { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
+        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
+        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
+        { name: "uturn-0.3", i: 1, j: 12, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.2.3", i: 2, j: 12, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: 3, j: 12, k: 1 },
+        { name: "ramp-1.0.2", i: 2, j: 12, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
+        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
+        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 0, j: 9, k: 5, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.4", i: -4, j: 8, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
+    ],
+};

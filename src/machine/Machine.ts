@@ -109,69 +109,147 @@ class Machine {
         this.playing = false;
     }
 
-    public margin: number = 0.05;
+    public margin: number = 0.02;
     public baseMeshMinX: number = - this.margin;
     public baseMeshMaxX: number = this.margin;
     public baseMeshMinY: number = - this.margin;
     public baseMeshMaxY: number = this.margin;
+    public baseMeshMinZ: number = - this.margin;
+    public baseMeshMaxZ: number = this.margin;
     public async generateBaseMesh(): Promise<void> {
 
         this.baseMeshMinX = - this.margin;
         this.baseMeshMaxX = this.margin;
         this.baseMeshMinY = - this.margin;
         this.baseMeshMaxY = this.margin;
+        this.baseMeshMinZ = - this.margin;
+        this.baseMeshMaxZ = this.margin;
         for (let i = 0; i < this.parts.length; i++) {
             let track = this.parts[i];
             this.baseMeshMinX = Math.min(this.baseMeshMinX, track.position.x - tileWidth * 0.5);
             this.baseMeshMaxX = Math.max(this.baseMeshMaxX, track.position.x + tileWidth * (track.w - 0.5));
             this.baseMeshMinY = Math.min(this.baseMeshMinY, track.position.y - tileHeight * (track.h + 1));
             this.baseMeshMaxY = Math.max(this.baseMeshMaxY, track.position.y);
+            this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 1));
+            this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
         
-        let w = this.baseMeshMaxX - this.baseMeshMinX;
-        let h = this.baseMeshMaxY - this.baseMeshMinY;
-        let u = w * 4;
-        let v = h * 4;
+        if (false) {
+            let w = this.baseMeshMaxX - this.baseMeshMinX;
+            let h = this.baseMeshMaxY - this.baseMeshMinY;
+            let u = w * 4;
+            let v = h * 4;
 
-        if (this.baseWall) {
-            this.baseWall.dispose();
+            if (this.baseWall) {
+                this.baseWall.dispose();
+            }
+            this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 2 * this.margin, height: w + 2 * this.margin, sideOrientation:BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+            this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
+            this.baseWall.position.z += 0.016;
+            this.baseWall.rotation.z = Math.PI / 2;
+            this.baseWall.material = this.game.woodMaterial;
+
+            if (this.baseFrame) {
+                this.baseFrame.dispose();
+            }
+            this.baseFrame = new BABYLON.Mesh("base-frame");
+            this.baseFrame.position.copyFrom(this.baseWall.position);
+            this.baseFrame.material = this.game.steelMaterial;
+
+            let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon")
+            let data = Mummu.CloneVertexData(vertexDatas[0]);
+            let positions = [...data.positions]
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let y = positions[3 * i + 1];
+                
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.01 + this.margin;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.01 + this.margin;
+                }
+                if (y > 0) {
+                    positions[3 * i + 1] += h * 0.5 - 0.01 + this.margin;
+                }
+                else if (y < 0) {
+                    positions[3 * i + 1] -= h * 0.5 - 0.01 + this.margin;
+                }
+            }
+            data.positions = positions;
+            data.applyToMesh(this.baseFrame);
         }
-        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 2 * this.margin, height: w + 2 * this.margin, sideOrientation:BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-        this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
-        this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
-        this.baseWall.position.z += 0.016;
-        this.baseWall.rotation.z = Math.PI / 2;
-        this.baseWall.material = this.game.woodMaterial;
+        else {
+            let w = this.baseMeshMaxX - this.baseMeshMinX;
+            let h = 1;
+            let d = this.baseMeshMaxZ - this.baseMeshMinZ;
 
-        if (this.baseFrame) {
-            this.baseFrame.dispose();
-        }
-        this.baseFrame = new BABYLON.Mesh("base-frame");
-        this.baseFrame.position.copyFrom(this.baseWall.position);
-        this.baseFrame.material = this.game.steelMaterial;
-
-        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon")
-        let data = Mummu.CloneVertexData(vertexDatas[0]);
-        let positions = [...data.positions]
-        for (let i = 0; i < positions.length / 3; i++) {
-            let x = positions[3 * i];
-            let y = positions[3 * i + 1];
+            if (this.baseFrame) {
+                this.baseFrame.dispose();
+            }
+            this.baseFrame = new BABYLON.Mesh("base-stand");
+            this.baseFrame.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseFrame.position.y = this.baseMeshMinY;
+            this.baseFrame.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+            this.baseFrame.material = this.game.whiteMaterial;
             
-            if (x > 0) {
-                positions[3 * i] += w * 0.5 - 0.01 + this.margin;
+            let vertexDatas = await this.game.vertexDataLoader.get("./meshes/museum-stand.babylon")
+            let data = Mummu.CloneVertexData(vertexDatas[0]);
+            let positions = [...data.positions]
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let z = positions[3 * i + 2];
+                
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.5 + this.margin;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.5 + this.margin;
+                }
+                if (z > 0) {
+                    positions[3 * i + 2] += d * 0.5 - 0.5 + this.margin;
+                }
+                else if (z < 0) {
+                    positions[3 * i + 2] -= d * 0.5 - 0.5 + this.margin;
+                }
             }
-            else if (x < 0) {
-                positions[3 * i] -= w * 0.5 - 0.01 + this.margin;
+            data.positions = positions;
+            data.applyToMesh(this.baseFrame);
+
+            if (this.baseWall) {
+                this.baseWall.dispose();
             }
-            if (y > 0) {
-                positions[3 * i + 1] += h * 0.5 - 0.01 + this.margin;
+            this.baseWall = new BABYLON.Mesh("base-top");
+            this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseWall.position.y = this.baseMeshMinY;
+            this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+            this.baseWall.material = this.game.whiteMaterial;
+            
+            data = Mummu.CloneVertexData(vertexDatas[1]);
+            positions = [...data.positions]
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let z = positions[3 * i + 2];
+                
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.5 + this.margin;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.5 + this.margin;
+                }
+                if (z > 0) {
+                    positions[3 * i + 2] += d * 0.5 - 0.5 + this.margin;
+                }
+                else if (z < 0) {
+                    positions[3 * i + 2] -= d * 0.5 - 0.5 + this.margin;
+                }
             }
-            else if (y < 0) {
-                positions[3 * i + 1] -= h * 0.5 - 0.01 + this.margin;
-            }
+            data.positions = positions;
+            data.applyToMesh(this.baseWall);
         }
-        data.positions = positions;
-        data.applyToMesh(this.baseFrame);
+
+        this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
     }
 
     public getBankAt(pos: BABYLON.Vector3, exclude: MachinePart): { isEnd: boolean, bank: number, part: MachinePart } {

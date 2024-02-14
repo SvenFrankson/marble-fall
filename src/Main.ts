@@ -72,6 +72,7 @@ class Game {
     public physicDT: number = 0.0005;
 
     public machine: Machine;
+    public room: Room;
     public machineEditor: MachineEditor;
 
     public skybox: BABYLON.Mesh;
@@ -80,6 +81,7 @@ class Game {
     public copperMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public woodMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
+    public whiteMaterial: BABYLON.StandardMaterial;
     public deepBlackMaterial: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
@@ -130,7 +132,7 @@ class Game {
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
         //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
 
-        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, - 2)).normalize(), this.scene);
+        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, - 2.5)).normalize(), this.scene);
 
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
@@ -198,37 +200,31 @@ class Game {
         this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
         this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
         
-        this.leatherMaterial = new BABYLON.StandardMaterial("wood-material");
+        this.leatherMaterial = new BABYLON.StandardMaterial("leather-material");
         this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
         this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        
+        this.whiteMaterial = new BABYLON.StandardMaterial("white-material");
+        this.whiteMaterial.diffuseColor.copyFromFloats(0.9, 0.95, 1).scaleInPlace(0.9);
+        this.whiteMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         
         this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
 
-        this.skybox = Mummu.CreateSphereCut("skybox", {
-            dir: BABYLON.Axis.Z,
-            rMin: 8,
-            rMax: 9,
-            alpha: Math.PI,
-            beta: 0.8 * Math.PI
-        });
+        this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 10, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
         let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.Texture("./datas/skyboxes/outside_2.jpg");
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
         skyboxMaterial.diffuseTexture = skyTexture;
         skyboxMaterial.emissiveColor = BABYLON.Color3.White();
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         this.skybox.material = skyboxMaterial;
-
-        if (this.DEBUG_MODE) {
-            let room = new Room(this);
-            room.instantiate();
-        }
+        this.skybox.rotation.y = 0.16 * Math.PI;
 
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
-        this.camera.maxZ = 10;
+        this.camera.maxZ = 20;
         if (!this.DEBUG_MODE) {
             this.camera.lowerAlphaLimit = - Math.PI * 0.98;
             this.camera.upperAlphaLimit = - Math.PI * 0.02;
@@ -273,6 +269,7 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
+        this.room = new Room(this);
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
@@ -281,6 +278,7 @@ class Game {
 
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
+        await this.room.instantiate();
 
         let screenshotButton = document.querySelector("#toolbar-screenshot") as HTMLButtonElement;
         screenshotButton.addEventListener("click", () => {

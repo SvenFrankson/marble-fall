@@ -401,7 +401,7 @@ class MachinePart extends BABYLON.Mesh {
                 wire.instantiate();
             })
             
-            SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+            SleeperMeshBuilder.GenerateSleepersVertexData(this, {}).applyToMesh(this.sleepersMesh);
 
             if (rebuildNeighboursWireMeshes) {
                 neighboursToUpdate = this.neighbours.cloneAsArray();

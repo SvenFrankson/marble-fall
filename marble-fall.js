@@ -702,6 +702,38 @@ var popopo = {
         { name: "ramp-1.1.5", i: 0, j: -2, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
+var aerial = {
+    balls: [
+        { x: 0.3039999976158142, y: -0.36149999833106994, z: 0 },
+        { x: 0.3039999976158142, y: -0.28106269574165343, z: 0 },
+        { x: 0.3039999976158142, y: -0.20062536334991454, z: 0 },
+        { x: 0.3039999976158142, y: -0.12018804585933686, z: 0 },
+        { x: 0.3039999976158142, y: -0.03975073954463005, z: 0 },
+        { x: 0.3039999976158142, y: 0.04068657422065735, z: 0 },
+    ],
+    parts: [
+        { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
+        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
+        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
+        { name: "uturn-0.3", i: 1, j: 12, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.2.3", i: 2, j: 12, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: 3, j: 12, k: 1 },
+        { name: "ramp-1.0.2", i: 2, j: 12, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
+        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
+        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.1.1", i: 0, j: 9, k: 5, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.4", i: -4, j: 8, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2243,7 +2275,7 @@ class Game {
         //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
         //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
-        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 2, -2)).normalize(), this.scene);
+        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, -2.5)).normalize(), this.scene);
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -2297,33 +2329,27 @@ class Game {
         this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
         this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
         this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
-        this.leatherMaterial = new BABYLON.StandardMaterial("wood-material");
+        this.leatherMaterial = new BABYLON.StandardMaterial("leather-material");
         this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
         this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.whiteMaterial = new BABYLON.StandardMaterial("white-material");
+        this.whiteMaterial.diffuseColor.copyFromFloats(0.9, 0.95, 1).scaleInPlace(0.9);
+        this.whiteMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.skybox = Mummu.CreateSphereCut("skybox", {
-            dir: BABYLON.Axis.Z,
-            rMin: 8,
-            rMax: 9,
-            alpha: Math.PI,
-            beta: 0.8 * Math.PI
-        });
+        this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 10, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.Texture("./datas/skyboxes/outside_2.jpg");
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
         skyboxMaterial.diffuseTexture = skyTexture;
         skyboxMaterial.emissiveColor = BABYLON.Color3.White();
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         this.skybox.material = skyboxMaterial;
-        if (this.DEBUG_MODE) {
-            let room = new Room(this);
-            room.instantiate();
-        }
+        this.skybox.rotation.y = 0.16 * Math.PI;
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
-        this.camera.maxZ = 10;
+        this.camera.maxZ = 20;
         if (!this.DEBUG_MODE) {
             this.camera.lowerAlphaLimit = -Math.PI * 0.98;
             this.camera.upperAlphaLimit = -Math.PI * 0.02;
@@ -2364,12 +2390,14 @@ class Game {
         alternateMenuCamMode();
         this.camera.attachControl();
         this.camera.getScene();
+        this.room = new Room(this);
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         this.machine.deserialize(simpleLoop);
         //this.machine.deserialize(test);
         await this.machine.instantiate();
         await this.machine.generateBaseMesh();
+        await this.room.instantiate();
         let screenshotButton = document.querySelector("#toolbar-screenshot");
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
@@ -2886,24 +2914,22 @@ MenuTile.ppc = 60;
 class Room {
     constructor(game) {
         this.game = game;
-        this.ground = new BABYLON.Mesh("ground");
-        this.ground.position.z = 0.1;
-        this.ground.position.y = -1.5;
+        this.ground = BABYLON.MeshBuilder.CreateCylinder("ground", { height: 0.01, diameter: 6 });
+        this.ground.position.y = -2;
+        let groundMaterial = new BABYLON.StandardMaterial("wood-material");
+        groundMaterial.diffuseColor = BABYLON.Color3.FromHexString("#3f4c52");
+        groundMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.ground.material = groundMaterial;
+        /*
         this.wall = new BABYLON.Mesh("wall");
         this.wall.position.z = 0.1;
-        this.wall.position.y = -1.5;
+        this.wall.position.y = - 1.5;
+        */
     }
     async instantiate() {
-        Mummu.CreateQuadVertexData({
-            p1: new BABYLON.Vector3(-3, 0, -6),
-            p2: new BABYLON.Vector3(3, 0, -6),
-            p3: new BABYLON.Vector3(3, 0, 0),
-            p4: new BABYLON.Vector3(-3, 0, 0)
-        }).applyToMesh(this.ground);
-        let datas = await this.game.vertexDataLoader.get("./meshes/wall.babylon");
-        if (datas && datas[0]) {
-            datas[0].applyToMesh(this.wall);
-        }
+    }
+    setGroundHeight(h) {
+        this.ground.position.y = h - 0.005;
     }
 }
 class Sound {
@@ -3079,11 +3105,13 @@ class Machine {
         this.instantiated = false;
         this.playing = false;
         this.onStopCallbacks = new Nabu.UniqueList();
-        this.margin = 0.05;
+        this.margin = 0.02;
         this.baseMeshMinX = -this.margin;
         this.baseMeshMaxX = this.margin;
         this.baseMeshMinY = -this.margin;
         this.baseMeshMaxY = this.margin;
+        this.baseMeshMinZ = -this.margin;
+        this.baseMeshMaxZ = this.margin;
         this.trackFactory = new MachinePartFactory(this);
         this.templateManager = new TemplateManager(this);
     }
@@ -3156,53 +3184,122 @@ class Machine {
         this.baseMeshMaxX = this.margin;
         this.baseMeshMinY = -this.margin;
         this.baseMeshMaxY = this.margin;
+        this.baseMeshMinZ = -this.margin;
+        this.baseMeshMaxZ = this.margin;
         for (let i = 0; i < this.parts.length; i++) {
             let track = this.parts[i];
             this.baseMeshMinX = Math.min(this.baseMeshMinX, track.position.x - tileWidth * 0.5);
             this.baseMeshMaxX = Math.max(this.baseMeshMaxX, track.position.x + tileWidth * (track.w - 0.5));
             this.baseMeshMinY = Math.min(this.baseMeshMinY, track.position.y - tileHeight * (track.h + 1));
             this.baseMeshMaxY = Math.max(this.baseMeshMaxY, track.position.y);
+            this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 1));
+            this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
-        let w = this.baseMeshMaxX - this.baseMeshMinX;
-        let h = this.baseMeshMaxY - this.baseMeshMinY;
-        let u = w * 4;
-        let v = h * 4;
-        if (this.baseWall) {
-            this.baseWall.dispose();
+        if (false) {
+            let w = this.baseMeshMaxX - this.baseMeshMinX;
+            let h = this.baseMeshMaxY - this.baseMeshMinY;
+            let u = w * 4;
+            let v = h * 4;
+            if (this.baseWall) {
+                this.baseWall.dispose();
+            }
+            this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 2 * this.margin, height: w + 2 * this.margin, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
+            this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
+            this.baseWall.position.z += 0.016;
+            this.baseWall.rotation.z = Math.PI / 2;
+            this.baseWall.material = this.game.woodMaterial;
+            if (this.baseFrame) {
+                this.baseFrame.dispose();
+            }
+            this.baseFrame = new BABYLON.Mesh("base-frame");
+            this.baseFrame.position.copyFrom(this.baseWall.position);
+            this.baseFrame.material = this.game.steelMaterial;
+            let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon");
+            let data = Mummu.CloneVertexData(vertexDatas[0]);
+            let positions = [...data.positions];
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let y = positions[3 * i + 1];
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.01 + this.margin;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.01 + this.margin;
+                }
+                if (y > 0) {
+                    positions[3 * i + 1] += h * 0.5 - 0.01 + this.margin;
+                }
+                else if (y < 0) {
+                    positions[3 * i + 1] -= h * 0.5 - 0.01 + this.margin;
+                }
+            }
+            data.positions = positions;
+            data.applyToMesh(this.baseFrame);
         }
-        this.baseWall = BABYLON.MeshBuilder.CreatePlane("base-wall", { width: h + 2 * this.margin, height: w + 2 * this.margin, sideOrientation: BABYLON.Mesh.DOUBLESIDE, frontUVs: new BABYLON.Vector4(0, 0, v, u) });
-        this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
-        this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
-        this.baseWall.position.z += 0.016;
-        this.baseWall.rotation.z = Math.PI / 2;
-        this.baseWall.material = this.game.woodMaterial;
-        if (this.baseFrame) {
-            this.baseFrame.dispose();
+        else {
+            let w = this.baseMeshMaxX - this.baseMeshMinX;
+            let h = 1;
+            let d = this.baseMeshMaxZ - this.baseMeshMinZ;
+            if (this.baseFrame) {
+                this.baseFrame.dispose();
+            }
+            this.baseFrame = new BABYLON.Mesh("base-stand");
+            this.baseFrame.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseFrame.position.y = this.baseMeshMinY;
+            this.baseFrame.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+            this.baseFrame.material = this.game.whiteMaterial;
+            let vertexDatas = await this.game.vertexDataLoader.get("./meshes/museum-stand.babylon");
+            let data = Mummu.CloneVertexData(vertexDatas[0]);
+            let positions = [...data.positions];
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let z = positions[3 * i + 2];
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.5 + this.margin;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.5 + this.margin;
+                }
+                if (z > 0) {
+                    positions[3 * i + 2] += d * 0.5 - 0.5 + this.margin;
+                }
+                else if (z < 0) {
+                    positions[3 * i + 2] -= d * 0.5 - 0.5 + this.margin;
+                }
+            }
+            data.positions = positions;
+            data.applyToMesh(this.baseFrame);
+            if (this.baseWall) {
+                this.baseWall.dispose();
+            }
+            this.baseWall = new BABYLON.Mesh("base-top");
+            this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseWall.position.y = this.baseMeshMinY;
+            this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+            this.baseWall.material = this.game.whiteMaterial;
+            data = Mummu.CloneVertexData(vertexDatas[1]);
+            positions = [...data.positions];
+            for (let i = 0; i < positions.length / 3; i++) {
+                let x = positions[3 * i];
+                let z = positions[3 * i + 2];
+                if (x > 0) {
+                    positions[3 * i] += w * 0.5 - 0.5 + this.margin;
+                }
+                else if (x < 0) {
+                    positions[3 * i] -= w * 0.5 - 0.5 + this.margin;
+                }
+                if (z > 0) {
+                    positions[3 * i + 2] += d * 0.5 - 0.5 + this.margin;
+                }
+                else if (z < 0) {
+                    positions[3 * i + 2] -= d * 0.5 - 0.5 + this.margin;
+                }
+            }
+            data.positions = positions;
+            data.applyToMesh(this.baseWall);
         }
-        this.baseFrame = new BABYLON.Mesh("base-frame");
-        this.baseFrame.position.copyFrom(this.baseWall.position);
-        this.baseFrame.material = this.game.steelMaterial;
-        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon");
-        let data = Mummu.CloneVertexData(vertexDatas[0]);
-        let positions = [...data.positions];
-        for (let i = 0; i < positions.length / 3; i++) {
-            let x = positions[3 * i];
-            let y = positions[3 * i + 1];
-            if (x > 0) {
-                positions[3 * i] += w * 0.5 - 0.01 + this.margin;
-            }
-            else if (x < 0) {
-                positions[3 * i] -= w * 0.5 - 0.01 + this.margin;
-            }
-            if (y > 0) {
-                positions[3 * i + 1] += h * 0.5 - 0.01 + this.margin;
-            }
-            else if (y < 0) {
-                positions[3 * i + 1] -= h * 0.5 - 0.01 + this.margin;
-            }
-        }
-        data.positions = positions;
-        data.applyToMesh(this.baseFrame);
+        this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
     }
     getBankAt(pos, exclude) {
         for (let i = 0; i < this.parts.length; i++) {
@@ -3624,7 +3721,7 @@ class MachinePart extends BABYLON.Mesh {
             this.wires.forEach(wire => {
                 wire.instantiate();
             });
-            SleeperMeshBuilder.GenerateSleepersVertexData(this, 0.03).applyToMesh(this.sleepersMesh);
+            SleeperMeshBuilder.GenerateSleepersVertexData(this, {}).applyToMesh(this.sleepersMesh);
             if (rebuildNeighboursWireMeshes) {
                 neighboursToUpdate = this.neighbours.cloneAsArray();
                 for (let i = 0; i < neighboursToUpdate.length; i++) {
@@ -3724,7 +3821,10 @@ class MachinePartFactory {
     }
 }
 class SleeperMeshBuilder {
-    static GenerateSleepersVertexData(part, spacing) {
+    static GenerateSleepersVertexData(part, props) {
+        if (!isFinite(props.spacing)) {
+            props.spacing = 0.03;
+        }
         let q = part.game.config.graphicQ;
         let partialsDatas = [];
         for (let j = 0; j < part.tracks.length; j++) {
@@ -3736,7 +3836,7 @@ class SleeperMeshBuilder {
                 let dist = BABYLON.Vector3.Distance(prev, trackpoint);
                 summedLength[i] = summedLength[i - 1] + dist;
             }
-            let count = Math.round(summedLength[summedLength.length - 1] / spacing / 3) * 3;
+            let count = Math.round(summedLength[summedLength.length - 1] / props.spacing / 3) * 3;
             count = Math.max(1, count);
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
             let radius = part.wireSize * 0.5 * 0.75;
@@ -3808,45 +3908,47 @@ class SleeperMeshBuilder {
                     let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
-                    let addAnchor = false;
-                    if (part.k === 0 && (n - 1.5) % 3 === 0) {
-                        let anchor = path[nPath / 2 - 1];
-                        if (anchor.z > -0.01) {
-                            addAnchor = true;
+                    if (props.drawWallAnchors) {
+                        let addAnchor = false;
+                        if (part.k === 0 && (n - 1.5) % 3 === 0) {
+                            let anchor = path[nPath / 2 - 1];
+                            if (anchor.z > -0.01) {
+                                addAnchor = true;
+                            }
                         }
-                    }
-                    if (addAnchor) {
-                        let anchor = path[nPath / 2 - 1];
-                        let anchorCenter = anchor.clone();
-                        anchorCenter.z = 0.015;
-                        let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
-                        let anchorWall = anchorCenter.clone();
-                        anchorWall.y -= radiusFixation * 0.5;
-                        let nFixation = 2;
-                        if (q === 2) {
-                            nFixation = 6;
+                        if (addAnchor) {
+                            let anchor = path[nPath / 2 - 1];
+                            let anchorCenter = anchor.clone();
+                            anchorCenter.z = 0.015;
+                            let radiusFixation = Math.abs(anchor.z - anchorCenter.z);
+                            let anchorWall = anchorCenter.clone();
+                            anchorWall.y -= radiusFixation * 0.5;
+                            let nFixation = 2;
+                            if (q === 2) {
+                                nFixation = 6;
+                            }
+                            else if (q === 3) {
+                                nFixation = 10;
+                            }
+                            let fixationPath = [];
+                            for (let i = 0; i <= nFixation; i++) {
+                                let a = i / nFixation * 0.5 * Math.PI;
+                                let cosa = Math.cos(a);
+                                let sina = Math.sin(a);
+                                fixationPath[i] = new BABYLON.Vector3(0, -sina * radiusFixation * 0.5, -cosa * radiusFixation);
+                                fixationPath[i].addInPlace(anchorCenter);
+                            }
+                            let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                            partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                            tmp.dispose();
+                            let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
+                            let quat = BABYLON.Quaternion.Identity();
+                            Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
+                            Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
+                            Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
+                            partialsDatas.push(tmpVertexData);
+                            tmp.dispose();
                         }
-                        else if (q === 3) {
-                            nFixation = 10;
-                        }
-                        let fixationPath = [];
-                        for (let i = 0; i <= nFixation; i++) {
-                            let a = i / nFixation * 0.5 * Math.PI;
-                            let cosa = Math.cos(a);
-                            let sina = Math.sin(a);
-                            fixationPath[i] = new BABYLON.Vector3(0, -sina * radiusFixation * 0.5, -cosa * radiusFixation);
-                            fixationPath[i].addInPlace(anchorCenter);
-                        }
-                        let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                        partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
-                        tmp.dispose();
-                        let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
-                        let quat = BABYLON.Quaternion.Identity();
-                        Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
-                        Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
-                        Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
-                        partialsDatas.push(tmpVertexData);
-                        tmp.dispose();
                     }
                     n++;
                 }
