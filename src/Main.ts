@@ -129,8 +129,12 @@ class Game {
         
         //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
 
-        this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
-        //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
+        if (this.DEBUG_MODE) {
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
+        }
+        else {
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+        }
 
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, - 2.5)).normalize(), this.scene);
 
@@ -212,7 +216,7 @@ class Game {
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
 
-        this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 10, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
+        this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 20, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
         let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
         let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
@@ -224,7 +228,7 @@ class Game {
 
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
-        this.camera.maxZ = 20;
+        this.camera.maxZ = 25;
         if (!this.DEBUG_MODE) {
             this.camera.lowerAlphaLimit = - Math.PI * 0.98;
             this.camera.upperAlphaLimit = - Math.PI * 0.02;
@@ -273,11 +277,16 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        this.machine.deserialize(simpleLoop);
+        if (this.DEBUG_MODE) {
+            this.machine.deserialize(aerial);
+        }
+        else {
+            this.machine.deserialize(simpleLoop);
+        }
         //this.machine.deserialize(test);
 
-        await this.machine.instantiate();
         await this.machine.generateBaseMesh();
+        await this.machine.instantiate();
         await this.room.instantiate();
 
         let screenshotButton = document.querySelector("#toolbar-screenshot") as HTMLButtonElement;
@@ -320,8 +329,8 @@ class Game {
                 buttonDemo.onclick = async () => {
                     this.machine.dispose();
                     this.machine.deserialize(demo);
-                    await this.machine.instantiate();
                     await this.machine.generateBaseMesh();
+                    await this.machine.instantiate();
                     this.setPageMode(GameMode.DemoMode);
                 }
             }

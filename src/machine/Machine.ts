@@ -42,6 +42,7 @@ class Machine {
         for (let i = 0; i < this.balls.length; i++) {
             await this.balls[i].instantiate();
         }
+        this.parts = this.parts.sort((a, b) => { return b.j - a.j });
         for (let i = 0; i < this.parts.length; i++) {
             await this.parts[i].instantiate();
         }
@@ -130,7 +131,7 @@ class Machine {
             this.baseMeshMaxX = Math.max(this.baseMeshMaxX, track.position.x + tileWidth * (track.w - 0.5));
             this.baseMeshMinY = Math.min(this.baseMeshMinY, track.position.y - tileHeight * (track.h + 1));
             this.baseMeshMaxY = Math.max(this.baseMeshMaxY, track.position.y);
-            this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 1));
+            this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 0.5));
             this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
         

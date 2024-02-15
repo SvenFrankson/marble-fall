@@ -1015,12 +1015,12 @@ class MachineEditor {
                     }
                     draggedTrack.setIsVisible(true);
                     draggedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     draggedTrack.instantiate(true).then(() => {
                         draggedTrack.recomputeAbsolutePath();
                         this.setSelectedObject(draggedTrack);
                         this.setDraggedObject(undefined);
                         this.setSelectedItem("");
-                        this.machine.generateBaseMesh();
                     });
                 }
                 else if (this.draggedObject instanceof Ball) {
@@ -1297,6 +1297,7 @@ class MachineEditor {
                     selectedTrack.setI(selectedTrack.i + 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
@@ -1307,7 +1308,6 @@ class MachineEditor {
             }
             this.setDraggedObject(undefined);
             this.setSelectedItem("");
-            this.machine.generateBaseMesh();
             this.updateFloatingElements();
         };
         this._onIMinus = async () => {
@@ -1317,6 +1317,7 @@ class MachineEditor {
                     selectedTrack.setI(selectedTrack.i - 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
@@ -1327,7 +1328,6 @@ class MachineEditor {
             }
             this.setDraggedObject(undefined);
             this.setSelectedItem("");
-            this.machine.generateBaseMesh();
             this.updateFloatingElements();
         };
         this._onJPlus = async () => {
@@ -1337,6 +1337,7 @@ class MachineEditor {
                     selectedTrack.setJ(selectedTrack.j + 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
@@ -1347,7 +1348,6 @@ class MachineEditor {
             }
             this.setDraggedObject(undefined);
             this.setSelectedItem("");
-            this.machine.generateBaseMesh();
             this.updateFloatingElements();
         };
         this._onJMinus = async () => {
@@ -1357,6 +1357,7 @@ class MachineEditor {
                     selectedTrack.setJ(selectedTrack.j - 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
@@ -1367,7 +1368,6 @@ class MachineEditor {
             }
             this.setDraggedObject(undefined);
             this.setSelectedItem("");
-            this.machine.generateBaseMesh();
             this.updateFloatingElements();
         };
         this._onKPlus = async () => {
@@ -1378,6 +1378,7 @@ class MachineEditor {
                         selectedTrack.setK(selectedTrack.k + 1);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.generateWires();
+                        this.machine.generateBaseMesh();
                         await selectedTrack.instantiate(true);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
@@ -1388,7 +1389,6 @@ class MachineEditor {
                 }
                 this.setDraggedObject(undefined);
                 this.setSelectedItem("");
-                this.machine.generateBaseMesh();
                 this.updateFloatingElements();
             }
             else if (this.selectedObject instanceof Ball) {
@@ -1408,6 +1408,7 @@ class MachineEditor {
                         selectedTrack.setK(selectedTrack.k - 1);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.generateWires();
+                        this.machine.generateBaseMesh();
                         await selectedTrack.instantiate(true);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
@@ -1418,7 +1419,6 @@ class MachineEditor {
                 }
                 this.setDraggedObject(undefined);
                 this.setSelectedItem("");
-                this.machine.generateBaseMesh();
                 this.updateFloatingElements();
             }
             else if (this.selectedObject instanceof Ball) {
@@ -1989,9 +1989,9 @@ class MachineEditor {
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
         editedTrack.generateWires();
+        this.machine.generateBaseMesh();
         await editedTrack.instantiate(true);
         editedTrack.recomputeAbsolutePath();
-        this.machine.generateBaseMesh();
         return editedTrack;
     }
     async editPartOriginDestInPlace(part, dOrigin, dDestination) {
@@ -2011,9 +2011,9 @@ class MachineEditor {
         this.machine.parts.push(editedPart);
         editedPart.setIsVisible(true);
         editedPart.generateWires();
+        this.machine.generateBaseMesh();
         await editedPart.instantiate(true);
         editedPart.recomputeAbsolutePath();
-        this.machine.generateBaseMesh();
         return editedPart;
     }
     async mirrorXTrackInPlace(track) {
@@ -2273,8 +2273,12 @@ class Game {
         this.config = new Configuration(this);
         this.config.initialize();
         //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
-        this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
-        //this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
+        if (this.DEBUG_MODE) {
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
+        }
+        else {
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+        }
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, -2.5)).normalize(), this.scene);
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
@@ -2338,7 +2342,7 @@ class Game {
         this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 10, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
+        this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 20, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
         let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
@@ -2349,7 +2353,7 @@ class Game {
         this.skybox.rotation.y = 0.16 * Math.PI;
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
-        this.camera.maxZ = 20;
+        this.camera.maxZ = 25;
         if (!this.DEBUG_MODE) {
             this.camera.lowerAlphaLimit = -Math.PI * 0.98;
             this.camera.upperAlphaLimit = -Math.PI * 0.02;
@@ -2393,10 +2397,15 @@ class Game {
         this.room = new Room(this);
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
-        this.machine.deserialize(simpleLoop);
+        if (this.DEBUG_MODE) {
+            this.machine.deserialize(aerial);
+        }
+        else {
+            this.machine.deserialize(simpleLoop);
+        }
         //this.machine.deserialize(test);
-        await this.machine.instantiate();
         await this.machine.generateBaseMesh();
+        await this.machine.instantiate();
         await this.room.instantiate();
         let screenshotButton = document.querySelector("#toolbar-screenshot");
         screenshotButton.addEventListener("click", () => {
@@ -2430,8 +2439,8 @@ class Game {
                 buttonDemo.onclick = async () => {
                     this.machine.dispose();
                     this.machine.deserialize(demo);
-                    await this.machine.instantiate();
                     await this.machine.generateBaseMesh();
+                    await this.machine.instantiate();
                     this.setPageMode(GameMode.DemoMode);
                 };
             }
@@ -2914,22 +2923,27 @@ MenuTile.ppc = 60;
 class Room {
     constructor(game) {
         this.game = game;
-        this.ground = BABYLON.MeshBuilder.CreateCylinder("ground", { height: 0.01, diameter: 6 });
+        this.ground = new BABYLON.Mesh("room-ground");
         this.ground.position.y = -2;
-        let groundMaterial = new BABYLON.StandardMaterial("wood-material");
+        let groundMaterial = new BABYLON.StandardMaterial("ground-material");
         groundMaterial.diffuseColor = BABYLON.Color3.FromHexString("#3f4c52");
         groundMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.ground.material = groundMaterial;
-        /*
-        this.wall = new BABYLON.Mesh("wall");
-        this.wall.position.z = 0.1;
-        this.wall.position.y = - 1.5;
-        */
+        this.wall = new BABYLON.Mesh("room-wall");
+        this.wall.material = this.game.whiteMaterial;
+        this.wall.parent = this.ground;
+        this.frame = new BABYLON.Mesh("room-frame");
+        this.frame.material = this.game.steelMaterial;
+        this.frame.parent = this.ground;
     }
     async instantiate() {
+        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
+        vertexDatas[0].applyToMesh(this.ground);
+        vertexDatas[1].applyToMesh(this.wall);
+        vertexDatas[2].applyToMesh(this.frame);
     }
     setGroundHeight(h) {
-        this.ground.position.y = h - 0.005;
+        this.ground.position.y = h;
     }
 }
 class Sound {
@@ -3119,6 +3133,7 @@ class Machine {
         for (let i = 0; i < this.balls.length; i++) {
             await this.balls[i].instantiate();
         }
+        this.parts = this.parts.sort((a, b) => { return b.j - a.j; });
         for (let i = 0; i < this.parts.length; i++) {
             await this.parts[i].instantiate();
         }
@@ -3192,7 +3207,7 @@ class Machine {
             this.baseMeshMaxX = Math.max(this.baseMeshMaxX, track.position.x + tileWidth * (track.w - 0.5));
             this.baseMeshMinY = Math.min(this.baseMeshMinY, track.position.y - tileHeight * (track.h + 1));
             this.baseMeshMaxY = Math.max(this.baseMeshMaxY, track.position.y);
-            this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 1));
+            this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 0.5));
             this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
         if (false) {
@@ -3386,7 +3401,7 @@ var PartVisibilityMode;
     PartVisibilityMode[PartVisibilityMode["Selected"] = 1] = "Selected";
     PartVisibilityMode[PartVisibilityMode["Ghost"] = 2] = "Ghost";
 })(PartVisibilityMode || (PartVisibilityMode = {}));
-var radius = 0.014 * 1.2 / 2;
+var radius = 0.014 * 1.5 / 2;
 var selectorHullShape = [];
 for (let i = 0; i < 6; i++) {
     let a = i / 6 * 2 * Math.PI;
@@ -3721,7 +3736,11 @@ class MachinePart extends BABYLON.Mesh {
             this.wires.forEach(wire => {
                 wire.instantiate();
             });
-            SleeperMeshBuilder.GenerateSleepersVertexData(this, {}).applyToMesh(this.sleepersMesh);
+            requestAnimationFrame(() => {
+                if (!this.sleepersMesh.isDisposed()) {
+                    SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
+                }
+            });
             if (rebuildNeighboursWireMeshes) {
                 neighboursToUpdate = this.neighbours.cloneAsArray();
                 for (let i = 0; i < neighboursToUpdate.length; i++) {
@@ -3729,6 +3748,7 @@ class MachinePart extends BABYLON.Mesh {
                 }
             }
         }
+        this.computeWorldMatrix(true);
     }
 }
 var TrackNames = [
@@ -3825,6 +3845,9 @@ class SleeperMeshBuilder {
         if (!isFinite(props.spacing)) {
             props.spacing = 0.03;
         }
+        if (!isFinite(props.groundAnchorsRelativeMaxY)) {
+            props.groundAnchorsRelativeMaxY = 1;
+        }
         let q = part.game.config.graphicQ;
         let partialsDatas = [];
         for (let j = 0; j < part.tracks.length; j++) {
@@ -3900,7 +3923,8 @@ class SleeperMeshBuilder {
                     let path = basePath.map(v => { return v.clone(); });
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].trackInterpolatedNormals[i], dir, quat);
+                    let up = part.tracks[j].trackInterpolatedNormals[i];
+                    Mummu.QuaternionFromYZAxisToRef(up, dir, quat);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     for (let j = 0; j < path.length; j++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
@@ -3948,6 +3972,33 @@ class SleeperMeshBuilder {
                             Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
                             partialsDatas.push(tmpVertexData);
                             tmp.dispose();
+                        }
+                    }
+                    if (props.drawGroundAnchors) {
+                        if ((n - 1.5) % 6 === 0 && up.y > 0.1) {
+                            let anchor = path[nPath / 2];
+                            let anchorYWorld = anchor.y + part.position.y;
+                            let anchorBase = anchor.clone();
+                            let minY = part.machine.baseMeshMinY;
+                            let maxY = part.machine.baseMeshMaxY;
+                            anchorBase.y = part.machine.baseMeshMinY - part.position.y;
+                            if (anchorYWorld < minY + props.groundAnchorsRelativeMaxY * (maxY - minY)) {
+                                let rayOrigin = anchor.add(part.position);
+                                let rayDir = new BABYLON.Vector3(0, -1, 0);
+                                rayOrigin.addInPlace(rayDir.scale(0.05));
+                                let ray = new BABYLON.Ray(rayOrigin, rayDir, 3);
+                                let pick = part.game.scene.pickWithRay(ray, (m => { return m instanceof MachinePartSelectorMesh; }));
+                                if (!pick.hit) {
+                                    let fixationPath = [anchor, anchorBase];
+                                    let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                                    tmp.dispose();
+                                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.006, diameter: 0.004 });
+                                    Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorBase);
+                                    partialsDatas.push(tmpVertexData);
+                                    tmp.dispose();
+                                }
+                            }
                         }
                     }
                     n++;

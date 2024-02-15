@@ -21,7 +21,7 @@ interface ITrackData {
     points: ITrackPointData[];
 }
 
-var radius = 0.014 * 1.2 / 2;
+var radius = 0.014 * 1.5 / 2;
 var selectorHullShape: BABYLON.Vector3[] = [];
 for (let i = 0; i < 6; i++) {
     let a = i / 6 * 2 * Math.PI;
@@ -401,7 +401,11 @@ class MachinePart extends BABYLON.Mesh {
                 wire.instantiate();
             })
             
-            SleeperMeshBuilder.GenerateSleepersVertexData(this, {}).applyToMesh(this.sleepersMesh);
+            requestAnimationFrame(() => {
+                if (!this.sleepersMesh.isDisposed()) {
+                    SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
+                }
+            })
 
             if (rebuildNeighboursWireMeshes) {
                 neighboursToUpdate = this.neighbours.cloneAsArray();
@@ -410,5 +414,6 @@ class MachinePart extends BABYLON.Mesh {
                 }
             }
         }
+        this.computeWorldMatrix(true);
     }
 }

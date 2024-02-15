@@ -1,6 +1,8 @@
 interface ISleeperMeshProps {
     spacing?: number;
     drawWallAnchors?: boolean;
+    drawGroundAnchors?: boolean;
+    groundAnchorsRelativeMaxY?: number;
 }
 
 class SleeperMeshBuilder {
@@ -8,6 +10,9 @@ class SleeperMeshBuilder {
     public static GenerateSleepersVertexData(part: MachinePart, props: ISleeperMeshProps): BABYLON.VertexData {
         if (!isFinite(props.spacing)) {
             props.spacing = 0.03;
+        }
+        if (!isFinite(props.groundAnchorsRelativeMaxY)) {
+            props.groundAnchorsRelativeMaxY = 1;
         }
 
         let q = part.game.config.graphicQ;
@@ -92,7 +97,8 @@ class SleeperMeshBuilder {
         
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    Mummu.QuaternionFromYZAxisToRef(part.tracks[j].trackInterpolatedNormals[i], dir, quat);
+                    let up = part.tracks[j].trackInterpolatedNormals[i];
+                    Mummu.QuaternionFromYZAxisToRef(up, dir, quat);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     
                     for (let j = 0; j < path.length; j++) {
@@ -147,6 +153,37 @@ class SleeperMeshBuilder {
                             partialsDatas.push(tmpVertexData);
                             tmp.dispose();
     
+                        }
+                    }
+
+                    if (props.drawGroundAnchors) {
+                        if ((n - 1.5) % 6 === 0 && up.y > 0.1) {
+                            let anchor = path[nPath / 2];
+                            let anchorYWorld = anchor.y + part.position.y;
+                            let anchorBase = anchor.clone();
+                            let minY = part.machine.baseMeshMinY;
+                            let maxY = part.machine.baseMeshMaxY;
+                            anchorBase.y = part.machine.baseMeshMinY - part.position.y;
+
+                            if (anchorYWorld < minY + props.groundAnchorsRelativeMaxY * (maxY - minY)) {
+                                let rayOrigin = anchor.add(part.position);
+                                let rayDir = new BABYLON.Vector3(0, -1, 0);
+                                rayOrigin.addInPlace(rayDir.scale(0.05));
+                                let ray = new BABYLON.Ray(rayOrigin, rayDir, 3);
+                                let pick = part.game.scene.pickWithRay(ray, (m => { return m instanceof MachinePartSelectorMesh }));
+                                if (!pick.hit) {
+                                    let fixationPath: BABYLON.Vector3[] = [anchor, anchorBase];
+                                    
+                                    let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                                    tmp.dispose();
+            
+                                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.006, diameter: 0.004 });
+                                    Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorBase);
+                                    partialsDatas.push(tmpVertexData);
+                                    tmp.dispose();
+                                }
+                            }
                         }
                     }
                     n++;

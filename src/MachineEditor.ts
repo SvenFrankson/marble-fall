@@ -798,12 +798,12 @@ class MachineEditor {
                 }
                 draggedTrack.setIsVisible(true);
                 draggedTrack.generateWires();
+                this.machine.generateBaseMesh();
                 draggedTrack.instantiate(true).then(() => {
                     draggedTrack.recomputeAbsolutePath();
                     this.setSelectedObject(draggedTrack);
                     this.setDraggedObject(undefined);
                     this.setSelectedItem("");
-                    this.machine.generateBaseMesh();
                 });
             }
             else if (this.draggedObject instanceof Ball) {
@@ -877,9 +877,9 @@ class MachineEditor {
         this.machine.parts.push(editedTrack);
         editedTrack.setIsVisible(true);
         editedTrack.generateWires();
+        this.machine.generateBaseMesh();
         await editedTrack.instantiate(true);
         editedTrack.recomputeAbsolutePath();
-        this.machine.generateBaseMesh();
         return editedTrack;
     }
 
@@ -902,9 +902,9 @@ class MachineEditor {
         this.machine.parts.push(editedPart);
         editedPart.setIsVisible(true);
         editedPart.generateWires();
+        this.machine.generateBaseMesh();
         await editedPart.instantiate(true);
         editedPart.recomputeAbsolutePath();
-        this.machine.generateBaseMesh();
         return editedPart;
     }
 
@@ -1372,6 +1372,7 @@ class MachineEditor {
                 selectedTrack.setI(selectedTrack.i + 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
+                this.machine.generateBaseMesh();
                 await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
@@ -1382,7 +1383,6 @@ class MachineEditor {
         }
         this.setDraggedObject(undefined);
         this.setSelectedItem("");
-        this.machine.generateBaseMesh();
         this.updateFloatingElements();
     }
 
@@ -1393,6 +1393,7 @@ class MachineEditor {
                 selectedTrack.setI(selectedTrack.i - 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
+                this.machine.generateBaseMesh();
                 await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
@@ -1403,7 +1404,6 @@ class MachineEditor {
         }
         this.setDraggedObject(undefined);
         this.setSelectedItem("");
-        this.machine.generateBaseMesh();
         this.updateFloatingElements();
     }
     
@@ -1414,6 +1414,7 @@ class MachineEditor {
                 selectedTrack.setJ(selectedTrack.j + 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
+                this.machine.generateBaseMesh();
                 await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
@@ -1424,7 +1425,6 @@ class MachineEditor {
         }
         this.setDraggedObject(undefined);
         this.setSelectedItem("");
-        this.machine.generateBaseMesh();
         this.updateFloatingElements();
     }
 
@@ -1435,6 +1435,7 @@ class MachineEditor {
                 selectedTrack.setJ(selectedTrack.j - 1);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.generateWires();
+                this.machine.generateBaseMesh();
                 await selectedTrack.instantiate(true);
                 selectedTrack.recomputeAbsolutePath();
                 selectedTrack.select();
@@ -1445,7 +1446,6 @@ class MachineEditor {
         }
         this.setDraggedObject(undefined);
         this.setSelectedItem("");
-        this.machine.generateBaseMesh();
         this.updateFloatingElements();
     }
 
@@ -1457,6 +1457,7 @@ class MachineEditor {
                     selectedTrack.setK(selectedTrack.k + 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
@@ -1467,7 +1468,6 @@ class MachineEditor {
             }
             this.setDraggedObject(undefined);
             this.setSelectedItem("");
-            this.machine.generateBaseMesh();
             this.updateFloatingElements();
         }
         else if (this.selectedObject instanceof Ball) {
@@ -1488,6 +1488,7 @@ class MachineEditor {
                     selectedTrack.setK(selectedTrack.k - 1);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.generateWires();
+                    this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
@@ -1498,7 +1499,6 @@ class MachineEditor {
             }
             this.setDraggedObject(undefined);
             this.setSelectedItem("");
-            this.machine.generateBaseMesh();
             this.updateFloatingElements();
         }
         else if (this.selectedObject instanceof Ball) {
