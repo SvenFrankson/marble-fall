@@ -10,6 +10,7 @@ class Room {
         this.ground.position.y = - 2;
 
         let groundMaterial = new BABYLON.StandardMaterial("ground-material");
+        groundMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/concrete.png")
         groundMaterial.diffuseColor = BABYLON.Color3.FromHexString("#3f4c52");
         groundMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
 

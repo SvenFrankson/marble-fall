@@ -23,6 +23,7 @@ class Machine {
 
     public baseWall: BABYLON.Mesh;
     public baseFrame: BABYLON.Mesh;
+    public baseLogo: BABYLON.Mesh;
     public parts: MachinePart[] = [];
     public balls: Ball[] = [];
 
@@ -252,6 +253,38 @@ class Machine {
             data.positions = positions;
             data.uvs = uvs;
             data.applyToMesh(this.baseWall);
+
+            
+            if (this.baseLogo) {
+                this.baseLogo.dispose();
+            }
+            this.baseLogo = new BABYLON.Mesh("base-logo");
+            this.baseLogo.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseLogo.position.y = this.baseMeshMinY + 0.0001;
+            this.baseLogo.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+
+            let w05 = w * 0.5;
+            let d05 = d * 0.5;
+            let logoW = w * 0.3;
+            let logoH = logoW / 794 * 212;
+
+            let corner1Data = Mummu.CreateQuadVertexData({
+                p1: new BABYLON.Vector3(w05 - logoW, 0, - d05),
+                p2: new BABYLON.Vector3(w05, 0, - d05),
+                p3: new BABYLON.Vector3(w05, 0, - d05 + logoH),
+                p4: new BABYLON.Vector3(w05 - logoW, 0, - d05 + logoH)
+            })
+            
+            let corner2Data = Mummu.CreateQuadVertexData({
+                p1: new BABYLON.Vector3(- w05 + logoW, 0, d05),
+                p2: new BABYLON.Vector3(- w05, 0, d05),
+                p3: new BABYLON.Vector3(- w05, 0, d05 - logoH),
+                p4: new BABYLON.Vector3(- w05 + logoW, 0, d05 - logoH)
+            })
+
+            Mummu.MergeVertexDatas(corner1Data, corner2Data).applyToMesh(this.baseLogo);
+
+            this.baseLogo.material = this.game.logoMaterial;
         }
 
         this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);

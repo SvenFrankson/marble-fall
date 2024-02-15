@@ -6,7 +6,7 @@
 "meshes":[{"name":"0-ground","id":"0-ground","billboardMode":0,"position":[0,0,0],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
 ,"positions":[5,0,5,-5,0,-5,5,0,-5,-5,0,5]
 ,"normals":[0,1,0,0,1,0,0,1,0,0,1,0]
-,"uvs":[0,0,0,0,0,0,0,0]
+,"uvs":[1.5,1.5,-0.5,-0.5,1.5,-0.5,-0.5,1.5]
 ,"indices":[0,1,2,0,3,1]
 ,"subMeshes":[{"materialIndex":0,"verticesStart":0,"verticesCount":4,"indexStart":0,"indexCount":6}]
 ,"instances":[]}

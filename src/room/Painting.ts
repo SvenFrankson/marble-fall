@@ -41,6 +41,11 @@ class Painting extends BABYLON.Mesh {
                     else {
                         wMesh *= r;
                     }
+                    let body = BABYLON.MeshBuilder.CreateBox("paint-body", { width: wMesh + 0.04, height: hMesh + 0.04, depth: 0.04 });
+                    body.layerMask = 0x10000000;
+                    body.position.y = 1.2;
+                    body.parent = this;
+
                     let plane = BABYLON.MeshBuilder.CreatePlane("paint", { width: wMesh, height: hMesh });
                     plane.layerMask = 0x10000000;
                     let mat = new BABYLON.StandardMaterial(this.name + "-material");
@@ -48,6 +53,7 @@ class Painting extends BABYLON.Mesh {
                     mat.emissiveColor = BABYLON.Color3.White();
                     plane.material = mat;
                     plane.position.y = 1.2;
+                    plane.position.z = 0.021;
                     plane.rotation.y = Math.PI;
                     plane.parent = this;
 

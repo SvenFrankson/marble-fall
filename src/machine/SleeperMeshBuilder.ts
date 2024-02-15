@@ -178,7 +178,7 @@ class SleeperMeshBuilder {
                                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                                     tmp.dispose();
             
-                                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.006, diameter: 0.004 });
+                                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.006, diameter: 0.008 });
                                     Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorBase);
                                     partialsDatas.push(tmpVertexData);
                                     tmp.dispose();

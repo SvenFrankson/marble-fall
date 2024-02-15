@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = true;
+    public DEBUG_MODE: boolean = false;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -81,6 +81,7 @@ class Game {
     public copperMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public woodMaterial: BABYLON.StandardMaterial;
     public velvetMaterial: BABYLON.StandardMaterial;
+    public logoMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
     public whiteMaterial: BABYLON.StandardMaterial;
     public deepBlackMaterial: BABYLON.StandardMaterial;
@@ -199,9 +200,17 @@ class Game {
         this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
 
         this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
-        this.velvetMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.velvetMaterial.diffuseColor.copyFromFloats(0.75, 0.75, 0.75);
         this.velvetMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/velvet.jpg");
-        this.velvetMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.velvetMaterial.specularColor.copyFromFloats(0, 0, 0);
+        
+        this.logoMaterial = new BABYLON.StandardMaterial("logo-material");
+        this.logoMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.logoMaterial.diffuseTexture = new BABYLON.Texture("./datas/icons/logo-white-no-bg.png");
+        this.logoMaterial.diffuseTexture.hasAlpha = true;
+        this.logoMaterial.useAlphaFromDiffuseTexture = true;
+        this.logoMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.logoMaterial.alpha = 0.3;
         
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
@@ -242,12 +251,9 @@ class Game {
         this.camera = new BABYLON.ArcRotateCamera("camera", this.targetCamAlpha, this.targetCamBeta, this.targetCamRadius, this.targetCamTarget.clone());
         this.camera.minZ = 0.01;
         this.camera.maxZ = 25;
-        if (!this.DEBUG_MODE) {
-            this.camera.lowerAlphaLimit = - Math.PI * 0.98;
-            this.camera.upperAlphaLimit = - Math.PI * 0.02;
-            this.camera.lowerRadiusLimit = 0.05;
-            this.camera.upperRadiusLimit = 1.5;
-        }
+        this.camera.upperBetaLimit = Math.PI * 0.5;
+        this.camera.lowerRadiusLimit = 0.05;
+        this.camera.upperRadiusLimit = 2;
         this.camera.wheelPrecision = 1000;
         this.camera.panningSensibility = 4000;
         this.camera.panningInertia *= 0.5;
@@ -486,7 +492,7 @@ class Game {
                     this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
                 }
                 if (Math.abs(this.camera.beta - this.targetCamBeta) < Math.PI / 180) {
-                    this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
+                    this.targetCamBeta = 0.15 * Math.PI + Math.random() * Math.PI * 0.35;
                 }
             }
         }

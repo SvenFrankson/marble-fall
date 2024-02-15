@@ -230,7 +230,7 @@ class Ball extends BABYLON.Mesh {
             //this.velocity.addInPlace(forcedDisplacement.scale(0.1 * 1 / dt));
             this.position.addInPlace(forcedDisplacement);
 
-            let friction = this.velocity.scale(-1).scaleInPlace(0.002);
+            let friction = this.velocity.scale(-1).scaleInPlace(0.001);
     
             let acceleration = weight.add(reactions).add(friction).scaleInPlace(1 / m);
             this.velocity.addInPlace(acceleration.scale(dt));
