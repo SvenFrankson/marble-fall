@@ -40,12 +40,14 @@ class Machine {
     }
 
     public async instantiate(): Promise<void> {
-        for (let i = 0; i < this.balls.length; i++) {
-            await this.balls[i].instantiate();
-        }
         this.parts = this.parts.sort((a, b) => { return b.j - a.j });
         for (let i = 0; i < this.parts.length; i++) {
             await this.parts[i].instantiate();
+            await Nabu.Wait(1);
+        }
+
+        for (let i = 0; i < this.balls.length; i++) {
+            await this.balls[i].instantiate();
         }
 
         return new Promise<void>(resolve => {
