@@ -2274,7 +2274,7 @@ class Game {
         this.config.initialize();
         //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
         if (this.DEBUG_MODE) {
-            this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff0000");
         }
         else {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
@@ -2326,6 +2326,10 @@ class Game {
         this.copperMaterial.metallic = 1.0;
         this.copperMaterial.roughness = 0.15;
         this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
+        this.velvetMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.velvetMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/velvet.jpg");
+        this.velvetMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
         this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
@@ -2342,7 +2346,12 @@ class Game {
         this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.autolitMaterial = new BABYLON.StandardMaterial("autolit-material");
+        this.autolitMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.autolitMaterial.emissiveColor = BABYLON.Color3.White().scale(0.3);
+        this.autolitMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 20, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
+        this.skybox.layerMask = 0x10000000;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
         let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
@@ -2366,6 +2375,12 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
+        let camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
+        camBackGround.parent = this.camera;
+        camBackGround.layerMask = 0x10000000;
+        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, camBackGround);
+        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, camBackGround);
+        this.scene.activeCameras = [camBackGround, this.camera];
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));
@@ -2920,32 +2935,6 @@ class MenuTile extends BABYLON.Mesh {
     }
 }
 MenuTile.ppc = 60;
-class Room {
-    constructor(game) {
-        this.game = game;
-        this.ground = new BABYLON.Mesh("room-ground");
-        this.ground.position.y = -2;
-        let groundMaterial = new BABYLON.StandardMaterial("ground-material");
-        groundMaterial.diffuseColor = BABYLON.Color3.FromHexString("#3f4c52");
-        groundMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.ground.material = groundMaterial;
-        this.wall = new BABYLON.Mesh("room-wall");
-        this.wall.material = this.game.whiteMaterial;
-        this.wall.parent = this.ground;
-        this.frame = new BABYLON.Mesh("room-frame");
-        this.frame.material = this.game.steelMaterial;
-        this.frame.parent = this.ground;
-    }
-    async instantiate() {
-        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
-        vertexDatas[0].applyToMesh(this.ground);
-        vertexDatas[1].applyToMesh(this.wall);
-        vertexDatas[2].applyToMesh(this.frame);
-    }
-    setGroundHeight(h) {
-        this.ground.position.y = h;
-    }
-}
 class Sound {
     constructor(prop) {
         if (prop) {
@@ -3292,8 +3281,9 @@ class Machine {
             this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseWall.position.y = this.baseMeshMinY;
             this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseWall.material = this.game.whiteMaterial;
+            this.baseWall.material = this.game.velvetMaterial;
             data = Mummu.CloneVertexData(vertexDatas[1]);
+            let uvs = [];
             positions = [...data.positions];
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
@@ -3310,8 +3300,11 @@ class Machine {
                 else if (z < 0) {
                     positions[3 * i + 2] -= d * 0.5 - 0.5 + this.margin;
                 }
+                uvs.push(positions[3 * i] * 2);
+                uvs.push(positions[3 * i + 2] * 2);
             }
             data.positions = positions;
+            data.uvs = uvs;
             data.applyToMesh(this.baseWall);
         }
         this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
@@ -5445,6 +5438,126 @@ class Wave extends MachinePartWithOriginDestination {
             }
         }
         return new Wave(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+    }
+}
+class Painting extends BABYLON.Mesh {
+    constructor(room, paintingName, size = 0.5) {
+        super("painting-" + paintingName);
+        this.room = room;
+        this.paintingName = paintingName;
+        this.size = size;
+        this.layerMask = 0x10000000;
+    }
+    async instantiate() {
+        let vertexDatas = await this.room.game.vertexDataLoader.get("./meshes/paint-support.babylon");
+        if (vertexDatas && vertexDatas[0]) {
+            vertexDatas[0].applyToMesh(this);
+        }
+        if (vertexDatas && vertexDatas[1]) {
+            let steel = new BABYLON.Mesh("steel");
+            vertexDatas[1].applyToMesh(steel);
+            steel.parent = this;
+            steel.material = this.room.game.steelMaterial;
+            steel.layerMask = 0x10000000;
+        }
+        if (vertexDatas && vertexDatas[2]) {
+            let lightedPlane = new BABYLON.Mesh("lighted-plane");
+            vertexDatas[2].applyToMesh(lightedPlane);
+            lightedPlane.parent = this;
+            lightedPlane.material = this.room.game.autolitMaterial;
+            lightedPlane.layerMask = 0x10000000;
+        }
+        let texture = new BABYLON.Texture("./datas/textures/" + this.paintingName + ".jpg");
+        return new Promise(resolve => {
+            let checkTextureLoaded = () => {
+                if (texture.isReady()) {
+                    let w = texture._texture.baseWidth;
+                    let h = texture._texture.baseHeight;
+                    let r = w / h;
+                    let wMesh = this.size;
+                    let hMesh = this.size;
+                    if (r >= 1) {
+                        hMesh /= r;
+                    }
+                    else {
+                        wMesh *= r;
+                    }
+                    let plane = BABYLON.MeshBuilder.CreatePlane("paint", { width: wMesh, height: hMesh });
+                    plane.layerMask = 0x10000000;
+                    let mat = new BABYLON.StandardMaterial(this.name + "-material");
+                    mat.diffuseTexture = texture;
+                    mat.emissiveColor = BABYLON.Color3.White();
+                    plane.material = mat;
+                    plane.position.y = 1.2;
+                    plane.rotation.y = Math.PI;
+                    plane.parent = this;
+                    resolve();
+                }
+                else {
+                    requestAnimationFrame(checkTextureLoaded);
+                }
+            };
+            checkTextureLoaded();
+        });
+    }
+}
+class Room {
+    constructor(game) {
+        this.game = game;
+        this.ground = new BABYLON.Mesh("room-ground");
+        this.ground.layerMask = 0x10000000;
+        this.ground.position.y = -2;
+        let groundMaterial = new BABYLON.StandardMaterial("ground-material");
+        groundMaterial.diffuseColor = BABYLON.Color3.FromHexString("#3f4c52");
+        groundMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.ground.material = groundMaterial;
+        this.wall = new BABYLON.Mesh("room-wall");
+        this.wall.layerMask = 0x10000000;
+        this.wall.material = this.game.whiteMaterial;
+        this.wall.parent = this.ground;
+        this.frame = new BABYLON.Mesh("room-frame");
+        this.frame.layerMask = 0x10000000;
+        this.frame.material = this.game.steelMaterial;
+        this.frame.parent = this.ground;
+    }
+    async instantiate() {
+        let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
+        vertexDatas[0].applyToMesh(this.ground);
+        vertexDatas[1].applyToMesh(this.wall);
+        vertexDatas[2].applyToMesh(this.frame);
+        let paint1 = new Painting(this, "bilbao_1", 0.8);
+        paint1.instantiate();
+        paint1.position.copyFromFloats(-4, 0, 3);
+        paint1.rotation.y = 0.7 * Math.PI;
+        paint1.parent = this.ground;
+        let paint2 = new Painting(this, "bilbao_2", 0.8);
+        paint2.instantiate();
+        paint2.position.copyFromFloats(-3, 0, 3.3);
+        paint2.rotation.y = -0.9 * Math.PI;
+        paint2.parent = this.ground;
+        let paint3 = new Painting(this, "bilbao_3", 0.8);
+        paint3.instantiate();
+        paint3.position.copyFromFloats(4, 0, 3.5);
+        paint3.rotation.y = -Math.PI * 0.5;
+        paint3.parent = this.ground;
+        let paint4 = new Painting(this, "flower_1", 0.8);
+        paint4.instantiate();
+        paint4.position.copyFromFloats(4, 0, -3);
+        paint4.rotation.y = -0.3 * Math.PI;
+        paint4.parent = this.ground;
+        let paint5 = new Painting(this, "flower_2", 0.8);
+        paint5.instantiate();
+        paint5.position.copyFromFloats(3, 0, -3.3);
+        paint5.rotation.y = 0.1 * Math.PI;
+        paint5.parent = this.ground;
+        let paint6 = new Painting(this, "flower_3", 0.8);
+        paint6.instantiate();
+        paint6.position.copyFromFloats(-4, 0, -3.5);
+        paint6.rotation.y = Math.PI * 0.5;
+        paint6.parent = this.ground;
+    }
+    setGroundHeight(h) {
+        this.ground.position.y = h;
     }
 }
 class Arrow extends BABYLON.Mesh {

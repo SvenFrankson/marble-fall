@@ -13,7 +13,7 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	Python World class constructor completed
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  0-base
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Material
 		num positions      :  119
 		num normals        :  119
 		num tangents       :  0

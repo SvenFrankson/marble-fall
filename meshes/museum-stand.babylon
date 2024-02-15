@@ -1,9 +1,9 @@
 {"producer":{"name":"Blender","version":"2.90.1","exporter_version":"6.4.5","file":"museum_stand.babylon"},
 "autoClear":true,"clearColor":[0.0509,0.0509,0.0509],"gravity":[0,-9.81,0],
-"materials":[],
+"materials":[{"name":"Material","id":"Material","customType":"BABYLON.PBRMaterial","backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4,"environmentIntensity":1,"albedo":[0.8,0.7307,0.6768],"reflectivity":[0.5,0.5,0.5],"metallic":0}],
 "multiMaterials":[],
 "skeletons":[],
-"meshes":[{"name":"0-base","id":"0-base","billboardMode":0,"position":[0,0,0],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
+"meshes":[{"name":"0-base","id":"0-base","materialId":"Material","billboardMode":0,"position":[0,0,0],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
 ,"positions":[0.498,0.005,0.498,0.487,0.005,-0.487,0.498,0.005,-0.498,0.498,0.003,-0.5,-0.498,-1,-0.5,0.498,-1,-0.5,-0.487,0.005,-0.487,-0.498,0.005,-0.498,-0.498,0.005,-0.498,-0.487,0.005,0.487,-0.498,0.005,0.498,0.487,0.005,0.487,0.483,0.003,-0.485,-0.483,0,-0.485,-0.483,0.003,-0.485,-0.5,0.003,-0.498,-0.5,-1,0.498
 ,-0.5,-1,-0.498,-0.498,0.003,0.5,0.498,-1,0.5,-0.498,-1,0.5,0.485,0.003,0.483,0.485,0,-0.483,0.485,0.003,-0.483,-0.485,0.003,-0.483,-0.485,0,0.483,-0.485,0.003,0.483,-0.483,0.003,0.485,0.483,0,0.485,0.483,0.003,0.485,0.498,0.003,0.5,0.4992,0.0042,0.4992,0.4994,0.003,0.4994,0.498,0.0044,0.4994
 ,0.5,0.003,0.498,0.4994,0.0044,0.498,0.4992,0.0042,-0.4992,0.498,0.0044,-0.4994,0.5,0.003,-0.498,0.4994,0.003,-0.4994,0.4994,0.0044,-0.498,-0.4992,0.0042,0.4992,-0.498,0.0044,0.4994,-0.5,0.003,0.498,-0.4994,0.003,0.4994,-0.4994,0.0044,0.498,-0.498,0.003,-0.5,-0.4992,0.0042,-0.4992,-0.4994,0.003,-0.4994,-0.498,0.005,-0.498,-0.4992,0.0042,-0.4992

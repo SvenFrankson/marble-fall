@@ -80,9 +80,11 @@ class Game {
     public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public copperMaterial: BABYLON.PBRMetallicRoughnessMaterial;
     public woodMaterial: BABYLON.StandardMaterial;
+    public velvetMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
     public whiteMaterial: BABYLON.StandardMaterial;
     public deepBlackMaterial: BABYLON.StandardMaterial;
+    public autolitMaterial: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public handleMaterialActive: BABYLON.StandardMaterial;
     public handleMaterialHover: BABYLON.StandardMaterial;
@@ -130,7 +132,7 @@ class Game {
         //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
 
         if (this.DEBUG_MODE) {
-            this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff00");
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff0000");
         }
         else {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
@@ -196,6 +198,11 @@ class Game {
         this.copperMaterial.roughness = 0.15;
         this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
 
+        this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
+        this.velvetMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.velvetMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/velvet.jpg");
+        this.velvetMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
         this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
@@ -216,7 +223,13 @@ class Game {
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
 
+        this.autolitMaterial = new BABYLON.StandardMaterial("autolit-material");
+        this.autolitMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.autolitMaterial.emissiveColor = BABYLON.Color3.White().scale(0.3);
+        this.autolitMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+
         this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 20, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
+        this.skybox.layerMask = 0x10000000;
         let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
         let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
@@ -241,6 +254,14 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
+
+        let camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
+        camBackGround.parent = this.camera;
+        camBackGround.layerMask = 0x10000000;
+        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, camBackGround)
+        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, camBackGround)
+
+        this.scene.activeCameras = [camBackGround, this.camera];
 
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {

@@ -225,9 +225,10 @@ class Machine {
             this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseWall.position.y = this.baseMeshMinY;
             this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseWall.material = this.game.whiteMaterial;
+            this.baseWall.material = this.game.velvetMaterial;
             
             data = Mummu.CloneVertexData(vertexDatas[1]);
+            let uvs = [];
             positions = [...data.positions]
             for (let i = 0; i < positions.length / 3; i++) {
                 let x = positions[3 * i];
@@ -245,8 +246,11 @@ class Machine {
                 else if (z < 0) {
                     positions[3 * i + 2] -= d * 0.5 - 0.5 + this.margin;
                 }
+                uvs.push(positions[3 * i] * 2);
+                uvs.push(positions[3 * i + 2] * 2);
             }
             data.positions = positions;
+            data.uvs = uvs;
             data.applyToMesh(this.baseWall);
         }
 
