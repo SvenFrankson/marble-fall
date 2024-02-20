@@ -2321,7 +2321,7 @@ class MachinePart extends BABYLON.Mesh {
     }
     select() {
         this.selectorMesh.visibility = 0.2;
-        //this.encloseMesh.visibility = 0.1;
+        this.encloseMesh.visibility = 1;
     }
     unselect() {
         this.selectorMesh.visibility = 0;
@@ -3397,6 +3397,7 @@ class MachineEditor {
                             this.draggedObject.setJ(j);
                             this.draggedObject.setK(k);
                             this.draggedObject.setIsVisible(true);
+                            this.grid.position.copyFrom(this.draggedObject.position);
                             this.updateFloatingElements();
                         }
                     }
@@ -3746,6 +3747,7 @@ class MachineEditor {
                     selectedTrack.generateWires();
                     this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
+                    this.grid.position.copyFrom(selectedTrack.position);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -3766,6 +3768,7 @@ class MachineEditor {
                     selectedTrack.generateWires();
                     this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
+                    this.grid.position.copyFrom(selectedTrack.position);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -3786,6 +3789,7 @@ class MachineEditor {
                     selectedTrack.generateWires();
                     this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
+                    this.grid.position.copyFrom(selectedTrack.position);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -3806,6 +3810,7 @@ class MachineEditor {
                     selectedTrack.generateWires();
                     this.machine.generateBaseMesh();
                     await selectedTrack.instantiate(true);
+                    this.grid.position.copyFrom(selectedTrack.position);
                     selectedTrack.recomputeAbsolutePath();
                     selectedTrack.select();
                     if (this.game.cameraMode === CameraMode.Selected) {
@@ -3827,6 +3832,7 @@ class MachineEditor {
                         selectedTrack.generateWires();
                         this.machine.generateBaseMesh();
                         await selectedTrack.instantiate(true);
+                        this.grid.position.copyFrom(selectedTrack.position);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
                         if (this.game.cameraMode === CameraMode.Selected) {
@@ -3857,6 +3863,7 @@ class MachineEditor {
                         selectedTrack.generateWires();
                         this.machine.generateBaseMesh();
                         await selectedTrack.instantiate(true);
+                        this.grid.position.copyFrom(selectedTrack.position);
                         selectedTrack.recomputeAbsolutePath();
                         selectedTrack.select();
                         if (this.game.cameraMode === CameraMode.Selected) {
@@ -3963,7 +3970,6 @@ class MachineEditor {
             this._draggedObject = s;
             if (this._draggedObject) {
                 this.grid.setIsVisible(true);
-                this.grid.position.copyFrom(this._draggedObject.position);
                 this.game.camera.detachControl();
                 //this.showCurrentLayer();
             }
@@ -3979,7 +3985,7 @@ class MachineEditor {
     get selectedObject() {
         return this.selectedObjects[0];
     }
-    setSelectedObject(s) {
+    setSelectedObject(s, skipUpdateGridPosition) {
         if (this.selectedObjects) {
             this.selectedObjects.forEach(obj => {
                 obj.unselect();
@@ -3996,7 +4002,9 @@ class MachineEditor {
         }
         if (this.selectedObjects[0]) {
             this.grid.setIsVisible(true);
-            this.grid.position.copyFrom(this.selectedObjects[0].position);
+            if (!skipUpdateGridPosition) {
+                this.grid.position.copyFrom(this.selectedObjects[0].position);
+            }
             this.selectedObjects[0].select();
             this.machinePartEditorMenu.currentObject = this.selectedObjects[0];
         }
@@ -4053,6 +4061,7 @@ class MachineEditor {
                     ball.setIsVisible(false);
                 });
                 this.setDraggedObject(ball);
+                this.setSelectedObject(ball, true);
                 this._dragOffset.copyFromFloats(0, 0, 0);
             }
         });
@@ -4075,11 +4084,12 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10, 0);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, 0, 0, 0);
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
                     this.setDraggedObject(track);
+                    this.setSelectedObject(track, true);
                     this._dragOffset.copyFromFloats(0, 0, 0);
                 }
             });
@@ -4492,31 +4502,31 @@ class MachineEditor {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth);
                     this.originIPlusHandle.position.copyFrom(pOrigin);
-                    this.originIPlusHandle.position.x += this.smallHandleSize;
+                    this.originIPlusHandle.position.x += this.smallHandleSize * 1.5;
                     this.originIMinusHandle.position.copyFrom(pOrigin);
-                    this.originIMinusHandle.position.x -= this.smallHandleSize;
+                    this.originIMinusHandle.position.x -= this.smallHandleSize * 1.5;
                     this.originJPlusHandle.position.copyFrom(pOrigin);
-                    this.originJPlusHandle.position.y -= this.smallHandleSize;
+                    this.originJPlusHandle.position.y -= this.smallHandleSize * 1.5;
                     this.originJMinusHandle.position.copyFrom(pOrigin);
-                    this.originJMinusHandle.position.y += this.smallHandleSize;
+                    this.originJMinusHandle.position.y += this.smallHandleSize * 1.5;
                     this.originKPlusHandle.position.copyFrom(pOrigin);
-                    this.originKPlusHandle.position.z -= this.smallHandleSize;
+                    this.originKPlusHandle.position.z -= this.smallHandleSize * 1.5;
                     this.originKMinusHandle.position.copyFrom(pOrigin);
-                    this.originKMinusHandle.position.z += this.smallHandleSize;
+                    this.originKMinusHandle.position.z += this.smallHandleSize * 1.5;
                     let destination = this.selectedObject.getDestination();
                     let pDestination = new BABYLON.Vector3(destination.i * tileWidth - 0.5 * tileWidth, -destination.j * tileHeight, -destination.k * tileDepth);
                     this.destinationIPlusHandle.position.copyFrom(pDestination);
-                    this.destinationIPlusHandle.position.x += this.smallHandleSize;
+                    this.destinationIPlusHandle.position.x += this.smallHandleSize * 1.5;
                     this.destinationIMinusHandle.position.copyFrom(pDestination);
-                    this.destinationIMinusHandle.position.x -= this.smallHandleSize;
+                    this.destinationIMinusHandle.position.x -= this.smallHandleSize * 1.5;
                     this.destinationJPlusHandle.position.copyFrom(pDestination);
-                    this.destinationJPlusHandle.position.y -= this.smallHandleSize;
+                    this.destinationJPlusHandle.position.y -= this.smallHandleSize * 1.5;
                     this.destinationJMinusHandle.position.copyFrom(pDestination);
-                    this.destinationJMinusHandle.position.y += this.smallHandleSize;
+                    this.destinationJMinusHandle.position.y += this.smallHandleSize * 1.5;
                     this.destinationKPlusHandle.position.copyFrom(pDestination);
-                    this.destinationKPlusHandle.position.z -= this.smallHandleSize;
+                    this.destinationKPlusHandle.position.z -= this.smallHandleSize * 1.5;
                     this.destinationKMinusHandle.position.copyFrom(pDestination);
-                    this.destinationKMinusHandle.position.z += this.smallHandleSize;
+                    this.destinationKMinusHandle.position.z += this.smallHandleSize * 1.5;
                     this.originIPlusHandle.isVisible = true;
                     this.originIMinusHandle.isVisible = true;
                     this.originJPlusHandle.isVisible = true;
@@ -4533,29 +4543,29 @@ class MachineEditor {
                 else {
                     if (this.selectedObjectsCount === 1) {
                         this.IPlusHandle.position.copyFrom(this.selectedObject.position);
-                        this.IPlusHandle.position.x += this.selectedObject.encloseEnd.x;
-                        this.IPlusHandle.position.y += this.selectedObject.encloseMid.y;
-                        this.IPlusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        this.IPlusHandle.position.x += this.selectedObject.encloseEnd.x + this.IPlusHandle.baseSize * 0.5;
+                        this.IPlusHandle.position.y += this.selectedObject.encloseEnd.y;
+                        this.IPlusHandle.position.z += this.selectedObject.encloseMid.z;
                         this.IMinusHandle.position.copyFrom(this.selectedObject.position);
-                        this.IMinusHandle.position.x += this.selectedObject.encloseStart.x;
-                        this.IMinusHandle.position.y += this.selectedObject.encloseMid.y;
-                        this.IMinusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        this.IMinusHandle.position.x += this.selectedObject.encloseStart.x - this.IMinusHandle.baseSize * 0.5;
+                        this.IMinusHandle.position.y += this.selectedObject.encloseEnd.y;
+                        this.IMinusHandle.position.z += this.selectedObject.encloseMid.z;
                         this.JPlusHandle.position.copyFrom(this.selectedObject.position);
-                        this.JPlusHandle.position.x += this.selectedObject.enclose13.x;
-                        this.JPlusHandle.position.y += this.selectedObject.encloseEnd.y;
-                        this.JPlusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        this.JPlusHandle.position.x += this.selectedObject.encloseMid.x;
+                        this.JPlusHandle.position.y += this.selectedObject.encloseEnd.y - this.JPlusHandle.baseSize * 0.5;
+                        this.JPlusHandle.position.z += this.selectedObject.encloseMid.z;
                         this.JMinusHandle.position.copyFrom(this.selectedObject.position);
-                        this.JMinusHandle.position.x += this.selectedObject.enclose13.x;
-                        this.JMinusHandle.position.y += this.selectedObject.encloseStart.y;
-                        this.JMinusHandle.position.z += this.selectedObject.encloseStart.z - tileDepth * 0.5;
+                        this.JMinusHandle.position.x += this.selectedObject.encloseMid.x;
+                        this.JMinusHandle.position.y += this.selectedObject.encloseStart.y + this.JMinusHandle.baseSize * 0.5;
+                        this.JMinusHandle.position.z += this.selectedObject.encloseMid.z;
                         this.KPlusHandle.position.copyFrom(this.selectedObject.position);
-                        this.KPlusHandle.position.x += this.selectedObject.enclose23.x;
+                        this.KPlusHandle.position.x += this.selectedObject.encloseMid.x;
                         this.KPlusHandle.position.y += this.selectedObject.encloseEnd.y;
-                        this.KPlusHandle.position.z += this.selectedObject.encloseEnd.z;
+                        this.KPlusHandle.position.z += this.selectedObject.encloseEnd.z - this.KPlusHandle.baseSize * 0.5;
                         this.KMinusHandle.position.copyFrom(this.selectedObject.position);
-                        this.KMinusHandle.position.x += this.selectedObject.enclose23.x;
+                        this.KMinusHandle.position.x += this.selectedObject.encloseMid.x;
                         this.KMinusHandle.position.y += this.selectedObject.encloseEnd.y;
-                        this.KMinusHandle.position.z += this.selectedObject.encloseStart.z;
+                        this.KMinusHandle.position.z += this.selectedObject.encloseStart.z + this.KMinusHandle.baseSize * 0.5;
                     }
                     else if (this.selectedObjectsCount > 1) {
                         let encloseStart = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
@@ -4573,24 +4583,24 @@ class MachineEditor {
                         let enclose13 = encloseStart.clone().scaleInPlace(2 / 3).addInPlace(encloseEnd.scale(1 / 3));
                         let encloseMid = encloseStart.clone().addInPlace(encloseEnd).scaleInPlace(0.5);
                         let enclose23 = encloseStart.clone().scaleInPlace(1 / 3).addInPlace(encloseEnd.scale(2 / 3));
-                        this.IPlusHandle.position.x = encloseEnd.x;
+                        this.IPlusHandle.position.x = encloseEnd.x + this.IPlusHandle.baseSize * 0.5;
                         this.IPlusHandle.position.y = encloseMid.y;
                         this.IPlusHandle.position.z = encloseStart.z - tileDepth * 0.5;
-                        this.IMinusHandle.position.x = encloseStart.x;
+                        this.IMinusHandle.position.x = encloseStart.x - this.IMinusHandle.baseSize * 0.5;
                         this.IMinusHandle.position.y = encloseMid.y;
                         this.IMinusHandle.position.z = encloseStart.z - tileDepth * 0.5;
                         this.JPlusHandle.position.x = enclose13.x;
-                        this.JPlusHandle.position.y = encloseEnd.y;
+                        this.JPlusHandle.position.y = encloseEnd.y - this.JMinusHandle.baseSize * 0.5;
                         this.JPlusHandle.position.z = encloseStart.z - tileDepth * 0.5;
                         this.JMinusHandle.position.x = enclose13.x;
-                        this.JMinusHandle.position.y = encloseStart.y;
+                        this.JMinusHandle.position.y = encloseStart.y + this.JMinusHandle.baseSize * 0.5;
                         this.JMinusHandle.position.z = encloseStart.z - tileDepth * 0.5;
                         this.KPlusHandle.position.x = enclose23.x;
                         this.KPlusHandle.position.y = encloseEnd.y;
-                        this.KPlusHandle.position.z = encloseEnd.z;
+                        this.KPlusHandle.position.z = encloseEnd.z - this.KPlusHandle.baseSize * 0.5;
                         this.KMinusHandle.position.x = enclose23.x;
                         this.KMinusHandle.position.y = encloseEnd.y;
-                        this.KMinusHandle.position.z = encloseStart.z;
+                        this.KMinusHandle.position.z = encloseStart.z + this.KMinusHandle.baseSize * 0.5;
                     }
                     this.IPlusHandle.isVisible = true;
                     this.IMinusHandle.isVisible = true;
@@ -4607,11 +4617,14 @@ class MachineEditorGrid extends BABYLON.Mesh {
     constructor(editor) {
         super("machine-editor-grid");
         this.editor = editor;
+        this._lastSelectedObjectsCount = 0;
+        this._lastPosition = BABYLON.Vector3.Zero();
+        this._lastCamDir = BABYLON.Vector3.One();
         BABYLON.CreatePlaneVertexData({ size: 100 }).applyToMesh(this);
-        let gridMaterial = new BABYLON.StandardMaterial("ghost-material");
-        gridMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
+        let gridMaterial = new BABYLON.StandardMaterial("grid-material");
+        gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         gridMaterial.specularColor.copyFromFloats(0, 0, 0);
-        gridMaterial.alpha = 0.01;
+        gridMaterial.alpha = 0.3;
         this.material = gridMaterial;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         let count = 20;
@@ -4661,157 +4674,98 @@ class MachineEditorGrid extends BABYLON.Mesh {
             ]);
         }
         this.zGrid = BABYLON.MeshBuilder.CreateLineSystem("machine-editor-z-grid", { lines: zLines, colors: colors }, editor.game.scene);
-        this.selectorSquare = BABYLON.MeshBuilder.CreateLineSystem("machine-editor-selector-square", {
-            lines: [
-                [
-                    new BABYLON.Vector3(0, 0, -0.001),
-                    new BABYLON.Vector3(0, 1, -0.001),
-                    new BABYLON.Vector3(1, 1, -0.001),
-                    new BABYLON.Vector3(1, 0, -0.001),
-                    new BABYLON.Vector3(0, 0, -0.001)
-                ],
-                [
-                    new BABYLON.Vector3(0, 0, 0),
-                    new BABYLON.Vector3(0, 1, 0),
-                    new BABYLON.Vector3(1, 1, 0),
-                    new BABYLON.Vector3(1, 0, 0),
-                    new BABYLON.Vector3(0, 0, 0)
-                ],
-                [
-                    new BABYLON.Vector3(0, 0, 0.001),
-                    new BABYLON.Vector3(0, 1, 0.001),
-                    new BABYLON.Vector3(1, 1, 0.001),
-                    new BABYLON.Vector3(1, 0, 0.001),
-                    new BABYLON.Vector3(0, 0, 0.001)
-                ],
-            ],
-            colors: [
-                [
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1)
-                ],
-                [
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1)
-                ],
-                [
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1),
-                    new BABYLON.Color4(1, 1, 1, 1)
-                ],
-            ],
-            updatable: true
-        }, this.editor.game.scene);
     }
     setIsVisible(v) {
         this.isVisible = v;
     }
     update() {
-        this.xGrid.isVisible = false;
-        this.yGrid.isVisible = false;
-        this.zGrid.isVisible = false;
-        this.selectorSquare.isVisible = false;
-        this.xGrid.position.copyFrom(this.position);
-        this.yGrid.position.copyFrom(this.position);
-        this.zGrid.position.copyFrom(this.position);
         let camDir = this.editor.game.camera.getDirection(BABYLON.Axis.Z);
-        let closestAxis = Mummu.GetClosestAxis(camDir);
-        Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.rotationQuaternion);
-        if (closestAxis.x != 0) {
-            this.xGrid.isVisible = this.isVisible;
-        }
-        if (closestAxis.y != 0) {
-            this.yGrid.isVisible = this.isVisible;
-        }
-        if (closestAxis.z != 0) {
-            this.zGrid.isVisible = this.isVisible;
-        }
-        if (this.editor.selectedObjects.length > 0) {
-            let encloseStart = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
-            let encloseEnd = new BABYLON.Vector3(-Infinity, Infinity, Infinity);
-            this.editor.selectedObjects.forEach(obj => {
-                if (obj instanceof MachinePart) {
-                    encloseStart.x = Math.min(encloseStart.x, obj.position.x + obj.encloseStart.x);
-                    encloseStart.y = Math.max(encloseStart.y, obj.position.y + obj.encloseStart.y);
-                    encloseStart.z = Math.max(encloseStart.z, obj.position.z + obj.encloseStart.z);
-                    encloseEnd.x = Math.max(encloseEnd.x, obj.position.x + obj.encloseEnd.x);
-                    encloseEnd.y = Math.min(encloseEnd.y, obj.position.y + obj.encloseEnd.y);
-                    encloseEnd.z = Math.min(encloseEnd.z, obj.position.z + obj.encloseEnd.z);
+        if (this.editor.selectedObjectsCount != this._lastSelectedObjectsCount ||
+            this.editor.selectedObject != this._lastSelectedObject ||
+            Mummu.Angle(camDir, this._lastCamDir) > Math.PI / 180 ||
+            BABYLON.Vector3.DistanceSquared(this.position, this._lastPosition) > 0.001 * 0.001) {
+            this.xGrid.isVisible = false;
+            this.yGrid.isVisible = false;
+            this.zGrid.isVisible = false;
+            this.xGrid.position.copyFrom(this.position);
+            this.yGrid.position.copyFrom(this.position);
+            this.zGrid.position.copyFrom(this.position);
+            let minIJK = new BABYLON.Vector3(-Infinity, -Infinity, -Infinity);
+            let maxIJK = new BABYLON.Vector3(Infinity, Infinity, Infinity);
+            let worldEncloseStart = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
+            let worldEncloseEnd = new BABYLON.Vector3(-Infinity, Infinity, Infinity);
+            if (this.editor.selectedObjects.length > 0) {
+                this.editor.selectedObjects.forEach(obj => {
+                    if (obj instanceof MachinePart) {
+                        worldEncloseStart.x = Math.min(worldEncloseStart.x, obj.position.x + obj.encloseStart.x);
+                        worldEncloseStart.y = Math.max(worldEncloseStart.y, obj.position.y + obj.encloseStart.y);
+                        worldEncloseStart.z = Math.max(worldEncloseStart.z, obj.position.z + obj.encloseStart.z);
+                        worldEncloseEnd.x = Math.max(worldEncloseEnd.x, obj.position.x + obj.encloseEnd.x);
+                        worldEncloseEnd.y = Math.min(worldEncloseEnd.y, obj.position.y + obj.encloseEnd.y);
+                        worldEncloseEnd.z = Math.min(worldEncloseEnd.z, obj.position.z + obj.encloseEnd.z);
+                    }
+                });
+                let closestAxis = Mummu.GetClosestAxis(camDir);
+                Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.rotationQuaternion);
+                let m = 0.001;
+                if (closestAxis.x != 0) {
+                    this.xGrid.isVisible = this.isVisible;
+                    if (this.editor.selectedObject instanceof MachinePart) {
+                        if (closestAxis.x > 0) {
+                            maxIJK.x = this.editor.selectedObject.i;
+                            this.xGrid.position.x = worldEncloseEnd.x;
+                        }
+                        else {
+                            minIJK.x = this.editor.selectedObject.i;
+                            this.xGrid.position.x = worldEncloseStart.x;
+                        }
+                    }
                 }
-            });
-            let m = 0.001;
-            if (closestAxis.x != 0) {
-                let positions = [
-                    -m, encloseStart.y, encloseStart.z,
-                    -m, encloseStart.y, encloseEnd.z,
-                    -m, encloseEnd.y, encloseEnd.z,
-                    -m, encloseEnd.y, encloseStart.z,
-                    -m, encloseStart.y, encloseStart.z,
-                    0, encloseStart.y + m, encloseStart.z + m,
-                    0, encloseStart.y + m, encloseEnd.z - m,
-                    0, encloseEnd.y - m, encloseEnd.z - m,
-                    0, encloseEnd.y - m, encloseStart.z + m,
-                    0, encloseStart.y + m, encloseStart.z + m,
-                    m, encloseStart.y, encloseStart.z,
-                    m, encloseStart.y, encloseEnd.z,
-                    m, encloseEnd.y, encloseEnd.z,
-                    m, encloseEnd.y, encloseStart.z,
-                    m, encloseStart.y, encloseStart.z,
-                ];
-                this.selectorSquare.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, true);
-                this.selectorSquare.position.copyFromFloats(this.position.x, 0, 0);
+                if (closestAxis.y != 0) {
+                    this.yGrid.isVisible = this.isVisible;
+                    if (this.editor.selectedObject instanceof MachinePart) {
+                        if (closestAxis.y > 0) {
+                            minIJK.y = this.editor.selectedObject.j;
+                            this.yGrid.position.y = worldEncloseStart.y;
+                        }
+                        else {
+                            maxIJK.y = this.editor.selectedObject.j;
+                            this.yGrid.position.y = worldEncloseEnd.y;
+                        }
+                    }
+                }
+                if (closestAxis.z != 0) {
+                    this.zGrid.isVisible = this.isVisible;
+                    if (this.editor.selectedObject instanceof MachinePart) {
+                        if (closestAxis.z > 0) {
+                            minIJK.z = this.editor.selectedObject.k;
+                            this.zGrid.position.z = worldEncloseStart.z;
+                        }
+                        else {
+                            maxIJK.z = this.editor.selectedObject.k;
+                            this.zGrid.position.z = worldEncloseEnd.z;
+                        }
+                    }
+                }
             }
-            if (closestAxis.y != 0) {
-                let positions = [
-                    encloseStart.x, -m, encloseStart.z,
-                    encloseStart.x, -m, encloseEnd.z,
-                    encloseEnd.x, -m, encloseEnd.z,
-                    encloseEnd.x, -m, encloseStart.z,
-                    encloseStart.x, -m, encloseStart.z,
-                    encloseStart.x - m, 0, encloseStart.z + m,
-                    encloseStart.x - m, 0, encloseEnd.z - m,
-                    encloseEnd.x + m, 0, encloseEnd.z - m,
-                    encloseEnd.x + m, 0, encloseStart.z + m,
-                    encloseStart.x - m, 0, encloseStart.z + m,
-                    encloseStart.x, m, encloseStart.z,
-                    encloseStart.x, m, encloseEnd.z,
-                    encloseEnd.x, m, encloseEnd.z,
-                    encloseEnd.x, m, encloseStart.z,
-                    encloseStart.x, m, encloseStart.z,
-                ];
-                this.selectorSquare.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, true);
-                this.selectorSquare.position.copyFromFloats(0, this.position.y, 0);
-            }
-            if (closestAxis.z != 0) {
-                let positions = [
-                    encloseStart.x, encloseStart.y, -m,
-                    encloseStart.x, encloseEnd.y, -m,
-                    encloseEnd.x, encloseEnd.y, -m,
-                    encloseEnd.x, encloseStart.y, -m,
-                    encloseStart.x, encloseStart.y, -m,
-                    encloseStart.x - m, encloseStart.y + m, 0,
-                    encloseStart.x - m, encloseEnd.y - m, 0,
-                    encloseEnd.x + m, encloseEnd.y - m, 0,
-                    encloseEnd.x + m, encloseStart.y + m, 0,
-                    encloseStart.x - m, encloseStart.y + m, 0,
-                    encloseStart.x, encloseStart.y, m,
-                    encloseStart.x, encloseEnd.y, m,
-                    encloseEnd.x, encloseEnd.y, m,
-                    encloseEnd.x, encloseStart.y, m,
-                    encloseStart.x, encloseStart.y, m,
-                ];
-                this.selectorSquare.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, true);
-                this.selectorSquare.position.copyFromFloats(0, 0, this.position.z);
-            }
-            this.selectorSquare.isVisible = true;
+            /*
+            this.editor.machine.parts.forEach(part => {
+                if (
+                    part.i <= maxIJK.x && part.i >= minIJK.x &&
+                    part.j <= maxIJK.y && part.j >= minIJK.y &&
+                    part.k <= maxIJK.z && part.k >= minIJK.z
+                ) {
+                    part.partVisibilityMode = PartVisibilityMode.Default;
+                }
+                else {
+                    part.partVisibilityMode = PartVisibilityMode.Ghost;
+                }
+            })
+            */
+            this._lastSelectedObjectsCount = this.editor.selectedObjects.length;
+            this._lastSelectedObject = this.editor.selectedObject;
+            this._lastPosition.copyFrom(this.position);
+            this._lastCamDir.copyFrom(camDir);
         }
     }
 }
