@@ -150,35 +150,35 @@ class MachineEditor {
 
     private _majDown: boolean = false;
     private _ctrlDown: boolean = false;
-    private _selectedObjects: (MachinePart | Ball)[] = [];
+    public selectedObjects: (MachinePart | Ball)[] = [];
     public get selectedObjectsCount(): number {
-        return this._selectedObjects.length;
+        return this.selectedObjects.length;
     }
     public get selectedObject(): MachinePart | Ball {
-        return this._selectedObjects[0];
+        return this.selectedObjects[0];
     }
     public setSelectedObject(s: MachinePart | Ball): void {
-        if (this._selectedObjects) {
-            this._selectedObjects.forEach(obj => {
+        if (this.selectedObjects) {
+            this.selectedObjects.forEach(obj => {
                 obj.unselect();
             })
         }
 
         if (s) {
-            this._selectedObjects = [s];
+            this.selectedObjects = [s];
             if (this.game.cameraMode === CameraMode.Selected) {
                 this._onFocus();
             }
         }
         else {
-            this._selectedObjects = [];
+            this.selectedObjects = [];
         }
 
-        if (this._selectedObjects[0]) {
+        if (this.selectedObjects[0]) {
             this.grid.setIsVisible(true);
-            this.grid.position.copyFrom(this._selectedObjects[0].position);
-            this._selectedObjects[0].select();
-            this.machinePartEditorMenu.currentObject = this._selectedObjects[0];
+            this.grid.position.copyFrom(this.selectedObjects[0].position);
+            this.selectedObjects[0].select();
+            this.machinePartEditorMenu.currentObject = this.selectedObjects[0];
         }
         else {
             this.grid.setIsVisible(false);
@@ -189,9 +189,9 @@ class MachineEditor {
     public addSelectedObjects(...objects: (MachinePart | Ball)[]): void {
         for (let i = 0; i < objects.length; i++) {
             let object = objects[i];
-            let index = this._selectedObjects.indexOf(object);
+            let index = this.selectedObjects.indexOf(object);
             if (index === - 1) {
-                this._selectedObjects.push(object);
+                this.selectedObjects.push(object);
                 object.select();
                 if (this.game.cameraMode === CameraMode.Selected) {
                     this._onFocus();
@@ -630,7 +630,7 @@ class MachineEditor {
             this.hoveredObject = undefined;
         }
 
-        this.grid.updateAxis();
+        this.grid.update();
     }
 
     private _pointerDownX: number = 0;
@@ -1061,7 +1061,7 @@ class MachineEditor {
                     else if (this.selectedObjectsCount > 1) {
                         let encloseStart: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, - Infinity, - Infinity);
                         let encloseEnd: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, Infinity, Infinity);
-                        this._selectedObjects.forEach(obj => {
+                        this.selectedObjects.forEach(obj => {
                             if (obj instanceof MachinePart) {
                                 encloseStart.x = Math.min(encloseStart.x, obj.position.x + obj.encloseStart.x);
                                 encloseStart.y = Math.max(encloseStart.y, obj.position.y + obj.encloseStart.y);
@@ -1281,7 +1281,7 @@ class MachineEditor {
     }
 
     private _onDelete = async () => {
-        this._selectedObjects.forEach(obj => {
+        this.selectedObjects.forEach(obj => {
             obj.dispose();
         })
         this.setSelectedObject(undefined);
@@ -1377,8 +1377,8 @@ class MachineEditor {
     }
 
     private _onIPlus = async () => {
-        for (let i = 0; i < this._selectedObjects.length; i++) {
-            let selectedTrack = this._selectedObjects[i];
+        for (let i = 0; i < this.selectedObjects.length; i++) {
+            let selectedTrack = this.selectedObjects[i];
             if (selectedTrack instanceof MachinePart) {
                 selectedTrack.setI(selectedTrack.i + 1);
                 selectedTrack.recomputeAbsolutePath();
@@ -1398,8 +1398,8 @@ class MachineEditor {
     }
 
     private _onIMinus = async () => {
-        for (let i = 0; i < this._selectedObjects.length; i++) {
-            let selectedTrack = this._selectedObjects[i];
+        for (let i = 0; i < this.selectedObjects.length; i++) {
+            let selectedTrack = this.selectedObjects[i];
             if (selectedTrack instanceof MachinePart) {
                 selectedTrack.setI(selectedTrack.i - 1);
                 selectedTrack.recomputeAbsolutePath();
@@ -1419,8 +1419,8 @@ class MachineEditor {
     }
     
     private _onJPlus = async () => {
-        for (let i = 0; i < this._selectedObjects.length; i++) {
-            let selectedTrack = this._selectedObjects[i];
+        for (let i = 0; i < this.selectedObjects.length; i++) {
+            let selectedTrack = this.selectedObjects[i];
             if (selectedTrack instanceof MachinePart) {
                 selectedTrack.setJ(selectedTrack.j + 1);
                 selectedTrack.recomputeAbsolutePath();
@@ -1440,8 +1440,8 @@ class MachineEditor {
     }
 
     private _onJMinus = async () => {
-        for (let i = 0; i < this._selectedObjects.length; i++) {
-            let selectedTrack = this._selectedObjects[i];
+        for (let i = 0; i < this.selectedObjects.length; i++) {
+            let selectedTrack = this.selectedObjects[i];
             if (selectedTrack instanceof MachinePart) {
                 selectedTrack.setJ(selectedTrack.j - 1);
                 selectedTrack.recomputeAbsolutePath();
@@ -1462,8 +1462,8 @@ class MachineEditor {
 
     private _onKPlus = async () => {
         if (this.selectedObject instanceof MachinePart) {
-            for (let i = 0; i < this._selectedObjects.length; i++) {
-                let selectedTrack = this._selectedObjects[i];
+            for (let i = 0; i < this.selectedObjects.length; i++) {
+                let selectedTrack = this.selectedObjects[i];
                 if (selectedTrack instanceof MachinePart) {
                     selectedTrack.setK(selectedTrack.k + 1);
                     selectedTrack.recomputeAbsolutePath();
@@ -1493,8 +1493,8 @@ class MachineEditor {
 
     private _onKMinus = async () => {
         if (this.selectedObject instanceof MachinePart) {
-            for (let i = 0; i < this._selectedObjects.length; i++) {
-                let selectedTrack = this._selectedObjects[i];
+            for (let i = 0; i < this.selectedObjects.length; i++) {
+                let selectedTrack = this.selectedObjects[i];
                 if (selectedTrack instanceof MachinePart) {
                     selectedTrack.setK(selectedTrack.k - 1);
                     selectedTrack.recomputeAbsolutePath();
@@ -1561,7 +1561,7 @@ class MachineEditor {
 
     public _onFocus = () => {
         if (this.selectedObjectsCount > 0) {
-            this.game.focusMachineParts(false, ...this._selectedObjects as MachinePart[]);
+            this.game.focusMachineParts(false, ...this.selectedObjects as MachinePart[]);
         }
     }
 }

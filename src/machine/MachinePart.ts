@@ -205,7 +205,7 @@ class MachinePart extends BABYLON.Mesh {
 
     public select(): void {
         this.selectorMesh.visibility = 0.2;
-        this.encloseMesh.visibility = 0.1;
+        //this.encloseMesh.visibility = 0.1;
     }
 
     public unselect(): void {
