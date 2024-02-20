@@ -663,12 +663,24 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    if (mesh instanceof BallGhost) {
+                    if (mesh instanceof MachinePartSelectorMesh && mesh.part === this.selectedObject) {
                         return true;
                     }
                     return false;
                 }
             )
+            if (!pick.hit) {
+                pick = this.game.scene.pick(
+                    this.game.scene.pointerX,
+                    this.game.scene.pointerY,
+                    (mesh) => {
+                        if (mesh instanceof BallGhost) {
+                            return true;
+                        }
+                        return false;
+                    }
+                )
+            }
             if (!pick.hit) {
                 pick = this.game.scene.pick(
                     this.game.scene.pointerX,

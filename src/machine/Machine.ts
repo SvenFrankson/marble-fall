@@ -113,7 +113,7 @@ class Machine {
         this.playing = false;
     }
 
-    public margin: number = 0.02;
+    public margin: number = 0.05;
     public baseMeshMinX: number = - this.margin;
     public baseMeshMaxX: number = this.margin;
     public baseMeshMinY: number = - this.margin;

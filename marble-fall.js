@@ -1846,7 +1846,7 @@ class Machine {
         this.instantiated = false;
         this.playing = false;
         this.onStopCallbacks = new Nabu.UniqueList();
-        this.margin = 0.02;
+        this.margin = 0.05;
         this.baseMeshMinX = -this.margin;
         this.baseMeshMaxX = this.margin;
         this.baseMeshMinY = -this.margin;
@@ -3336,11 +3336,19 @@ class MachineEditor {
             }
             if (this.selectedObject) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    if (mesh instanceof BallGhost) {
+                    if (mesh instanceof MachinePartSelectorMesh && mesh.part === this.selectedObject) {
                         return true;
                     }
                     return false;
                 });
+                if (!pick.hit) {
+                    pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                        if (mesh instanceof BallGhost) {
+                            return true;
+                        }
+                        return false;
+                    });
+                }
                 if (!pick.hit) {
                     pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                         if (mesh instanceof MachinePartSelectorMesh) {
