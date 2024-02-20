@@ -734,6 +734,59 @@ var aerial = {
         { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
     ],
 };
+var xxlStressTest = {
+    balls: [
+        { x: -0.9259999618530274, y: -0.36149999833106994, z: -0.30000001192092896 },
+        { x: -0.9033177859800485, y: -0.2844532765842998, z: -0.30000001192092896 },
+        { x: -0.9028633319777063, y: -0.20428946195362765, z: -0.30000001192092907 },
+        { x: -0.9026054852020674, y: -0.12571597012172503, z: -0.300000011920929 },
+        { x: -0.9038946108579824, y: -0.04749045526590358, z: -0.30000001192092896 },
+        { x: -0.9029203213898612, y: 0.030670587959320664, z: -0.3000000119209289 },
+        { x: 0.003999999664723874, y: -0.36149999833106994, z: -0.05999999865889549 },
+        { x: 0.003999999664723874, y: -0.28263476824760436, z: -0.05999999865889549 },
+        { x: 0.003999999664723874, y: -0.20376956796646117, z: -0.05999999865889549 },
+        { x: 0.003999999664723874, y: -0.1249043527841568, z: -0.05999999865889549 },
+        { x: 0.003999999664723874, y: -0.046039137601852416, z: -0.05999999865889549 },
+        { x: 0.003999999664723874, y: 0.03282607012987137, z: -0.05999999865889549 },
+    ],
+    parts: [
+        { name: "elevator-15", i: 0, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "elevator-15", i: -6, j: -3, k: 5, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.3.2", i: -3, j: 0, k: 1, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.5", i: -4, j: 2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.6.1", i: -2, j: -2, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "split", i: -4, j: 4, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.4", i: -5, j: -2, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.3", i: -6, j: -1, k: 2, mirrorX: true },
+        { name: "uturn-1.3", i: -5, j: 0, k: 2, mirrorX: false, mirrorZ: true },
+        { name: "ramp-2.3.1", i: -7, j: 1, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.3", i: -8, j: 4, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.2.1", i: -7, j: 2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.4", i: -6, j: 2, k: 1, mirrorX: true, mirrorZ: true },
+        { name: "uturn-0.2", i: -6, j: 4, k: 2, mirrorX: true },
+        { name: "ramp-1.0.1", i: -5, j: 4, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.2", i: -4, j: 3, k: 1 },
+        { name: "ramp-1.0.1", i: -5, j: 4, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: 0, j: 7, k: 3 },
+        { name: "wave-3.1.1", i: -3, j: 6, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "wave-3.1.1", i: -3, j: 7, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.6.1", i: -6, j: 6, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.5.1", i: -7, j: 8, k: 3, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.2", i: -1, j: 11, k: 4 },
+        { name: "ramp-4.1.1", i: -5, j: 11, k: 5, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: -4, j: 8, k: 3, mirrorX: true },
+        { name: "wave-3.1.1", i: -3, j: 8, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.5", i: -9, j: 11, k: 3, mirrorX: true, mirrorZ: false },
+        { name: "uturn-1.3", i: -7, j: 10, k: 3, mirrorX: false, mirrorZ: true },
+        { name: "uturn-1.3", i: -8, j: 9, k: 3, mirrorX: true },
+        { name: "ramp-2.1.2", i: -7, j: 9, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "wave-4.1.1", i: -5, j: 10, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.4", i: 0, j: 9, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.2", i: -6, j: 10, k: 0, mirrorX: true, mirrorZ: true },
+        { name: "snake-5.1.2", i: -5, j: 9, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "snake-5.1.2", i: -5, j: 11, k: 0, mirrorX: false, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -866,7 +919,6 @@ class MachineEditor {
         this.showDisplacers = true;
         this.handles = [];
         this.smallHandleSize = 0.02;
-        this._currentLayer = 0;
         this._selectedItem = "";
         this._dragOffset = BABYLON.Vector3.Zero();
         this._majDown = false;
@@ -946,9 +998,11 @@ class MachineEditor {
                     if (this.draggedObject instanceof MachinePart) {
                         let i = Math.round(point.x / tileWidth);
                         let j = Math.floor((-point.y + 0.25 * tileHeight) / tileHeight);
-                        if (i != this.draggedObject.i || j != this.draggedObject.j) {
+                        let k = Math.round(-point.z / tileDepth);
+                        if (i != this.draggedObject.i || j != this.draggedObject.j || k != this.draggedObject.k) {
                             this.draggedObject.setI(i);
                             this.draggedObject.setJ(j);
+                            this.draggedObject.setK(k);
                             this.draggedObject.setIsVisible(true);
                             this.updateFloatingElements();
                         }
@@ -1473,36 +1527,11 @@ class MachineEditor {
         this.container = document.getElementById("machine-editor-objects");
         this.itemContainer = this.container.querySelector("#machine-editor-item-container");
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
-        this.layerMesh.isVisible = false;
+        this.layerMesh.material = this.game.ghostMaterial;
         this.machinePartEditorMenu = new MachinePartEditorMenu(this);
     }
     get machine() {
         return this.game.machine;
-    }
-    get currentLayer() {
-        return this._currentLayer;
-    }
-    set currentLayer(v) {
-        v = Math.round(v);
-        if (v >= 0) {
-            this._currentLayer = v;
-            this.layerMesh.position.z = -this._currentLayer * tileDepth;
-        }
-    }
-    showCurrentLayer() {
-        this.machine.parts.forEach(part => {
-            if (part.k === this.currentLayer) {
-                part.partVisibilityMode = PartVisibilityMode.Default;
-            }
-            else {
-                part.partVisibilityMode = PartVisibilityMode.Ghost;
-            }
-        });
-    }
-    hideCurrentLayer() {
-        this.machine.parts.forEach(part => {
-            part.partVisibilityMode = PartVisibilityMode.Default;
-        });
     }
     get hoveredObject() {
         return this._hoveredObject;
@@ -1541,13 +1570,13 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
-                this.currentLayer = this._draggedObject.k;
+                this.layerMesh.position.copyFrom(this._draggedObject.position);
                 this.game.camera.detachControl();
-                this.showCurrentLayer();
+                //this.showCurrentLayer();
             }
             else {
                 this.game.camera.attachControl();
-                this.hideCurrentLayer();
+                //this.hideCurrentLayer();
             }
         }
     }
@@ -1573,7 +1602,7 @@ class MachineEditor {
             this._selectedObjects = [];
         }
         if (this._selectedObjects[0]) {
-            this.currentLayer = this._selectedObjects[0].k;
+            this.layerMesh.position.copyFrom(this._selectedObjects[0].position);
             this._selectedObjects[0].select();
             this.machinePartEditorMenu.currentObject = this._selectedObjects[0];
         }
@@ -1651,7 +1680,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10, this.currentLayer);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, -10, -10, 0);
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
@@ -1956,6 +1985,9 @@ class MachineEditor {
         else {
             this.hoveredObject = undefined;
         }
+        let camDir = this.game.camera.getDirection(BABYLON.Axis.Z);
+        let closestAxis = Mummu.GetClosestAxis(camDir);
+        this.layerMesh.rotationQuaternion = Mummu.QuaternionFromZYAxis(closestAxis, BABYLON.Vector3.One());
     }
     async editTrackInPlace(track, props) {
         if (!props) {
@@ -2206,7 +2238,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = false;
+        this.DEBUG_MODE = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -2448,7 +2480,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, xxlStressTest];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -2705,6 +2737,7 @@ class Game {
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
+        this.room.ground.position.y = 100;
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
@@ -6453,10 +6486,10 @@ class Toolbar {
             let rect = this.layerButton.getBoundingClientRect();
             let centerY = rect.top + rect.height * 0.5;
             if (e.y > centerY) {
-                this.game.machineEditor.currentLayer++;
+                //this.game.machineEditor.currentLayer++;
             }
             else {
-                this.game.machineEditor.currentLayer--;
+                //this.game.machineEditor.currentLayer--;
             }
         };
         this.onBack = () => {

@@ -60,6 +60,7 @@ class MachineEditor {
 
     public handleSize: number;
 
+    /*
     private _currentLayer: number = 0;
     public get currentLayer(): number {
         return this._currentLayer;
@@ -71,7 +72,10 @@ class MachineEditor {
             this.layerMesh.position.z = - this._currentLayer * tileDepth;
         }
     }
+    */
+    
     public layerMesh: BABYLON.Mesh;
+    /*
     public showCurrentLayer(): void {
         this.machine.parts.forEach(part => {
             if (part.k === this.currentLayer) {
@@ -87,6 +91,7 @@ class MachineEditor {
             part.partVisibilityMode = PartVisibilityMode.Default;
         })
     }
+    */
 
     private _hoveredObject: Arrow;
     public get hoveredObject(): Arrow {
@@ -131,13 +136,13 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
-                this.currentLayer = this._draggedObject.k;
+                this.layerMesh.position.copyFrom(this._draggedObject.position);
                 this.game.camera.detachControl();
-                this.showCurrentLayer();
+                //this.showCurrentLayer();
             }
             else {
                 this.game.camera.attachControl();
-                this.hideCurrentLayer();
+                //this.hideCurrentLayer();
             }
         }
     }
@@ -169,7 +174,7 @@ class MachineEditor {
         }
 
         if (this._selectedObjects[0]) {
-            this.currentLayer = this._selectedObjects[0].k;
+            this.layerMesh.position.copyFrom(this._selectedObjects[0].position);
             this._selectedObjects[0].select();
             this.machinePartEditorMenu.currentObject = this._selectedObjects[0];
         }
@@ -203,7 +208,7 @@ class MachineEditor {
         this.container = document.getElementById("machine-editor-objects") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
         this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
-        this.layerMesh.isVisible = false;
+        this.layerMesh.material = this.game.ghostMaterial;
         this.machinePartEditorMenu = new MachinePartEditorMenu(this);
     }
 
@@ -260,7 +265,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10, this.currentLayer);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, - 10, - 10, 0);
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
@@ -622,6 +627,10 @@ class MachineEditor {
         else {
             this.hoveredObject = undefined;
         }
+
+        let camDir = this.game.camera.getDirection(BABYLON.Axis.Z);
+        let closestAxis = Mummu.GetClosestAxis(camDir);
+        this.layerMesh.rotationQuaternion = Mummu.QuaternionFromZYAxis(closestAxis, BABYLON.Vector3.One());
     }
 
     private _pointerDownX: number = 0;
@@ -718,9 +727,11 @@ class MachineEditor {
                 if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);
                     let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
-                    if (i != this.draggedObject.i || j != this.draggedObject.j) {
+                    let k = Math.round(- point.z / tileDepth);
+                    if (i != this.draggedObject.i || j != this.draggedObject.j || k != this.draggedObject.k) {
                         this.draggedObject.setI(i);
                         this.draggedObject.setJ(j);
+                        this.draggedObject.setK(k);
                         this.draggedObject.setIsVisible(true);
                         this.updateFloatingElements();
                     }

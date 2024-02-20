@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = false;
+    public DEBUG_MODE: boolean = true;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -346,7 +346,7 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
 
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, xxlStressTest];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -633,6 +633,7 @@ class Game {
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
+        this.room.ground.position.y = 100;
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
 
         return new Promise<void>(resolve => {
