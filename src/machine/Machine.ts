@@ -24,6 +24,7 @@ class Machine {
     public baseWall: BABYLON.Mesh;
     public baseFrame: BABYLON.Mesh;
     public baseLogo: BABYLON.Mesh;
+    public baseAxis: BABYLON.Mesh;
     public parts: MachinePart[] = [];
     public balls: Ball[] = [];
 
@@ -276,6 +277,7 @@ class Machine {
                 p3: new BABYLON.Vector3(w05, 0, - d05 + logoH),
                 p4: new BABYLON.Vector3(w05 - logoW, 0, - d05 + logoH)
             })
+            Mummu.TranslateVertexDataInPlace(corner1Data, new BABYLON.Vector3(this.margin - 0.02, 0, -this.margin + 0.02))
             
             let corner2Data = Mummu.CreateQuadVertexData({
                 p1: new BABYLON.Vector3(- w05 + logoW, 0, d05),
@@ -283,13 +285,40 @@ class Machine {
                 p3: new BABYLON.Vector3(- w05, 0, d05 - logoH),
                 p4: new BABYLON.Vector3(- w05 + logoW, 0, d05 - logoH)
             })
+            Mummu.TranslateVertexDataInPlace(corner2Data, new BABYLON.Vector3(- this.margin + 0.02, 0, this.margin - 0.02))
 
             Mummu.MergeVertexDatas(corner1Data, corner2Data).applyToMesh(this.baseLogo);
-
             this.baseLogo.material = this.game.logoMaterial;
+
+            this.regenerateBaseAxis();
         }
 
         this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
+    }
+
+    public regenerateBaseAxis(): void {
+        if (this.baseAxis) {
+            this.baseAxis.dispose();
+        }
+        if (this.game.mode === GameMode.CreateMode) {
+            let w = this.baseMeshMaxX - this.baseMeshMinX;
+            let d = this.baseMeshMaxZ - this.baseMeshMinZ;
+            let w05 = w * 0.5;
+            let d05 = d * 0.5;
+            let s = Math.min(w05, d05) * 0.9;
+            this.baseAxis = new BABYLON.Mesh("base-logo");
+            let axisSquareData = Mummu.CreateQuadVertexData({
+                p1: new BABYLON.Vector3(- s, 0, - s),
+                p2: new BABYLON.Vector3(s, 0, - s),
+                p3: new BABYLON.Vector3(s, 0, s),
+                p4: new BABYLON.Vector3(- s, 0, s)
+            })
+            axisSquareData.applyToMesh(this.baseAxis);
+            this.baseAxis.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseAxis.position.y = this.baseMeshMinY + 0.0001;
+            this.baseAxis.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+            this.baseAxis.material = this.game.baseAxisMaterial;
+        }
     }
 
     public getBankAt(pos: BABYLON.Vector3, exclude: MachinePart): { isEnd: boolean, bank: number, part: MachinePart } {

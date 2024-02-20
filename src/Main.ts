@@ -82,6 +82,7 @@ class Game {
     public woodMaterial: BABYLON.StandardMaterial;
     public velvetMaterial: BABYLON.StandardMaterial;
     public logoMaterial: BABYLON.StandardMaterial;
+    public baseAxisMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
     public whiteMaterial: BABYLON.StandardMaterial;
     public deepBlackMaterial: BABYLON.StandardMaterial;
@@ -196,6 +197,13 @@ class Game {
         this.logoMaterial.useAlphaFromDiffuseTexture = true;
         this.logoMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.logoMaterial.alpha = 0.3;
+        
+        this.baseAxisMaterial = new BABYLON.StandardMaterial("logo-material");
+        this.baseAxisMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.baseAxisMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/axis.png");
+        this.baseAxisMaterial.diffuseTexture.hasAlpha = true;
+        this.baseAxisMaterial.useAlphaFromDiffuseTexture = true;
+        this.baseAxisMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
@@ -564,6 +572,7 @@ class Game {
         }
         this.topbar.resize();
         this.toolbar.resize();
+        this.machine.regenerateBaseAxis();
     }
 
     public mode: GameMode;

@@ -1062,6 +1062,12 @@ class Game {
         this.logoMaterial.useAlphaFromDiffuseTexture = true;
         this.logoMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.logoMaterial.alpha = 0.3;
+        this.baseAxisMaterial = new BABYLON.StandardMaterial("logo-material");
+        this.baseAxisMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.baseAxisMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/axis.png");
+        this.baseAxisMaterial.diffuseTexture.hasAlpha = true;
+        this.baseAxisMaterial.useAlphaFromDiffuseTexture = true;
+        this.baseAxisMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
         //this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
@@ -1385,6 +1391,7 @@ class Game {
         }
         this.topbar.resize();
         this.toolbar.resize();
+        this.machine.regenerateBaseAxis();
     }
     async makeScreenshot(objectName) {
         this.machine.baseWall.isVisible = false;
@@ -2056,16 +2063,43 @@ class Machine {
                 p3: new BABYLON.Vector3(w05, 0, -d05 + logoH),
                 p4: new BABYLON.Vector3(w05 - logoW, 0, -d05 + logoH)
             });
+            Mummu.TranslateVertexDataInPlace(corner1Data, new BABYLON.Vector3(this.margin - 0.02, 0, -this.margin + 0.02));
             let corner2Data = Mummu.CreateQuadVertexData({
                 p1: new BABYLON.Vector3(-w05 + logoW, 0, d05),
                 p2: new BABYLON.Vector3(-w05, 0, d05),
                 p3: new BABYLON.Vector3(-w05, 0, d05 - logoH),
                 p4: new BABYLON.Vector3(-w05 + logoW, 0, d05 - logoH)
             });
+            Mummu.TranslateVertexDataInPlace(corner2Data, new BABYLON.Vector3(-this.margin + 0.02, 0, this.margin - 0.02));
             Mummu.MergeVertexDatas(corner1Data, corner2Data).applyToMesh(this.baseLogo);
             this.baseLogo.material = this.game.logoMaterial;
+            this.regenerateBaseAxis();
         }
         this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
+    }
+    regenerateBaseAxis() {
+        if (this.baseAxis) {
+            this.baseAxis.dispose();
+        }
+        if (this.game.mode === GameMode.CreateMode) {
+            let w = this.baseMeshMaxX - this.baseMeshMinX;
+            let d = this.baseMeshMaxZ - this.baseMeshMinZ;
+            let w05 = w * 0.5;
+            let d05 = d * 0.5;
+            let s = Math.min(w05, d05) * 0.9;
+            this.baseAxis = new BABYLON.Mesh("base-logo");
+            let axisSquareData = Mummu.CreateQuadVertexData({
+                p1: new BABYLON.Vector3(-s, 0, -s),
+                p2: new BABYLON.Vector3(s, 0, -s),
+                p3: new BABYLON.Vector3(s, 0, s),
+                p4: new BABYLON.Vector3(-s, 0, s)
+            });
+            axisSquareData.applyToMesh(this.baseAxis);
+            this.baseAxis.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
+            this.baseAxis.position.y = this.baseMeshMinY + 0.0001;
+            this.baseAxis.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
+            this.baseAxis.material = this.game.baseAxisMaterial;
+        }
     }
     getBankAt(pos, exclude) {
         for (let i = 0; i < this.parts.length; i++) {
