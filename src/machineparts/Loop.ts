@@ -19,6 +19,7 @@ class Loop extends MachinePart {
         let template = new MachinePartTemplate();
 
         template.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
+        template.angleSmoothSteps = 20;
 
         template.w = w;
         template.h = 4;

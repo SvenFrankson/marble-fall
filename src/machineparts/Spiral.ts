@@ -15,6 +15,7 @@ class Spiral extends MachinePart {
         let template = new MachinePartTemplate();
 
         template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
+        template.angleSmoothSteps = 20;
 
         template.w = w;
         template.h = h;

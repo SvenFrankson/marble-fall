@@ -810,6 +810,19 @@ var xxlStressTest = {
         { name: "snake-5.1.2", i: -5, j: 11, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
+var testBanks = {
+    balls: [],
+    parts: [
+        { name: "elevator-4", i: 2, j: -5, k: 0, mirrorZ: false },
+        { name: "ramp-1.1.3", i: 0, j: -3, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.2", i: 0, j: -6, k: 0 },
+        { name: "wave-2.1.1", i: 1, j: -10, k: 0 },
+        { name: "snake-2.1.1", i: -2, j: -11, k: 0 },
+        { name: "uturnsharp", i: 1, j: -9, k: 2 },
+        { name: "loop-1.4.1", i: 0, j: -17, k: 0 },
+        { name: "spiral-1.2", i: -2, j: -6, k: 0 },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2957,7 +2970,7 @@ class TrackTemplate {
                 let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
                 let r = (rPrev + rNext) * 0.5;
                 maxR = Math.max(r, maxR);
-                let f = 0.1 / r;
+                let f = 0.06 / r;
                 f = Math.max(Math.min(f, 1), 0);
                 this.angles[i] = Math.PI / 4 * sign * f;
             }
@@ -2968,7 +2981,7 @@ class TrackTemplate {
         this.angles.push(0);
         let tmpAngles = [...this.angles];
         let f = 1;
-        for (let n = 0; n < this.partTemplate.angleSmoothFactor * N; n++) {
+        for (let n = 0; n < this.partTemplate.angleSmoothSteps; n++) {
             for (let i = 0; i < N; i++) {
                 let aPrev = tmpAngles[i - 1];
                 let a = tmpAngles[i];
@@ -3018,7 +3031,7 @@ class MachinePartTemplate {
         this.n = 1;
         this.mirrorX = false;
         this.mirrorZ = false;
-        this.angleSmoothFactor = 2;
+        this.angleSmoothSteps = 20;
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
@@ -3235,7 +3248,7 @@ class Track {
         angles[0] = startBank;
         angles[angles.length - 1] = endBank;
         let f = 1;
-        for (let n = 0; n < this.template.partTemplate.angleSmoothFactor * N; n++) {
+        for (let n = 0; n < this.template.partTemplate.angleSmoothSteps; n++) {
             for (let i = 1; i < N - 1; i++) {
                 let aPrev = angles[i - 1];
                 let a = angles[i];
@@ -3432,7 +3445,7 @@ class MachineEditor {
                     }
                     if (pickedObject === this.selectedObject) {
                         pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                            if (mesh === this.grid) {
+                            if (mesh === this.grid.opaquePlane) {
                                 return true;
                             }
                         });
@@ -3455,19 +3468,11 @@ class MachineEditor {
         this.pointerMove = (event) => {
             if (this.draggedObject) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    /*
-                    // Not working and break drag.
-                    if (mesh instanceof MachinePartSelectorMesh) {
-                        if (mesh.part != this.draggedObject) {
-                            return true;
-                        }
-                    }
-                    */
-                    if (mesh === this.grid) {
+                    if (mesh === this.grid.opaquePlane) {
                         return true;
                     }
                 });
-                if (pick.hit && pick.pickedMesh === this.grid) {
+                if (pick.hit && pick.pickedMesh === this.grid.opaquePlane) {
                     let point = pick.pickedPoint.add(this._dragOffset);
                     if (this.draggedObject instanceof MachinePart) {
                         let i = Math.round(point.x / tileWidth);
@@ -3531,7 +3536,7 @@ class MachineEditor {
                 if (!this.draggedObject && mesh instanceof BallGhost) {
                     return true;
                 }
-                else if (this.draggedObject && mesh === this.grid) {
+                else if (this.draggedObject && mesh === this.grid.opaquePlane) {
                     return true;
                 }
                 return false;
@@ -3541,7 +3546,7 @@ class MachineEditor {
                     if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh) {
                         return true;
                     }
-                    else if (this.draggedObject && mesh === this.grid) {
+                    else if (this.draggedObject && mesh === this.grid.opaquePlane) {
                         return true;
                     }
                     return false;
@@ -5332,6 +5337,7 @@ class Loop extends MachinePart {
     static GenerateTemplate(w, d, n, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
         template.partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
+        template.angleSmoothSteps = 20;
         template.w = w;
         template.h = 4;
         template.d = d;
@@ -5526,8 +5532,8 @@ class UTurnSharp extends MachinePart {
     }
     static GenerateTemplate(mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
-        template.angleSmoothFactor = 0.1;
         template.partName = "uturnsharp";
+        template.angleSmoothSteps = 50;
         template.mirrorX = mirrorX,
             template.mirrorZ = mirrorZ;
         template.xMirrorable = true;
@@ -5564,7 +5570,7 @@ class Snake extends MachinePartWithOriginDestination {
     static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
         template.partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        template.angleSmoothFactor = 0.5;
+        template.angleSmoothSteps = 15;
         template.w = w;
         template.h = h;
         template.d = d;
@@ -5584,13 +5590,13 @@ class Snake extends MachinePartWithOriginDestination {
         let end = new BABYLON.Vector3(tileWidth * (template.w - 0.5), -tileHeight * template.h, -tileDepth * (template.d - 1));
         let tanVector = dir.scale(BABYLON.Vector3.Distance(start, end));
         template.trackTemplates[0].trackpoints = [new TrackPoint(template.trackTemplates[0], start, dir, undefined, undefined, 1)];
-        for (let i = 1; i < 2 * (w + 1); i++) {
-            let p1 = BABYLON.Vector3.Hermite(start, tanVector, end, tanVector, i / (2 * (w + 1)));
+        for (let i = 1; i < (w + 1); i++) {
+            let p1 = BABYLON.Vector3.Hermite(start, tanVector, end, tanVector, i / ((w + 1)));
             if (i % 2 === 1) {
-                p1.z -= 0.015;
+                p1.z -= 0.03;
             }
             else {
-                p1.z += 0.015;
+                p1.z += 0.03;
             }
             template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], p1));
         }
@@ -5637,6 +5643,7 @@ class Spiral extends MachinePart {
     static GenerateTemplate(w, h, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
         template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
+        template.angleSmoothSteps = 20;
         template.w = w;
         template.h = h;
         template.d = 3;
@@ -5882,6 +5889,7 @@ class UTurn extends MachinePart {
     static GenerateTemplate(h, d, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
         template.partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);
+        template.angleSmoothSteps = 50;
         template.w = Math.ceil(d / 3),
             template.h = h,
             template.d = d,

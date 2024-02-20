@@ -154,7 +154,7 @@ class TrackTemplate {
                 let r = (rPrev + rNext) * 0.5;
                 maxR = Math.max(r, maxR);
 
-                let f = 0.1 / r;
+                let f = 0.06 / r;
                 f = Math.max(Math.min(f, 1), 0);
                 this.angles[i] = Math.PI / 4 * sign * f;
             }
@@ -166,7 +166,7 @@ class TrackTemplate {
 
         let tmpAngles = [...this.angles];
         let f = 1;
-        for (let n = 0; n < this.partTemplate.angleSmoothFactor * N; n++) {
+        for (let n = 0; n < this.partTemplate.angleSmoothSteps; n++) {
             for (let i = 0; i < N; i++) {
                 let aPrev = tmpAngles[i - 1];
                 let a = tmpAngles[i];
@@ -225,7 +225,7 @@ class MachinePartTemplate {
     public n: number = 1;
     public mirrorX: boolean = false;
     public mirrorZ: boolean = false;
-    public angleSmoothFactor: number = 2;
+    public angleSmoothSteps: number = 20;
 
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;

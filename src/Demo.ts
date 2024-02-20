@@ -512,3 +512,17 @@ var xxlStressTest = {
         { name: "snake-5.1.2", i: -5, j: 11, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
+
+var testBanks = {
+    balls: [],
+    parts: [
+        { name: "elevator-4", i: 2, j: -5, k: 0, mirrorZ: false },
+        { name: "ramp-1.1.3", i: 0, j: -3, k: 0, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.2", i: 0, j: -6, k: 0 },
+        { name: "wave-2.1.1", i: 1, j: -10, k: 0 },
+        { name: "snake-2.1.1", i: -2, j: -11, k: 0 },
+        { name: "uturnsharp", i: 1, j: -9, k: 2 },
+        { name: "loop-1.4.1", i: 0, j: -17, k: 0 },
+        { name: "spiral-1.2", i: -2, j: -6, k: 0 },
+    ],
+};

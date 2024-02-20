@@ -12,6 +12,7 @@ class UTurn extends MachinePart {
         let template = new MachinePartTemplate();
 
         template.partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);
+        template.angleSmoothSteps = 50;
         
         template.w = Math.ceil(d / 3),
         template.h = h,

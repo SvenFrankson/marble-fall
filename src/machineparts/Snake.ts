@@ -12,7 +12,7 @@ class Snake extends MachinePartWithOriginDestination {
         let template = new MachinePartTemplate();
 
         template.partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        template.angleSmoothFactor = 0.5;
+        template.angleSmoothSteps = 15;
 
         template.w = w;
         template.h = h;
@@ -38,13 +38,13 @@ class Snake extends MachinePartWithOriginDestination {
         let tanVector = dir.scale(BABYLON.Vector3.Distance(start, end));
         
         template.trackTemplates[0].trackpoints = [new TrackPoint(template.trackTemplates[0], start, dir, undefined, undefined, 1)];
-        for (let i = 1; i < 2 * (w + 1); i++ ) {
-            let p1 = BABYLON.Vector3.Hermite(start, tanVector, end, tanVector, i / (2 * (w + 1)));
+        for (let i = 1; i < (w + 1); i++ ) {
+            let p1 = BABYLON.Vector3.Hermite(start, tanVector, end, tanVector, i / ((w + 1)));
             if (i % 2 === 1) {
-                p1.z -= 0.015;
+                p1.z -= 0.03;
             }
             else {
-                p1.z += 0.015;
+                p1.z += 0.03;
             }
             template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], p1));
         }

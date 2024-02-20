@@ -704,7 +704,7 @@ class MachineEditor {
                         this.game.scene.pointerX,
                         this.game.scene.pointerY,
                         (mesh) => {
-                            if (mesh === this.grid) {
+                            if (mesh === this.grid.opaquePlane) {
                                 return true;
                             }
                         }
@@ -732,21 +732,13 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    /*
-                    // Not working and break drag.
-                    if (mesh instanceof MachinePartSelectorMesh) {
-                        if (mesh.part != this.draggedObject) {
-                            return true;
-                        }
-                    }
-                    */
-                    if (mesh === this.grid) {
+                    if (mesh === this.grid.opaquePlane) {
                         return true;
                     }
                 }
             )
     
-            if (pick.hit && pick.pickedMesh === this.grid) {
+            if (pick.hit && pick.pickedMesh === this.grid.opaquePlane) {
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);
@@ -819,7 +811,7 @@ class MachineEditor {
                 if (!this.draggedObject && mesh instanceof BallGhost) {
                     return true;
                 }
-                else if (this.draggedObject && mesh === this.grid) {
+                else if (this.draggedObject && mesh === this.grid.opaquePlane) {
                     return true;
                 }
                 return false;
@@ -833,7 +825,7 @@ class MachineEditor {
                     if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh) {
                         return true;
                     }
-                    else if (this.draggedObject && mesh === this.grid) {
+                    else if (this.draggedObject && mesh === this.grid.opaquePlane) {
                         return true;
                     }
                     return false;

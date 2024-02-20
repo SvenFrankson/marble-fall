@@ -10,9 +10,9 @@ class UTurnSharp extends MachinePart {
 
     public static GenerateTemplate(mirrorX?: boolean, mirrorZ?: boolean): MachinePartTemplate {
         let template = new MachinePartTemplate();
-        template.angleSmoothFactor = 0.1;
 
         template.partName = "uturnsharp";
+        template.angleSmoothSteps = 50;
         
         template.mirrorX = mirrorX,
         template.mirrorZ = mirrorZ
