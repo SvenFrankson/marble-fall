@@ -66,6 +66,11 @@ class MachineEditorGrid extends BABYLON.Mesh {
             ]);
         }
         this.zGrid = BABYLON.MeshBuilder.CreateLineSystem("machine-editor-z-grid", { lines: zLines, colors: colors }, editor.game.scene);
+        
+        this.isVisible = false;
+        this.xGrid.isVisible = false;
+        this.yGrid.isVisible = false;
+        this.zGrid.isVisible = false;
     }
 
     public setIsVisible(v: boolean): void {

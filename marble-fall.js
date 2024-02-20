@@ -939,7 +939,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = true;
+        this.DEBUG_MODE = false;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -1072,11 +1072,11 @@ class Game {
         this.logoMaterial.alpha = 0.3;
         this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
         this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
-        this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-        this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-        this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
+        //this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
+        //this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
+        //this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
         this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+        //this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
         this.leatherMaterial = new BABYLON.StandardMaterial("leather-material");
         this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
         this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
@@ -1094,7 +1094,7 @@ class Game {
         this.skybox.layerMask = 0x10000000;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow.jpeg");
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow_low_res.jpeg");
         skyboxMaterial.diffuseTexture = skyTexture;
         skyboxMaterial.emissiveColor = BABYLON.Color3.White();
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -1155,10 +1155,6 @@ class Game {
         else {
             this.machine.deserialize(simpleLoop);
         }
-        //this.machine.deserialize(test);
-        await this.machine.generateBaseMesh();
-        await this.machine.instantiate();
-        await this.room.instantiate();
         let screenshotButton = document.querySelector("#toolbar-screenshot");
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
@@ -1181,6 +1177,9 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
+        await this.machine.generateBaseMesh();
+        await this.machine.instantiate();
+        await this.room.instantiate();
         let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, xxlStressTest];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
@@ -4702,6 +4701,10 @@ class MachineEditorGrid extends BABYLON.Mesh {
             ]);
         }
         this.zGrid = BABYLON.MeshBuilder.CreateLineSystem("machine-editor-z-grid", { lines: zLines, colors: colors }, editor.game.scene);
+        this.isVisible = false;
+        this.xGrid.isVisible = false;
+        this.yGrid.isVisible = false;
+        this.zGrid.isVisible = false;
     }
     setIsVisible(v) {
         this.isVisible = v;
