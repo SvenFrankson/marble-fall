@@ -3,6 +3,7 @@ interface IConfigurationData {
     handleSize?: number;
     graphicQ?: number;
     uiSize?: number;
+    gridOpacity?: number;
 }
 
 class Configuration {
@@ -67,6 +68,24 @@ class Configuration {
         }
     }
 
+    private _gridOpacity: number = 0.3;
+    public get gridOpacity() {
+        return this._gridOpacity;
+    }
+    public setGridOpacity(v: number, skipStorage?: boolean) {
+        if (v >= 0 && v <= 1) {
+            this._gridOpacity = v;
+
+            if (this.game.gridMaterial) {
+                this.game.gridMaterial.alpha = v;
+            }
+
+            if (!skipStorage) {
+                this.saveToLocalStorage();
+            }
+        }
+    }
+
     constructor(public game: Game) {
 
     }
@@ -85,7 +104,8 @@ class Configuration {
         return {
             handleSize: this.handleSize,
             graphicQ: this.graphicQ,
-            uiSize: this.uiSize
+            uiSize: this.uiSize,
+            gridOpacity: this.gridOpacity
         }
     }
 
@@ -101,6 +121,9 @@ class Configuration {
             if (!isFinite(data.uiSize)) {
                 data.uiSize = this.uiSize;
             }
+            if (!isFinite(data.gridOpacity)) {
+                data.gridOpacity = this.gridOpacity;
+            }
         }
         if (data) {
             if (isFinite(data.handleSize)) {
@@ -111,6 +134,9 @@ class Configuration {
             }
             if (isFinite(data.uiSize)) {
                 this.setUISize(data.uiSize, true);
+            }
+            if (isFinite(data.gridOpacity)) {
+                this.setGridOpacity(data.gridOpacity, true);
             }
         }
     }

@@ -203,6 +203,7 @@ class Configuration {
         this._handleSize = 1;
         this._graphicQ = 3;
         this._uiSize = 1.3;
+        this._gridOpacity = 0.3;
     }
     get handleSize() {
         return this._handleSize;
@@ -252,6 +253,20 @@ class Configuration {
             }
         }
     }
+    get gridOpacity() {
+        return this._gridOpacity;
+    }
+    setGridOpacity(v, skipStorage) {
+        if (v >= 0 && v <= 1) {
+            this._gridOpacity = v;
+            if (this.game.gridMaterial) {
+                this.game.gridMaterial.alpha = v;
+            }
+            if (!skipStorage) {
+                this.saveToLocalStorage();
+            }
+        }
+    }
     initialize() {
         let data = JSON.parse(localStorage.getItem("mrs-configuration"));
         this.deserialize(data);
@@ -264,7 +279,8 @@ class Configuration {
         return {
             handleSize: this.handleSize,
             graphicQ: this.graphicQ,
-            uiSize: this.uiSize
+            uiSize: this.uiSize,
+            gridOpacity: this.gridOpacity
         };
     }
     deserialize(data) {
@@ -279,6 +295,9 @@ class Configuration {
             if (!isFinite(data.uiSize)) {
                 data.uiSize = this.uiSize;
             }
+            if (!isFinite(data.gridOpacity)) {
+                data.gridOpacity = this.gridOpacity;
+            }
         }
         if (data) {
             if (isFinite(data.handleSize)) {
@@ -289,6 +308,9 @@ class Configuration {
             }
             if (isFinite(data.uiSize)) {
                 this.setUISize(data.uiSize, true);
+            }
+            if (isFinite(data.gridOpacity)) {
+                this.setGridOpacity(data.gridOpacity, true);
             }
         }
     }
@@ -1022,6 +1044,10 @@ class Game {
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.ghostMaterial.alpha = 0.3;
+        this.gridMaterial = new BABYLON.StandardMaterial("grid-material");
+        this.gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+        this.gridMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.gridMaterial.alpha = this.config.gridOpacity;
         this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
         this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
         this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -4036,7 +4062,6 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
-                this.grid.setIsVisible(true);
                 this.game.camera.detachControl();
                 //this.showCurrentLayer();
             }
@@ -4068,7 +4093,6 @@ class MachineEditor {
             this.selectedObjects = [];
         }
         if (this.selectedObjects[0]) {
-            this.grid.setIsVisible(true);
             if (!skipUpdateGridPosition) {
                 this.grid.position.copyFrom(this.selectedObjects[0].position);
             }
@@ -4076,7 +4100,6 @@ class MachineEditor {
             this.machinePartEditorMenu.currentObject = this.selectedObjects[0];
         }
         else {
-            this.grid.setIsVisible(false);
             this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();
@@ -4687,13 +4710,9 @@ class MachineEditorGrid extends BABYLON.Mesh {
         this._lastSelectedObjectsCount = 0;
         this._lastPosition = BABYLON.Vector3.Zero();
         this._lastCamDir = BABYLON.Vector3.One();
-        BABYLON.CreatePlaneVertexData({ size: 100 }).applyToMesh(this);
-        let gridMaterial = new BABYLON.StandardMaterial("grid-material");
-        gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-        gridMaterial.specularColor.copyFromFloats(0, 0, 0);
-        gridMaterial.alpha = 0.3;
-        this.material = gridMaterial;
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.opaquePlane = BABYLON.MeshBuilder.CreatePlane("machine-editor-opaque-grid", { size: 100 });
+        this.opaquePlane.material = this.editor.game.gridMaterial;
+        this.opaquePlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         let count = 20;
         let xLines = [];
         let color = new BABYLON.Color4(1, 1, 1, 0.2);
@@ -4741,13 +4760,10 @@ class MachineEditorGrid extends BABYLON.Mesh {
             ]);
         }
         this.zGrid = BABYLON.MeshBuilder.CreateLineSystem("machine-editor-z-grid", { lines: zLines, colors: colors }, editor.game.scene);
-        this.isVisible = false;
+        this.opaquePlane.isVisible = false;
         this.xGrid.isVisible = false;
         this.yGrid.isVisible = false;
         this.zGrid.isVisible = false;
-    }
-    setIsVisible(v) {
-        this.isVisible = v;
     }
     update() {
         let camDir = this.editor.game.camera.getDirection(BABYLON.Axis.Z);
@@ -4758,6 +4774,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
             this.xGrid.isVisible = false;
             this.yGrid.isVisible = false;
             this.zGrid.isVisible = false;
+            this.opaquePlane.isVisible = false;
             this.xGrid.position.copyFrom(this.position);
             this.yGrid.position.copyFrom(this.position);
             this.zGrid.position.copyFrom(this.position);
@@ -4766,6 +4783,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
             let worldEncloseStart = new BABYLON.Vector3(Infinity, -Infinity, -Infinity);
             let worldEncloseEnd = new BABYLON.Vector3(-Infinity, Infinity, Infinity);
             if (this.editor.selectedObjects.length > 0) {
+                this.opaquePlane.isVisible = true;
                 this.editor.selectedObjects.forEach(obj => {
                     if (obj instanceof MachinePart) {
                         worldEncloseStart.x = Math.min(worldEncloseStart.x, obj.position.x + obj.encloseStart.x);
@@ -4777,7 +4795,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                     }
                 });
                 let closestAxis = Mummu.GetClosestAxis(camDir);
-                Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.rotationQuaternion);
+                Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.opaquePlane.rotationQuaternion);
                 let m = 0.001;
                 if (closestAxis.x != 0) {
                     this.xGrid.isVisible = this.isVisible;
@@ -4791,6 +4809,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                             this.xGrid.position.x = worldEncloseStart.x;
                         }
                     }
+                    this.opaquePlane.position.copyFrom(this.xGrid.position);
                 }
                 if (closestAxis.y != 0) {
                     this.yGrid.isVisible = this.isVisible;
@@ -4804,6 +4823,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                             this.yGrid.position.y = worldEncloseEnd.y;
                         }
                     }
+                    this.opaquePlane.position.copyFrom(this.yGrid.position);
                 }
                 if (closestAxis.z != 0) {
                     this.zGrid.isVisible = this.isVisible;
@@ -4817,6 +4837,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                             this.zGrid.position.z = worldEncloseEnd.z;
                         }
                     }
+                    this.opaquePlane.position.copyFrom(this.zGrid.position);
                 }
             }
             /*
@@ -6618,6 +6639,18 @@ class OptionsPage {
         this.uiScaleFactorPlus.onclick = () => {
             this.game.config.setUISize(this.game.config.uiSize + 0.1);
             this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
+        };
+        this.gridOpacityMinus = document.getElementById("grid-opacity-minus");
+        this.gridOpacityMinus.onclick = () => {
+            this.game.config.setGridOpacity(this.game.config.gridOpacity - 0.05);
+            this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
+        };
+        this.gridOpacityValue = document.getElementById("grid-opacity-val");
+        this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
+        this.gridOpacityPlus = document.getElementById("grid-opacity-plus");
+        this.gridOpacityPlus.onclick = () => {
+            this.game.config.setGridOpacity(this.game.config.gridOpacity + 0.05);
+            this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
         };
     }
     _graphicQToString(graphicQ) {

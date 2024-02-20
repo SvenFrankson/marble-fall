@@ -136,7 +136,6 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
-                this.grid.setIsVisible(true);
                 this.game.camera.detachControl();
                 //this.showCurrentLayer();
             }
@@ -174,7 +173,6 @@ class MachineEditor {
         }
 
         if (this.selectedObjects[0]) {
-            this.grid.setIsVisible(true);
             if (!skipUpdateGridPosition) {
                 this.grid.position.copyFrom(this.selectedObjects[0].position);
             }
@@ -182,7 +180,6 @@ class MachineEditor {
             this.machinePartEditorMenu.currentObject = this.selectedObjects[0];
         }
         else {
-            this.grid.setIsVisible(false);
             this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();

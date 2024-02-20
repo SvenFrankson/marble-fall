@@ -89,6 +89,7 @@ class Game {
     public paintingLight: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public ghostMaterial: BABYLON.StandardMaterial;
+    public gridMaterial: BABYLON.StandardMaterial;
     public cyanMaterial: BABYLON.StandardMaterial;
     public redMaterial: BABYLON.StandardMaterial;
     public greenMaterial: BABYLON.StandardMaterial;
@@ -148,6 +149,11 @@ class Game {
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.ghostMaterial.alpha = 0.3;
+
+        this.gridMaterial = new BABYLON.StandardMaterial("grid-material");
+        this.gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+        this.gridMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.gridMaterial.alpha = this.config.gridOpacity;
 
         this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
         this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");

@@ -15,6 +15,10 @@ class OptionsPage {
     public uiScaleFactorValue: HTMLDivElement;
     public uiScaleFactorPlus: HTMLDivElement;
 
+    public gridOpacityMinus: HTMLDivElement;
+    public gridOpacityValue: HTMLDivElement;
+    public gridOpacityPlus: HTMLDivElement;
+
     constructor(public game: Game) {
         this.container = document.getElementById("options") as HTMLDivElement;
         this.updateNode = new BABYLON.Node("options-update-node");
@@ -58,6 +62,19 @@ class OptionsPage {
         this.uiScaleFactorPlus.onclick = () => {
             this.game.config.setUISize(this.game.config.uiSize + 0.1);
             this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
+        }
+        
+        this.gridOpacityMinus = document.getElementById("grid-opacity-minus") as HTMLDivElement;
+        this.gridOpacityMinus.onclick = () => {
+            this.game.config.setGridOpacity(this.game.config.gridOpacity - 0.05);
+            this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
+        }
+        this.gridOpacityValue = document.getElementById("grid-opacity-val") as HTMLDivElement;
+        this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
+        this.gridOpacityPlus = document.getElementById("grid-opacity-plus") as HTMLDivElement;
+        this.gridOpacityPlus.onclick = () => {
+            this.game.config.setGridOpacity(this.game.config.gridOpacity + 0.05);
+            this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
         }
     }
 

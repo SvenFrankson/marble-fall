@@ -1,20 +1,16 @@
 class MachineEditorGrid extends BABYLON.Mesh {
 
+    public opaquePlane: BABYLON.Mesh;
     public xGrid: BABYLON.Mesh;
     public yGrid: BABYLON.Mesh;
     public zGrid: BABYLON.Mesh;
 
     constructor(public editor: MachineEditor) {
         super("machine-editor-grid");
-        BABYLON.CreatePlaneVertexData({ size: 100 }).applyToMesh(this);
-
-        let gridMaterial = new BABYLON.StandardMaterial("grid-material");
-        gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-        gridMaterial.specularColor.copyFromFloats(0, 0, 0);
-        gridMaterial.alpha = 0.3;
-
-        this.material = gridMaterial;
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        
+        this.opaquePlane = BABYLON.MeshBuilder.CreatePlane("machine-editor-opaque-grid", { size: 100 });
+        this.opaquePlane.material = this.editor.game.gridMaterial;
+        this.opaquePlane.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         let count = 20;
 
@@ -67,14 +63,10 @@ class MachineEditorGrid extends BABYLON.Mesh {
         }
         this.zGrid = BABYLON.MeshBuilder.CreateLineSystem("machine-editor-z-grid", { lines: zLines, colors: colors }, editor.game.scene);
         
-        this.isVisible = false;
+        this.opaquePlane.isVisible = false;
         this.xGrid.isVisible = false;
         this.yGrid.isVisible = false;
         this.zGrid.isVisible = false;
-    }
-
-    public setIsVisible(v: boolean): void {
-        this.isVisible = v;
     }
 
     private _lastSelectedObjectsCount: number = 0;
@@ -93,6 +85,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
             this.xGrid.isVisible = false;
             this.yGrid.isVisible = false;
             this.zGrid.isVisible = false;
+            this.opaquePlane.isVisible = false;
 
             this.xGrid.position.copyFrom(this.position);
             this.yGrid.position.copyFrom(this.position);
@@ -105,6 +98,8 @@ class MachineEditorGrid extends BABYLON.Mesh {
             let worldEncloseEnd: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, Infinity, Infinity);
             
             if (this.editor.selectedObjects.length > 0) {
+                this.opaquePlane.isVisible = true;
+
                 this.editor.selectedObjects.forEach(obj => {
                     if (obj instanceof MachinePart) {
                         worldEncloseStart.x = Math.min(worldEncloseStart.x, obj.position.x + obj.encloseStart.x);
@@ -118,7 +113,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 });
                 
                 let closestAxis = Mummu.GetClosestAxis(camDir);
-                Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.rotationQuaternion);
+                Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.opaquePlane.rotationQuaternion);
                 let m = 0.001;
                 if (closestAxis.x != 0) {
                     this.xGrid.isVisible = this.isVisible;
@@ -133,6 +128,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                             this.xGrid.position.x = worldEncloseStart.x;
                         }
                     }
+                    this.opaquePlane.position.copyFrom(this.xGrid.position);
                 }
                 if (closestAxis.y != 0) {
                     this.yGrid.isVisible = this.isVisible;
@@ -147,6 +143,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                             this.yGrid.position.y = worldEncloseEnd.y;
                         }
                     }
+                    this.opaquePlane.position.copyFrom(this.yGrid.position);
                 }
                 if (closestAxis.z != 0) {
                     this.zGrid.isVisible = this.isVisible;
@@ -161,6 +158,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                             this.zGrid.position.z = worldEncloseEnd.z;
                         }
                     }
+                    this.opaquePlane.position.copyFrom(this.zGrid.position);
                 }
             }
 
