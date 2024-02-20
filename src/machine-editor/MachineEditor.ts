@@ -74,7 +74,7 @@ class MachineEditor {
     }
     */
     
-    public layerMesh: BABYLON.Mesh;
+    public grid: MachineEditorGrid;
     /*
     public showCurrentLayer(): void {
         this.machine.parts.forEach(part => {
@@ -136,7 +136,8 @@ class MachineEditor {
         if (s != this._draggedObject) {
             this._draggedObject = s;
             if (this._draggedObject) {
-                this.layerMesh.position.copyFrom(this._draggedObject.position);
+                this.grid.setIsVisible(true);
+                this.grid.position.copyFrom(this._draggedObject.position);
                 this.game.camera.detachControl();
                 //this.showCurrentLayer();
             }
@@ -174,11 +175,13 @@ class MachineEditor {
         }
 
         if (this._selectedObjects[0]) {
-            this.layerMesh.position.copyFrom(this._selectedObjects[0].position);
+            this.grid.setIsVisible(true);
+            this.grid.position.copyFrom(this._selectedObjects[0].position);
             this._selectedObjects[0].select();
             this.machinePartEditorMenu.currentObject = this._selectedObjects[0];
         }
         else {
+            this.grid.setIsVisible(false);
             this.machinePartEditorMenu.currentObject = undefined;
         }
         this.updateFloatingElements();
@@ -207,8 +210,7 @@ class MachineEditor {
     constructor(public game: Game) {
         this.container = document.getElementById("machine-editor-objects") as HTMLDivElement;
         this.itemContainer = this.container.querySelector("#machine-editor-item-container") as HTMLDivElement;
-        this.layerMesh = BABYLON.MeshBuilder.CreatePlane("layer-mesh", { size: 100 });
-        this.layerMesh.material = this.game.ghostMaterial;
+        this.grid = new MachineEditorGrid(this);
         this.machinePartEditorMenu = new MachinePartEditorMenu(this);
     }
 
@@ -628,9 +630,7 @@ class MachineEditor {
             this.hoveredObject = undefined;
         }
 
-        let camDir = this.game.camera.getDirection(BABYLON.Axis.Z);
-        let closestAxis = Mummu.GetClosestAxis(camDir);
-        this.layerMesh.rotationQuaternion = Mummu.QuaternionFromZYAxis(closestAxis, BABYLON.Vector3.One());
+        this.grid.updateAxis();
     }
 
     private _pointerDownX: number = 0;
@@ -680,7 +680,7 @@ class MachineEditor {
                         this.game.scene.pointerX,
                         this.game.scene.pointerY,
                         (mesh) => {
-                            if (mesh === this.layerMesh) {
+                            if (mesh === this.grid) {
                                 return true;
                             }
                         }
@@ -716,13 +716,13 @@ class MachineEditor {
                         }
                     }
                     */
-                    if (mesh === this.layerMesh) {
+                    if (mesh === this.grid) {
                         return true;
                     }
                 }
             )
     
-            if (pick.hit && pick.pickedMesh === this.layerMesh) {
+            if (pick.hit && pick.pickedMesh === this.grid) {
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);
@@ -794,7 +794,7 @@ class MachineEditor {
                 if (!this.draggedObject && (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh)) {
                     return true;
                 }
-                else if (this.draggedObject && mesh === this.layerMesh) {
+                else if (this.draggedObject && mesh === this.grid) {
                     return true;
                 }
                 return false;
