@@ -3336,11 +3336,19 @@ class MachineEditor {
             }
             if (this.selectedObject) {
                 let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    if (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh) {
+                    if (mesh instanceof BallGhost) {
                         return true;
                     }
                     return false;
                 });
+                if (!pick.hit) {
+                    pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                        if (mesh instanceof MachinePartSelectorMesh) {
+                            return true;
+                        }
+                        return false;
+                    });
+                }
                 if (pick.hit) {
                     let pickedObject;
                     if (pick.pickedMesh instanceof BallGhost) {
@@ -3447,7 +3455,7 @@ class MachineEditor {
                 }
             }
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                if (!this.draggedObject && (mesh instanceof BallGhost || mesh instanceof MachinePartSelectorMesh)) {
+                if (!this.draggedObject && mesh instanceof BallGhost) {
                     return true;
                 }
                 else if (this.draggedObject && mesh === this.grid) {
@@ -3455,6 +3463,17 @@ class MachineEditor {
                 }
                 return false;
             });
+            if (!pick.hit) {
+                pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
+                    if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh) {
+                        return true;
+                    }
+                    else if (this.draggedObject && mesh === this.grid) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
             if (pick.hit) {
                 if (this.draggedObject instanceof MachinePart) {
                     let draggedTrack = this.draggedObject;
@@ -4489,12 +4508,12 @@ class MachineEditor {
             let s = this.actionTileSize;
             if (this.selectedObject instanceof Ball) {
                 this.KPlusHandle.position.copyFrom(this.selectedObject.positionZeroGhost.position);
-                this.KPlusHandle.position.y -= 0.02;
-                this.KPlusHandle.position.z -= 0.02;
+                this.KPlusHandle.position.y -= 0.04;
+                this.KPlusHandle.position.z -= 0.03;
                 this.KPlusHandle.isVisible = true;
                 this.KMinusHandle.position.copyFrom(this.selectedObject.positionZeroGhost.position);
-                this.KMinusHandle.position.y -= 0.02;
-                this.KMinusHandle.position.z += 0.02;
+                this.KMinusHandle.position.y -= 0.04;
+                this.KMinusHandle.position.z += 0.03;
                 this.KMinusHandle.isVisible = true;
             }
             else if (this.selectedObject instanceof MachinePart) {
