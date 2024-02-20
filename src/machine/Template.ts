@@ -325,6 +325,11 @@ class TemplateManager {
                 let n = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Loop.GenerateTemplate(w, d, n, mirrorX, mirrorZ);
             }
+            else if (partName.startsWith("spiral-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                data = Spiral.GenerateTemplate(w, h, mirrorX, mirrorZ);
+            }
             datas[mirrorIndex] = data;
         }
 

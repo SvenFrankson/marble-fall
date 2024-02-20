@@ -712,26 +712,27 @@ var aerial = {
         { x: 0.3039999976158142, y: 0.04068657422065735, z: 0 },
     ],
     parts: [
-        { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
-        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
-        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
         { name: "uturn-0.3", i: 1, j: 12, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-1.2.3", i: 2, j: 12, k: 1, mirrorX: true, mirrorZ: false },
         { name: "uturn-0.3", i: 3, j: 12, k: 1 },
         { name: "ramp-1.0.2", i: 2, j: 12, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
-        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
-        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
         { name: "ramp-1.1.1", i: 0, j: 9, k: 5, mirrorX: true, mirrorZ: false },
+        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
         { name: "uturn-0.4", i: -4, j: 8, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
+        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
+        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
+        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
+        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
+        { name: "spiral-1.1", i: 0, j: -4, k: 0 },
     ],
 };
 var xxlStressTest = {
@@ -939,14 +940,14 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = false;
+        this.DEBUG_MODE = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
         this.targetCamTarget = BABYLON.Vector3.Zero();
         this.targetCamAlpha = -Math.PI * 0.5;
-        this.targetCamBeta = Math.PI * 0.5;
-        this.targetCamRadius = 0.1;
+        this.targetCamBeta = Math.PI * 0.4;
+        this.targetCamRadius = 0.3;
         this._trackTargetCamSpeed = 0;
         this.cameraOrtho = false;
         this.mainVolume = 0;
@@ -1010,25 +1011,13 @@ class Game {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff0000");
         }
         else {
-            this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         }
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, -2.5)).normalize(), this.scene);
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
+        this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterial.alpha = 0.5;
-        this.handleMaterialActive = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
-        this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterialActive.alpha = 0.5;
-        this.handleMaterialHover = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterialHover.diffuseColor.copyFromFloats(0.75, 1, 0.75);
-        this.handleMaterialHover.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterialHover.alpha = 0.5;
-        this.insertHandleMaterial = new BABYLON.StandardMaterial("handle-material");
-        this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
-        this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.insertHandleMaterial.alpha = 0.5;
+        this.handleMaterial.alpha = 1;
         this.ghostMaterial = new BABYLON.StandardMaterial("ghost-material");
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
         this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -1038,12 +1027,15 @@ class Game {
         this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.redMaterial = new BABYLON.StandardMaterial("red-material");
         this.redMaterial.diffuseColor = BABYLON.Color3.FromHexString("#bf212f");
+        this.redMaterial.emissiveColor = BABYLON.Color3.FromHexString("#bf212f");
         this.redMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.greenMaterial = new BABYLON.StandardMaterial("green-material");
         this.greenMaterial.diffuseColor = BABYLON.Color3.FromHexString("#006f3c");
+        this.greenMaterial.emissiveColor = BABYLON.Color3.FromHexString("#006f3c");
         this.greenMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.blueMaterial = new BABYLON.StandardMaterial("blue-material");
         this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
+        this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
         this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
@@ -1220,6 +1212,7 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
+                await this.makeScreenshot("spiral-1.2");
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -1397,6 +1390,8 @@ class Game {
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
+        this.room.ground.position.y = 100;
+        this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         this.camera.alpha = -0.8 * Math.PI / 2;
         this.camera.beta = 0.75 * Math.PI / 2;
         return new Promise(resolve => {
@@ -1414,7 +1409,7 @@ class Game {
                     this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), -tileHeight * (track.h) * 0.5, 0);
                 }
-                if (objectName === "spiral") {
+                if (objectName.startsWith("spiral")) {
                     this.camera.target.x -= tileWidth * 0.1;
                     this.camera.target.y -= tileHeight * 0.6;
                     this.camera.radius += 0.1;
@@ -1483,7 +1478,7 @@ class Game {
                     let encloseEnd = this.machine.getEncloseEnd();
                     let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
                     this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
-                    this.targetCamRadius = size * 0.5;
+                    this.targetCamRadius = size * 0.7;
                 }
                 this.targetCamAlpha = -0.2 * Math.PI - Math.random() * Math.PI * 0.6;
                 this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;
@@ -2517,6 +2512,7 @@ var TrackNames = [
     "uturn-0.2",
     "uturnsharp",
     "loop-1.1",
+    "spiral-1.2",
     "elevator-4"
 ];
 class MachinePartFactory {
@@ -2580,6 +2576,11 @@ class MachinePartFactory {
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             let n = parseInt(trackname.split("-")[1].split(".")[2]);
             return new Loop(this.machine, i, j, k, w, d, n, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("spiral-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Spiral(this.machine, i, j, k, w, h, mirrorX, mirrorZ);
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
@@ -3047,6 +3048,11 @@ class TemplateManager {
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 let n = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Loop.GenerateTemplate(w, d, n, mirrorX, mirrorZ);
+            }
+            else if (partName.startsWith("spiral-")) {
+                let w = parseInt(partName.split("-")[1].split(".")[0]);
+                let h = parseInt(partName.split("-")[1].split(".")[1]);
+                data = Spiral.GenerateTemplate(w, h, mirrorX, mirrorZ);
             }
             datas[mirrorIndex] = data;
         }
@@ -5305,11 +5311,7 @@ class Loop extends MachinePart {
             let a = 2 * Math.PI * n / 8;
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
-            let normal;
-            if (n % 8 === 4) {
-                normal = Tools.V3Dir(180, 1);
-            }
-            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(sina * r + f * (xCenterEnd - xCenterStart) + xCenterStart, r * 1 - cosa * r - template.h * tileHeight, f * (depthEnd - depthStart) + depthStart), undefined, normal));
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(sina * r + f * (xCenterEnd - xCenterStart) + xCenterStart, r * 1 - cosa * r - template.h * tileHeight, f * (depthEnd - depthStart) + depthStart)));
         }
         template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), -template.h * tileHeight, -tileDepth * (template.d - 1)), Tools.V3Dir(90)));
         let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone(); });
@@ -5567,6 +5569,61 @@ class Snake extends MachinePartWithOriginDestination {
             }
         }
         return new Snake(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+    }
+}
+/// <reference path="../machine/MachinePart.ts"/>
+class Spiral extends MachinePart {
+    constructor(machine, i, j, k, w = 1, h = 1, mirrorX, mirrorZ) {
+        super(machine, i, j, k);
+        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.generateWires();
+    }
+    static GenerateTemplate(w, h, mirrorX, mirrorZ) {
+        let template = new MachinePartTemplate();
+        template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
+        template.w = w;
+        template.h = h;
+        template.d = 3;
+        template.mirrorX = mirrorX;
+        template.mirrorZ = mirrorZ;
+        template.xExtendable = true;
+        template.yExtendable = true;
+        template.xMirrorable = true;
+        template.zMirrorable = true;
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].onNormalEvaluated = (n => {
+            n.copyFromFloats(0, 1, 0);
+        });
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), Tools.V3Dir(90))
+        ];
+        let nSpirals = h;
+        let xCenterStart = 0;
+        let xCenterEnd = tileWidth * (template.w - 1);
+        let r = tileWidth * 0.5 * 0.8;
+        let heightStart = 0;
+        let heightEnd = -tileHeight * template.h;
+        for (let n = 0; n <= 6 * nSpirals; n++) {
+            let f = n / (6 * nSpirals);
+            let a = 2 * Math.PI * n / 6;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            let dir;
+            if (n === 0 || n === 6 * nSpirals) {
+                dir = BABYLON.Vector3.Right();
+            }
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(f * (xCenterEnd - xCenterStart) + xCenterStart + sina * r, f * (heightEnd - heightStart) + heightStart, (cosa - 1) * r), dir));
+        }
+        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * (template.w - 0.5), heightEnd, 0), Tools.V3Dir(90)));
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        if (mirrorZ) {
+            template.mirrorZTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
     }
 }
 class Split extends MachinePart {
@@ -6020,6 +6077,7 @@ class Arrow extends BABYLON.Mesh {
                 Mummu.QuaternionFromYZAxisToRef(this.dir, z, this.rotationQuaternion);
             }
         };
+        this.material = game.handleMaterial;
         this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();

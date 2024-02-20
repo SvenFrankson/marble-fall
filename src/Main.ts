@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = false;
+    public DEBUG_MODE: boolean = true;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -45,8 +45,8 @@ class Game {
     public menuCameraMode: CameraMode = CameraMode.Ball;
     public targetCamTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public targetCamAlpha: number = - Math.PI * 0.5;
-    public targetCamBeta: number = Math.PI * 0.5;
-    public targetCamRadius: number = 0.1;
+    public targetCamBeta: number = Math.PI * 0.4;
+    public targetCamRadius: number = 0.3;
     private _trackTargetCamSpeed: number = 0;
     public onFocusCallback: () => void;
 
@@ -87,9 +87,6 @@ class Game {
     public deepBlackMaterial: BABYLON.StandardMaterial;
     public autolitMaterial: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
-    public handleMaterialActive: BABYLON.StandardMaterial;
-    public handleMaterialHover: BABYLON.StandardMaterial;
-    public insertHandleMaterial: BABYLON.StandardMaterial;
     public ghostMaterial: BABYLON.StandardMaterial;
     public cyanMaterial: BABYLON.StandardMaterial;
     public redMaterial: BABYLON.StandardMaterial;
@@ -136,30 +133,15 @@ class Game {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff0000");
         }
         else {
-            this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
+            this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         }
 
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, - 2.5)).normalize(), this.scene);
 
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterial.diffuseColor.copyFromFloats(0, 1, 1);
+        this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterial.alpha = 0.5;
-        
-        this.handleMaterialActive = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterialActive.diffuseColor.copyFromFloats(0.5, 1, 0.5);
-        this.handleMaterialActive.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterialActive.alpha = 0.5;
-        
-        this.handleMaterialHover = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterialHover.diffuseColor.copyFromFloats(0.75, 1, 0.75);
-        this.handleMaterialHover.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterialHover.alpha = 0.5;
-        
-        this.insertHandleMaterial = new BABYLON.StandardMaterial("handle-material");
-        this.insertHandleMaterial.diffuseColor.copyFromFloats(1, 0.5, 0.5);
-        this.insertHandleMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.insertHandleMaterial.alpha = 0.5;
+        this.handleMaterial.alpha = 1;
 
         this.ghostMaterial = new BABYLON.StandardMaterial("ghost-material");
         this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
@@ -172,14 +154,17 @@ class Game {
         
         this.redMaterial = new BABYLON.StandardMaterial("red-material");
         this.redMaterial.diffuseColor = BABYLON.Color3.FromHexString("#bf212f");
+        this.redMaterial.emissiveColor = BABYLON.Color3.FromHexString("#bf212f");
         this.redMaterial.specularColor.copyFromFloats(0, 0, 0);
         
         this.greenMaterial = new BABYLON.StandardMaterial("green-material");
         this.greenMaterial.diffuseColor = BABYLON.Color3.FromHexString("#006f3c");
+        this.greenMaterial.emissiveColor = BABYLON.Color3.FromHexString("#006f3c");
         this.greenMaterial.specularColor.copyFromFloats(0, 0, 0);
         
         this.blueMaterial = new BABYLON.StandardMaterial("blue-material");
         this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
+        this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
 
         this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
@@ -386,6 +371,7 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
+                await this.makeScreenshot("spiral-1.2");
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -586,6 +572,8 @@ class Game {
         this.machine.baseWall.isVisible = false;
         this.machine.baseFrame.isVisible = false;
         this.skybox.isVisible = false;
+        this.room.ground.position.y = 100;
+        this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         
         this.camera.alpha = - 0.8 * Math.PI / 2;
         this.camera.beta = 0.75 * Math.PI / 2;
@@ -606,7 +594,7 @@ class Game {
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), - tileHeight * (track.h) * 0.5, 0);
                 }
 
-                if (objectName === "spiral") {
+                if (objectName.startsWith("spiral")) {
                     this.camera.target.x -= tileWidth * 0.1;
                     this.camera.target.y -= tileHeight * 0.6;
                     this.camera.radius += 0.1;
@@ -686,7 +674,7 @@ class Game {
                     let size = BABYLON.Vector3.Distance(encloseStart, encloseEnd);
             
                     this.targetCamTarget.copyFrom(encloseStart.add(encloseEnd).scale(0.5));
-                    this.targetCamRadius = size * 0.5;
+                    this.targetCamRadius = size * 0.7;
                 }
                 this.targetCamAlpha = - 0.2 * Math.PI - Math.random() * Math.PI * 0.6;
                 this.targetCamBeta = 0.3 * Math.PI + Math.random() * Math.PI * 0.4;

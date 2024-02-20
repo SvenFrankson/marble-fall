@@ -58,11 +58,6 @@ class Loop extends MachinePart {
             let cosa = Math.cos(a);
             let sina = Math.sin(a);
 
-            let normal: BABYLON.Vector3;
-            if (n % 8 === 4) {
-                normal = Tools.V3Dir(180, 1);
-            }
-
             template.trackTemplates[0].trackpoints.push(
                 new TrackPoint(
                     template.trackTemplates[0],
@@ -70,9 +65,7 @@ class Loop extends MachinePart {
                         sina * r + f * (xCenterEnd - xCenterStart) + xCenterStart,
                         r * 1 - cosa * r - template.h * tileHeight,
                         f * (depthEnd - depthStart) + depthStart
-                    ),
-                    undefined,
-                    normal
+                    )
                 )
             );
         }

@@ -8,6 +8,7 @@ var TrackNames = [
     "uturn-0.2",
     "uturnsharp",
     "loop-1.1",
+    "spiral-1.2",
     "elevator-4"
 ];
 
@@ -87,6 +88,11 @@ class MachinePartFactory {
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             let n = parseInt(trackname.split("-")[1].split(".")[2]);
             return new Loop(this.machine, i, j, k, w, d, n, mirrorX, mirrorZ);
+        }
+        if (trackname.startsWith("spiral-")) {
+            let w = parseInt(trackname.split("-")[1].split(".")[0]);
+            let h = parseInt(trackname.split("-")[1].split(".")[1]);
+            return new Spiral(this.machine, i, j, k, w, h, mirrorX, mirrorZ);
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
