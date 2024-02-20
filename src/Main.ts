@@ -85,7 +85,7 @@ class Game {
     public leatherMaterial: BABYLON.StandardMaterial;
     public whiteMaterial: BABYLON.StandardMaterial;
     public deepBlackMaterial: BABYLON.StandardMaterial;
-    public autolitMaterial: BABYLON.StandardMaterial;
+    public paintingLight: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public ghostMaterial: BABYLON.StandardMaterial;
     public cyanMaterial: BABYLON.StandardMaterial;
@@ -217,10 +217,10 @@ class Game {
         this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
         this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
 
-        this.autolitMaterial = new BABYLON.StandardMaterial("autolit-material");
-        this.autolitMaterial.diffuseColor.copyFromFloats(1, 1, 1);
-        this.autolitMaterial.emissiveColor = BABYLON.Color3.White().scale(0.3);
-        this.autolitMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.paintingLight = new BABYLON.StandardMaterial("autolit-material");
+        this.paintingLight.diffuseColor.copyFromFloats(1, 1, 1);
+        this.paintingLight.emissiveTexture = new BABYLON.Texture("./datas/textures/painting-light.png");
+        this.paintingLight.specularColor.copyFromFloats(0.1, 0.1, 0.1);
 
         this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 20, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
         this.skybox.layerMask = 0x10000000;
@@ -484,7 +484,7 @@ class Game {
 
         this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
         this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
-        this.camera.target.z = Nabu.MinMax(this.camera.target.z, - 1, 0);
+        this.camera.target.z = Nabu.MinMax(this.camera.target.z, this.machine.baseMeshMinZ, this.machine.baseMeshMaxZ);
 
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));

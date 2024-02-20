@@ -21,7 +21,7 @@ class Painting extends BABYLON.Mesh {
             let lightedPlane = new BABYLON.Mesh("lighted-plane");
             vertexDatas[2].applyToMesh(lightedPlane);
             lightedPlane.parent = this;
-            lightedPlane.material = this.room.game.autolitMaterial;
+            lightedPlane.material = this.room.game.paintingLight;
             lightedPlane.layerMask = 0x10000000;
         }
 
