@@ -739,6 +739,11 @@ class MachineEditor {
             )
     
             if (pick.hit && pick.pickedMesh === this.grid.opaquePlane) {
+                if (this._dragOffset.lengthSquared() === 0) {
+                    let axis = this.grid.closestAxis;
+                    let offset = (this.selectedObject.position).subtract(pick.pickedPoint);
+                    this._dragOffset.copyFrom(axis).scaleInPlace(BABYLON.Vector3.Dot(offset, axis));
+                }
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);

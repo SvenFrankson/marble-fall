@@ -4,6 +4,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
     public xGrid: BABYLON.Mesh;
     public yGrid: BABYLON.Mesh;
     public zGrid: BABYLON.Mesh;
+    public closestAxis: BABYLON.Vector3 = BABYLON.Vector3.Forward();
 
     constructor(public editor: MachineEditor) {
         super("machine-editor-grid");
@@ -112,14 +113,13 @@ class MachineEditorGrid extends BABYLON.Mesh {
                     }
                 });
                 
-                let closestAxis = Mummu.GetClosestAxis(camDir);
-                Mummu.QuaternionFromZYAxisToRef(closestAxis, BABYLON.Vector3.One(), this.opaquePlane.rotationQuaternion);
-                let m = 0.001;
-                if (closestAxis.x != 0) {
+                Mummu.GetClosestAxisToRef(camDir, this.closestAxis);
+                Mummu.QuaternionFromZYAxisToRef(this.closestAxis, BABYLON.Vector3.One(), this.opaquePlane.rotationQuaternion);
+                if (this.closestAxis.x != 0) {
                     this.xGrid.isVisible = this.isVisible;
 
                     if (this.editor.selectedObject instanceof MachinePart) {
-                        if (closestAxis.x > 0) {
+                        if (this.closestAxis.x > 0) {
                             maxIJK.x = this.editor.selectedObject.i;
                             this.xGrid.position.x = worldEncloseEnd.x;
                         }
@@ -130,11 +130,11 @@ class MachineEditorGrid extends BABYLON.Mesh {
                     }
                     this.opaquePlane.position.copyFrom(this.xGrid.position);
                 }
-                if (closestAxis.y != 0) {
+                if (this.closestAxis.y != 0) {
                     this.yGrid.isVisible = this.isVisible;
 
                     if (this.editor.selectedObject instanceof MachinePart) {
-                        if (closestAxis.y > 0) {
+                        if (this.closestAxis.y > 0) {
                             minIJK.y = this.editor.selectedObject.j;
                             this.yGrid.position.y = worldEncloseStart.y;
                         }
@@ -145,11 +145,11 @@ class MachineEditorGrid extends BABYLON.Mesh {
                     }
                     this.opaquePlane.position.copyFrom(this.yGrid.position);
                 }
-                if (closestAxis.z != 0) {
+                if (this.closestAxis.z != 0) {
                     this.zGrid.isVisible = this.isVisible;
 
                     if (this.editor.selectedObject instanceof MachinePart) {
-                        if (closestAxis.z > 0) {
+                        if (this.closestAxis.z > 0) {
                             minIJK.z = this.editor.selectedObject.k;
                             this.zGrid.position.z = worldEncloseStart.z;
                         }
