@@ -4941,7 +4941,7 @@ class MachinePartEditorMenu {
                 this.container.style.display = "";
                 this.showButton.style.display = this._shown ? "none" : "";
                 this.hideButton.style.display = this._shown ? "" : "none";
-                this.ijkLine.style.display = this._shown && this.currentObject instanceof MachinePart ? "" : "none";
+                this.ijkLine.style.display = "none";
                 this.kLine.style.display = this._shown && this.currentObject instanceof Ball ? "" : "none";
                 this.widthLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.xExtendable ? "" : "none";
                 this.heightLine.style.display = this._shown && this.currentObject instanceof MachinePart && this.currentObject.yExtendable ? "" : "none";
