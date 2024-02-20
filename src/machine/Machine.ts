@@ -267,7 +267,7 @@ class Machine {
 
             let w05 = w * 0.5;
             let d05 = d * 0.5;
-            let logoW = w * 0.3;
+            let logoW = Math.max(w * 0.3, 0.1);
             let logoH = logoW / 794 * 212;
 
             let corner1Data = Mummu.CreateQuadVertexData({

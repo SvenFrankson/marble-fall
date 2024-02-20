@@ -2054,7 +2054,7 @@ class Machine {
             this.baseLogo.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
             let w05 = w * 0.5;
             let d05 = d * 0.5;
-            let logoW = w * 0.3;
+            let logoW = Math.max(w * 0.3, 0.1);
             let logoH = logoW / 794 * 212;
             let corner1Data = Mummu.CreateQuadVertexData({
                 p1: new BABYLON.Vector3(w05 - logoW, 0, -d05),
@@ -3690,6 +3690,7 @@ class MachineEditor {
             });
             this.setSelectedObject(undefined);
             this.setDraggedObject(undefined);
+            this.machine.generateBaseMesh();
         };
         this._onMirrorX = async () => {
             let track = this.selectedObject;

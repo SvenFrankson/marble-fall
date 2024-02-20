@@ -1329,6 +1329,7 @@ class MachineEditor {
         })
         this.setSelectedObject(undefined);
         this.setDraggedObject(undefined);
+        this.machine.generateBaseMesh();
     }
 
     private _onMirrorX = async () => {
