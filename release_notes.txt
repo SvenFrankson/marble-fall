@@ -1,0 +1,11 @@
+- Add procedural Spiral MachinePart
+- Replace vertical Wall with an horizontal stand
+- Add 3D background
+
+- Dragging piece is now done in the plane orthogonal to camera direction
+- CreateMode shows a helper grid orthogonal to camera direction
+- Reduce computational cost of Track bank
+
+- Picking Ball in create mode now has priority over picking MachinePart
+- CreateMode Grid opacity is added as an option parameter
+- Reduce position randomness when adding a new MachinePart
