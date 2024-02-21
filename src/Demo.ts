@@ -455,7 +455,6 @@ var aerial = {
         { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
         { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "spiral-1.1", i: 0, j: -4, k: 0 },
     ],
 };
 

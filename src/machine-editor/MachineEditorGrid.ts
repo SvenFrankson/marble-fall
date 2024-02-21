@@ -118,7 +118,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 if (this.closestAxis.x != 0) {
                     this.xGrid.isVisible = this.isVisible;
 
-                    if (this.editor.selectedObject instanceof MachinePart) {
+                    if (this.editor.selectedObject instanceof MachinePart && this.editor.selectedObject.isPlaced) {
                         if (this.closestAxis.x > 0) {
                             maxIJK.x = this.editor.selectedObject.i;
                             this.xGrid.position.x = worldEncloseEnd.x;
@@ -133,7 +133,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 if (this.closestAxis.y != 0) {
                     this.yGrid.isVisible = this.isVisible;
 
-                    if (this.editor.selectedObject instanceof MachinePart) {
+                    if (this.editor.selectedObject instanceof MachinePart && this.editor.selectedObject.isPlaced) {
                         if (this.closestAxis.y > 0) {
                             minIJK.y = this.editor.selectedObject.j;
                             this.yGrid.position.y = worldEncloseStart.y;
@@ -148,7 +148,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 if (this.closestAxis.z != 0) {
                     this.zGrid.isVisible = this.isVisible;
 
-                    if (this.editor.selectedObject instanceof MachinePart) {
+                    if (this.editor.selectedObject instanceof MachinePart && this.editor.selectedObject.isPlaced) {
                         if (this.closestAxis.z > 0) {
                             minIJK.z = this.editor.selectedObject.k;
                             this.zGrid.position.z = worldEncloseStart.z;

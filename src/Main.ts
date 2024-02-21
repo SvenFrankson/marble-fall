@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = true;
+    public DEBUG_MODE: boolean = false;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -344,7 +344,7 @@ class Game {
         await this.machine.instantiate();
         await this.room.instantiate();
 
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, xxlStressTest];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -385,7 +385,7 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                await this.makeScreenshot("spiral-1.2");
+                //await this.makeScreenshot("spiral-1.2");
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";

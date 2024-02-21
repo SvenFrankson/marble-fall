@@ -754,7 +754,6 @@ var aerial = {
         { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
         { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
         { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "spiral-1.1", i: 0, j: -4, k: 0 },
     ],
 };
 var xxlStressTest = {
@@ -975,7 +974,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = true;
+        this.DEBUG_MODE = false;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -1217,7 +1216,7 @@ class Game {
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         await this.room.instantiate();
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, xxlStressTest];
+        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
         for (let i = 0; i < demoButtons.length; i++) {
@@ -1257,7 +1256,7 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                await this.makeScreenshot("spiral-1.2");
+                //await this.makeScreenshot("spiral-1.2");
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -2240,12 +2239,13 @@ class MachinePartSelectorMesh extends BABYLON.Mesh {
     }
 }
 class MachinePart extends BABYLON.Mesh {
-    constructor(machine, _i, _j, _k) {
+    constructor(machine, _i, _j, _k, isPlaced = true) {
         super("track", machine.game.scene);
         this.machine = machine;
         this._i = _i;
         this._j = _j;
         this._k = _k;
+        this.isPlaced = isPlaced;
         this.tracks = [];
         this.wires = [];
         this.allWires = [];
@@ -2342,6 +2342,7 @@ class MachinePart extends BABYLON.Mesh {
     setI(v) {
         this._i = v;
         this.position.x = this._i * tileWidth;
+        this.isPlaced = true;
     }
     get j() {
         return this._j;
@@ -2349,6 +2350,7 @@ class MachinePart extends BABYLON.Mesh {
     setJ(v) {
         this._j = v;
         this.position.y = -this._j * tileHeight;
+        this.isPlaced = true;
     }
     get k() {
         return this._k;
@@ -2357,6 +2359,7 @@ class MachinePart extends BABYLON.Mesh {
         this._k = v;
         this._k = Math.max(this._k, 0);
         this.position.z = -this._k * tileDepth;
+        this.isPlaced = true;
     }
     setIsVisible(isVisible) {
         this.isVisible = isVisible;
@@ -3031,7 +3034,7 @@ class MachinePartTemplate {
         this.n = 1;
         this.mirrorX = false;
         this.mirrorZ = false;
-        this.angleSmoothSteps = 20;
+        this.angleSmoothSteps = 30;
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
@@ -3473,11 +3476,6 @@ class MachineEditor {
                     }
                 });
                 if (pick.hit && pick.pickedMesh === this.grid.opaquePlane) {
-                    if (this._dragOffset.lengthSquared() === 0) {
-                        let axis = this.grid.closestAxis;
-                        let offset = (this.selectedObject.position).subtract(pick.pickedPoint);
-                        this._dragOffset.copyFrom(axis).scaleInPlace(BABYLON.Vector3.Dot(offset, axis));
-                    }
                     let point = pick.pickedPoint.add(this._dragOffset);
                     if (this.draggedObject instanceof MachinePart) {
                         let i = Math.round(point.x / tileWidth);
@@ -3488,8 +3486,10 @@ class MachineEditor {
                             this.draggedObject.setJ(j);
                             this.draggedObject.setK(k);
                             this.draggedObject.setIsVisible(true);
-                            this.grid.position.copyFrom(this.draggedObject.position);
                             this.updateFloatingElements();
+                            if (this._dragOffset.lengthSquared() > 0) {
+                                this.grid.position.copyFrom(this.draggedObject.position);
+                            }
                         }
                     }
                     else if (this.draggedObject instanceof Ball) {
@@ -4185,6 +4185,7 @@ class MachineEditor {
                 else {
                     this.setSelectedItem(trackname);
                     let track = this.machine.trackFactory.createTrack(this._selectedItem, 0, 0, 0);
+                    track.isPlaced = false;
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
@@ -4809,7 +4810,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 Mummu.QuaternionFromZYAxisToRef(this.closestAxis, BABYLON.Vector3.One(), this.opaquePlane.rotationQuaternion);
                 if (this.closestAxis.x != 0) {
                     this.xGrid.isVisible = this.isVisible;
-                    if (this.editor.selectedObject instanceof MachinePart) {
+                    if (this.editor.selectedObject instanceof MachinePart && this.editor.selectedObject.isPlaced) {
                         if (this.closestAxis.x > 0) {
                             maxIJK.x = this.editor.selectedObject.i;
                             this.xGrid.position.x = worldEncloseEnd.x;
@@ -4823,7 +4824,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 }
                 if (this.closestAxis.y != 0) {
                     this.yGrid.isVisible = this.isVisible;
-                    if (this.editor.selectedObject instanceof MachinePart) {
+                    if (this.editor.selectedObject instanceof MachinePart && this.editor.selectedObject.isPlaced) {
                         if (this.closestAxis.y > 0) {
                             minIJK.y = this.editor.selectedObject.j;
                             this.yGrid.position.y = worldEncloseStart.y;
@@ -4837,7 +4838,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
                 }
                 if (this.closestAxis.z != 0) {
                     this.zGrid.isVisible = this.isVisible;
-                    if (this.editor.selectedObject instanceof MachinePart) {
+                    if (this.editor.selectedObject instanceof MachinePart && this.editor.selectedObject.isPlaced) {
                         if (this.closestAxis.z > 0) {
                             minIJK.z = this.editor.selectedObject.k;
                             this.zGrid.position.z = worldEncloseStart.z;
@@ -5575,7 +5576,7 @@ class Snake extends MachinePartWithOriginDestination {
     static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
         template.partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        template.angleSmoothSteps = 15;
+        template.angleSmoothSteps = 20;
         template.w = w;
         template.h = h;
         template.d = d;
@@ -6422,7 +6423,7 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
-        earlyAccessDisclaimer.innerHTML = "> v0.1.3 early access";
+        earlyAccessDisclaimer.innerHTML = "> v0.1.4 early access";
         this.container.appendChild(earlyAccessDisclaimer);
     }
 }

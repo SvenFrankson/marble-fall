@@ -225,7 +225,7 @@ class MachinePartTemplate {
     public n: number = 1;
     public mirrorX: boolean = false;
     public mirrorZ: boolean = false;
-    public angleSmoothSteps: number = 20;
+    public angleSmoothSteps: number = 30;
 
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;

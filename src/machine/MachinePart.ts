@@ -137,7 +137,7 @@ class MachinePart extends BABYLON.Mesh {
         this._template = template;
     }
 
-    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number) {
+    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, public isPlaced: boolean = true) {
         super("track", machine.game.scene);
         
         this.position.x = this._i * tileWidth;
@@ -153,6 +153,7 @@ class MachinePart extends BABYLON.Mesh {
     public setI(v: number) {
         this._i = v;
         this.position.x = this._i * tileWidth;
+        this.isPlaced = true;
     }
 
     public get j(): number {
@@ -161,6 +162,7 @@ class MachinePart extends BABYLON.Mesh {
     public setJ(v: number) {
         this._j = v;
         this.position.y = - this._j * tileHeight;
+        this.isPlaced = true;
     }
 
     public get k(): number {
@@ -170,6 +172,7 @@ class MachinePart extends BABYLON.Mesh {
         this._k = v;
         this._k = Math.max(this._k, 0);
         this.position.z = - this._k * tileDepth;
+        this.isPlaced = true;
     }
 
     public setIsVisible(isVisible: boolean): void {

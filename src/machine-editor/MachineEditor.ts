@@ -267,6 +267,7 @@ class MachineEditor {
                 else {
                     this.setSelectedItem(trackname);
                     let track = this.machine.trackFactory.createTrack(this._selectedItem, 0, 0, 0);
+                    track.isPlaced = false;
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
@@ -739,11 +740,6 @@ class MachineEditor {
             )
     
             if (pick.hit && pick.pickedMesh === this.grid.opaquePlane) {
-                if (this._dragOffset.lengthSquared() === 0) {
-                    let axis = this.grid.closestAxis;
-                    let offset = (this.selectedObject.position).subtract(pick.pickedPoint);
-                    this._dragOffset.copyFrom(axis).scaleInPlace(BABYLON.Vector3.Dot(offset, axis));
-                }
                 let point = pick.pickedPoint.add(this._dragOffset);
                 if (this.draggedObject instanceof MachinePart) {
                     let i = Math.round(point.x / tileWidth);
@@ -754,8 +750,10 @@ class MachineEditor {
                         this.draggedObject.setJ(j);
                         this.draggedObject.setK(k);
                         this.draggedObject.setIsVisible(true);
-                        this.grid.position.copyFrom(this.draggedObject.position);
                         this.updateFloatingElements();
+                        if (this._dragOffset.lengthSquared() > 0) {
+                            this.grid.position.copyFrom(this.draggedObject.position);
+                        }
                     }
                 }
                 else if (this.draggedObject instanceof Ball) {
