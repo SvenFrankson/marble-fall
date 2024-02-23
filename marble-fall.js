@@ -14,10 +14,8 @@ class Ball extends BABYLON.Mesh {
         this._showPositionZeroGhost = false;
         this._timer = 0;
         this.strReaction = 0;
-        this.marbleChocSound = new Sound({
-            fileName: "./datas/sounds/marble-choc.wav",
-            loop: false
-        });
+        this.marbleChocSound = new BABYLON.Sound("marble-choc-sound", "./datas/sounds/marble-choc.wav", this.getScene(), undefined, { loop: false, autoplay: false });
+        this.railBumpSound = new BABYLON.Sound("rail-bump-sound", "./datas/sounds/rail-bump.wav", this.getScene(), undefined, { loop: false, autoplay: false });
         this.marbleLoopSound = new BABYLON.Sound("marble-loop-sound", "./datas/sounds/marble-loop.wav", this.getScene(), undefined, { loop: true, autoplay: true });
         this.marbleLoopSound.setVolume(0);
     }
@@ -164,8 +162,10 @@ class Ball extends BABYLON.Mesh {
                         let mySpeed = this.velocity.clone();
                         let v = this.velocity.length();
                         if (v > 0.1) {
-                            this.marbleChocSound.volume = v / 5 * this.game.mainVolume;
-                            this.marbleChocSound.play();
+                            if (!this.marbleChocSound.isPlaying) {
+                                this.marbleChocSound.setVolume(v / 5 * this.game.mainVolume);
+                                this.marbleChocSound.play();
+                            }
                         }
                         this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
                         ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
@@ -180,6 +180,16 @@ class Ball extends BABYLON.Mesh {
                 reactions.scaleInPlace(1 / reactionsCount);
                 canceledSpeed.scaleInPlace(1 / reactionsCount).scaleInPlace(1);
                 forcedDisplacement.scaleInPlace(1 / reactionsCount).scaleInPlace(1);
+            }
+            let canceledSpeedLength = canceledSpeed.length();
+            if (canceledSpeedLength > 0.22) {
+                let f = Nabu.MinMax((canceledSpeedLength - 0.22) / 0.5, 0, 1);
+                let v = (1 - f) * 0.01 + f * 0.05;
+                if (!this.railBumpSound.isPlaying) {
+                    console.log(canceledSpeedLength.toFixed(3) + " " + v.toFixed(3));
+                    this.railBumpSound.setVolume(v);
+                    this.railBumpSound.play();
+                }
             }
             this.strReaction = this.strReaction * 0.98;
             this.strReaction += reactions.length() * 0.02;
