@@ -53,7 +53,7 @@ class Ball extends BABYLON.Mesh {
     }
 
     public marbleChocSound: Sound;
-    public marbleLoopSound: Sound;
+    public marbleLoopSound: BABYLON.Sound;
 
     constructor(public positionZero: BABYLON.Vector3, public machine: Machine) {
         super("ball");
@@ -61,10 +61,8 @@ class Ball extends BABYLON.Mesh {
             fileName: "./datas/sounds/marble-choc.wav",
             loop: false
         });
-        this.marbleLoopSound = new Sound({
-            fileName: "./datas/sounds/loop.wav",
-            loop: true
-        });
+        this.marbleLoopSound = new BABYLON.Sound("marble-loop-sound", "./datas/sounds/marble-loop.wav", this.getScene(), undefined, { loop: true, autoplay: true });
+        this.marbleLoopSound.setVolume(0);
     }
 
     public select(): void {
@@ -83,8 +81,7 @@ class Ball extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
-        this.marbleLoopSound.volume = 0;
-        this.marbleLoopSound.play(true);
+        this.marbleLoopSound.setVolume(0);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
 
@@ -121,7 +118,7 @@ class Ball extends BABYLON.Mesh {
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.setVolume(0, 0.1);
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -136,7 +133,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.setVolume(0, 0.1);
     }
 
     private _timer: number = 0;
@@ -237,6 +234,7 @@ class Ball extends BABYLON.Mesh {
             
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainVolume;
+        let f = this.velocity.length();
+        this.marbleLoopSound.setVolume(2 * this.strReaction * f * this.game.timeFactor * this.game.mainVolume);
     }
 }

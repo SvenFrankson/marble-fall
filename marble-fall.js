@@ -18,10 +18,8 @@ class Ball extends BABYLON.Mesh {
             fileName: "./datas/sounds/marble-choc.wav",
             loop: false
         });
-        this.marbleLoopSound = new Sound({
-            fileName: "./datas/sounds/loop.wav",
-            loop: true
-        });
+        this.marbleLoopSound = new BABYLON.Sound("marble-loop-sound", "./datas/sounds/marble-loop.wav", this.getScene(), undefined, { loop: true, autoplay: true });
+        this.marbleLoopSound.setVolume(0);
     }
     get game() {
         return this.machine.game;
@@ -71,8 +69,7 @@ class Ball extends BABYLON.Mesh {
         });
     }
     async instantiate() {
-        this.marbleLoopSound.volume = 0;
-        this.marbleLoopSound.play(true);
+        this.marbleLoopSound.setVolume(0);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
         this.material = this.game.steelMaterial;
@@ -103,7 +100,7 @@ class Ball extends BABYLON.Mesh {
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.setVolume(0, 0.1);
         this.marbleLoopSound.pause();
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
@@ -117,7 +114,7 @@ class Ball extends BABYLON.Mesh {
         this.position.copyFrom(this.positionZero);
         this.velocity.copyFromFloats(0, 0, 0);
         this._timer = 0;
-        this.marbleLoopSound.volume = 0;
+        this.marbleLoopSound.setVolume(0, 0.1);
     }
     update(dt) {
         if (this.position.y < this.machine.baseMeshMinY - 0.5) {
@@ -194,7 +191,8 @@ class Ball extends BABYLON.Mesh {
             this.velocity.addInPlace(acceleration.scale(dt));
             this.position.addInPlace(this.velocity.scale(dt));
         }
-        this.marbleLoopSound.volume = this.strReaction * this.velocity.length() * this.game.timeFactor * this.game.mainVolume;
+        let f = this.velocity.length();
+        this.marbleLoopSound.setVolume(2 * this.strReaction * f * this.game.timeFactor * this.game.mainVolume);
     }
 }
 class Configuration {
@@ -974,7 +972,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = false;
+        this.DEBUG_MODE = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -1013,6 +1011,12 @@ class Game {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
         this.engine = new BABYLON.Engine(this.canvas, true);
         BABYLON.Engine.ShadersRepository = "./shaders/";
+        BABYLON.Engine.audioEngine.useCustomUnlockedButton = true;
+        window.addEventListener("click", () => {
+            if (!BABYLON.Engine.audioEngine.unlocked) {
+                BABYLON.Engine.audioEngine.unlock();
+            }
+        }, { once: true });
         let savedMainSound = window.localStorage.getItem("saved-main-volume");
         if (savedMainSound) {
             let v = parseFloat(savedMainSound);
@@ -1940,12 +1944,7 @@ class Machine {
         }
         else {
             for (let i = 0; i < this.balls.length; i++) {
-                if (this.balls[i].marbleLoopSound.volume > 0.01) {
-                    this.balls[i].marbleLoopSound.volume *= 0.9;
-                }
-                else {
-                    this.balls[i].marbleLoopSound.volume = 0;
-                }
+                this.balls[i].marbleLoopSound.setVolume(0, 0.1);
             }
         }
     }
