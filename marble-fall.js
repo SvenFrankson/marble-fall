@@ -4074,7 +4074,7 @@ class MachineEditor {
                     let nBalls = Math.floor(elevator.boxesCount / 2);
                     for (let i = 0; i < nBalls; i++) {
                         let box = elevator.boxes[i];
-                        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-0.011, 0.009, 0), box.getWorldMatrix());
+                        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-0.011 * (elevator.mirrorX ? -1 : 1), 0.009, 0), box.getWorldMatrix());
                         let ball = new Ball(pos, this.machine);
                         ball.instantiate().then(() => {
                             ball.setShowPositionZeroGhost(true);
