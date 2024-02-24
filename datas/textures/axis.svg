@@ -47,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -113,5 +113,38 @@
          y="183.84856"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#006f3c;fill-opacity:1;stroke-width:0.264583"
          id="tspan908">Y</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3444px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#264b96;fill-opacity:1;stroke-width:0.264583"
+       x="147.62366"
+       y="37.68877"
+       id="text876-4"><tspan
+         sodipodi:role="line"
+         id="tspan874-3"
+         x="147.62366"
+         y="37.68877"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3444px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#264b96;fill-opacity:1;stroke-width:0.264583">depth</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3444px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#bf212f;fill-opacity:1;stroke-width:0.264583"
+       x="212.75943"
+       y="179.05186"
+       id="text876-5-7"><tspan
+         sodipodi:role="line"
+         id="tspan874-6-0"
+         x="212.75943"
+         y="179.05186"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3444px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#bf212f;fill-opacity:1;stroke-width:0.264583">width</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3444px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#006f3c;fill-opacity:1;stroke-width:0.264583"
+       x="42.710102"
+       y="201.35246"
+       id="text876-8-9"><tspan
+         sodipodi:role="line"
+         x="42.710102"
+         y="201.35246"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.3444px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#006f3c;fill-opacity:1;stroke-width:0.264583"
+         id="tspan908-9">height</tspan></text>
   </g>
 </svg>
