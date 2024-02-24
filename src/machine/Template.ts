@@ -48,7 +48,7 @@ class TrackTemplate {
         }
     }
     
-    public onNormalEvaluated: (n: BABYLON.Vector3) => void;
+    public onNormalEvaluated: (n: BABYLON.Vector3, p?: BABYLON.Vector3, relativeIndex?: number) => void;
     public initialize(): void {
         for (let i = 1; i < this.trackpoints.length - 1; i++) {
 
@@ -103,7 +103,7 @@ class TrackTemplate {
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
             if (this.onNormalEvaluated) {
-                this.onNormalEvaluated(n);
+                this.onNormalEvaluated(n, point, i / (this.interpolatedPoints.length - 1));
             }
             normalsForward.push(n);
         }
@@ -119,7 +119,7 @@ class TrackTemplate {
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
             if (this.onNormalEvaluated) {
-                this.onNormalEvaluated(n);
+                this.onNormalEvaluated(n, point, i / (this.interpolatedPoints.length - 1));
             }
             normalsBackward[i] = n;
         }
@@ -131,7 +131,7 @@ class TrackTemplate {
         }
 
         let maxR = 0;
-        this.angles = [0];
+        this.angles = [this.preferedStartBank];
         for (let i = 1; i < N - 1; i++) {
             let n = this.interpolatedNormals[i];
 
@@ -162,7 +162,29 @@ class TrackTemplate {
                 this.angles[i] = 0;
             }
         }
-        this.angles.push(0);
+        this.angles.push(this.preferedEndBank);
+
+        let dec = 1;
+        for (let i = 1; i < 0.5 * (N - 1); i++) {
+            if (Math.abs(this.angles[i]) < Math.abs(this.preferedStartBank) * dec) {
+                this.angles[i] = this.preferedStartBank * dec;
+                dec *= 0.9;
+            }
+            else {
+                i = Infinity;
+            }
+        }
+        
+        dec = 1;
+        for (let i = N - 1 - 1; i > 0.5 * (N - 1); i--) {
+            if (Math.abs(this.angles[i]) < Math.abs(this.preferedEndBank) * dec) {
+                this.angles[i] = this.preferedEndBank * dec;
+                dec *= 0.9;
+            }
+            else {
+                i = - Infinity;
+            }
+        }
 
         let tmpAngles = [...this.angles];
         let f = 1;
@@ -285,6 +307,11 @@ class TemplateManager {
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 data = UTurn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
+            else if (partName.startsWith("wall-")) {
+                let h = parseInt(partName.split("-")[1].split(".")[0]);
+                let d = parseInt(partName.split("-")[1].split(".")[1]);
+                data = Wall.GenerateTemplate(h, d, mirrorX);
+            }
             else if (partName === "uturnsharp") {
                 data = UTurnSharp.GenerateTemplate(mirrorX);
             }
@@ -328,7 +355,8 @@ class TemplateManager {
             else if (partName.startsWith("spiral-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
-                data = Spiral.GenerateTemplate(w, h, mirrorX, mirrorZ);
+                let n = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Spiral.GenerateTemplate(w, h, n, mirrorX, mirrorZ);
             }
             datas[mirrorIndex] = data;
         }

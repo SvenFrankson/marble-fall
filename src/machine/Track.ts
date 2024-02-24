@@ -104,7 +104,7 @@ class Track {
 
         //Mummu.DrawDebugPoint(this.startWorldPosition.add(this.endWorldPosition).scale(0.5), 60, BABYLON.Color3.Blue());
 
-        let startBank = 0;
+        let startBank = this.preferedStartBank;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
             this.part.addNeighbour(otherS.part);
@@ -119,7 +119,7 @@ class Track {
             }
         }
 
-        let endBank = 0;
+        let endBank = this.preferedEndBank;
         let otherE = this.part.machine.getBankAt(this.endWorldPosition, this.part);
         if (otherE) {
             this.part.addNeighbour(otherE.part);
@@ -163,6 +163,30 @@ class Track {
                 }
             }
         }
+
+        /*
+        let dec = 1;
+        for (let i = 1; i <= 0.5 * (N - 1); i++) {
+            if (Math.abs(angles[i]) < Math.abs(startBank) * dec) {
+                angles[i] = startBank * dec;
+                dec *= 0.99;
+            }
+            else {
+                i = Infinity;
+            }
+        }
+        
+        dec = 1;
+        for (let i = N - 1 - 1; i >= 0.5 * (N - 1); i--) {
+            if (Math.abs(angles[i]) < Math.abs(endBank) * dec) {
+                angles[i] = endBank * dec;
+                dec *= 0.99;
+            }
+            else {
+                i = - Infinity;
+            }
+        }
+        */
 
         for (let i = 0; i < N; i++) {
             let prevPoint = this.templateInterpolatedPoints[i - 1];

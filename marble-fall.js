@@ -184,7 +184,7 @@ class Ball extends BABYLON.Mesh {
             let canceledSpeedLength = canceledSpeed.length();
             if (canceledSpeedLength > 0.22) {
                 let f = Nabu.MinMax((canceledSpeedLength - 0.22) / 0.5, 0, 1);
-                let v = (1 - f) * 0.01 + f * 0.05;
+                let v = (1 - f) * 0.01 + f * 0.03;
                 if (!this.railBumpSound.isPlaying) {
                     console.log(canceledSpeedLength.toFixed(3) + " " + v.toFixed(3));
                     this.railBumpSound.setVolume(v);
@@ -732,38 +732,6 @@ var popopo = {
         { name: "ramp-1.1.5", i: 0, j: -2, k: 0, mirrorX: false, mirrorZ: true },
     ],
 };
-var aerial = {
-    balls: [
-        { x: 0.3039999976158142, y: -0.36149999833106994, z: 0 },
-        { x: 0.3039999976158142, y: -0.28106269574165343, z: 0 },
-        { x: 0.3039999976158142, y: -0.20062536334991454, z: 0 },
-        { x: 0.3039999976158142, y: -0.12018804585933686, z: 0 },
-        { x: 0.3039999976158142, y: -0.03975073954463005, z: 0 },
-        { x: 0.3039999976158142, y: 0.04068657422065735, z: 0 },
-    ],
-    parts: [
-        { name: "uturn-0.3", i: 1, j: 12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.2.3", i: 2, j: 12, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturn-0.3", i: 3, j: 12, k: 1 },
-        { name: "ramp-1.0.2", i: 2, j: 12, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
-        { name: "ramp-1.1.1", i: 0, j: 9, k: 5, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
-        { name: "uturn-0.4", i: -4, j: 8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
-        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
-        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
-        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
-        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-    ],
-};
 var xxlStressTest = {
     balls: [
         { x: -0.9259999618530274, y: -0.36149999833106994, z: -0.30000001192092896 },
@@ -817,17 +785,45 @@ var xxlStressTest = {
         { name: "snake-5.1.2", i: -5, j: 11, k: 0, mirrorX: false, mirrorZ: false },
     ],
 };
-var testBanks = {
-    balls: [],
+var aerial = { "balls": [{ "x": 0.3039999976158142, "y": -0.36149999833106994, "z": 0 }, { "x": 0.3039999976158142, "y": -0.28106269574165343, "z": 0 }, { "x": 0.3039999976158142, "y": -0.20062536334991454, "z": 0 }, { "x": 0.3039999976158142, "y": -0.12018804585933686, "z": 0 }, { "x": 0.3039999976158142, "y": -0.03975073954463005, "z": 0 }, { "x": 0.3039999976158142, "y": 0.04068657422065735, "z": 0 }], "parts": [{ "name": "uturn-0.3", "i": 1, "j": 12, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.2.3", "i": 2, "j": 12, "k": 1, "mirrorX": true, "mirrorZ": false }, { "name": "uturn-0.3", "i": 3, "j": 12, "k": 1 }, { "name": "ramp-1.0.2", "i": 2, "j": 12, "k": 2, "mirrorX": false, "mirrorZ": false }, { "name": "loop-1.3.1", "i": 1, "j": 10, "k": 1 }, { "name": "ramp-1.1.1", "i": 0, "j": 9, "k": 5, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.6.2", "i": -2, "j": 8, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturn-1.5", "i": 1, "j": 8, "k": 1 }, { "name": "uturn-0.4", "i": -4, "j": 8, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-3.0.3", "i": -2, "j": 8, "k": 1, "mirrorX": false, "mirrorZ": true }, { "name": "uturn-0.3", "i": 3, "j": 6, "k": 5 }, { "name": "loop-1.4.1", "i": -1, "j": 6, "k": 2 }, { "name": "ramp-2.3.6", "i": 1, "j": 3, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "ramp-2.7.2", "i": -1, "j": 3, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "loop-1.6.1", "i": 2, "j": 2, "k": 2 }, { "name": "ramp-2.4.1", "i": 0, "j": 2, "k": 2, "mirrorX": false, "mirrorZ": false }, { "name": "uturn-1.3", "i": -1, "j": 1, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.0.1", "i": 0, "j": 1, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "spiral-1.3.2", "i": 1, "j": -2, "k": 0, "mirrorX": true }, { "name": "elevator-15", "i": 2, "j": -3, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturn-0.2", "i": -2, "j": 10, "k": 1, "mirrorX": true }] };
+var nested = {
+    balls: [
+        { x: -0.8997140050952298, y: 0.089712031153814, z: -0.05999999865889549 },
+        { x: -0.903104638235234, y: 0.16702247701057024, z: -0.05999999865889538 },
+        { x: -0.9034898166231137, y: 0.24555427559349505, z: -0.05999999865889549 },
+        { x: -0.9038978585970185, y: 0.32349552433272327, z: -0.05999999865889538 },
+        { x: -0.902028486635497, y: 0.4025970135399257, z: -0.05999999865889549 },
+    ],
     parts: [
-        { name: "elevator-4", i: 2, j: -5, k: 0, mirrorZ: false },
-        { name: "ramp-1.1.3", i: 0, j: -3, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturn-0.2", i: 0, j: -6, k: 0 },
-        { name: "wave-2.1.1", i: 1, j: -10, k: 0 },
-        { name: "snake-2.1.1", i: -2, j: -11, k: 0 },
-        { name: "uturnsharp", i: 1, j: -9, k: 2 },
-        { name: "loop-1.4.1", i: 0, j: -17, k: 0 },
-        { name: "spiral-1.2", i: -2, j: -6, k: 0 },
+        { name: "split", i: -4, j: -13, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: -5, j: -11, k: 1, mirrorX: true },
+        { name: "ramp-1.0.1", i: -4, j: -11, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "wall-5.3", i: 0, j: -7, k: 0, mirrorZ: false },
+        { name: "uturn-0.4", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "flatjoin", i: 2, j: -3, k: 2, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -2, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -5, j: -13, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2.1", i: 1, j: -7, k: 1 },
+        { name: "loop-1.2.1", i: 1, j: -6, k: 2, mirrorZ: true },
+        { name: "ramp-3.9.1", i: -3, j: -11, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "spiral-3.8.4", i: -3, j: -11, k: 1 },
+        { name: "uturn-0.2", i: 0, j: 2, k: 1 },
+        { name: "ramp-5.1.1", i: -5, j: 2, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-5.1.1", i: -5, j: 1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "split", i: -4, j: -1, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "elevator-17", i: -6, j: -14, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: -3, j: 1, k: 4 },
+        { name: "uturn-0.4", i: -7, j: 1, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.0.1", i: -5, j: 1, k: 5, mirrorX: false, mirrorZ: false },
+        { name: "elevator-25", i: -5, j: -24, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.5.2", i: -2, j: -17, k: 0, mirrorZ: true },
+        { name: "uturn-0.2", i: -1, j: -13, k: 0 },
+        { name: "ramp-2.0.1", i: -3, j: -13, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.10.1", i: -4, j: -23, k: 4 },
+        { name: "ramp-5.0.1", i: -3, j: -1, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.3", i: 3, j: -2, k: 2 },
+        { name: "ramp-1.1.1", i: 2, j: -2, k: 4, mirrorX: true, mirrorZ: false },
     ],
 };
 class HelperShape {
@@ -2595,10 +2591,11 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
+    "wall-6.2",
     "uturnsharp",
     "loop-1.1",
-    "spiral-1.2",
-    "elevator-4"
+    "spiral-1.2.1",
+    "elevator-4",
 ];
 class MachinePartFactory {
     constructor(machine) {
@@ -2653,6 +2650,13 @@ class MachinePartFactory {
                 return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
             }
         }
+        if (trackname.startsWith("wall-")) {
+            let h = parseInt(trackname.split("-")[1].split(".")[0]);
+            let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            if (isFinite(h) && isFinite(d)) {
+                return new Wall(this.machine, i, j, k, h, d, mirrorX);
+            }
+        }
         if (trackname === "uturnsharp") {
             return new UTurnSharp(this.machine, i, j, k, mirrorX, mirrorZ);
         }
@@ -2665,7 +2669,8 @@ class MachinePartFactory {
         if (trackname.startsWith("spiral-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Spiral(this.machine, i, j, k, w, h, mirrorX, mirrorZ);
+            let n = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Spiral(this.machine, i, j, k, w, h, n, mirrorX, mirrorZ);
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
@@ -2940,7 +2945,7 @@ class TrackTemplate {
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
             if (this.onNormalEvaluated) {
-                this.onNormalEvaluated(n);
+                this.onNormalEvaluated(n, point, i / (this.interpolatedPoints.length - 1));
             }
             normalsForward.push(n);
         }
@@ -2955,7 +2960,7 @@ class TrackTemplate {
             let right = BABYLON.Vector3.Cross(n, dir);
             n = BABYLON.Vector3.Cross(dir, right).normalize();
             if (this.onNormalEvaluated) {
-                this.onNormalEvaluated(n);
+                this.onNormalEvaluated(n, point, i / (this.interpolatedPoints.length - 1));
             }
             normalsBackward[i] = n;
         }
@@ -2965,7 +2970,7 @@ class TrackTemplate {
             this.interpolatedNormals[i] = BABYLON.Vector3.Lerp(normalsForward[i], normalsBackward[i], f).normalize();
         }
         let maxR = 0;
-        this.angles = [0];
+        this.angles = [this.preferedStartBank];
         for (let i = 1; i < N - 1; i++) {
             let n = this.interpolatedNormals[i];
             let prevPoint = this.interpolatedPoints[i - 1];
@@ -2990,7 +2995,27 @@ class TrackTemplate {
                 this.angles[i] = 0;
             }
         }
-        this.angles.push(0);
+        this.angles.push(this.preferedEndBank);
+        let dec = 1;
+        for (let i = 1; i < 0.5 * (N - 1); i++) {
+            if (Math.abs(this.angles[i]) < Math.abs(this.preferedStartBank) * dec) {
+                this.angles[i] = this.preferedStartBank * dec;
+                dec *= 0.9;
+            }
+            else {
+                i = Infinity;
+            }
+        }
+        dec = 1;
+        for (let i = N - 1 - 1; i > 0.5 * (N - 1); i--) {
+            if (Math.abs(this.angles[i]) < Math.abs(this.preferedEndBank) * dec) {
+                this.angles[i] = this.preferedEndBank * dec;
+                dec *= 0.9;
+            }
+            else {
+                i = -Infinity;
+            }
+        }
         let tmpAngles = [...this.angles];
         let f = 1;
         for (let n = 0; n < this.partTemplate.angleSmoothSteps; n++) {
@@ -3094,6 +3119,11 @@ class TemplateManager {
                 let d = parseInt(partName.split("-")[1].split(".")[1]);
                 data = UTurn.GenerateTemplate(h, d, mirrorX, mirrorZ);
             }
+            else if (partName.startsWith("wall-")) {
+                let h = parseInt(partName.split("-")[1].split(".")[0]);
+                let d = parseInt(partName.split("-")[1].split(".")[1]);
+                data = Wall.GenerateTemplate(h, d, mirrorX);
+            }
             else if (partName === "uturnsharp") {
                 data = UTurnSharp.GenerateTemplate(mirrorX);
             }
@@ -3137,7 +3167,8 @@ class TemplateManager {
             else if (partName.startsWith("spiral-")) {
                 let w = parseInt(partName.split("-")[1].split(".")[0]);
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
-                data = Spiral.GenerateTemplate(w, h, mirrorX, mirrorZ);
+                let n = parseInt(partName.split("-")[1].split(".")[2]);
+                data = Spiral.GenerateTemplate(w, h, n, mirrorX, mirrorZ);
             }
             datas[mirrorIndex] = data;
         }
@@ -3231,7 +3262,7 @@ class Track {
         let angles = [...this.template.angles];
         this.trackInterpolatedNormals = this.template.interpolatedNormals.map(v => { return v.clone(); });
         //Mummu.DrawDebugPoint(this.startWorldPosition.add(this.endWorldPosition).scale(0.5), 60, BABYLON.Color3.Blue());
-        let startBank = 0;
+        let startBank = this.preferedStartBank;
         let otherS = this.part.machine.getBankAt(this.startWorldPosition, this.part);
         if (otherS) {
             this.part.addNeighbour(otherS.part);
@@ -3244,7 +3275,7 @@ class Track {
                 startBank = this.preferedStartBank * 0.5 + otherBank * 0.5;
             }
         }
-        let endBank = 0;
+        let endBank = this.preferedEndBank;
         let otherE = this.part.machine.getBankAt(this.endWorldPosition, this.part);
         if (otherE) {
             this.part.addNeighbour(otherE.part);
@@ -3282,6 +3313,29 @@ class Track {
                 }
             }
         }
+        /*
+        let dec = 1;
+        for (let i = 1; i <= 0.5 * (N - 1); i++) {
+            if (Math.abs(angles[i]) < Math.abs(startBank) * dec) {
+                angles[i] = startBank * dec;
+                dec *= 0.99;
+            }
+            else {
+                i = Infinity;
+            }
+        }
+        
+        dec = 1;
+        for (let i = N - 1 - 1; i >= 0.5 * (N - 1); i--) {
+            if (Math.abs(angles[i]) < Math.abs(endBank) * dec) {
+                angles[i] = endBank * dec;
+                dec *= 0.99;
+            }
+            else {
+                i = - Infinity;
+            }
+        }
+        */
         for (let i = 0; i < N; i++) {
             let prevPoint = this.templateInterpolatedPoints[i - 1];
             let point = this.templateInterpolatedPoints[i];
@@ -5649,33 +5703,37 @@ class Snake extends MachinePartWithOriginDestination {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Spiral extends MachinePart {
-    constructor(machine, i, j, k, w = 1, h = 1, mirrorX, mirrorZ) {
+    constructor(machine, i, j, k, w = 1, h = 1, n = 1, mirrorX, mirrorZ) {
         super(machine, i, j, k);
-        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
+        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0) + "." + n.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
-    static GenerateTemplate(w, h, mirrorX, mirrorZ) {
+    static GenerateTemplate(w, h, n, mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
-        template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
-        template.angleSmoothSteps = 20;
+        template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0) + "." + n.toFixed(0);
+        template.angleSmoothSteps = 50;
         template.w = w;
         template.h = h;
         template.d = 3;
+        template.n = n;
         template.mirrorX = mirrorX;
         template.mirrorZ = mirrorZ;
         template.xExtendable = true;
         template.yExtendable = true;
+        template.nExtendable = true;
         template.xMirrorable = true;
         template.zMirrorable = true;
         template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].preferedStartBank = -Math.PI / 10 * (template.mirrorX ? -1 : 1);
+        template.trackTemplates[0].preferedEndBank = -Math.PI / 10 * (template.mirrorX ? -1 : 1);
         template.trackTemplates[0].onNormalEvaluated = (n => {
             n.copyFromFloats(0, 1, 0);
         });
         template.trackTemplates[0].trackpoints = [
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), Tools.V3Dir(90))
         ];
-        let nSpirals = h;
+        let nSpirals = template.n;
         let xCenterStart = 0;
         let xCenterEnd = tileWidth * (template.w - 1);
         let r = tileWidth * 0.5 * 0.8;
@@ -5700,6 +5758,8 @@ class Spiral extends MachinePart {
             template.mirrorZTrackPointsInPlace();
         }
         template.initialize();
+        console.log(template.trackTemplates[0].preferedStartBank);
+        console.log(template.trackTemplates[0].preferedEndBank);
         return template;
     }
 }
@@ -5923,6 +5983,8 @@ class UTurn extends MachinePart {
         let x0 = -tileWidth * 0.5 + 2 * Math.PI * r / 6;
         let r2 = r / Math.SQRT2;
         template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].preferedStartBank = -Math.PI / 10 * (template.mirrorX ? -1 : 1);
+        template.trackTemplates[0].preferedEndBank = -Math.PI / 10 * (template.mirrorX ? -1 : 1);
         template.trackTemplates[0].trackpoints = [
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), new BABYLON.Vector3(1, 0, 0)),
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(x0 + 0, 0, 0)),
@@ -5941,6 +6003,60 @@ class UTurn extends MachinePart {
         }
         if (mirrorZ) {
             template.mirrorZTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+}
+class Wall extends MachinePart {
+    constructor(machine, i, j, k, h = 4, d = 1, mirrorX) {
+        super(machine, i, j, k);
+        let partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.generateWires();
+    }
+    static GenerateTemplate(h, d, mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
+        template.angleSmoothSteps = 50;
+        template.w = Math.ceil(d / 3),
+            template.h = h,
+            template.d = d,
+            template.mirrorX = mirrorX,
+            template.yExtendable = true;
+        template.zExtendable = true;
+        template.minD = 2;
+        template.xMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let r = 0.5 * tileDepth * (template.d - 1);
+        let zEnd = -tileDepth * (template.d - 1);
+        let yStart = -tileHeight * template.h;
+        template.trackTemplates[0] = new TrackTemplate(template);
+        let center = new BABYLON.Vector3(-tileWidth * 0.5, 0, zEnd * 0.5);
+        template.trackTemplates[0].onNormalEvaluated = ((n, p) => {
+            let dx = Math.abs(p.x) / (tileWidth * 0.5);
+            let dy = Math.abs(p.y - yStart) / (r * 0.5);
+            let d = Math.sqrt(dx * dx + dy * dy);
+            let f = Nabu.MinMax(1 - d, 0, 1);
+            let newN = center.subtract(p).normalize();
+            n.scaleInPlace(1 - f).addInPlace(newN.scaleInPlace(f));
+        });
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, yStart, 0), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0, yStart, 0), new BABYLON.Vector3(1, 0, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, yStart + r, 0), new BABYLON.Vector3(0, 1, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, -r, 0), new BABYLON.Vector3(0, 1, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, 0, zEnd * 0.5), new BABYLON.Vector3(0, 0, -1)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, -r, zEnd), new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, yStart + r, zEnd), new BABYLON.Vector3(0, -1, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0, yStart, zEnd), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, yStart, zEnd), new BABYLON.Vector3(-1, 0, 0)),
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
         }
         template.initialize();
         return template;

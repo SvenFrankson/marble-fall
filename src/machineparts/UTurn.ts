@@ -35,6 +35,8 @@ class UTurn extends MachinePart {
         let x0 = - tileWidth * 0.5 + 2 * Math.PI * r / 6;
         let r2 = r / Math.SQRT2;
         template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].preferedStartBank = - Math.PI / 10 * (template.mirrorX ? - 1 : 1);
+        template.trackTemplates[0].preferedEndBank = - Math.PI / 10 * (template.mirrorX ? - 1 : 1);
         template.trackTemplates[0].trackpoints = [
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), new BABYLON.Vector3(1, 0, 0)),
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(x0 + 0, 0, 0)),

@@ -425,39 +425,6 @@ var popopo = {
     ],
 };
 
-var aerial = {
-    balls: [
-        { x: 0.3039999976158142, y: -0.36149999833106994, z: 0 },
-        { x: 0.3039999976158142, y: -0.28106269574165343, z: 0 },
-        { x: 0.3039999976158142, y: -0.20062536334991454, z: 0 },
-        { x: 0.3039999976158142, y: -0.12018804585933686, z: 0 },
-        { x: 0.3039999976158142, y: -0.03975073954463005, z: 0 },
-        { x: 0.3039999976158142, y: 0.04068657422065735, z: 0 },
-    ],
-    parts: [
-        { name: "uturn-0.3", i: 1, j: 12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.2.3", i: 2, j: 12, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturn-0.3", i: 3, j: 12, k: 1 },
-        { name: "ramp-1.0.2", i: 2, j: 12, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
-        { name: "ramp-1.1.1", i: 0, j: 9, k: 5, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
-        { name: "uturn-0.4", i: -4, j: 8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
-        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
-        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
-        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
-        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-2.2.1", i: 0, j: -1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "elevator-14", i: 2, j: -2, k: 0, mirrorX: false, mirrorZ: false },
-    ],
-};
-
 var xxlStressTest = {
     balls: [
         { x: -0.9259999618530274, y: -0.36149999833106994, z: -0.30000001192092896 },
@@ -512,16 +479,45 @@ var xxlStressTest = {
     ],
 };
 
-var testBanks = {
-    balls: [],
+var aerial = {"balls":[{"x":0.3039999976158142,"y":-0.36149999833106994,"z":0},{"x":0.3039999976158142,"y":-0.28106269574165343,"z":0},{"x":0.3039999976158142,"y":-0.20062536334991454,"z":0},{"x":0.3039999976158142,"y":-0.12018804585933686,"z":0},{"x":0.3039999976158142,"y":-0.03975073954463005,"z":0},{"x":0.3039999976158142,"y":0.04068657422065735,"z":0}],"parts":[{"name":"uturn-0.3","i":1,"j":12,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-1.2.3","i":2,"j":12,"k":1,"mirrorX":true,"mirrorZ":false},{"name":"uturn-0.3","i":3,"j":12,"k":1},{"name":"ramp-1.0.2","i":2,"j":12,"k":2,"mirrorX":false,"mirrorZ":false},{"name":"loop-1.3.1","i":1,"j":10,"k":1},{"name":"ramp-1.1.1","i":0,"j":9,"k":5,"mirrorX":true,"mirrorZ":false},{"name":"ramp-3.6.2","i":-2,"j":8,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"uturn-1.5","i":1,"j":8,"k":1},{"name":"uturn-0.4","i":-4,"j":8,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-3.0.3","i":-2,"j":8,"k":1,"mirrorX":false,"mirrorZ":true},{"name":"uturn-0.3","i":3,"j":6,"k":5},{"name":"loop-1.4.1","i":-1,"j":6,"k":2},{"name":"ramp-2.3.6","i":1,"j":3,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"ramp-2.7.2","i":-1,"j":3,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"loop-1.6.1","i":2,"j":2,"k":2},{"name":"ramp-2.4.1","i":0,"j":2,"k":2,"mirrorX":false,"mirrorZ":false},{"name":"uturn-1.3","i":-1,"j":1,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-1.0.1","i":0,"j":1,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"spiral-1.3.2","i":1,"j":-2,"k":0,"mirrorX":true},{"name":"elevator-15","i":2,"j":-3,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"uturn-0.2","i":-2,"j":10,"k":1,"mirrorX":true}]};
+
+var nested = {
+    balls: [
+        { x: -0.8997140050952298, y: 0.089712031153814, z: -0.05999999865889549 },
+        { x: -0.903104638235234, y: 0.16702247701057024, z: -0.05999999865889538 },
+        { x: -0.9034898166231137, y: 0.24555427559349505, z: -0.05999999865889549 },
+        { x: -0.9038978585970185, y: 0.32349552433272327, z: -0.05999999865889538 },
+        { x: -0.902028486635497, y: 0.4025970135399257, z: -0.05999999865889549 },
+    ],
     parts: [
-        { name: "elevator-4", i: 2, j: -5, k: 0, mirrorZ: false },
-        { name: "ramp-1.1.3", i: 0, j: -3, k: 0, mirrorX: false, mirrorZ: true },
-        { name: "uturn-0.2", i: 0, j: -6, k: 0 },
-        { name: "wave-2.1.1", i: 1, j: -10, k: 0 },
-        { name: "snake-2.1.1", i: -2, j: -11, k: 0 },
-        { name: "uturnsharp", i: 1, j: -9, k: 2 },
-        { name: "loop-1.4.1", i: 0, j: -17, k: 0 },
-        { name: "spiral-1.2", i: -2, j: -6, k: 0 },
+        { name: "split", i: -4, j: -13, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.2", i: -5, j: -11, k: 1, mirrorX: true },
+        { name: "ramp-1.0.1", i: -4, j: -11, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "wall-5.3", i: 0, j: -7, k: 0, mirrorZ: false },
+        { name: "uturn-0.4", i: -2, j: -2, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "flatjoin", i: 2, j: -3, k: 2, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -2, k: 3, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: -5, j: -13, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 0, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "loop-1.2.1", i: 1, j: -7, k: 1 },
+        { name: "loop-1.2.1", i: 1, j: -6, k: 2, mirrorZ: true },
+        { name: "ramp-3.9.1", i: -3, j: -11, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "spiral-3.8.4", i: -3, j: -11, k: 1 },
+        { name: "uturn-0.2", i: 0, j: 2, k: 1 },
+        { name: "ramp-5.1.1", i: -5, j: 2, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "ramp-5.1.1", i: -5, j: 1, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "split", i: -4, j: -1, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "elevator-17", i: -6, j: -14, k: 1, mirrorX: true, mirrorZ: false },
+        { name: "uturn-0.2", i: -3, j: 1, k: 4 },
+        { name: "uturn-0.4", i: -7, j: 1, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "ramp-2.0.1", i: -5, j: 1, k: 5, mirrorX: false, mirrorZ: false },
+        { name: "elevator-25", i: -5, j: -24, k: 4, mirrorX: true, mirrorZ: false },
+        { name: "loop-1.5.2", i: -2, j: -17, k: 0, mirrorZ: true },
+        { name: "uturn-0.2", i: -1, j: -13, k: 0 },
+        { name: "ramp-2.0.1", i: -3, j: -13, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-2.10.1", i: -4, j: -23, k: 4 },
+        { name: "ramp-5.0.1", i: -3, j: -1, k: 4, mirrorX: false, mirrorZ: false },
+        { name: "uturn-0.3", i: 3, j: -2, k: 2 },
+        { name: "ramp-1.1.1", i: 2, j: -2, k: 4, mirrorX: true, mirrorZ: false },
     ],
 };

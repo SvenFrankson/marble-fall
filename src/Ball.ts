@@ -225,7 +225,7 @@ class Ball extends BABYLON.Mesh {
             let canceledSpeedLength = canceledSpeed.length();
             if (canceledSpeedLength > 0.22) {
                 let f = Nabu.MinMax((canceledSpeedLength - 0.22) / 0.5, 0, 1);
-                let v = (1 - f) * 0.01 + f * 0.05;
+                let v = (1 - f) * 0.01 + f * 0.03;
                 if (!this.railBumpSound.isPlaying) {
                     console.log(canceledSpeedLength.toFixed(3) + " " + v.toFixed(3));
                     this.railBumpSound.setVolume(v);

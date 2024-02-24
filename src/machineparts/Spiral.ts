@@ -3,32 +3,36 @@
 class Spiral extends MachinePart {
 
 
-    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
+    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, n: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
         super(machine, i, j, k);
 
-        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
+        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0) + "." + n.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();
     }
 
-    public static GenerateTemplate(w: number, h: number, mirrorX: boolean, mirrorZ: boolean): MachinePartTemplate {
+    public static GenerateTemplate(w: number, h: number, n: number, mirrorX: boolean, mirrorZ: boolean): MachinePartTemplate {
         let template = new MachinePartTemplate();
 
-        template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0);
-        template.angleSmoothSteps = 20;
+        template.partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0) + "." + n.toFixed(0);
+        template.angleSmoothSteps = 50;
 
         template.w = w;
         template.h = h;
         template.d = 3;
+        template.n = n;
         template.mirrorX = mirrorX;
         template.mirrorZ = mirrorZ;
             
         template.xExtendable = true;
         template.yExtendable = true;
+        template.nExtendable = true;
         template.xMirrorable = true;
         template.zMirrorable = true;
 
         template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].preferedStartBank = - Math.PI / 10 * (template.mirrorX ? - 1 : 1);
+        template.trackTemplates[0].preferedEndBank = - Math.PI / 10 * (template.mirrorX ? - 1 : 1);
         template.trackTemplates[0].onNormalEvaluated = (n => {
             n.copyFromFloats(0, 1, 0);
         })
@@ -36,7 +40,7 @@ class Spiral extends MachinePart {
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.5, 0, 0), Tools.V3Dir(90))
         ];
 
-        let nSpirals = h;
+        let nSpirals = template.n;
         let xCenterStart = 0;
         let xCenterEnd = tileWidth * (template.w - 1);
         let r = tileWidth * 0.5 * 0.8;
@@ -79,6 +83,9 @@ class Spiral extends MachinePart {
         }
 
         template.initialize();
+
+        console.log(template.trackTemplates[0].preferedStartBank);
+        console.log(template.trackTemplates[0].preferedEndBank);
 
         return template;
     }

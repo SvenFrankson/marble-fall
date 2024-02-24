@@ -6,10 +6,11 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
+    "wall-6.2",
     "uturnsharp",
     "loop-1.1",
-    "spiral-1.2",
-    "elevator-4"
+    "spiral-1.2.1",
+    "elevator-4",
 ];
 
 interface ICreateTrackWHDNProp {
@@ -80,6 +81,13 @@ class MachinePartFactory {
                 return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
             }
         }
+        if (trackname.startsWith("wall-")) {
+            let h = parseInt(trackname.split("-")[1].split(".")[0]);
+            let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            if (isFinite(h) && isFinite(d)) {
+                return new Wall(this.machine, i, j, k, h, d, mirrorX);
+            }
+        }
         if (trackname === "uturnsharp") {
             return new UTurnSharp(this.machine, i, j, k, mirrorX, mirrorZ);
         }
@@ -92,7 +100,8 @@ class MachinePartFactory {
         if (trackname.startsWith("spiral-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
-            return new Spiral(this.machine, i, j, k, w, h, mirrorX, mirrorZ);
+            let n = parseInt(trackname.split("-")[1].split(".")[2]);
+            return new Spiral(this.machine, i, j, k, w, h, n, mirrorX, mirrorZ);
         }
         if (trackname === "join") {
             return new Join(this.machine, i, j, k, mirrorX);
