@@ -1307,7 +1307,8 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                //await this.makeScreenshot("spiral-1.2");
+                //await this.makeScreenshot("spiral-1.2.1");
+                await this.makeScreenshot("wall-4.2");
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -1483,8 +1484,7 @@ class Game {
         this.machine.regenerateBaseAxis();
     }
     async makeScreenshot(objectName) {
-        this.machine.baseWall.isVisible = false;
-        this.machine.baseFrame.isVisible = false;
+        this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
         this.room.ground.position.y = 100;
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
@@ -1501,11 +1501,15 @@ class Game {
                     this.camera.radius = 0.1;
                 }
                 else {
-                    track = this.machine.trackFactory.createTrack(objectName, 0, 0);
+                    let mirrorX = false;
+                    if (objectName.startsWith("wall")) {
+                        mirrorX = true;
+                    }
+                    track = this.machine.trackFactory.createTrack(objectName, 0, 0, 0, mirrorX);
                     this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), -tileHeight * (track.h) * 0.5, 0);
                 }
-                if (objectName.startsWith("spiral")) {
+                if (objectName.startsWith("spiral") || objectName.startsWith("wall")) {
                     this.camera.target.x -= tileWidth * 0.1;
                     this.camera.target.y -= tileHeight * 0.6;
                     this.camera.radius += 0.1;
@@ -1525,16 +1529,14 @@ class Game {
         });
     }
     async makeCircuitScreenshot() {
-        this.machine.baseWall.isVisible = false;
-        this.machine.baseFrame.isVisible = false;
+        this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
         this.room.ground.position.y = 100;
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
                 await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
-                this.machine.baseWall.isVisible = true;
-                this.machine.baseFrame.isVisible = true;
+                this.machine.setBaseIsVisible(true);
                 this.skybox.isVisible = true;
                 this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
                 resolve();
@@ -2185,6 +2187,20 @@ class Machine {
             this.baseAxis.material = this.game.baseAxisMaterial;
         }
     }
+    setBaseIsVisible(v) {
+        if (this.baseFrame) {
+            this.baseFrame.isVisible = v;
+        }
+        if (this.baseWall) {
+            this.baseWall.isVisible = v;
+        }
+        if (this.baseLogo) {
+            this.baseLogo.isVisible = v;
+        }
+        if (this.baseAxis) {
+            this.baseAxis.isVisible = v;
+        }
+    }
     getBankAt(pos, exclude) {
         for (let i = 0; i < this.parts.length; i++) {
             let part = this.parts[i];
@@ -2632,7 +2648,7 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
-    "wall-6.2",
+    "wall-4.2",
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",

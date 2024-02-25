@@ -396,7 +396,8 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                //await this.makeScreenshot("spiral-1.2");
+                //await this.makeScreenshot("spiral-1.2.1");
+                await this.makeScreenshot("wall-4.2");
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -595,8 +596,7 @@ class Game {
     public mode: GameMode;
 
     public async makeScreenshot(objectName: string): Promise<void> {
-        this.machine.baseWall.isVisible = false;
-        this.machine.baseFrame.isVisible = false;
+        this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
         this.room.ground.position.y = 100;
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
@@ -615,12 +615,16 @@ class Game {
                     this.camera.radius = 0.1;
                 }
                 else {
-                    track = this.machine.trackFactory.createTrack(objectName, 0, 0);
+                    let mirrorX = false;
+                    if (objectName.startsWith("wall")) {
+                        mirrorX = true;
+                    }
+                    track = this.machine.trackFactory.createTrack(objectName, 0, 0, 0, mirrorX);
                     this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), - tileHeight * (track.h) * 0.5, 0);
                 }
 
-                if (objectName.startsWith("spiral")) {
+                if (objectName.startsWith("spiral") || objectName.startsWith("wall")) {
                     this.camera.target.x -= tileWidth * 0.1;
                     this.camera.target.y -= tileHeight * 0.6;
                     this.camera.radius += 0.1;
@@ -643,8 +647,7 @@ class Game {
     }
 
     public async makeCircuitScreenshot(): Promise<void> {
-        this.machine.baseWall.isVisible = false;
-        this.machine.baseFrame.isVisible = false;
+        this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
         this.room.ground.position.y = 100;
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
@@ -652,8 +655,7 @@ class Game {
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {
                 await Mummu.MakeScreenshot({ miniatureName: "circuit", size: 512, outlineWidth: 2 });
-                this.machine.baseWall.isVisible = true;
-                this.machine.baseFrame.isVisible = true;
+                this.machine.setBaseIsVisible(true);
                 this.skybox.isVisible = true;
                 this.scene.clearColor = BABYLON.Color4.FromHexString("#272b2e");
                 resolve();

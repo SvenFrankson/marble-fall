@@ -316,6 +316,21 @@ class Machine {
         }
     }
 
+    public setBaseIsVisible(v: boolean) {
+        if (this.baseFrame) {
+            this.baseFrame.isVisible = v;
+        }
+        if (this.baseWall) {
+            this.baseWall.isVisible = v;
+        }
+        if (this.baseLogo) {
+            this.baseLogo.isVisible = v;
+        }
+        if (this.baseAxis) {
+            this.baseAxis.isVisible = v;
+        }
+    }
+
     public getBankAt(pos: BABYLON.Vector3, exclude: MachinePart): { isEnd: boolean, bank: number, part: MachinePart } {
         for (let i = 0; i < this.parts.length; i++) {
             let part = this.parts[i];
