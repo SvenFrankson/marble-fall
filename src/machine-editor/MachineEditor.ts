@@ -184,17 +184,21 @@ class MachineEditor {
         }
         this.updateFloatingElements();
     }
-    public addSelectedObjects(...objects: (MachinePart | Ball)[]): void {
+    public addOrRemoveSelectedObjects(...objects: (MachinePart | Ball)[]): void {
         for (let i = 0; i < objects.length; i++) {
             let object = objects[i];
             let index = this.selectedObjects.indexOf(object);
             if (index === - 1) {
                 this.selectedObjects.push(object);
                 object.select();
-                if (this.game.cameraMode === CameraMode.Selected) {
-                    this._onFocus();
-                }
             }
+            else {
+                this.selectedObjects.splice(index, 1);
+                object.unselect();
+            }
+        }
+        if (this.game.cameraMode === CameraMode.Selected) {
+            this._onFocus();
         }
         if (this.selectedObjectsCount === 1) {
             this.machinePartEditorMenu.currentObject = this.selectedObject;
@@ -871,7 +875,7 @@ class MachineEditor {
                     }
                     else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
                         if (this._majDown) {
-                            this.addSelectedObjects(pick.pickedMesh.part);
+                            this.addOrRemoveSelectedObjects(pick.pickedMesh.part);
                         }
                         else {
                             this.setSelectedObject(pick.pickedMesh.part);
@@ -1155,7 +1159,7 @@ class MachineEditor {
             this._ctrlDown = true;
         }
         else if (this._ctrlDown && event.key === "a") {
-            this.addSelectedObjects(...this.machine.parts);
+            this.addOrRemoveSelectedObjects(...this.machine.parts);
         }
         else if (event.key === "x" || event.key === "Delete") {
             this._onDelete();
