@@ -704,7 +704,7 @@ class MachineEditor {
                 else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
                     pickedObject = pick.pickedMesh.part;
                 }
-                if (pickedObject === this.selectedObject) {
+                if (this.selectedObjects.indexOf(pickedObject) != -1) {
                     pick = this.game.scene.pick(
                         this.game.scene.pointerX,
                         this.game.scene.pointerY,
@@ -715,17 +715,17 @@ class MachineEditor {
                         }
                     )
                     if (pick.hit && pick.pickedPoint) {
-                        if (this.selectedObject instanceof MachinePart) {
-                            this._dragOffset.copyFrom(this.selectedObject.position).subtractInPlace(pick.pickedPoint);
+                        if (pickedObject instanceof MachinePart) {
+                            this._dragOffset.copyFrom(pickedObject.position).subtractInPlace(pick.pickedPoint);
                         }
-                        else if (this.selectedObject instanceof Ball) {
-                            this._dragOffset.copyFrom(this.selectedObject.positionZero).subtractInPlace(pick.pickedPoint);
+                        else if (pickedObject instanceof Ball) {
+                            this._dragOffset.copyFrom(pickedObject.positionZero).subtractInPlace(pick.pickedPoint);
                         }
                     }
                     else {
                         this._dragOffset.copyFromFloats(0, 0, 0);
                     }
-                    this.setDraggedObject(this.selectedObject);
+                    this.setDraggedObject(pickedObject);
                 }
             }
         }
@@ -749,7 +749,18 @@ class MachineEditor {
                     let i = Math.round(point.x / tileWidth);
                     let j = Math.floor((- point.y + 0.25 * tileHeight) / tileHeight);
                     let k = Math.round(- point.z / tileDepth);
-                    if (i != this.draggedObject.i || j != this.draggedObject.j || k != this.draggedObject.k) {
+                    let di = i - this.draggedObject.i;
+                    let dj = j - this.draggedObject.j;
+                    let dk = k - this.draggedObject.k;
+                    if (di != 0 || dj != 0 || dk != 0) {
+                        for (let n = 0; n < this.selectedObjects.length; n++) {
+                            let selectedObject = this.selectedObjects[n];
+                            if (selectedObject instanceof MachinePart && selectedObject != this.draggedObject) {
+                                selectedObject.setI(selectedObject.i + di);
+                                selectedObject.setJ(selectedObject.j + dj);
+                                selectedObject.setK(selectedObject.k + dk);
+                            }
+                        }
                         this.draggedObject.setI(i);
                         this.draggedObject.setJ(j);
                         this.draggedObject.setK(k);
@@ -843,18 +854,29 @@ class MachineEditor {
         if (pick.hit) {
             if (this.draggedObject instanceof MachinePart) {
                 let draggedTrack = this.draggedObject as MachinePart;
+
+                for (let i = 0; i < this.selectedObjects.length; i++) {
+                    let selectedObject = this.selectedObjects[i];
+                    if (selectedObject instanceof MachinePart && selectedObject != draggedTrack) {
+                        selectedObject.generateWires();
+                        selectedObject.instantiate(true).then(() => {
+                            (selectedObject as MachinePart).recomputeAbsolutePath();
+                        });
+                    }
+                }
+
                 if (this.machine.parts.indexOf(draggedTrack) === -1) {
                     this.machine.parts.push(draggedTrack);
                 }
                 draggedTrack.setIsVisible(true);
                 draggedTrack.generateWires();
-                this.machine.generateBaseMesh();
                 draggedTrack.instantiate(true).then(() => {
                     draggedTrack.recomputeAbsolutePath();
                     this.setSelectedObject(draggedTrack);
                     this.setDraggedObject(undefined);
                     this.setSelectedItem("");
                 });
+                this.machine.generateBaseMesh();
             }
             else if (this.draggedObject instanceof Ball) {
                 if (this.machine.balls.indexOf(this.draggedObject) === -1) {
@@ -1159,6 +1181,7 @@ class MachineEditor {
             this._ctrlDown = true;
         }
         else if (this._ctrlDown && event.key === "a") {
+            this.setSelectedObject(undefined);
             this.addOrRemoveSelectedObjects(...this.machine.parts);
         }
         else if (event.key === "x" || event.key === "Delete") {
