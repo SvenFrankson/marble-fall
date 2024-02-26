@@ -111,10 +111,14 @@ class Ball extends BABYLON.Mesh {
         this.selectedMesh.parent = this.positionZeroGhost;
         this.selectedMesh.isVisible = false;
 
+        this.game.shadowGenerator.addShadowCaster(this, false);
+
         this.reset();
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
+        this.game.shadowGenerator.removeShadowCaster(this, false);
+        
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
         this.marbleLoopSound.setVolume(0, 0.1);

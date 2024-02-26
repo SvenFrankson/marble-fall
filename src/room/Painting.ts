@@ -50,7 +50,7 @@ class Painting extends BABYLON.Mesh {
                     plane.layerMask = 0x10000000;
                     let mat = new BABYLON.StandardMaterial(this.name + "-material");
                     mat.diffuseTexture = texture;
-                    mat.emissiveColor = BABYLON.Color3.White();
+                    mat.emissiveColor = new BABYLON.Color3(0.25, 0.25, 0.25);
                     plane.material = mat;
                     plane.position.y = 1.2;
                     plane.position.z = 0.021;

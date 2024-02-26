@@ -221,6 +221,7 @@ class Machine {
                 this.baseWall.dispose();
             }
             this.baseWall = new BABYLON.Mesh("base-top");
+            this.baseWall.receiveShadows = true;
             this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseWall.position.y = this.baseMeshMinY;
             this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;

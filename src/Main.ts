@@ -50,7 +50,6 @@ class Game {
     private _trackTargetCamSpeed: number = 0;
     public onFocusCallback: () => void;
 
-    public light: BABYLON.HemisphericLight;
     public vertexDataLoader: Mummu.VertexDataLoader;
     public config: Configuration;
 
@@ -73,6 +72,8 @@ class Game {
 
     public machine: Machine;
     public room: Room;
+    public spotLight: BABYLON.SpotLight;
+    public shadowGenerator: BABYLON.ShadowGenerator;
     public machineEditor: MachineEditor;
 
     public skybox: BABYLON.Mesh;
@@ -149,7 +150,23 @@ class Game {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         }
 
-        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, - 2.5)).normalize(), this.scene);
+        let light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.scene);
+        light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        light1.intensity = 0.2;
+        let light2 = new BABYLON.HemisphericLight("light2", (new BABYLON.Vector3(- 1, 3, 0)).normalize(), this.scene);
+        light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        light2.intensity = 0.2;
+
+        this.spotLight = new BABYLON.SpotLight("spot-light", new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 1, this.scene);
+        this.spotLight.shadowMinZ = 1;
+        this.spotLight.shadowMaxZ = 3;
+        this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
+        this.shadowGenerator.useBlurExponentialShadowMap = true;
+        this.shadowGenerator.depthScale = 0.01;
+        this.shadowGenerator.blurScale = 1;
+        this.shadowGenerator.useKernelBlur = true;
+        this.shadowGenerator.blurKernel = 4;
+        this.shadowGenerator.setDarkness(0.8);
 
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
@@ -251,9 +268,10 @@ class Game {
         this.skybox.layerMask = 0x10000000;
         let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow_low_res.jpeg");
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/city_night.png");
         skyboxMaterial.diffuseTexture = skyTexture;
-        skyboxMaterial.emissiveColor = BABYLON.Color3.White();
+        skyboxMaterial.diffuseColor.copyFromFloats(0.25, 0.25, 0.25);
+        skyboxMaterial.emissiveColor.copyFromFloats(0.25, 0.25, 0.25);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         this.skybox.material = skyboxMaterial;
         this.skybox.rotation.y = 0.16 * Math.PI;

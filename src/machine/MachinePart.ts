@@ -320,6 +320,8 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMesh.visibility = 0;
 
         this.rebuildWireMeshes(rebuildNeighboursWireMeshes);
+
+        this.game.shadowGenerator.addShadowCaster(this, true);
     }
     
     public dispose(): void {
@@ -329,6 +331,7 @@ class MachinePart extends BABYLON.Mesh {
         if (index > - 1) {
             this.machine.parts.splice(index, 1);
         }
+        this.game.shadowGenerator.removeShadowCaster(this, true);
     }
 
     public generateWires(): void {

@@ -94,9 +94,11 @@ class Ball extends BABYLON.Mesh {
         });
         this.selectedMesh.parent = this.positionZeroGhost;
         this.selectedMesh.isVisible = false;
+        this.game.shadowGenerator.addShadowCaster(this, false);
         this.reset();
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
+        this.game.shadowGenerator.removeShadowCaster(this, false);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         this.marbleLoopSound.setVolume(0, 0.1);
         this.marbleLoopSound.pause();
@@ -1098,7 +1100,22 @@ class Game {
         else {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         }
-        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(2, 3, -2.5)).normalize(), this.scene);
+        let light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.scene);
+        light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        light1.intensity = 0.2;
+        let light2 = new BABYLON.HemisphericLight("light2", (new BABYLON.Vector3(-1, 3, 0)).normalize(), this.scene);
+        light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        light2.intensity = 0.2;
+        this.spotLight = new BABYLON.SpotLight("spot-light", new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 1, this.scene);
+        this.spotLight.shadowMinZ = 1;
+        this.spotLight.shadowMaxZ = 3;
+        this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
+        this.shadowGenerator.useBlurExponentialShadowMap = true;
+        this.shadowGenerator.depthScale = 0.01;
+        this.shadowGenerator.blurScale = 1;
+        this.shadowGenerator.useKernelBlur = true;
+        this.shadowGenerator.blurKernel = 4;
+        this.shadowGenerator.setDarkness(0.8);
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -1181,9 +1198,10 @@ class Game {
         this.skybox.layerMask = 0x10000000;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.Texture("./datas/skyboxes/snow_low_res.jpeg");
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/city_night.png");
         skyboxMaterial.diffuseTexture = skyTexture;
-        skyboxMaterial.emissiveColor = BABYLON.Color3.White();
+        skyboxMaterial.diffuseColor.copyFromFloats(0.25, 0.25, 0.25);
+        skyboxMaterial.emissiveColor.copyFromFloats(0.25, 0.25, 0.25);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         this.skybox.material = skyboxMaterial;
         this.skybox.rotation.y = 0.16 * Math.PI;
@@ -2104,6 +2122,7 @@ class Machine {
                 this.baseWall.dispose();
             }
             this.baseWall = new BABYLON.Mesh("base-top");
+            this.baseWall.receiveShadows = true;
             this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseWall.position.y = this.baseMeshMinY;
             this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
@@ -2551,6 +2570,7 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMesh.parent = this;
         this.encloseMesh.visibility = 0;
         this.rebuildWireMeshes(rebuildNeighboursWireMeshes);
+        this.game.shadowGenerator.addShadowCaster(this, true);
     }
     dispose() {
         super.dispose();
@@ -2559,6 +2579,7 @@ class MachinePart extends BABYLON.Mesh {
         if (index > -1) {
             this.machine.parts.splice(index, 1);
         }
+        this.game.shadowGenerator.removeShadowCaster(this, true);
     }
     generateWires() {
         this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
@@ -6265,7 +6286,7 @@ class Painting extends BABYLON.Mesh {
                     plane.layerMask = 0x10000000;
                     let mat = new BABYLON.StandardMaterial(this.name + "-material");
                     mat.diffuseTexture = texture;
-                    mat.emissiveColor = BABYLON.Color3.White();
+                    mat.emissiveColor = new BABYLON.Color3(0.25, 0.25, 0.25);
                     plane.material = mat;
                     plane.position.y = 1.2;
                     plane.position.z = 0.021;
@@ -6287,6 +6308,7 @@ class Room {
         this.ground = new BABYLON.Mesh("room-ground");
         this.ground.layerMask = 0x10000000;
         this.ground.position.y = -2;
+        this.ground.receiveShadows = true;
         let groundMaterial = new BABYLON.StandardMaterial("ground-material");
         groundMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/concrete.png");
         groundMaterial.diffuseColor = BABYLON.Color3.FromHexString("#3f4c52");
@@ -6306,39 +6328,101 @@ class Room {
         vertexDatas[0].applyToMesh(this.ground);
         vertexDatas[1].applyToMesh(this.wall);
         vertexDatas[2].applyToMesh(this.frame);
-        let paint1 = new Painting(this, "bilbao_1", 0.8);
+        let paintingNames = [
+            "bilbao_1",
+            "bilbao_2",
+            "bilbao_3",
+            "flower_1",
+            "flower_2",
+            "flower_3",
+            "flower_4",
+            "fort_william_1",
+            "glasgow_1",
+        ];
+        let n = 0;
+        let randomPainting = () => {
+            return paintingNames[n++];
+        };
+        let paint1 = new Painting(this, randomPainting(), 0.8);
         paint1.instantiate();
-        paint1.position.copyFromFloats(-4, 0, 3);
-        paint1.rotation.y = 0.7 * Math.PI;
+        paint1.position.copyFromFloats(4, 0, 4);
+        paint1.rotation.y = -0.75 * Math.PI;
         paint1.parent = this.ground;
-        let paint2 = new Painting(this, "bilbao_2", 0.8);
+        let paint11 = new Painting(this, randomPainting(), 0.8);
+        paint11.instantiate();
+        paint11.position.copyFromFloats(2.8, 0, 4.5);
+        paint11.rotation.y = -Math.PI;
+        paint11.parent = this.ground;
+        let paint2 = new Painting(this, randomPainting(), 0.8);
         paint2.instantiate();
-        paint2.position.copyFromFloats(-3, 0, 3.3);
-        paint2.rotation.y = -0.9 * Math.PI;
+        paint2.position.copyFromFloats(4, 0, -4);
+        paint2.rotation.y = -0.25 * Math.PI;
         paint2.parent = this.ground;
-        let paint3 = new Painting(this, "bilbao_3", 0.8);
+        let paint21 = new Painting(this, randomPainting(), 0.8);
+        paint21.instantiate();
+        paint21.position.copyFromFloats(2.8, 0, -4.5);
+        paint21.parent = this.ground;
+        let paint3 = new Painting(this, randomPainting(), 0.8);
         paint3.instantiate();
-        paint3.position.copyFromFloats(4, 0, 3.5);
-        paint3.rotation.y = -Math.PI * 0.5;
+        paint3.position.copyFromFloats(-4, 0, -4);
+        paint3.rotation.y = 0.25 * Math.PI;
         paint3.parent = this.ground;
-        let paint4 = new Painting(this, "flower_1", 0.8);
+        let paint31 = new Painting(this, randomPainting(), 0.8);
+        paint31.instantiate();
+        paint31.position.copyFromFloats(-4.5, 0, -2.8);
+        paint31.rotation.y = 0.5 * Math.PI;
+        paint31.parent = this.ground;
+        let paint32 = new Painting(this, randomPainting(), 0.8);
+        paint32.instantiate();
+        paint32.position.copyFromFloats(-2.8, 0, -4.5);
+        paint32.parent = this.ground;
+        let paint4 = new Painting(this, randomPainting(), 0.8);
         paint4.instantiate();
-        paint4.position.copyFromFloats(4, 0, -3);
-        paint4.rotation.y = -0.3 * Math.PI;
+        paint4.position.copyFromFloats(-4, 0, 4);
+        paint4.rotation.y = 0.75 * Math.PI;
         paint4.parent = this.ground;
-        let paint5 = new Painting(this, "flower_2", 0.8);
-        paint5.instantiate();
-        paint5.position.copyFromFloats(3, 0, -3.3);
-        paint5.rotation.y = 0.1 * Math.PI;
-        paint5.parent = this.ground;
-        let paint6 = new Painting(this, "flower_3", 0.8);
-        paint6.instantiate();
-        paint6.position.copyFromFloats(-4, 0, -3.5);
-        paint6.rotation.y = Math.PI * 0.5;
-        paint6.parent = this.ground;
+        let paint41 = new Painting(this, randomPainting(), 0.8);
+        paint41.instantiate();
+        paint41.position.copyFromFloats(-2.8, 0, 4.5);
+        paint41.rotation.y = Math.PI;
+        paint41.parent = this.ground;
+        let sculpt1 = new Sculpt(this, this.game.steelMaterial);
+        sculpt1.instantiate();
+        sculpt1.position.copyFromFloats(4.5, 0, 0);
+        sculpt1.rotation.y = -0.5 * Math.PI;
+        sculpt1.parent = this.ground;
+        let sculpt2 = new Sculpt(this, this.game.copperMaterial);
+        sculpt2.instantiate();
+        sculpt2.position.copyFromFloats(-4.5, 0, 0);
+        sculpt2.rotation.y = 0.5 * Math.PI;
+        sculpt2.parent = this.ground;
     }
     setGroundHeight(h) {
         this.ground.position.y = h;
+        this.game.spotLight.position.y = this.ground.position.y + 3;
+        let dir = new BABYLON.Vector3((this.game.machine.baseMeshMinX + this.game.machine.baseMeshMaxX) * 0.5, -3, (this.game.machine.baseMeshMinZ + this.game.machine.baseMeshMaxZ) * 0.5).normalize();
+        this.game.spotLight.direction = dir;
+    }
+}
+class Sculpt extends BABYLON.Mesh {
+    constructor(room, mat) {
+        super("sculpt");
+        this.room = room;
+        this.mat = mat;
+        this.layerMask = 0x10000000;
+    }
+    async instantiate() {
+        let vertexDatas = await this.room.game.vertexDataLoader.get("./meshes/museum-stand-decoy.babylon");
+        if (vertexDatas && vertexDatas[0]) {
+            vertexDatas[0].applyToMesh(this);
+        }
+        if (vertexDatas && vertexDatas[1]) {
+            let steel = new BABYLON.Mesh("steel");
+            vertexDatas[1].applyToMesh(steel);
+            steel.parent = this;
+            steel.material = this.mat;
+            steel.layerMask = 0x10000000;
+        }
     }
 }
 class Arrow extends BABYLON.Mesh {
