@@ -885,29 +885,14 @@ var nested = {
     ],
 };
 var testNote = {
-    balls: [
-        { x: -0.0037693503651293203, y: 0.1497480616625865, z: 5.551115123125783e-17 },
-        { x: -0.002854205950292534, y: 0.15009080128331137, z: -0.11999999731779104 },
-    ],
+    balls: [{ x: -0.0037693503651293203, y: 0.1497480616625865, z: 5.551115123125783e-17 }],
     parts: [
-        { name: "quarter", i: 8, j: 1, k: 0, mirrorZ: false },
-        { name: "double", i: 8, j: 1, k: 2, mirrorZ: false },
-        { name: "quarter", i: 7, j: 0, k: 0, mirrorZ: false },
-        { name: "double", i: 7, j: 0, k: 2, mirrorZ: false },
-        { name: "quarter", i: 6, j: -1, k: 0, mirrorZ: false },
-        { name: "double", i: 6, j: -1, k: 2, mirrorZ: false },
-        { name: "quarter", i: 5, j: -2, k: 0, mirrorZ: false },
-        { name: "double", i: 5, j: -2, k: 2, mirrorZ: false },
         { name: "quarter", i: 4, j: -3, k: 0, mirrorZ: false },
-        { name: "double", i: 4, j: -3, k: 2, mirrorZ: false },
         { name: "quarter", i: 3, j: -4, k: 0, mirrorZ: false },
-        { name: "double", i: 3, j: -4, k: 2, mirrorZ: false },
         { name: "quarter", i: 2, j: -5, k: 0, mirrorZ: false },
-        { name: "double", i: 2, j: -5, k: 2, mirrorZ: false },
         { name: "quarter", i: 1, j: -6, k: 0, mirrorZ: false },
         { name: "elevator-10", i: 0, j: -7, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "elevator-10", i: 0, j: -7, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "double", i: 1, j: -6, k: 2, mirrorZ: false },
+        { name: "uturn-0.3", i: 5, j: -2, k: 0 },
     ],
 };
 class HelperShape {
@@ -1296,7 +1281,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(testNote);
+            this.machine.deserialize(nested);
         }
         else {
             this.machine.deserialize(simpleLoop);
@@ -2714,9 +2699,7 @@ var TrackNames = [
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",
-    "elevator-4",
-    "quarter",
-    "double"
+    "elevator-4"
 ];
 class MachinePartFactory {
     constructor(machine) {
@@ -3642,7 +3625,7 @@ class MachineEditor {
                     else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
                         pickedObject = pick.pickedMesh.part;
                     }
-                    if (this.selectedObjects.indexOf(pickedObject) != -1) {
+                    if (!this._majDown && this.selectedObjects.indexOf(pickedObject) != -1) {
                         pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                             if (mesh === this.grid.opaquePlane) {
                                 return true;
@@ -3732,6 +3715,9 @@ class MachineEditor {
         };
         this.pointerUp = (event) => {
             // First, check for handle pick
+            let dx = (this._pointerDownX - this.game.scene.pointerX);
+            let dy = (this._pointerDownY - this.game.scene.pointerY);
+            let clickInPlace = dx * dx + dy * dy < 10;
             if (!this.draggedObject) {
                 let pickHandle = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
                     if (mesh instanceof Arrow && mesh.isVisible) {
@@ -3800,9 +3786,7 @@ class MachineEditor {
                     this.setSelectedItem("");
                 }
                 else {
-                    let dx = (this._pointerDownX - this.game.scene.pointerX);
-                    let dy = (this._pointerDownY - this.game.scene.pointerY);
-                    if (dx * dx + dy * dy < 10) {
+                    if (clickInPlace) {
                         if (pick.pickedMesh instanceof BallGhost) {
                             this.setSelectedObject(pick.pickedMesh.ball);
                         }
@@ -3820,7 +3804,7 @@ class MachineEditor {
             else {
                 let dx = (this._pointerDownX - this.game.scene.pointerX);
                 let dy = (this._pointerDownY - this.game.scene.pointerY);
-                if (dx * dx + dy * dy < 10) {
+                if (clickInPlace) {
                     this.setSelectedObject(undefined);
                 }
             }
@@ -4336,10 +4320,12 @@ class MachineEditor {
             let object = objects[i];
             let index = this.selectedObjects.indexOf(object);
             if (index === -1) {
+                console.log("add object to selection");
                 this.selectedObjects.push(object);
                 object.select();
             }
             else {
+                console.log("remove object from selection");
                 this.selectedObjects.splice(index, 1);
                 object.unselect();
             }
@@ -5760,6 +5746,7 @@ class UTurnSharp extends MachinePart {
     static GenerateTemplate(mirrorX, mirrorZ) {
         let template = new MachinePartTemplate();
         template.partName = "uturnsharp";
+        template.d = 2;
         template.angleSmoothSteps = 50;
         template.mirrorX = mirrorX,
             template.mirrorZ = mirrorZ;

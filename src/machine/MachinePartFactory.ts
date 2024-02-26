@@ -10,9 +10,7 @@ var TrackNames = [
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",
-    "elevator-4",
-    "quarter",
-    "double"
+    "elevator-4"
 ];
 
 interface ICreateTrackWHDNProp {

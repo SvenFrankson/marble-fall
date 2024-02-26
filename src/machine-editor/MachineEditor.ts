@@ -189,10 +189,12 @@ class MachineEditor {
             let object = objects[i];
             let index = this.selectedObjects.indexOf(object);
             if (index === - 1) {
+                console.log("add object to selection");
                 this.selectedObjects.push(object);
                 object.select();
             }
             else {
+                console.log("remove object from selection");
                 this.selectedObjects.splice(index, 1);
                 object.unselect();
             }
@@ -704,7 +706,7 @@ class MachineEditor {
                 else if (pick.pickedMesh instanceof MachinePartSelectorMesh) {
                     pickedObject = pick.pickedMesh.part;
                 }
-                if (this.selectedObjects.indexOf(pickedObject) != -1) {
+                if (!this._majDown && this.selectedObjects.indexOf(pickedObject) != -1) {
                     pick = this.game.scene.pick(
                         this.game.scene.pointerX,
                         this.game.scene.pointerY,
@@ -805,6 +807,10 @@ class MachineEditor {
 
     public pointerUp = (event: PointerEvent) => {
         // First, check for handle pick
+        let dx = (this._pointerDownX - this.game.scene.pointerX);
+        let dy = (this._pointerDownY - this.game.scene.pointerY);
+        let clickInPlace = dx * dx + dy * dy < 10;
+
         if (!this.draggedObject) {
             let pickHandle = this.game.scene.pick(
                 this.game.scene.pointerX,
@@ -889,9 +895,7 @@ class MachineEditor {
                 this.setSelectedItem("");
             }
             else {
-                let dx = (this._pointerDownX - this.game.scene.pointerX);
-                let dy = (this._pointerDownY - this.game.scene.pointerY);
-                if (dx * dx + dy * dy < 10) {
+                if (clickInPlace) {
                     if (pick.pickedMesh instanceof BallGhost) {
                         this.setSelectedObject(pick.pickedMesh.ball);
                     }
@@ -909,7 +913,7 @@ class MachineEditor {
         else {
             let dx = (this._pointerDownX - this.game.scene.pointerX);
             let dy = (this._pointerDownY - this.game.scene.pointerY);
-            if (dx * dx + dy * dy < 10) {
+            if (clickInPlace) {
                 this.setSelectedObject(undefined);
             }
         }

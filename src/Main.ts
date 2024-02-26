@@ -333,7 +333,7 @@ class Game {
         this.machineEditor = new MachineEditor(this);
 
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(testNote);
+            this.machine.deserialize(nested);
         }
         else {
             this.machine.deserialize(simpleLoop);

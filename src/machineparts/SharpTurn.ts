@@ -12,6 +12,7 @@ class UTurnSharp extends MachinePart {
         let template = new MachinePartTemplate();
 
         template.partName = "uturnsharp";
+        template.d = 2;
         template.angleSmoothSteps = 50;
         
         template.mirrorX = mirrorX,
