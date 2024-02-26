@@ -11,6 +11,8 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
+    "quarter",
+    "double"
 ];
 
 interface ICreateTrackWHDNProp {
@@ -115,6 +117,12 @@ class MachinePartFactory {
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
             return new Elevator(this.machine, i, j, k, h, mirrorX);
+        }
+        if (trackname === "quarter") {
+            return new QuarterNote(this.machine, i, j, k, mirrorX);
+        }
+        if (trackname === "double") {
+            return new DoubleNote(this.machine, i, j, k, mirrorX);
         }
     }
 }

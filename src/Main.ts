@@ -333,7 +333,7 @@ class Game {
         this.machineEditor = new MachineEditor(this);
 
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(aerial);
+            this.machine.deserialize(testNote);
         }
         else {
             this.machine.deserialize(simpleLoop);

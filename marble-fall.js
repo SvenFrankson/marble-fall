@@ -152,6 +152,21 @@ class Ball extends BABYLON.Mesh {
                             reactionsCount++;
                         }
                     });
+                    if (part instanceof QuarterNote || part instanceof DoubleNote) {
+                        part.tings.forEach(ting => {
+                            let col = Mummu.SphereMeshIntersection(this.position, this.radius, ting);
+                            if (col.hit) {
+                                if (BABYLON.Vector3.Dot(this.velocity, col.normal) < 0) {
+                                    part.notes[0].play();
+                                    console.log(part.notes[0].name);
+                                    BABYLON.Vector3.ReflectToRef(this.velocity, col.normal, this.velocity);
+                                    if (this.velocity.length() > 0.8) {
+                                        this.velocity.normalize().scaleInPlace(0.8);
+                                    }
+                                }
+                            }
+                        });
+                    }
                 }
             });
             this.machine.balls.forEach(ball => {
@@ -869,6 +884,32 @@ var nested = {
         { name: "ramp-1.2.1", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
     ],
 };
+var testNote = {
+    balls: [
+        { x: -0.0037693503651293203, y: 0.1497480616625865, z: 5.551115123125783e-17 },
+        { x: -0.002854205950292534, y: 0.15009080128331137, z: -0.11999999731779104 },
+    ],
+    parts: [
+        { name: "quarter", i: 8, j: 1, k: 0, mirrorZ: false },
+        { name: "double", i: 8, j: 1, k: 2, mirrorZ: false },
+        { name: "quarter", i: 7, j: 0, k: 0, mirrorZ: false },
+        { name: "double", i: 7, j: 0, k: 2, mirrorZ: false },
+        { name: "quarter", i: 6, j: -1, k: 0, mirrorZ: false },
+        { name: "double", i: 6, j: -1, k: 2, mirrorZ: false },
+        { name: "quarter", i: 5, j: -2, k: 0, mirrorZ: false },
+        { name: "double", i: 5, j: -2, k: 2, mirrorZ: false },
+        { name: "quarter", i: 4, j: -3, k: 0, mirrorZ: false },
+        { name: "double", i: 4, j: -3, k: 2, mirrorZ: false },
+        { name: "quarter", i: 3, j: -4, k: 0, mirrorZ: false },
+        { name: "double", i: 3, j: -4, k: 2, mirrorZ: false },
+        { name: "quarter", i: 2, j: -5, k: 0, mirrorZ: false },
+        { name: "double", i: 2, j: -5, k: 2, mirrorZ: false },
+        { name: "quarter", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "elevator-10", i: 0, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "elevator-10", i: 0, j: -7, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "double", i: 1, j: -6, k: 2, mirrorZ: false },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1255,7 +1296,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(aerial);
+            this.machine.deserialize(testNote);
         }
         else {
             this.machine.deserialize(simpleLoop);
@@ -2570,6 +2611,10 @@ class MachinePart extends BABYLON.Mesh {
         this.encloseMesh.parent = this;
         this.encloseMesh.visibility = 0;
         this.rebuildWireMeshes(rebuildNeighboursWireMeshes);
+        this.AABBMin.copyFromFloats(this.encloseStart.x, this.encloseEnd.y, this.encloseEnd.z);
+        this.AABBMax.copyFromFloats(this.encloseEnd.x, this.encloseStart.y, this.encloseStart.z);
+        this.AABBMin.addInPlace(this.position);
+        this.AABBMax.addInPlace(this.position);
         this.game.shadowGenerator.addShadowCaster(this, true);
     }
     dispose() {
@@ -2582,8 +2627,6 @@ class MachinePart extends BABYLON.Mesh {
         this.game.shadowGenerator.removeShadowCaster(this, true);
     }
     generateWires() {
-        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
-        this.AABBMax.copyFromFloats(-Infinity, -Infinity, -Infinity);
         this.allWires = [...this.wires];
         if (this.template) {
             for (let i = 0; i < this.template.trackTemplates.length; i++) {
@@ -2593,8 +2636,6 @@ class MachinePart extends BABYLON.Mesh {
                     this.tracks[i] = track;
                 }
                 track.initialize(this.template.trackTemplates[i]);
-                this.AABBMin.minimizeInPlace(track.AABBMin);
-                this.AABBMax.maximizeInPlace(track.AABBMax);
                 this.allWires.push(track.wires[0], track.wires[1]);
             }
         }
@@ -2674,6 +2715,8 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
+    "quarter",
+    "double"
 ];
 class MachinePartFactory {
     constructor(machine) {
@@ -2762,6 +2805,12 @@ class MachinePartFactory {
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
             return new Elevator(this.machine, i, j, k, h, mirrorX);
+        }
+        if (trackname === "quarter") {
+            return new QuarterNote(this.machine, i, j, k, mirrorX);
+        }
+        if (trackname === "double") {
+            return new DoubleNote(this.machine, i, j, k, mirrorX);
         }
     }
 }
@@ -3247,6 +3296,12 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1].split(".")[1]);
                 let n = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Spiral.GenerateTemplate(w, h, n, mirrorX, mirrorZ);
+            }
+            else if (partName === "quarter") {
+                data = QuarterNote.GenerateTemplate(mirrorX);
+            }
+            else if (partName === "double") {
+                data = DoubleNote.GenerateTemplate(mirrorX);
             }
             datas[mirrorIndex] = data;
         }
@@ -6234,6 +6289,176 @@ class Wave extends MachinePartWithOriginDestination {
             }
         }
         return new Wave(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+    }
+}
+class QuarterNote extends MachinePart {
+    constructor(machine, i, j, k, mirrorX) {
+        super(machine, i, j, k);
+        this.notes = [];
+        this.tings = [];
+        this.noteMesh = [];
+        let partName = "quarter";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.generateWires();
+        let x = 1;
+        if (mirrorX) {
+            x = -1;
+        }
+        let ting = BABYLON.MeshBuilder.CreateGround("ting", { width: 0.015, height: 0.06 });
+        ting.position.x = -0.2 * tileWidth * x;
+        ting.position.y = -0.015;
+        ting.rotation.z = Math.PI / 24 * x;
+        ting.parent = this;
+        this.tings.push(ting);
+        let index = QuarterNote.index;
+        QuarterNote.index++;
+        if (QuarterNote.index >= QuarterNote.NoteNames.length) {
+            QuarterNote.index = 0;
+        }
+        let note = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
+        this.notes.push(note);
+        let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
+        tile.material = machine.game.steelMaterial;
+        tile.position.copyFrom(ting.position);
+        tile.rotation.copyFrom(ting.rotation);
+        tile.parent = this;
+        tile.computeWorldMatrix(true);
+        tile.position.subtractInPlace(tile.up.scale(0.0026));
+    }
+    static GenerateTemplate(mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "quarter";
+        template.h = 1;
+        template.mirrorX = mirrorX;
+        template.xMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(-1, 1, 0);
+        nRight.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.3, 0 - 0.01, 0), Tools.V3Dir(130))
+        ];
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.1, -0.015, 0), Tools.V3Dir(70)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.3, -tileHeight * template.h, 0), dir),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * template.h, 0), dir)
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+}
+QuarterNote.NoteNames = [
+    "c3",
+    "d3",
+    "e3",
+    "f3",
+    "g3",
+    "a4",
+    "b4",
+    "c4",
+];
+QuarterNote.index = 0;
+class DoubleNote extends MachinePart {
+    constructor(machine, i, j, k, mirrorX) {
+        super(machine, i, j, k);
+        this.notes = [];
+        this.tings = [];
+        this.noteMesh = [];
+        let partName = "double";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.generateWires();
+        let x = 1;
+        if (mirrorX) {
+            x = -1;
+        }
+        let ting = BABYLON.MeshBuilder.CreateGround("ting", { width: 0.015, height: 0.06 });
+        ting.position.x = -0.2 * tileWidth * x;
+        ting.position.y = -0.015;
+        ting.rotation.z = Math.PI / 9 * x;
+        ting.parent = this;
+        this.tings.push(ting);
+        let index = QuarterNote.index;
+        QuarterNote.index++;
+        if (QuarterNote.index >= QuarterNote.NoteNames.length) {
+            QuarterNote.index = 0;
+        }
+        let note = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
+        this.notes.push(note);
+        let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
+        tile.material = machine.game.steelMaterial;
+        tile.position.copyFrom(ting.position);
+        tile.rotation.copyFrom(ting.rotation);
+        tile.parent = this;
+        tile.computeWorldMatrix(true);
+        tile.position.subtractInPlace(tile.up.scale(0.0026));
+        let ting2 = BABYLON.MeshBuilder.CreateGround("ting2", { width: 0.015, height: 0.06 });
+        ting2.position.x = -0.05 * tileWidth * x;
+        ting2.position.y = -0.001;
+        ting2.rotation.z = -Math.PI / 10 * x;
+        ting2.parent = this;
+        this.tings.push(ting2);
+        index = QuarterNote.index;
+        QuarterNote.index++;
+        if (QuarterNote.index >= QuarterNote.NoteNames.length) {
+            QuarterNote.index = 0;
+        }
+        let note2 = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
+        this.notes.push(note2);
+        let tile2 = BABYLON.MeshBuilder.CreateBox("tile2", { width: 0.015, height: 0.005, depth: 0.06 });
+        tile2.material = machine.game.steelMaterial;
+        tile2.position.copyFrom(ting2.position);
+        tile2.rotation.copyFrom(ting2.rotation);
+        tile2.parent = this;
+        tile2.computeWorldMatrix(true);
+        tile2.position.subtractInPlace(tile2.up.scale(0.0026));
+    }
+    static GenerateTemplate(mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "double";
+        template.h = 1;
+        template.mirrorX = mirrorX;
+        template.xMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(-1, 1, 0);
+        nRight.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.3, 0 - 0.01, 0), Tools.V3Dir(130))
+        ];
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0, -tileHeight * template.h + 0.02, 0), Tools.V3Dir(110)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * template.h, 0), dir)
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
     }
 }
 class Painting extends BABYLON.Mesh {

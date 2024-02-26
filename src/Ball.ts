@@ -190,6 +190,21 @@ class Ball extends BABYLON.Mesh {
                             reactionsCount++;
                         }
                     });
+                    if (part instanceof QuarterNote || part instanceof DoubleNote) {
+                        part.tings.forEach(ting => {
+                            let col = Mummu.SphereMeshIntersection(this.position, this.radius, ting);
+                            if (col.hit) {
+                                if (BABYLON.Vector3.Dot(this.velocity, col.normal) < 0) {
+                                    part.notes[0].play();
+                                    console.log(part.notes[0].name);
+                                    BABYLON.Vector3.ReflectToRef(this.velocity, col.normal, this.velocity);
+                                    if (this.velocity.length() > 0.8) {
+                                        this.velocity.normalize().scaleInPlace(0.8);
+                                    }
+                                }
+                            }
+                        })
+                    }
                 }
             });
 

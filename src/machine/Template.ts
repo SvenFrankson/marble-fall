@@ -358,6 +358,12 @@ class TemplateManager {
                 let n = parseInt(partName.split("-")[1].split(".")[2]);
                 data = Spiral.GenerateTemplate(w, h, n, mirrorX, mirrorZ);
             }
+            else if (partName === "quarter") {
+                data = QuarterNote.GenerateTemplate(mirrorX);
+            }
+            else if (partName === "double") {
+                data = DoubleNote.GenerateTemplate(mirrorX);
+            }
             datas[mirrorIndex] = data;
         }
 

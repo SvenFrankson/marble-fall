@@ -321,6 +321,11 @@ class MachinePart extends BABYLON.Mesh {
 
         this.rebuildWireMeshes(rebuildNeighboursWireMeshes);
 
+        this.AABBMin.copyFromFloats(this.encloseStart.x, this.encloseEnd.y, this.encloseEnd.z);
+        this.AABBMax.copyFromFloats(this.encloseEnd.x, this.encloseStart.y, this.encloseStart.z);
+        this.AABBMin.addInPlace(this.position);
+        this.AABBMax.addInPlace(this.position);
+        
         this.game.shadowGenerator.addShadowCaster(this, true);
     }
     
@@ -335,9 +340,6 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public generateWires(): void {
-        this.AABBMin.copyFromFloats(Infinity, Infinity, Infinity);
-        this.AABBMax.copyFromFloats(- Infinity, - Infinity, - Infinity);
-
         this.allWires = [...this.wires];
         if (this.template) {
             for (let i = 0; i < this.template.trackTemplates.length; i++) {
@@ -347,8 +349,6 @@ class MachinePart extends BABYLON.Mesh {
                     this.tracks[i] = track;
                 }
                 track.initialize(this.template.trackTemplates[i]);
-                this.AABBMin.minimizeInPlace(track.AABBMin);
-                this.AABBMax.maximizeInPlace(track.AABBMax);
                 this.allWires.push(track.wires[0], track.wires[1]);
             }
         }

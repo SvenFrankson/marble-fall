@@ -562,3 +562,30 @@ var nested = {
         { name: "ramp-1.2.1", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
     ],
 };
+
+var testNote = {
+    balls: [
+        { x: -0.0037693503651293203, y: 0.1497480616625865, z: 5.551115123125783e-17 },
+        { x: -0.002854205950292534, y: 0.15009080128331137, z: -0.11999999731779104 },
+    ],
+    parts: [
+        { name: "quarter", i: 8, j: 1, k: 0, mirrorZ: false },
+        { name: "double", i: 8, j: 1, k: 2, mirrorZ: false },
+        { name: "quarter", i: 7, j: 0, k: 0, mirrorZ: false },
+        { name: "double", i: 7, j: 0, k: 2, mirrorZ: false },
+        { name: "quarter", i: 6, j: -1, k: 0, mirrorZ: false },
+        { name: "double", i: 6, j: -1, k: 2, mirrorZ: false },
+        { name: "quarter", i: 5, j: -2, k: 0, mirrorZ: false },
+        { name: "double", i: 5, j: -2, k: 2, mirrorZ: false },
+        { name: "quarter", i: 4, j: -3, k: 0, mirrorZ: false },
+        { name: "double", i: 4, j: -3, k: 2, mirrorZ: false },
+        { name: "quarter", i: 3, j: -4, k: 0, mirrorZ: false },
+        { name: "double", i: 3, j: -4, k: 2, mirrorZ: false },
+        { name: "quarter", i: 2, j: -5, k: 0, mirrorZ: false },
+        { name: "double", i: 2, j: -5, k: 2, mirrorZ: false },
+        { name: "quarter", i: 1, j: -6, k: 0, mirrorZ: false },
+        { name: "elevator-10", i: 0, j: -7, k: 0, mirrorX: true, mirrorZ: false },
+        { name: "elevator-10", i: 0, j: -7, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "double", i: 1, j: -6, k: 2, mirrorZ: false },
+    ],
+};
