@@ -2464,7 +2464,6 @@ class MachinePart extends BABYLON.Mesh {
     }
     setK(v) {
         this._k = v;
-        this._k = Math.max(this._k, 0);
         this.position.z = -this._k * tileDepth;
         this.isPlaced = true;
     }
