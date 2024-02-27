@@ -151,27 +151,39 @@ class MachinePart extends BABYLON.Mesh {
         return this._i;
     }
     public setI(v: number) {
-        this._i = v;
-        this.position.x = this._i * tileWidth;
-        this.isPlaced = true;
+        if (this._i != v) {
+            this._i = v;
+            this.position.x = this._i * tileWidth;
+            this.isPlaced = true;
+            this.sleepersMesh.freezeWorldMatrix();
+            this.machine.requestUpdateShadow = true;
+        }
     }
 
     public get j(): number {
         return this._j;
     }
     public setJ(v: number) {
-        this._j = v;
-        this.position.y = - this._j * tileHeight;
-        this.isPlaced = true;
+        if (this._j != v) {
+            this._j = v;
+            this.position.y = - this._j * tileHeight;
+            this.isPlaced = true;
+            this.sleepersMesh.freezeWorldMatrix();
+            this.machine.requestUpdateShadow = true;
+        }
     }
 
     public get k(): number {
         return this._k;
     }
     public setK(v: number) {
-        this._k = v;
-        this.position.z = - this._k * tileDepth;
-        this.isPlaced = true;
+        if (this._k != v) {
+            this._k = v;
+            this.position.z = - this._k * tileDepth;
+            this.isPlaced = true;
+            this.sleepersMesh.freezeWorldMatrix();
+            this.machine.requestUpdateShadow = true;
+        }
     }
 
     public setIsVisible(isVisible: boolean): void {
@@ -324,8 +336,9 @@ class MachinePart extends BABYLON.Mesh {
         this.AABBMax.copyFromFloats(this.encloseEnd.x, this.encloseStart.y, this.encloseStart.z);
         this.AABBMin.addInPlace(this.position);
         this.AABBMax.addInPlace(this.position);
-        
-        this.game.shadowGenerator.addShadowCaster(this, true);
+
+        this.freezeWorldMatrix();
+        this.machine.requestUpdateShadow = true;
     }
     
     public dispose(): void {
@@ -335,7 +348,6 @@ class MachinePart extends BABYLON.Mesh {
         if (index > - 1) {
             this.machine.parts.splice(index, 1);
         }
-        this.game.shadowGenerator.removeShadowCaster(this, true);
     }
 
     public generateWires(): void {
@@ -409,6 +421,8 @@ class MachinePart extends BABYLON.Mesh {
             requestAnimationFrame(() => {
                 if (!this.sleepersMesh.isDisposed()) {
                     SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
+                    this.sleepersMesh.freezeWorldMatrix();
+                    this.machine.requestUpdateShadow = true;
                 }
             })
 
@@ -419,6 +433,7 @@ class MachinePart extends BABYLON.Mesh {
                 }
             }
         }
-        this.computeWorldMatrix(true);
+        this.freezeWorldMatrix();
+        this.machine.requestUpdateShadow = true;
     }
 }

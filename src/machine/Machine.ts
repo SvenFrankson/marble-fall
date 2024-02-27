@@ -76,6 +76,9 @@ class Machine {
         if (!this.instantiated) {
             return;
         }
+        if (this.requestUpdateShadow) {
+            this.updateShadow();
+        }
         if (this.playing) {
             let dt = this.game.scene.deltaTime / 1000;
             if (isFinite(dt)) {
@@ -414,5 +417,17 @@ class Machine {
             encloseEnd.z = Math.min(encloseEnd.z, part.position.z + part.encloseEnd.z);
         });
         return encloseEnd;
+    }
+
+    public requestUpdateShadow: boolean = false;
+    public updateShadow(): void {
+        this.parts = this.parts.sort((a, b) => { return b.j - a.j });
+
+        this.game.shadowGenerator.getShadowMapForRendering().renderList = [];
+        for (let i = 0; i < 10; i++) {
+            if (i < this.parts.length) {
+                this.game.shadowGenerator.addShadowCaster(this.parts[i], true);
+            }
+        }
     }
 }
