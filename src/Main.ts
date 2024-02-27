@@ -155,16 +155,6 @@ class Game {
         this.spotLight.shadowMinZ = 1;
         this.spotLight.shadowMaxZ = 3;
 
-        /*
-        this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
-        this.shadowGenerator.useBlurExponentialShadowMap = true;
-        this.shadowGenerator.depthScale = 0.01;
-        this.shadowGenerator.blurScale = 1;
-        this.shadowGenerator.useKernelBlur = true;
-        this.shadowGenerator.blurKernel = 4;
-        this.shadowGenerator.setDarkness(0.8);
-        */
-
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -293,6 +283,8 @@ class Game {
         new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround)
 
         this.updateCameraLayer();
+
+        this.updateShadowGenerator();
 
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
@@ -471,6 +463,8 @@ class Game {
         
     }
 
+    public averagedFPS: number = 0;
+    public updateConfigTimeout: number = - 1;
     public update(): void {
         let dt = this.scene.deltaTime / 1000;
 
@@ -560,11 +554,38 @@ class Game {
         }
 
         let fps = 1 / dt;
-        if (fps < 30 && this.timeFactor > this.targetTimeFactor / 10) {
-            this.timeFactor *= 0.9;
-        }
-        else {
-            this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
+        if (isFinite(fps)) {
+            if (fps < 30 && this.timeFactor > this.targetTimeFactor / 2) {
+                this.timeFactor *= 0.9;
+            }
+            else {
+                this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
+            }
+            this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
+            if (this.averagedFPS < 24&& this.config.graphicQ > 1) {
+                if (this.updateConfigTimeout === - 1) {
+                    this.updateConfigTimeout = setTimeout(() => {
+                        let newConfig = this.config.graphicQ - 1;
+                        console.log("down config " + newConfig);
+                        this.config.setGraphicQ(newConfig);
+                        this.updateConfigTimeout = -1;
+                    }, 3000);
+                }
+            }
+            else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
+                if (this.updateConfigTimeout === - 1) {
+                    this.updateConfigTimeout = setTimeout(() => {
+                        let newConfig = this.config.graphicQ + 1;
+                        console.log("up config " + newConfig);
+                        this.config.setGraphicQ(newConfig);
+                        this.updateConfigTimeout = -1;
+                    }, 3000);
+                }
+            }
+            else {
+                clearTimeout(this.updateConfigTimeout);
+                this.updateConfigTimeout = -1;
+            }
         }
     }
 
@@ -699,6 +720,26 @@ class Game {
             }
             else {
                 this.scene.activeCameras = [this.camera];
+            }
+        }
+    }
+
+    public updateShadowGenerator(): void {
+        if (this.camera) {
+            if (this.config.graphicQ > 2 && !this.shadowGenerator) {
+                this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
+                this.shadowGenerator.useBlurExponentialShadowMap = true;
+                this.shadowGenerator.depthScale = 0.01;
+                this.shadowGenerator.blurScale = 1;
+                this.shadowGenerator.useKernelBlur = true;
+                this.shadowGenerator.blurKernel = 4;
+                this.shadowGenerator.setDarkness(0.8);
+            }
+            else {
+                if (this.shadowGenerator) {
+                    this.shadowGenerator.dispose();
+                    delete this.shadowGenerator;
+                }
             }
         }
     }

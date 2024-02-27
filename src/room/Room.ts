@@ -38,10 +38,6 @@ class Room {
         this.light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
         this.light2.intensity = 0.2;
         this.light2.includeOnlyWithLayerMask = 0x10000000;
-
-        if (this.game.machine) {
-            this.setGroundHeight(this.game.machine.baseMeshMinY - 0.8);
-        }
     }
 
     public async instantiate(): Promise<void> {
@@ -134,6 +130,10 @@ class Room {
         sculpt2.position.copyFromFloats(- 4.5, 0, 0);
         sculpt2.rotation.y = 0.5 * Math.PI;
         sculpt2.parent = this.ground;
+
+        if (this.game.machine) {
+            this.setGroundHeight(this.game.machine.baseMeshMinY - 0.8);
+        }
     }
 
     public setGroundHeight(h: number) {

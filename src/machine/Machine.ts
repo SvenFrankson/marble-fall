@@ -423,13 +423,14 @@ class Machine {
 
     public requestUpdateShadow: boolean = false;
     public updateShadow(): void {
-        return;
-        this.parts = this.parts.sort((a, b) => { return b.j - a.j });
-
-        this.game.shadowGenerator.getShadowMapForRendering().renderList = [];
-        for (let i = 0; i < 0; i++) {
-            if (i < this.parts.length) {
-                this.game.shadowGenerator.addShadowCaster(this.parts[i], true);
+        if (this.game.shadowGenerator) {
+            this.parts = this.parts.sort((a, b) => { return b.j - a.j });
+    
+            this.game.shadowGenerator.getShadowMapForRendering().renderList = [];
+            for (let i = 0; i < 20; i++) {
+                if (i < this.parts.length) {
+                    this.game.shadowGenerator.addShadowCaster(this.parts[i], true);
+                }
             }
         }
     }

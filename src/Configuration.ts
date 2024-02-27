@@ -52,6 +52,7 @@ class Configuration {
                 }
             }
             this.game.updateCameraLayer();
+            this.game.updateShadowGenerator();
 
             if (!skipStorage) {
                 this.saveToLocalStorage();

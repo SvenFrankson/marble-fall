@@ -332,6 +332,7 @@ class Configuration {
                 }
             }
             this.game.updateCameraLayer();
+            this.game.updateShadowGenerator();
             if (!skipStorage) {
                 this.saveToLocalStorage();
             }
@@ -1201,6 +1202,8 @@ class Game {
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
         this.physicDT = 0.0005;
+        this.averagedFPS = 0;
+        this.updateConfigTimeout = -1;
         this._pointerDownX = 0;
         this._pointerDownY = 0;
         this.onPointerDown = (event) => {
@@ -1269,15 +1272,6 @@ class Game {
         this.spotLight = new BABYLON.SpotLight("spot-light", new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 1, this.scene);
         this.spotLight.shadowMinZ = 1;
         this.spotLight.shadowMaxZ = 3;
-        /*
-        this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
-        this.shadowGenerator.useBlurExponentialShadowMap = true;
-        this.shadowGenerator.depthScale = 0.01;
-        this.shadowGenerator.blurScale = 1;
-        this.shadowGenerator.useKernelBlur = true;
-        this.shadowGenerator.blurKernel = 4;
-        this.shadowGenerator.setDarkness(0.8);
-        */
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -1385,6 +1379,7 @@ class Game {
         new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround);
         new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround);
         this.updateCameraLayer();
+        this.updateShadowGenerator();
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));
@@ -1620,11 +1615,38 @@ class Game {
             this.machine.update();
         }
         let fps = 1 / dt;
-        if (fps < 30 && this.timeFactor > this.targetTimeFactor / 10) {
-            this.timeFactor *= 0.9;
-        }
-        else {
-            this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
+        if (isFinite(fps)) {
+            if (fps < 30 && this.timeFactor > this.targetTimeFactor / 2) {
+                this.timeFactor *= 0.9;
+            }
+            else {
+                this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
+            }
+            this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
+            if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
+                if (this.updateConfigTimeout === -1) {
+                    this.updateConfigTimeout = setTimeout(() => {
+                        let newConfig = this.config.graphicQ - 1;
+                        console.log("down config " + newConfig);
+                        this.config.setGraphicQ(newConfig);
+                        this.updateConfigTimeout = -1;
+                    }, 3000);
+                }
+            }
+            else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
+                if (this.updateConfigTimeout === -1) {
+                    this.updateConfigTimeout = setTimeout(() => {
+                        let newConfig = this.config.graphicQ + 1;
+                        console.log("up config " + newConfig);
+                        this.config.setGraphicQ(newConfig);
+                        this.updateConfigTimeout = -1;
+                    }, 3000);
+                }
+            }
+            else {
+                clearTimeout(this.updateConfigTimeout);
+                this.updateConfigTimeout = -1;
+            }
         }
     }
     async setPageMode(mode) {
@@ -1743,6 +1765,25 @@ class Game {
             }
             else {
                 this.scene.activeCameras = [this.camera];
+            }
+        }
+    }
+    updateShadowGenerator() {
+        if (this.camera) {
+            if (this.config.graphicQ > 2 && !this.shadowGenerator) {
+                this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
+                this.shadowGenerator.useBlurExponentialShadowMap = true;
+                this.shadowGenerator.depthScale = 0.01;
+                this.shadowGenerator.blurScale = 1;
+                this.shadowGenerator.useKernelBlur = true;
+                this.shadowGenerator.blurKernel = 4;
+                this.shadowGenerator.setDarkness(0.8);
+            }
+            else {
+                if (this.shadowGenerator) {
+                    this.shadowGenerator.dispose();
+                    delete this.shadowGenerator;
+                }
             }
         }
     }
@@ -2486,12 +2527,13 @@ class Machine {
         return encloseEnd;
     }
     updateShadow() {
-        return;
-        this.parts = this.parts.sort((a, b) => { return b.j - a.j; });
-        this.game.shadowGenerator.getShadowMapForRendering().renderList = [];
-        for (let i = 0; i < 0; i++) {
-            if (i < this.parts.length) {
-                this.game.shadowGenerator.addShadowCaster(this.parts[i], true);
+        if (this.game.shadowGenerator) {
+            this.parts = this.parts.sort((a, b) => { return b.j - a.j; });
+            this.game.shadowGenerator.getShadowMapForRendering().renderList = [];
+            for (let i = 0; i < 20; i++) {
+                if (i < this.parts.length) {
+                    this.game.shadowGenerator.addShadowCaster(this.parts[i], true);
+                }
             }
         }
     }
@@ -6751,9 +6793,6 @@ class Room {
         this.light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
         this.light2.intensity = 0.2;
         this.light2.includeOnlyWithLayerMask = 0x10000000;
-        if (this.game.machine) {
-            this.setGroundHeight(this.game.machine.baseMeshMinY - 0.8);
-        }
     }
     async instantiate() {
         let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
@@ -6828,6 +6867,9 @@ class Room {
         sculpt2.position.copyFromFloats(-4.5, 0, 0);
         sculpt2.rotation.y = 0.5 * Math.PI;
         sculpt2.parent = this.ground;
+        if (this.game.machine) {
+            this.setGroundHeight(this.game.machine.baseMeshMinY - 0.8);
+        }
     }
     setGroundHeight(h) {
         if (this.ground) {
@@ -7228,7 +7270,6 @@ class MainMenu {
                     }
                 }
             }
-            console.log("test " + this.xCount + " " + this.yCount);
             let grid = [];
             for (let y = 0; y <= this.yCount; y++) {
                 grid[y] = [];
@@ -7263,11 +7304,7 @@ class MainMenu {
                     ok = false;
                 }
             }
-            if (!ok) {
-                console.log("can't find a way to make a menu layout");
-            }
-            else {
-                console.log("now it's ok");
+            if (ok) {
                 let empty = true;
                 emptyLinesBottom = 0;
                 for (let y = this.yCount - 1; y > 0 && empty; y--) {

@@ -79,8 +79,6 @@ class MainMenu {
                 }
             }
 
-            console.log("test " + this.xCount + " " + this.yCount);
-
             let grid: boolean[][] = [];
             for (let y = 0; y <= this.yCount; y++) {
                 grid[y] = [];
@@ -116,11 +114,7 @@ class MainMenu {
                     ok = false;
                 }
             }
-            if (!ok) {
-                console.log("can't find a way to make a menu layout");
-            }
-            else {
-                console.log("now it's ok");
+            if (ok) {
                 let empty = true;
                 emptyLinesBottom = 0;
                 for (let y = this.yCount - 1; y > 0 && empty; y--) {
