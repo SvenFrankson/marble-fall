@@ -3,6 +3,8 @@ class Room {
     public ground: BABYLON.Mesh;
     public wall: BABYLON.Mesh;
     public frame: BABYLON.Mesh;
+    public light1: BABYLON.HemisphericLight;
+    public light2: BABYLON.HemisphericLight;
 
     constructor(public game: Game) {
         this.ground = new BABYLON.Mesh("room-ground");
@@ -26,6 +28,20 @@ class Room {
         this.frame.layerMask = 0x10000000;
         this.frame.material = this.game.steelMaterial;
         this.frame.parent = this.ground;
+
+        this.light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.game.scene);
+        this.light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        this.light1.intensity = 0.2;
+        this.light1.includeOnlyWithLayerMask = 0x10000000;
+
+        this.light2 = new BABYLON.HemisphericLight("light2", (new BABYLON.Vector3(- 1, 3, 0)).normalize(), this.game.scene);
+        this.light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        this.light2.intensity = 0.2;
+        this.light2.includeOnlyWithLayerMask = 0x10000000;
+
+        if (this.game.machine) {
+            this.setGroundHeight(this.game.machine.baseMeshMinY - 0.8);
+        }
     }
 
     public async instantiate(): Promise<void> {
@@ -121,7 +137,9 @@ class Room {
     }
 
     public setGroundHeight(h: number) {
-        this.ground.position.y = h;
+        if (this.ground) {
+            this.ground.position.y = h;
+        }
         this.game.spotLight.position.y = this.ground.position.y + 3;
         let dir = new BABYLON.Vector3(
             (this.game.machine.baseMeshMinX + this.game.machine.baseMeshMaxX) * 0.5,
@@ -129,5 +147,13 @@ class Room {
             (this.game.machine.baseMeshMinZ + this.game.machine.baseMeshMaxZ) * 0.5
         ).normalize();
         this.game.spotLight.direction = dir;
+    }
+
+    public dispose(): void {
+        this.ground.dispose();
+        this.frame.dispose();
+        this.wall.dispose();
+        this.light1.dispose();
+        this.light2.dispose();
     }
 }

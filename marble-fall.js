@@ -104,11 +104,9 @@ class Ball extends BABYLON.Mesh {
         });
         this.selectedMesh.parent = this.positionZeroGhost;
         this.selectedMesh.isVisible = false;
-        this.game.shadowGenerator.addShadowCaster(this, false);
         this.reset();
     }
     dispose(doNotRecurse, disposeMaterialAndTextures) {
-        this.game.shadowGenerator.removeShadowCaster(this, false);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         this.marbleLoopSound.setVolume(0, 0.1);
         this.marbleLoopSound.pause();
@@ -196,12 +194,12 @@ class Ball extends BABYLON.Mesh {
                         }
                         else {
                             */
-                        let f = Nabu.MinMax(this.velocity.length(), 0, 1);
+                        let f = Nabu.MinMax(this.velocity.lengthSquared(), 0, 1);
                         let range = Math.round(f * 32 + (1 - f) * 2);
                         col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index, range);
                         //}
                         if (col.hit) {
-                            this.setLastHit(wire, col.index);
+                            //this.setLastHit(wire, col.index);
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
                             forcedDisplacement.addInPlace(col.normal.scale(col.depth));
@@ -250,8 +248,8 @@ class Ball extends BABYLON.Mesh {
                                 this.marbleChocSound.play();
                             }
                         }
-                        this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
-                        ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
+                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
+                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         let dir = this.position.subtract(ball.position).normalize();
@@ -326,6 +324,14 @@ class Configuration {
                 this.game.machine.deserialize(data);
                 this.game.machine.instantiate();
             }
+            if (this.game.room) {
+                this.game.room.dispose();
+                if (this._graphicQ > 1) {
+                    this.game.room = new Room(this.game);
+                    this.game.room.instantiate();
+                }
+            }
+            this.game.updateCameraLayer();
             if (!skipStorage) {
                 this.saveToLocalStorage();
             }
@@ -1181,7 +1187,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = true;
+        this.DEBUG_MODE = false;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -1260,15 +1266,10 @@ class Game {
         else {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         }
-        let light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.scene);
-        light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
-        light1.intensity = 0.2;
-        let light2 = new BABYLON.HemisphericLight("light2", (new BABYLON.Vector3(-1, 3, 0)).normalize(), this.scene);
-        light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
-        light2.intensity = 0.2;
         this.spotLight = new BABYLON.SpotLight("spot-light", new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 1, this.scene);
         this.spotLight.shadowMinZ = 1;
         this.spotLight.shadowMaxZ = 3;
+        /*
         this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
         this.shadowGenerator.useBlurExponentialShadowMap = true;
         this.shadowGenerator.depthScale = 0.01;
@@ -1276,6 +1277,7 @@ class Game {
         this.shadowGenerator.useKernelBlur = true;
         this.shadowGenerator.blurKernel = 4;
         this.shadowGenerator.setDarkness(0.8);
+        */
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -1377,12 +1379,12 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
-        let camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
-        camBackGround.parent = this.camera;
-        camBackGround.layerMask = 0x10000000;
-        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, camBackGround);
-        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, camBackGround);
-        this.scene.activeCameras = [camBackGround, this.camera];
+        this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
+        this.camBackGround.parent = this.camera;
+        this.camBackGround.layerMask = 0x10000000;
+        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround);
+        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround);
+        this.updateCameraLayer();
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));
@@ -1411,7 +1413,9 @@ class Game {
         alternateMenuCamMode();
         this.camera.attachControl();
         this.camera.getScene();
-        this.room = new Room(this);
+        if (this.config.graphicQ > 1) {
+            this.room = new Room(this);
+        }
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         if (this.DEBUG_MODE) {
@@ -1444,7 +1448,9 @@ class Game {
         this.toolbar.resize();
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
-        await this.room.instantiate();
+        if (this.room) {
+            await this.room.instantiate();
+        }
         let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
         let container = document.getElementById("main-menu");
         let demoButtons = container.querySelectorAll(".panel.demo");
@@ -1505,6 +1511,13 @@ class Game {
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
         this.canvas.addEventListener("pointerup", this.onPointerUp);
         this.canvas.addEventListener("wheel", this.onWheelEvent);
+        if (this.DEBUG_MODE) {
+            setInterval(() => {
+                let triCount = this.machine.parts.map(part => { return part.getTriCount(); }).reduce((t1, t2) => { return t1 + t2; });
+                triCount += this.machine.parts.map(ball => { return ball.getIndices().length / 3; }).reduce((b1, b2) => { return b1 + b2; });
+                console.log("global machin tricount " + triCount);
+            }, 3000);
+        }
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -1512,12 +1525,10 @@ class Game {
             this.update();
         });
         window.onresize = () => {
-            console.log("a");
             this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             this.engine.resize();
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    console.log("b");
                     this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
                     this.engine.resize();
                     this.topbar.resize();
@@ -1609,7 +1620,7 @@ class Game {
             this.machine.update();
         }
         let fps = 1 / dt;
-        if (fps < 30) {
+        if (fps < 30 && this.timeFactor > this.targetTimeFactor / 10) {
             this.timeFactor *= 0.9;
         }
         else {
@@ -1664,7 +1675,9 @@ class Game {
     async makeScreenshot(objectName) {
         this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
-        this.room.ground.position.y = 100;
+        if (this.room) {
+            this.room.ground.position.y = 100;
+        }
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         this.camera.alpha = -0.8 * Math.PI / 2;
         this.camera.beta = 0.75 * Math.PI / 2;
@@ -1709,7 +1722,9 @@ class Game {
     async makeCircuitScreenshot() {
         this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
-        this.room.ground.position.y = 100;
+        if (this.room) {
+            this.room.ground.position.y = 100;
+        }
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
@@ -1720,6 +1735,16 @@ class Game {
                 resolve();
             });
         });
+    }
+    updateCameraLayer() {
+        if (this.camera) {
+            if (this.config.graphicQ > 1) {
+                this.scene.activeCameras = [this.camBackGround, this.camera];
+            }
+            else {
+                this.scene.activeCameras = [this.camera];
+            }
+        }
     }
     getCameraMinFOV() {
         let ratio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
@@ -2037,7 +2062,7 @@ class Wire extends BABYLON.Mesh {
         while (this.getChildren().length > 0) {
             this.getChildren()[0].dispose();
         }
-        let n = 4;
+        let n = 3;
         if (q === 2) {
             n = 6;
         }
@@ -2344,7 +2369,9 @@ class Machine {
             this.baseLogo.material = this.game.logoMaterial;
             this.regenerateBaseAxis();
         }
-        this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
+        if (this.game.room) {
+            this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
+        }
     }
     regenerateBaseAxis() {
         if (this.baseAxis) {
@@ -2459,9 +2486,10 @@ class Machine {
         return encloseEnd;
     }
     updateShadow() {
+        return;
         this.parts = this.parts.sort((a, b) => { return b.j - a.j; });
         this.game.shadowGenerator.getShadowMapForRendering().renderList = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 0; i++) {
             if (i < this.parts.length) {
                 this.game.shadowGenerator.addShadowCaster(this.parts[i], true);
             }
@@ -2835,6 +2863,9 @@ class MachinePart extends BABYLON.Mesh {
                     SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
                     this.sleepersMesh.freezeWorldMatrix();
                     this.machine.requestUpdateShadow = true;
+                    if (this.game.DEBUG_MODE) {
+                        console.log(this.partName + " tricount " + this.getTriCount());
+                    }
                 }
             });
             if (rebuildNeighboursWireMeshes) {
@@ -2846,6 +2877,14 @@ class MachinePart extends BABYLON.Mesh {
         }
         this.freezeWorldMatrix();
         this.machine.requestUpdateShadow = true;
+    }
+    getTriCount() {
+        let triCount = this.getIndices().length / 3;
+        let children = this.getChildMeshes();
+        children.forEach(child => {
+            triCount += child.getIndices().length / 3;
+        });
+        return triCount;
     }
 }
 var TrackNames = [
@@ -3111,7 +3150,7 @@ class SleeperMeshBuilder {
                                     let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
                                     partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
                                     tmp.dispose();
-                                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.006, diameter: 0.008 });
+                                    let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.002, diameter: 0.008, tessellation: 8 });
                                     Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorBase);
                                     partialsDatas.push(tmpVertexData);
                                     tmp.dispose();
@@ -6704,6 +6743,17 @@ class Room {
         this.frame.layerMask = 0x10000000;
         this.frame.material = this.game.steelMaterial;
         this.frame.parent = this.ground;
+        this.light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.game.scene);
+        this.light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        this.light1.intensity = 0.2;
+        this.light1.includeOnlyWithLayerMask = 0x10000000;
+        this.light2 = new BABYLON.HemisphericLight("light2", (new BABYLON.Vector3(-1, 3, 0)).normalize(), this.game.scene);
+        this.light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
+        this.light2.intensity = 0.2;
+        this.light2.includeOnlyWithLayerMask = 0x10000000;
+        if (this.game.machine) {
+            this.setGroundHeight(this.game.machine.baseMeshMinY - 0.8);
+        }
     }
     async instantiate() {
         let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
@@ -6780,10 +6830,19 @@ class Room {
         sculpt2.parent = this.ground;
     }
     setGroundHeight(h) {
-        this.ground.position.y = h;
+        if (this.ground) {
+            this.ground.position.y = h;
+        }
         this.game.spotLight.position.y = this.ground.position.y + 3;
         let dir = new BABYLON.Vector3((this.game.machine.baseMeshMinX + this.game.machine.baseMeshMaxX) * 0.5, -3, (this.game.machine.baseMeshMinZ + this.game.machine.baseMeshMaxZ) * 0.5).normalize();
         this.game.spotLight.direction = dir;
+    }
+    dispose() {
+        this.ground.dispose();
+        this.frame.dispose();
+        this.wall.dispose();
+        this.light1.dispose();
+        this.light2.dispose();
     }
 }
 class Sculpt extends BABYLON.Mesh {

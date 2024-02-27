@@ -44,6 +44,14 @@ class Configuration {
                 this.game.machine.deserialize(data);
                 this.game.machine.instantiate();
             }
+            if (this.game.room) {
+                this.game.room.dispose();
+                if (this._graphicQ > 1) {
+                    this.game.room = new Room(this.game);
+                    this.game.room.instantiate();
+                }
+            }
+            this.game.updateCameraLayer();
 
             if (!skipStorage) {
                 this.saveToLocalStorage();

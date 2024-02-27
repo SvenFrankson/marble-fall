@@ -64,7 +64,7 @@ class Wire extends BABYLON.Mesh {
             this.getChildren()[0].dispose();
         }
 
-        let n = 4;
+        let n = 3;
         if (q === 2) {
             n = 6;
         }

@@ -423,6 +423,9 @@ class MachinePart extends BABYLON.Mesh {
                     SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
                     this.sleepersMesh.freezeWorldMatrix();
                     this.machine.requestUpdateShadow = true;
+                    if (this.game.DEBUG_MODE) {
+                        console.log(this.partName + " tricount " + this.getTriCount());
+                    }
                 }
             })
 
@@ -435,5 +438,14 @@ class MachinePart extends BABYLON.Mesh {
         }
         this.freezeWorldMatrix();
         this.machine.requestUpdateShadow = true;
+    }
+
+    public getTriCount(): number {
+        let triCount = this.getIndices().length / 3;
+        let children = this.getChildMeshes();
+        children.forEach(child => {
+            triCount += child.getIndices().length / 3;
+        })
+        return triCount;
     }
 }

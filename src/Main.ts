@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = true;
+    public DEBUG_MODE: boolean = false;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -41,6 +41,7 @@ class Game {
 
     //public camera: BABYLON.FreeCamera;
     public camera: BABYLON.ArcRotateCamera;
+    public camBackGround: BABYLON.FreeCamera;
     public cameraMode: CameraMode = CameraMode.None;
     public menuCameraMode: CameraMode = CameraMode.Ball;
     public targetCamTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -150,16 +151,11 @@ class Game {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         }
 
-        let light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.scene);
-        light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
-        light1.intensity = 0.2;
-        let light2 = new BABYLON.HemisphericLight("light2", (new BABYLON.Vector3(- 1, 3, 0)).normalize(), this.scene);
-        light2.groundColor.copyFromFloats(0.3, 0.3, 0.3);
-        light2.intensity = 0.2;
-
         this.spotLight = new BABYLON.SpotLight("spot-light", new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 1, this.scene);
         this.spotLight.shadowMinZ = 1;
         this.spotLight.shadowMaxZ = 3;
+
+        /*
         this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
         this.shadowGenerator.useBlurExponentialShadowMap = true;
         this.shadowGenerator.depthScale = 0.01;
@@ -167,6 +163,7 @@ class Game {
         this.shadowGenerator.useKernelBlur = true;
         this.shadowGenerator.blurKernel = 4;
         this.shadowGenerator.setDarkness(0.8);
+        */
 
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
         this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
@@ -289,13 +286,13 @@ class Game {
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
 
-        let camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
-        camBackGround.parent = this.camera;
-        camBackGround.layerMask = 0x10000000;
-        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, camBackGround)
-        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, camBackGround)
+        this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
+        this.camBackGround.parent = this.camera;
+        this.camBackGround.layerMask = 0x10000000;
+        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround)
+        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround)
 
-        this.scene.activeCameras = [camBackGround, this.camera];
+        this.updateCameraLayer();
 
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
@@ -328,7 +325,9 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
-        this.room = new Room(this);
+        if (this.config.graphicQ > 1) {
+            this.room = new Room(this);
+        }
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
@@ -371,7 +370,9 @@ class Game {
 
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
-        await this.room.instantiate();
+        if (this.room) {
+            await this.room.instantiate();
+        }
 
         let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
         let container = document.getElementById("main-menu");
@@ -435,6 +436,14 @@ class Game {
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
         this.canvas.addEventListener("pointerup", this.onPointerUp);
         this.canvas.addEventListener("wheel", this.onWheelEvent);
+
+        if (this.DEBUG_MODE) {
+            setInterval(() => {
+                let triCount = this.machine.parts.map(part => { return part.getTriCount() }).reduce((t1, t2) => { return t1 + t2 });
+                triCount += this.machine.parts.map(ball => { return ball.getIndices().length / 3 }).reduce((b1, b2) => { return b1 + b2 });
+                console.log("global machin tricount " + triCount);
+            }, 3000);
+        }
 	}
 
 	public animate(): void {
@@ -444,12 +453,10 @@ class Game {
 		});
 
 		window.onresize = () => {
-            console.log("a");
             this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
             this.engine.resize();
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    console.log("b");
                     this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
                     this.engine.resize();
                     this.topbar.resize();
@@ -553,7 +560,7 @@ class Game {
         }
 
         let fps = 1 / dt;
-        if (fps < 30) {
+        if (fps < 30 && this.timeFactor > this.targetTimeFactor / 10) {
             this.timeFactor *= 0.9;
         }
         else {
@@ -616,7 +623,9 @@ class Game {
     public async makeScreenshot(objectName: string): Promise<void> {
         this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
-        this.room.ground.position.y = 100;
+        if (this.room) {
+            this.room.ground.position.y = 100;
+        }
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
         
         this.camera.alpha = - 0.8 * Math.PI / 2;
@@ -667,7 +676,9 @@ class Game {
     public async makeCircuitScreenshot(): Promise<void> {
         this.machine.setBaseIsVisible(false);
         this.skybox.isVisible = false;
-        this.room.ground.position.y = 100;
+        if (this.room) {
+            this.room.ground.position.y = 100;
+        }
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
 
         return new Promise<void>(resolve => {
@@ -679,6 +690,17 @@ class Game {
                 resolve();
             });
         });
+    }
+
+    public updateCameraLayer(): void {
+        if (this.camera) {
+            if (this.config.graphicQ > 1) {
+                this.scene.activeCameras = [this.camBackGround, this.camera];
+            }
+            else {
+                this.scene.activeCameras = [this.camera];
+            }
+        }
     }
 
     public getCameraMinFOV(): number {

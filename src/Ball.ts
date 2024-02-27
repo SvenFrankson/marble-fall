@@ -115,14 +115,10 @@ class Ball extends BABYLON.Mesh {
         this.selectedMesh.parent = this.positionZeroGhost;
         this.selectedMesh.isVisible = false;
 
-        this.game.shadowGenerator.addShadowCaster(this, false);
-
         this.reset();
     }
 
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
-        this.game.shadowGenerator.removeShadowCaster(this, false);
-        
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {        
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
         
         this.marbleLoopSound.setVolume(0, 0.1);
@@ -237,12 +233,12 @@ class Ball extends BABYLON.Mesh {
                         }
                         else {
                             */
-                            let f = Nabu.MinMax(this.velocity.length(), 0, 1);
+                            let f = Nabu.MinMax(this.velocity.lengthSquared(), 0, 1);
                             let range = Math.round(f * 32 + (1 - f) * 2);
                             col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index, range);
                         //}
                         if (col.hit) {
-                            this.setLastHit(wire, col.index);
+                            //this.setLastHit(wire, col.index);
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
                             forcedDisplacement.addInPlace(col.normal.scale(col.depth));
@@ -294,8 +290,8 @@ class Ball extends BABYLON.Mesh {
                             }
                         }
 
-                        this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
-                        ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
+                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
+                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         
