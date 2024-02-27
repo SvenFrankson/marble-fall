@@ -140,13 +140,6 @@ class Room {
         if (this.ground) {
             this.ground.position.y = h;
         }
-        this.game.spotLight.position.y = this.ground.position.y + 3;
-        let dir = new BABYLON.Vector3(
-            (this.game.machine.baseMeshMinX + this.game.machine.baseMeshMaxX) * 0.5,
-            -3,
-            (this.game.machine.baseMeshMinZ + this.game.machine.baseMeshMaxZ) * 0.5
-        ).normalize();
-        this.game.spotLight.direction = dir;
     }
 
     public dispose(): void {

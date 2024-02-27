@@ -295,6 +295,14 @@ class Machine {
         if (this.game.room) {
             this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
         }
+        
+        this.game.spotLight.position.y = this.baseMeshMinY + 2.2;
+        let dir = new BABYLON.Vector3(
+            (this.baseMeshMinX + this.baseMeshMaxX) * 0.5,
+            -3,
+            (this.baseMeshMinZ + this.baseMeshMaxZ) * 0.5
+        ).normalize();
+        this.game.spotLight.direction = dir;
     }
 
     public regenerateBaseAxis(): void {

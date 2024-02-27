@@ -103,6 +103,8 @@ class OptionsPage {
             return;
         }
 
+        this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
+        
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(1, 0.5);

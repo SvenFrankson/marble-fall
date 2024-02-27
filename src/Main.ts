@@ -42,6 +42,8 @@ class Game {
     //public camera: BABYLON.FreeCamera;
     public camera: BABYLON.ArcRotateCamera;
     public camBackGround: BABYLON.FreeCamera;
+    public horizontalBlur: BABYLON.BlurPostProcess;
+    public verticalBlur: BABYLON.BlurPostProcess;
     public cameraMode: CameraMode = CameraMode.None;
     public menuCameraMode: CameraMode = CameraMode.Ball;
     public targetCamTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -275,12 +277,6 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
-
-        this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
-        this.camBackGround.parent = this.camera;
-        this.camBackGround.layerMask = 0x10000000;
-        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround)
-        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround)
 
         this.updateCameraLayer();
 
@@ -561,30 +557,36 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
-            if (this.averagedFPS < 24&& this.config.graphicQ > 1) {
-                if (this.updateConfigTimeout === - 1) {
-                    this.updateConfigTimeout = setTimeout(() => {
-                        let newConfig = this.config.graphicQ - 1;
-                        console.log("down config " + newConfig);
-                        this.config.setGraphicQ(newConfig);
-                        this.updateConfigTimeout = -1;
-                    }, 3000);
+            if (this.mode === GameMode.MainMenu) {
+                this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
+                if (this.averagedFPS < 24&& this.config.graphicQ > 1) {
+                    if (this.updateConfigTimeout === - 1) {
+                        this.updateConfigTimeout = setTimeout(() => {
+                            if (this.mode === GameMode.MainMenu) {
+                                let newConfig = this.config.graphicQ - 1;
+                                console.log("down config " + newConfig);
+                                this.config.setGraphicQ(newConfig);
+                                this.updateConfigTimeout = -1;
+                            }
+                        }, 3000);
+                    }
                 }
-            }
-            else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
-                if (this.updateConfigTimeout === - 1) {
-                    this.updateConfigTimeout = setTimeout(() => {
-                        let newConfig = this.config.graphicQ + 1;
-                        console.log("up config " + newConfig);
-                        this.config.setGraphicQ(newConfig);
-                        this.updateConfigTimeout = -1;
-                    }, 3000);
+                else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
+                    if (this.updateConfigTimeout === - 1) {
+                        this.updateConfigTimeout = setTimeout(() => {
+                            if (this.mode === GameMode.MainMenu) {
+                                let newConfig = this.config.graphicQ + 1;
+                                console.log("up config " + newConfig);
+                                this.config.setGraphicQ(newConfig);
+                                this.updateConfigTimeout = -1;
+                            }
+                        }, 3000);
+                    }
                 }
-            }
-            else {
-                clearTimeout(this.updateConfigTimeout);
-                this.updateConfigTimeout = -1;
+                else {
+                    clearTimeout(this.updateConfigTimeout);
+                    this.updateConfigTimeout = -1;
+                }
             }
         }
     }
@@ -715,8 +717,24 @@ class Game {
 
     public updateCameraLayer(): void {
         if (this.camera) {
+            if (this.horizontalBlur) {
+                this.horizontalBlur.dispose();
+            }
+            if (this.verticalBlur) {
+                this.verticalBlur.dispose();
+            }
+            if (this.camBackGround) {
+                this.camBackGround.dispose();
+            }
+
             if (this.config.graphicQ > 1) {
+                this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
+                this.camBackGround.parent = this.camera;
+                this.camBackGround.layerMask = 0x10000000;
+
                 this.scene.activeCameras = [this.camBackGround, this.camera];
+                this.horizontalBlur = new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround)
+                this.verticalBlur = new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround)
             }
             else {
                 this.scene.activeCameras = [this.camera];

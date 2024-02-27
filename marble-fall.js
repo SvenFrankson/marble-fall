@@ -290,7 +290,7 @@ class Configuration {
     constructor(game) {
         this.game = game;
         this._handleSize = 1;
-        this._graphicQ = 3;
+        this._graphicQ = 2;
         this._uiSize = 1.3;
         this._gridOpacity = 0.3;
     }
@@ -326,10 +326,10 @@ class Configuration {
             }
             if (this.game.room) {
                 this.game.room.dispose();
-                if (this._graphicQ > 1) {
-                    this.game.room = new Room(this.game);
-                    this.game.room.instantiate();
-                }
+            }
+            if (this._graphicQ > 1) {
+                this.game.room = new Room(this.game);
+                this.game.room.instantiate();
             }
             this.game.updateCameraLayer();
             this.game.updateShadowGenerator();
@@ -1373,11 +1373,6 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
-        this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
-        this.camBackGround.parent = this.camera;
-        this.camBackGround.layerMask = 0x10000000;
-        new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround);
-        new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround);
         this.updateCameraLayer();
         this.updateShadowGenerator();
         if (this.DEBUG_MODE) {
@@ -1622,30 +1617,36 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
-            if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
-                if (this.updateConfigTimeout === -1) {
-                    this.updateConfigTimeout = setTimeout(() => {
-                        let newConfig = this.config.graphicQ - 1;
-                        console.log("down config " + newConfig);
-                        this.config.setGraphicQ(newConfig);
-                        this.updateConfigTimeout = -1;
-                    }, 3000);
+            if (this.mode === GameMode.MainMenu) {
+                this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
+                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
+                    if (this.updateConfigTimeout === -1) {
+                        this.updateConfigTimeout = setTimeout(() => {
+                            if (this.mode === GameMode.MainMenu) {
+                                let newConfig = this.config.graphicQ - 1;
+                                console.log("down config " + newConfig);
+                                this.config.setGraphicQ(newConfig);
+                                this.updateConfigTimeout = -1;
+                            }
+                        }, 3000);
+                    }
                 }
-            }
-            else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
-                if (this.updateConfigTimeout === -1) {
-                    this.updateConfigTimeout = setTimeout(() => {
-                        let newConfig = this.config.graphicQ + 1;
-                        console.log("up config " + newConfig);
-                        this.config.setGraphicQ(newConfig);
-                        this.updateConfigTimeout = -1;
-                    }, 3000);
+                else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
+                    if (this.updateConfigTimeout === -1) {
+                        this.updateConfigTimeout = setTimeout(() => {
+                            if (this.mode === GameMode.MainMenu) {
+                                let newConfig = this.config.graphicQ + 1;
+                                console.log("up config " + newConfig);
+                                this.config.setGraphicQ(newConfig);
+                                this.updateConfigTimeout = -1;
+                            }
+                        }, 3000);
+                    }
                 }
-            }
-            else {
-                clearTimeout(this.updateConfigTimeout);
-                this.updateConfigTimeout = -1;
+                else {
+                    clearTimeout(this.updateConfigTimeout);
+                    this.updateConfigTimeout = -1;
+                }
             }
         }
     }
@@ -1760,8 +1761,22 @@ class Game {
     }
     updateCameraLayer() {
         if (this.camera) {
+            if (this.horizontalBlur) {
+                this.horizontalBlur.dispose();
+            }
+            if (this.verticalBlur) {
+                this.verticalBlur.dispose();
+            }
+            if (this.camBackGround) {
+                this.camBackGround.dispose();
+            }
             if (this.config.graphicQ > 1) {
+                this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
+                this.camBackGround.parent = this.camera;
+                this.camBackGround.layerMask = 0x10000000;
                 this.scene.activeCameras = [this.camBackGround, this.camera];
+                this.horizontalBlur = new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround);
+                this.verticalBlur = new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround);
             }
             else {
                 this.scene.activeCameras = [this.camera];
@@ -2413,6 +2428,9 @@ class Machine {
         if (this.game.room) {
             this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
         }
+        this.game.spotLight.position.y = this.baseMeshMinY + 2.2;
+        let dir = new BABYLON.Vector3((this.baseMeshMinX + this.baseMeshMaxX) * 0.5, -3, (this.baseMeshMinZ + this.baseMeshMaxZ) * 0.5).normalize();
+        this.game.spotLight.direction = dir;
     }
     regenerateBaseAxis() {
         if (this.baseAxis) {
@@ -6875,9 +6893,6 @@ class Room {
         if (this.ground) {
             this.ground.position.y = h;
         }
-        this.game.spotLight.position.y = this.ground.position.y + 3;
-        let dir = new BABYLON.Vector3((this.game.machine.baseMeshMinX + this.game.machine.baseMeshMaxX) * 0.5, -3, (this.game.machine.baseMeshMinZ + this.game.machine.baseMeshMaxZ) * 0.5).normalize();
-        this.game.spotLight.direction = dir;
     }
     dispose() {
         this.ground.dispose();
@@ -7458,6 +7473,7 @@ class OptionsPage {
             this.container.style.pointerEvents = "";
             return;
         }
+        this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(1, 0.5);

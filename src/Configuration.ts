@@ -30,7 +30,7 @@ class Configuration {
         }
     }
 
-    private _graphicQ: number = 3;
+    private _graphicQ: number = 2;
     public get graphicQ() {
         return this._graphicQ;
     }
@@ -46,10 +46,10 @@ class Configuration {
             }
             if (this.game.room) {
                 this.game.room.dispose();
-                if (this._graphicQ > 1) {
-                    this.game.room = new Room(this.game);
-                    this.game.room.instantiate();
-                }
+            }
+            if (this._graphicQ > 1) {
+                this.game.room = new Room(this.game);
+                this.game.room.instantiate();
             }
             this.game.updateCameraLayer();
             this.game.updateShadowGenerator();
