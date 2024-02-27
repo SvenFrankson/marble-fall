@@ -12,6 +12,9 @@ class Ball extends BABYLON.Mesh {
         this.size = 0.016;
         this.velocity = BABYLON.Vector3.Zero();
         this._showPositionZeroGhost = false;
+        this._lastWires = [];
+        this._lastWireIndexes = [-1, -1];
+        this._pouet = 0;
         this._timer = 0;
         this.strReaction = 0;
         this.marbleChocSound = new BABYLON.Sound("marble-choc-sound", "./datas/sounds/marble-choc.wav", this.getScene(), undefined, { loop: false, autoplay: false });
@@ -116,6 +119,28 @@ class Ball extends BABYLON.Mesh {
         this._timer = 0;
         this.marbleLoopSound.setVolume(0, 0.1);
     }
+    getLastIndex(wire) {
+        if (this._lastWires[0] === wire) {
+            return this._lastWireIndexes[0];
+        }
+        if (this._lastWires[1] === wire) {
+            return this._lastWireIndexes[1];
+        }
+        return -1;
+    }
+    setLastHit(wire, index) {
+        if (this._lastWires[0] === wire) {
+            this._lastWireIndexes[0] = index;
+            return;
+        }
+        if (this._lastWires[1] === wire) {
+            this._lastWireIndexes[1] = index;
+            return;
+        }
+        this._pouet = (this._pouet + 1) % 2;
+        this._lastWires[this._pouet] = wire;
+        this._lastWireIndexes[this._pouet] = index;
+    }
     update(dt) {
         if (this.position.y < this.machine.baseMeshMinY - 0.5) {
             return;
@@ -136,7 +161,8 @@ class Ball extends BABYLON.Mesh {
             this.machine.parts.forEach(part => {
                 if (Mummu.SphereAABBCheck(this.position, this.radius, part.AABBMin.x - this.radius, part.AABBMax.x + this.radius, part.AABBMin.y - this.radius, part.AABBMax.y + this.radius, part.AABBMin.z - this.radius, part.AABBMax.z + this.radius)) {
                     part.allWires.forEach(wire => {
-                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
+                        let index = this.getLastIndex(wire);
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index);
                         if (col.hit) {
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
@@ -152,6 +178,7 @@ class Ball extends BABYLON.Mesh {
                             reactionsCount++;
                         }
                     });
+                    /*
                     if (part instanceof QuarterNote || part instanceof DoubleNote) {
                         part.tings.forEach(ting => {
                             let col = Mummu.SphereMeshIntersection(this.position, this.radius, ting);
@@ -165,8 +192,9 @@ class Ball extends BABYLON.Mesh {
                                     }
                                 }
                             }
-                        });
+                        })
                     }
+                    */
                 }
             });
             this.machine.balls.forEach(ball => {
@@ -837,7 +865,16 @@ var aerial = {
 };
 var nested = {
     balls: [
-        { x: -0.7545676283181497, y: 0.5342106153490414, z: -0.23999999463558203 },
+        { x: -0.7539999856948852, y: -0.09149998760223389, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: -0.013237598896026612, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.06502478981018066, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.14328714871406556, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.22154953742027284, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.2998119261264801, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.3780743148326874, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.45633673334121705, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.5345991220474243, z: -0.23999999463558197 },
+        { x: -0.7539999856948852, y: 0.6128615107536316, z: -0.23999999463558197 },
         { x: -0.9039999618530273, y: -0.15150001978874206, z: -0.05999999865889549 },
         { x: -0.9039999618530273, y: -0.07242200112342835, z: -0.05999999865889549 },
         { x: -0.9039999618530273, y: 0.0066559579372406, z: -0.05999999865889549 },
@@ -858,10 +895,13 @@ var nested = {
         { name: "uturn-0.3", i: 4, j: 0, k: 2 },
         { name: "ramp-7.1.1", i: -3, j: 0, k: 4, mirrorX: true, mirrorZ: false },
         { name: "join", i: 3, j: -1, k: 2, mirrorZ: false },
+        { name: "ramp-1.0.1", i: 4, j: -1, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.1.1", i: 1, j: -2, k: 3 },
         { name: "uturn-0.3", i: 0, j: -2, k: 3, mirrorX: true, mirrorZ: true },
         { name: "uturnsharp", i: 5, j: -2, k: 2 },
         { name: "ramp-2.1.1", i: 0, j: -3, k: 1, mirrorX: false, mirrorZ: false },
+        { name: "ramp-1.2.1", i: 3, j: -4, k: 2, mirrorX: true, mirrorZ: false },
+        { name: "ramp-1.2.1", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
         { name: "loop-1.2.1", i: 2, j: -5, k: 2, mirrorZ: true },
         { name: "loop-1.2.1", i: 2, j: -6, k: 1 },
         { name: "spiral-2.3.2", i: 0, j: -6, k: 2, mirrorX: true },
@@ -870,6 +910,7 @@ var nested = {
         { name: "uturn-0.2", i: -5, j: -11, k: 1, mirrorX: true },
         { name: "ramp-1.0.1", i: -4, j: -11, k: 2, mirrorX: false, mirrorZ: false },
         { name: "ramp-3.8.1", i: -3, j: -11, k: 2, mirrorX: false, mirrorZ: false },
+        { name: "spiral-3.8.6", i: -3, j: -11, k: 1 },
         { name: "split", i: -4, j: -13, k: 1, mirrorX: false, mirrorZ: false },
         { name: "ramp-1.0.1", i: -5, j: -13, k: 1, mirrorX: false, mirrorZ: false },
         { name: "uturn-0.2", i: -1, j: -13, k: 0 },
@@ -878,10 +919,6 @@ var nested = {
         { name: "loop-1.5.2", i: -2, j: -17, k: 0, mirrorZ: true },
         { name: "ramp-2.7.1", i: -4, j: -20, k: 4, mirrorX: false, mirrorZ: false },
         { name: "elevator-24", i: -5, j: -21, k: 4, mirrorX: true, mirrorZ: false },
-        { name: "spiral-3.8.6", i: -3, j: -11, k: 1 },
-        { name: "ramp-1.0.1", i: 4, j: -1, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "ramp-1.2.1", i: 3, j: -4, k: 2, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.2.1", i: 4, j: -4, k: 2, mirrorX: false, mirrorZ: false },
     ],
 };
 var testNote = {

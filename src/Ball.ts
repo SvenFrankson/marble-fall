@@ -139,6 +139,32 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.setVolume(0, 0.1);
     }
 
+    private _lastWires: Wire[] = [];
+    private _lastWireIndexes: number[] = [- 1, - 1];
+    private _pouet: number = 0;
+    public getLastIndex(wire: Wire): number {
+        if (this._lastWires[0] === wire) {
+            return this._lastWireIndexes[0];
+        }
+        if (this._lastWires[1] === wire) {
+            return this._lastWireIndexes[1];
+        }
+        return -1;
+    }
+    public setLastHit(wire: Wire, index: number): void {
+        if (this._lastWires[0] === wire) {
+            this._lastWireIndexes[0] = index;
+            return;
+        }
+        if (this._lastWires[1] === wire) {
+            this._lastWireIndexes[1] = index;
+            return;
+        }
+        this._pouet = (this._pouet + 1) % 2;
+        this._lastWires[this._pouet] = wire;
+        this._lastWireIndexes[this._pouet] = index;
+    }
+
     private _timer: number = 0;
     public strReaction: number = 0;
     public update(dt: number): void {
@@ -174,7 +200,8 @@ class Ball extends BABYLON.Mesh {
                     part.AABBMax.z + this.radius
                 )) {
                     part.allWires.forEach(wire => {
-                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5);
+                        let index = this.getLastIndex(wire);
+                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index);
                         if (col.hit) {
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
@@ -190,6 +217,7 @@ class Ball extends BABYLON.Mesh {
                             reactionsCount++;
                         }
                     });
+                    /*
                     if (part instanceof QuarterNote || part instanceof DoubleNote) {
                         part.tings.forEach(ting => {
                             let col = Mummu.SphereMeshIntersection(this.position, this.radius, ting);
@@ -205,6 +233,7 @@ class Ball extends BABYLON.Mesh {
                             }
                         })
                     }
+                    */
                 }
             });
 
