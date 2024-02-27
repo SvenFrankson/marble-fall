@@ -1,6 +1,7 @@
 interface IConfigurationData {
 
     handleSize?: number;
+    autoGraphicQ?: number;
     graphicQ?: number;
     uiSize?: number;
     gridOpacity?: number;
@@ -30,6 +31,18 @@ class Configuration {
         }
     }
 
+    private _autoGraphicQ: number = 1;
+    public get autoGraphicQ(): boolean {
+        return this._autoGraphicQ === 1;
+    }
+    public setAutoGraphicQ(v: boolean, skipStorage?: boolean) {
+        this._autoGraphicQ = v ? 1 : 0;
+
+        if (!skipStorage) {
+            this.saveToLocalStorage();
+        }
+    }
+
     private _graphicQ: number = 2;
     public get graphicQ() {
         return this._graphicQ;
@@ -38,23 +51,23 @@ class Configuration {
         if (v >= 1 && v <= 3) {
             this._graphicQ = v;
 
-            if (this.game.machine) {
-                let data = this.game.machine.serialize();
-                this.game.machine.dispose();
-                this.game.machine.deserialize(data);
-                this.game.machine.instantiate();
-            }
-            if (this.game.room) {
-                this.game.room.dispose();
-            }
-            if (this._graphicQ > 1) {
-                this.game.room = new Room(this.game);
-                this.game.room.instantiate();
-            }
-            this.game.updateCameraLayer();
-            this.game.updateShadowGenerator();
-
             if (!skipStorage) {
+                if (this.game.machine) {
+                    let data = this.game.machine.serialize();
+                    this.game.machine.dispose();
+                    this.game.machine.deserialize(data);
+                    this.game.machine.instantiate();
+                }
+                if (this.game.room) {
+                    this.game.room.dispose();
+                }
+                if (this._graphicQ > 1) {
+                    this.game.room = new Room(this.game);
+                    this.game.room.instantiate();
+                }
+                this.game.updateCameraLayer();
+                this.game.updateShadowGenerator();
+                
                 this.saveToLocalStorage();
             }
         }
@@ -124,6 +137,9 @@ class Configuration {
             if (!isFinite(data.handleSize)) {
                 data.handleSize = this.handleSize;
             }
+            if (!isFinite(data.autoGraphicQ)) {
+                data.autoGraphicQ = this._autoGraphicQ;
+            }
             if (!isFinite(data.graphicQ)) {
                 data.graphicQ = this.graphicQ;
             }
@@ -137,6 +153,9 @@ class Configuration {
         if (data) {
             if (isFinite(data.handleSize)) {
                 this.setHandleSize(data.handleSize, true);
+            }
+            if (isFinite(data.autoGraphicQ)) {
+                this.setAutoGraphicQ(data.autoGraphicQ === 1 ? true : false, true);
             }
             if (isFinite(data.graphicQ)) {
                 this.setGraphicQ(data.graphicQ, true);

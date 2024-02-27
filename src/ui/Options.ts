@@ -7,6 +7,10 @@ class OptionsPage {
     public handleSizeValue: HTMLDivElement;
     public handleSizePlus: HTMLDivElement;
 
+    public autoGraphicQMinus: HTMLDivElement;
+    public autoGraphicQValue: HTMLDivElement;
+    public autoGraphicQPlus: HTMLDivElement;
+
     public graphicQMinus: HTMLDivElement;
     public graphicQValue: HTMLDivElement;
     public graphicQPlus: HTMLDivElement;
@@ -38,8 +42,23 @@ class OptionsPage {
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         }
         
+        this.autoGraphicQMinus = document.getElementById("auto-graphic-q-minus") as HTMLDivElement;
+        this.autoGraphicQMinus.onclick = () => {
+            this.game.config.setAutoGraphicQ(!this.game.config.autoGraphicQ);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
+        }
+        this.autoGraphicQValue = document.getElementById("auto-graphic-q-val") as HTMLDivElement;
+        this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
+        this.autoGraphicQPlus = document.getElementById("auto-graphic-q-plus") as HTMLDivElement;
+        this.autoGraphicQPlus.onclick = () => {
+            this.game.config.setAutoGraphicQ(!this.game.config.autoGraphicQ);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
+        }
+        
         this.graphicQMinus = document.getElementById("graphic-q-minus") as HTMLDivElement;
         this.graphicQMinus.onclick = () => {
+            this.game.config.setAutoGraphicQ(false);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
             this.game.config.setGraphicQ(this.game.config.graphicQ - 1);
             this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         }
@@ -47,6 +66,8 @@ class OptionsPage {
         this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         this.graphicQPlus = document.getElementById("graphic-q-plus") as HTMLDivElement;
         this.graphicQPlus.onclick = () => {
+            this.game.config.setAutoGraphicQ(false);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
             this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
             this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         }
@@ -104,7 +125,7 @@ class OptionsPage {
         }
 
         this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
-        
+
         let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
         this.container.style.visibility = "visible";
         await anim(1, 0.5);

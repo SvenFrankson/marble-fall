@@ -290,6 +290,7 @@ class Configuration {
     constructor(game) {
         this.game = game;
         this._handleSize = 1;
+        this._autoGraphicQ = 1;
         this._graphicQ = 2;
         this._uiSize = 1.3;
         this._gridOpacity = 0.3;
@@ -312,28 +313,37 @@ class Configuration {
             }
         }
     }
+    get autoGraphicQ() {
+        return this._autoGraphicQ === 1;
+    }
+    setAutoGraphicQ(v, skipStorage) {
+        this._autoGraphicQ = v ? 1 : 0;
+        if (!skipStorage) {
+            this.saveToLocalStorage();
+        }
+    }
     get graphicQ() {
         return this._graphicQ;
     }
     setGraphicQ(v, skipStorage) {
         if (v >= 1 && v <= 3) {
             this._graphicQ = v;
-            if (this.game.machine) {
-                let data = this.game.machine.serialize();
-                this.game.machine.dispose();
-                this.game.machine.deserialize(data);
-                this.game.machine.instantiate();
-            }
-            if (this.game.room) {
-                this.game.room.dispose();
-            }
-            if (this._graphicQ > 1) {
-                this.game.room = new Room(this.game);
-                this.game.room.instantiate();
-            }
-            this.game.updateCameraLayer();
-            this.game.updateShadowGenerator();
             if (!skipStorage) {
+                if (this.game.machine) {
+                    let data = this.game.machine.serialize();
+                    this.game.machine.dispose();
+                    this.game.machine.deserialize(data);
+                    this.game.machine.instantiate();
+                }
+                if (this.game.room) {
+                    this.game.room.dispose();
+                }
+                if (this._graphicQ > 1) {
+                    this.game.room = new Room(this.game);
+                    this.game.room.instantiate();
+                }
+                this.game.updateCameraLayer();
+                this.game.updateShadowGenerator();
                 this.saveToLocalStorage();
             }
         }
@@ -387,6 +397,9 @@ class Configuration {
             if (!isFinite(data.handleSize)) {
                 data.handleSize = this.handleSize;
             }
+            if (!isFinite(data.autoGraphicQ)) {
+                data.autoGraphicQ = this._autoGraphicQ;
+            }
             if (!isFinite(data.graphicQ)) {
                 data.graphicQ = this.graphicQ;
             }
@@ -400,6 +413,9 @@ class Configuration {
         if (data) {
             if (isFinite(data.handleSize)) {
                 this.setHandleSize(data.handleSize, true);
+            }
+            if (isFinite(data.autoGraphicQ)) {
+                this.setAutoGraphicQ(data.autoGraphicQ === 1 ? true : false, true);
             }
             if (isFinite(data.graphicQ)) {
                 this.setGraphicQ(data.graphicQ, true);
@@ -1617,29 +1633,27 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.mode === GameMode.MainMenu) {
+            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                 this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
                 if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.mode === GameMode.MainMenu) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                                 let newConfig = this.config.graphicQ - 1;
-                                console.log("down config " + newConfig);
                                 this.config.setGraphicQ(newConfig);
-                                this.updateConfigTimeout = -1;
                             }
+                            this.updateConfigTimeout = -1;
                         }, 3000);
                     }
                 }
                 else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.mode === GameMode.MainMenu) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                                 let newConfig = this.config.graphicQ + 1;
-                                console.log("up config " + newConfig);
                                 this.config.setGraphicQ(newConfig);
-                                this.updateConfigTimeout = -1;
                             }
+                            this.updateConfigTimeout = -1;
                         }, 3000);
                     }
                 }
@@ -6813,6 +6827,7 @@ class Room {
         this.light2.includeOnlyWithLayerMask = 0x10000000;
     }
     async instantiate() {
+        console.log("Room instantiate");
         let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
         vertexDatas[0].applyToMesh(this.ground);
         vertexDatas[1].applyToMesh(this.wall);
@@ -7414,8 +7429,22 @@ class OptionsPage {
             this.game.config.setHandleSize(this.game.config.handleSize + 0.2);
             this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
         };
+        this.autoGraphicQMinus = document.getElementById("auto-graphic-q-minus");
+        this.autoGraphicQMinus.onclick = () => {
+            this.game.config.setAutoGraphicQ(!this.game.config.autoGraphicQ);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
+        };
+        this.autoGraphicQValue = document.getElementById("auto-graphic-q-val");
+        this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
+        this.autoGraphicQPlus = document.getElementById("auto-graphic-q-plus");
+        this.autoGraphicQPlus.onclick = () => {
+            this.game.config.setAutoGraphicQ(!this.game.config.autoGraphicQ);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
+        };
         this.graphicQMinus = document.getElementById("graphic-q-minus");
         this.graphicQMinus.onclick = () => {
+            this.game.config.setAutoGraphicQ(false);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
             this.game.config.setGraphicQ(this.game.config.graphicQ - 1);
             this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         };
@@ -7423,6 +7452,8 @@ class OptionsPage {
         this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         this.graphicQPlus = document.getElementById("graphic-q-plus");
         this.graphicQPlus.onclick = () => {
+            this.game.config.setAutoGraphicQ(false);
+            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
             this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
             this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
         };

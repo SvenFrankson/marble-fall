@@ -557,29 +557,27 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.mode === GameMode.MainMenu) {
+            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                 this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
-                if (this.averagedFPS < 24&& this.config.graphicQ > 1) {
+                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.mode === GameMode.MainMenu) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                                 let newConfig = this.config.graphicQ - 1;
-                                console.log("down config " + newConfig);
                                 this.config.setGraphicQ(newConfig);
-                                this.updateConfigTimeout = -1;
                             }
+                            this.updateConfigTimeout = -1;
                         }, 3000);
                     }
                 }
                 else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.mode === GameMode.MainMenu) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                                 let newConfig = this.config.graphicQ + 1;
-                                console.log("up config " + newConfig);
                                 this.config.setGraphicQ(newConfig);
-                                this.updateConfigTimeout = -1;
                             }
+                            this.updateConfigTimeout = -1;
                         }, 3000);
                     }
                 }
