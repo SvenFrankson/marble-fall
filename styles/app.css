@@ -121,7 +121,6 @@ body {
 .panel:hover { 
     background-color: rgba(78, 86, 92, 90%);
     outline: calc(min(0.3vh, 0.3vw)) solid white;
-    cursor: pointer;
 }
 
 .panel.studio {
