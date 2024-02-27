@@ -50,21 +50,32 @@ class Elevator extends MachinePart {
             box.rotationQuaternion = BABYLON.Quaternion.Identity();
             box.parent = this;
     
-            let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
             let nRamp = 12;
-            for (let i = 0; i <= nRamp; i++) {
+
+            let rampWire0 = new Wire(this);
+            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
+            for (let i = 0; i <= nRamp * 0.5; i++) {
                 let a = i / nRamp * Math.PI;
                 let cosa = Math.cos(a);
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(- 0.02 * x, 0.0015, - rRamp));
             rampWire0.parent = box;
     
+            let rampWire1 = new Wire(this);
+            rampWire1.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
+            for (let i = nRamp * 0.5; i <= nRamp; i++) {
+                let a = i / nRamp * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                rampWire1.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
+            }
+            rampWire1.path.push(new BABYLON.Vector3(- 0.02 * x, 0.0015, - rRamp));
+            rampWire1.parent = box;
+
             this.boxes.push(box);
-            this.wires.push(rampWire0);
+            this.wires.push(rampWire0, rampWire1);
         }
 
         let rCable = 0.00075;

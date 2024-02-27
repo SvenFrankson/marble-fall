@@ -9,14 +9,21 @@ class Ball extends BABYLON.Mesh {
         super("ball");
         this.positionZero = positionZero;
         this.machine = machine;
+        this.constructorIndex = 0;
         this.size = 0.016;
         this.velocity = BABYLON.Vector3.Zero();
         this._showPositionZeroGhost = false;
+        this.memCount = 2;
         this._lastWires = [];
-        this._lastWireIndexes = [-1, -1];
+        this._lastWireIndexes = [];
         this._pouet = 0;
+        this.averageWithOptim = 0;
+        this.averageNoOptim = 0;
+        this.optimCount = 0;
+        this.totalCount = 0;
         this._timer = 0;
         this.strReaction = 0;
+        this.constructorIndex = Ball.ConstructorIndex++;
         this.marbleChocSound = new BABYLON.Sound("marble-choc-sound", "./datas/sounds/marble-choc.wav", this.getScene(), undefined, { loop: false, autoplay: false });
         this.railBumpSound = new BABYLON.Sound("rail-bump-sound", "./datas/sounds/rail-bump.wav", this.getScene(), undefined, { loop: false, autoplay: false });
         this.marbleLoopSound = new BABYLON.Sound("marble-loop-sound", "./datas/sounds/marble-loop.wav", this.getScene(), undefined, { loop: true, autoplay: true });
@@ -120,24 +127,21 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.setVolume(0, 0.1);
     }
     getLastIndex(wire) {
-        if (this._lastWires[0] === wire) {
-            return this._lastWireIndexes[0];
-        }
-        if (this._lastWires[1] === wire) {
-            return this._lastWireIndexes[1];
+        for (let i = 0; i < this.memCount; i++) {
+            if (this._lastWires[i] === wire) {
+                return this._lastWireIndexes[i];
+            }
         }
         return -1;
     }
     setLastHit(wire, index) {
-        if (this._lastWires[0] === wire) {
-            this._lastWireIndexes[0] = index;
-            return;
+        for (let i = 0; i < this.memCount; i++) {
+            if (this._lastWires[i] === wire) {
+                this._lastWireIndexes[i] = index;
+                return;
+            }
         }
-        if (this._lastWires[1] === wire) {
-            this._lastWireIndexes[1] = index;
-            return;
-        }
-        this._pouet = (this._pouet + 1) % 2;
+        this._pouet = (this._pouet + 1) % this.memCount;
         this._lastWires[this._pouet] = wire;
         this._lastWireIndexes[this._pouet] = index;
     }
@@ -162,8 +166,42 @@ class Ball extends BABYLON.Mesh {
                 if (Mummu.SphereAABBCheck(this.position, this.radius, part.AABBMin.x - this.radius, part.AABBMax.x + this.radius, part.AABBMin.y - this.radius, part.AABBMax.y + this.radius, part.AABBMin.z - this.radius, part.AABBMax.z + this.radius)) {
                     part.allWires.forEach(wire => {
                         let index = this.getLastIndex(wire);
-                        let col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index);
+                        let col;
+                        /*
+                        if (this.constructorIndex === 0) {
+                            if (index > - 1) {
+                                this.optimCount++;
+                                let t0 = performance.now();
+                                col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index);
+                                this.setLastHit(wire, col.index);
+                                let t1 = performance.now();
+                                let t = t1 - t0;
+                                this.averageWithOptim = this.averageWithOptim * 0.9999 + t * 0.0001;
+                            }
+                            else {
+                                let t0 = performance.now();
+                                col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index);
+                                this.setLastHit(wire, col.index);
+                                let t1 = performance.now();
+                                let t = t1 - t0;
+                                this.averageNoOptim = this.averageNoOptim * 0.9999 + t * 0.0001;
+                            }
+                            this.totalCount++;
+                            if (Math.random() < 0.001) {
+                                let optimRate = this.optimCount / this.totalCount * 100;
+                                console.log("optim rate " + optimRate.toFixed(3) + " %");
+                                console.log("averageWithOptim " + this.averageWithOptim.toFixed(6) + " ms");
+                                console.log("averageNoOptim " + this.averageNoOptim.toFixed(6) + " ms");
+                            }
+                        }
+                        else {
+                            */
+                        let f = Nabu.MinMax(this.velocity.length(), 0, 1);
+                        let range = Math.round(f * 32 + (1 - f) * 2);
+                        col = Mummu.SphereWireIntersection(this.position, this.radius, wire.absolutePath, wire.size * 0.5, true, index, range);
+                        //}
                         if (col.hit) {
+                            this.setLastHit(wire, col.index);
                             let colDig = col.normal.scale(-1);
                             // Move away from collision
                             forcedDisplacement.addInPlace(col.normal.scale(col.depth));
@@ -231,7 +269,6 @@ class Ball extends BABYLON.Mesh {
                 let f = Nabu.MinMax((canceledSpeedLength - 0.22) / 0.5, 0, 1);
                 let v = (1 - f) * 0.01 + f * 0.03;
                 if (!this.railBumpSound.isPlaying) {
-                    console.log(canceledSpeedLength.toFixed(3) + " " + v.toFixed(3));
                     this.railBumpSound.setVolume(v);
                     this.railBumpSound.play();
                 }
@@ -250,6 +287,7 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.setVolume(2 * this.strReaction * f * this.game.timeFactor * this.game.mainVolume);
     }
 }
+Ball.ConstructorIndex = 0;
 class Configuration {
     constructor(game) {
         this.game = game;
@@ -5347,20 +5385,29 @@ class Elevator extends MachinePart {
             let box = new BABYLON.Mesh("box");
             box.rotationQuaternion = BABYLON.Quaternion.Identity();
             box.parent = this;
-            let rampWire0 = new Wire(this);
             let rRamp = this.wireGauge * 0.35;
-            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
             let nRamp = 12;
-            for (let i = 0; i <= nRamp; i++) {
+            let rampWire0 = new Wire(this);
+            rampWire0.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
+            for (let i = 0; i <= nRamp * 0.5; i++) {
                 let a = i / nRamp * Math.PI;
                 let cosa = Math.cos(a);
                 let sina = Math.sin(a);
                 rampWire0.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
             }
-            rampWire0.path.push(new BABYLON.Vector3(-0.02 * x, 0.0015, -rRamp));
             rampWire0.parent = box;
+            let rampWire1 = new Wire(this);
+            rampWire1.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
+            for (let i = nRamp * 0.5; i <= nRamp; i++) {
+                let a = i / nRamp * Math.PI;
+                let cosa = Math.cos(a);
+                let sina = Math.sin(a);
+                rampWire1.path.push(new BABYLON.Vector3((sina * rRamp - rRamp - 0.0005) * x, 0, cosa * rRamp));
+            }
+            rampWire1.path.push(new BABYLON.Vector3(-0.02 * x, 0.0015, -rRamp));
+            rampWire1.parent = box;
             this.boxes.push(box);
-            this.wires.push(rampWire0);
+            this.wires.push(rampWire0, rampWire1);
         }
         let rCable = 0.00075;
         let nCable = 8;
