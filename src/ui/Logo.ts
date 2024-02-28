@@ -126,7 +126,7 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
-        earlyAccessDisclaimer.innerHTML = "> v0.1.4 early access";
+        earlyAccessDisclaimer.innerHTML = "> v0.1.5 early access";
         this.container.appendChild(earlyAccessDisclaimer);
     }
 }
