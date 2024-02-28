@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = false;
+    public DEBUG_MODE: boolean = true;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -559,12 +559,13 @@ class Game {
             }
             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                 this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
-                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
+                if (this.averagedFPS < 30 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                                 let newConfig = this.config.graphicQ - 1;
                                 this.config.setGraphicQ(newConfig);
+                                this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
                         }, 3000);
@@ -576,6 +577,7 @@ class Game {
                             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
                                 let newConfig = this.config.graphicQ + 1;
                                 this.config.setGraphicQ(newConfig);
+                                this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
                         }, 3000);
@@ -871,6 +873,46 @@ class Game {
             this.cameraMode = CameraMode.Focusing;
         }
         this.camera.detachControl();
+    }
+
+    private _showGraphicAutoUpdateAlertInterval: number = 0;
+    public showGraphicAutoUpdateAlert(): void {
+        let alert = document.getElementById("auto-update-graphic-alert") as HTMLDivElement;
+        if (this.config.graphicQ === 1) {
+            alert.innerText = "Graphic Quality set to LOW";
+        }
+        else if (this.config.graphicQ === 2) {
+            alert.innerText = "Graphic Quality set to MEDIUM";
+        }
+        else if (this.config.graphicQ === 3) {
+            alert.innerText = "Graphic Quality set to HIGH";
+        }
+        alert.style.opacity = "0";
+        alert.style.display = "block";
+
+        clearInterval(this._showGraphicAutoUpdateAlertInterval);
+        let n = 0;
+        this._showGraphicAutoUpdateAlertInterval = setInterval(() => {
+            n++;
+            if (n <= 100) {
+                alert.style.opacity = n + "%";
+            }
+            else {
+                clearInterval(this._showGraphicAutoUpdateAlertInterval);
+                n = 100;
+                this._showGraphicAutoUpdateAlertInterval = setInterval(() => {
+                    n --;
+                    if (n > 0) {
+                        alert.style.opacity = n + "%";
+                    }
+                    else {
+                        alert.style.opacity = "0";
+                        alert.style.display = "none";
+                        clearInterval(this._showGraphicAutoUpdateAlertInterval);
+                    }
+                }, 75);
+            }
+        }, 8)
     }
 
     private _pointerDownX: number = 0;
