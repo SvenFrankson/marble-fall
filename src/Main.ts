@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = true;
+    public DEBUG_MODE: boolean = false;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;

@@ -253,7 +253,9 @@ class MachinePartTemplate {
     public yExtendable: boolean = false;
     public zExtendable: boolean = false;
     public nExtendable: boolean = false;
+    public minH: number = 1;
     public minD: number = 1;
+    public maxD: number = 10;
     public xMirrorable: boolean = false;
     public zMirrorable: boolean = false;
     public hasOriginDestinationHandles: boolean = false;

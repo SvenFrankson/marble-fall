@@ -3,6 +3,13 @@ class Wall extends MachinePart {
     constructor(machine: Machine, i: number, j: number, k: number, h: number = 4, d: number = 1, mirrorX?: boolean) {
         super(machine, i, j, k);
 
+        if (d === 3) {
+            h = Math.max(h, 5);
+        }
+        if (d === 4) {
+            h = Math.max(h, 7);
+        }
+
         let partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
         this.generateWires();
@@ -21,7 +28,9 @@ class Wall extends MachinePart {
 
         template.yExtendable = true;
         template.zExtendable = true;
+        template.minH = 4;
         template.minD = 2;
+        template.maxD = 4;
         template.xMirrorable = true;
 
         let dir = new BABYLON.Vector3(1, 0, 0);

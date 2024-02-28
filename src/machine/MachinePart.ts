@@ -116,8 +116,14 @@ class MachinePart extends BABYLON.Mesh {
     public get nExtendable(): boolean {
         return this.template.nExtendable;
     }
+    public get minH(): number {
+        return this.template.minH;
+    }
     public get minD(): number {
         return this.template.minD;
+    }
+    public get maxD(): number {
+        return this.template.maxD;
     }
     public get xMirrorable(): boolean {
         return this.template.xMirrorable;
@@ -155,7 +161,10 @@ class MachinePart extends BABYLON.Mesh {
             this._i = v;
             this.position.x = this._i * tileWidth;
             this.isPlaced = true;
-            this.sleepersMesh.freezeWorldMatrix();
+            this.freezeWorldMatrix();
+            if (this.sleepersMesh) {
+                this.sleepersMesh.freezeWorldMatrix();
+            }
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -168,7 +177,10 @@ class MachinePart extends BABYLON.Mesh {
             this._j = v;
             this.position.y = - this._j * tileHeight;
             this.isPlaced = true;
-            this.sleepersMesh.freezeWorldMatrix();
+            this.freezeWorldMatrix();
+            if (this.sleepersMesh) {
+                this.sleepersMesh.freezeWorldMatrix();
+            }
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -181,7 +193,10 @@ class MachinePart extends BABYLON.Mesh {
             this._k = v;
             this.position.z = - this._k * tileDepth;
             this.isPlaced = true;
-            this.sleepersMesh.freezeWorldMatrix();
+            this.freezeWorldMatrix();
+            if (this.sleepersMesh) {
+                this.sleepersMesh.freezeWorldMatrix();
+            }
             this.machine.requestUpdateShadow = true;
         }
     }

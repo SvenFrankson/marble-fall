@@ -120,7 +120,7 @@ class MachinePartEditorMenu {
         this.hMinusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
                 let h = this.currentObject.h - 1;
-                if (h >= 0) {
+                if (h >= this.currentObject.minH) {
                     let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { h: h });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
@@ -136,8 +136,10 @@ class MachinePartEditorMenu {
             if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
                 let d = this.currentObject.d + 1;
     
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
-                this.machineEditor.setSelectedObject(editedTrack);
+                if (d <= this.currentObject.maxD) {
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
+                    this.machineEditor.setSelectedObject(editedTrack);
+                }
             }
         }
 

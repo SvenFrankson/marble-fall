@@ -1204,7 +1204,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = true;
+        this.DEBUG_MODE = false;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -2714,8 +2714,14 @@ class MachinePart extends BABYLON.Mesh {
     get nExtendable() {
         return this.template.nExtendable;
     }
+    get minH() {
+        return this.template.minH;
+    }
     get minD() {
         return this.template.minD;
+    }
+    get maxD() {
+        return this.template.maxD;
     }
     get xMirrorable() {
         return this.template.xMirrorable;
@@ -2740,7 +2746,10 @@ class MachinePart extends BABYLON.Mesh {
             this._i = v;
             this.position.x = this._i * tileWidth;
             this.isPlaced = true;
-            this.sleepersMesh.freezeWorldMatrix();
+            this.freezeWorldMatrix();
+            if (this.sleepersMesh) {
+                this.sleepersMesh.freezeWorldMatrix();
+            }
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -2752,7 +2761,10 @@ class MachinePart extends BABYLON.Mesh {
             this._j = v;
             this.position.y = -this._j * tileHeight;
             this.isPlaced = true;
-            this.sleepersMesh.freezeWorldMatrix();
+            this.freezeWorldMatrix();
+            if (this.sleepersMesh) {
+                this.sleepersMesh.freezeWorldMatrix();
+            }
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -2764,7 +2776,10 @@ class MachinePart extends BABYLON.Mesh {
             this._k = v;
             this.position.z = -this._k * tileDepth;
             this.isPlaced = true;
-            this.sleepersMesh.freezeWorldMatrix();
+            this.freezeWorldMatrix();
+            if (this.sleepersMesh) {
+                this.sleepersMesh.freezeWorldMatrix();
+            }
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -3497,7 +3512,9 @@ class MachinePartTemplate {
         this.yExtendable = false;
         this.zExtendable = false;
         this.nExtendable = false;
+        this.minH = 1;
         this.minD = 1;
+        this.maxD = 10;
         this.xMirrorable = false;
         this.zMirrorable = false;
         this.hasOriginDestinationHandles = false;
@@ -5457,7 +5474,7 @@ class MachinePartEditorMenu {
         this.hMinusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart && this.currentObject.yExtendable) {
                 let h = this.currentObject.h - 1;
-                if (h >= 0) {
+                if (h >= this.currentObject.minH) {
                     let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { h: h });
                     this.machineEditor.setSelectedObject(editedTrack);
                 }
@@ -5469,8 +5486,10 @@ class MachinePartEditorMenu {
         this.dPlusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart && this.currentObject.zExtendable) {
                 let d = this.currentObject.d + 1;
-                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
-                this.machineEditor.setSelectedObject(editedTrack);
+                if (d <= this.currentObject.maxD) {
+                    let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { d: d });
+                    this.machineEditor.setSelectedObject(editedTrack);
+                }
             }
         };
         this.dMinusButton = document.querySelector("#machine-editor-part-menu-depth button.minus");
@@ -6479,6 +6498,12 @@ class UTurn extends MachinePart {
 class Wall extends MachinePart {
     constructor(machine, i, j, k, h = 4, d = 1, mirrorX) {
         super(machine, i, j, k);
+        if (d === 3) {
+            h = Math.max(h, 5);
+        }
+        if (d === 4) {
+            h = Math.max(h, 7);
+        }
         let partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
         this.generateWires();
@@ -6493,7 +6518,9 @@ class Wall extends MachinePart {
             template.mirrorX = mirrorX,
             template.yExtendable = true;
         template.zExtendable = true;
+        template.minH = 4;
         template.minD = 2;
+        template.maxD = 4;
         template.xMirrorable = true;
         let dir = new BABYLON.Vector3(1, 0, 0);
         dir.normalize();
