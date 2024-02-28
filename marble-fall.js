@@ -248,8 +248,8 @@ class Ball extends BABYLON.Mesh {
                                 this.marbleChocSound.play();
                             }
                         }
-                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
-                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
+                        this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
+                        ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         let dir = this.position.subtract(ball.position).normalize();
@@ -5780,7 +5780,8 @@ class Elevator extends MachinePart {
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
-            this.wires[i].recomputeAbsolutePath();
+            this.wires[2 * i].recomputeAbsolutePath();
+            this.wires[2 * i + 1].recomputeAbsolutePath();
         }
         let deltaAngle = dx / this.p * 2 * Math.PI * x;
         this.wheels[0].rotation.z -= deltaAngle;

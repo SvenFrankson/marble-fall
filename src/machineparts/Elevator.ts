@@ -244,7 +244,8 @@ class Elevator extends MachinePart {
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
-            this.wires[i].recomputeAbsolutePath();
+            this.wires[2 * i].recomputeAbsolutePath();
+            this.wires[2 * i + 1].recomputeAbsolutePath();
         }
         
         let deltaAngle = dx / this.p * 2 * Math.PI * x;

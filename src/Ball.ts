@@ -290,8 +290,8 @@ class Ball extends BABYLON.Mesh {
                             }
                         }
 
-                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
-                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
+                        this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
+                        ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         
