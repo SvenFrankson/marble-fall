@@ -1371,7 +1371,7 @@ class Game {
         this.skybox.layerMask = 0x10000000;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new BABYLON.Texture("./datas/skyboxes/city_night.png");
+        let skyTexture = new BABYLON.Texture("./datas/skyboxes/city_night_low_res.png");
         skyboxMaterial.diffuseTexture = skyTexture;
         skyboxMaterial.diffuseColor.copyFromFloats(0.25, 0.25, 0.25);
         skyboxMaterial.emissiveColor.copyFromFloats(0.25, 0.25, 0.25);
@@ -1792,8 +1792,8 @@ class Game {
                 this.camBackGround.parent = this.camera;
                 this.camBackGround.layerMask = 0x10000000;
                 this.scene.activeCameras = [this.camBackGround, this.camera];
-                this.horizontalBlur = new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 32, 1, this.camBackGround);
-                this.verticalBlur = new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 32, 1, this.camBackGround);
+                this.horizontalBlur = new BABYLON.BlurPostProcess("blurH", new BABYLON.Vector2(1, 0), 16, 1, this.camBackGround);
+                this.verticalBlur = new BABYLON.BlurPostProcess("blurV", new BABYLON.Vector2(0, 1), 16, 1, this.camBackGround);
             }
             else {
                 this.scene.activeCameras = [this.camera];
@@ -5885,6 +5885,7 @@ class Loop extends MachinePart {
         if (!isFinite(n)) {
             n = 1;
         }
+        n = Math.min(n, 2 * d);
         let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
         this.generateWires();

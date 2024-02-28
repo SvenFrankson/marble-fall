@@ -9,6 +9,7 @@ class Loop extends MachinePart {
         if (!isFinite(n)) {
             n = 1;
         }
+        n = Math.min(n, 2 * d);
 
         let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
