@@ -64,7 +64,7 @@ class Elevator extends MachinePart {
             rampWire0.parent = box;
     
             let rampWire1 = new Wire(this);
-            rampWire1.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
+            rampWire1.path = [];
             for (let i = nRamp * 0.5; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
                 let cosa = Math.cos(a);

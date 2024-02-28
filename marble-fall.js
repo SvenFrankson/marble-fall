@@ -5656,7 +5656,7 @@ class Elevator extends MachinePart {
             }
             rampWire0.parent = box;
             let rampWire1 = new Wire(this);
-            rampWire1.path = [new BABYLON.Vector3(-0.02 * x, 0.0015, rRamp)];
+            rampWire1.path = [];
             for (let i = nRamp * 0.5; i <= nRamp; i++) {
                 let a = i / nRamp * Math.PI;
                 let cosa = Math.cos(a);
@@ -7296,7 +7296,7 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
-        earlyAccessDisclaimer.innerHTML = "> v0.1.4 early access";
+        earlyAccessDisclaimer.innerHTML = "> v0.1.5 early access";
         this.container.appendChild(earlyAccessDisclaimer);
     }
 }
