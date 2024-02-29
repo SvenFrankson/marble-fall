@@ -646,18 +646,23 @@ var testNote = {
 var testChallenge = {
     balls: [
         { x: 0.003999999664723874, y: -0.061500001311302184, z: 0 },
-        { x: -0.24988589180907558, y: 0.1936933746784428, z: 1.3877787807814457e-16 },
+        { x: -0.2519231450524533, y: 0.2548853980186968, z: -2.7755575615628914e-17 },
+        { x: 0.2516521758896489, y: 0.31473917098212234, z: -5.551115123125783e-17 },
     ],
     parts: [
         { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "uturn-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
         { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
         { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "end", i: 0, j: -4, k: 0, mirrorZ: false, color: 0 },
-        { name: "start", i: -2, j: -6, k: 0, mirrorZ: false, color: 0 },
-        { name: "ramp-1.2.1", i: -1, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "end", i: 1, j: -4, k: 0, mirrorZ: false, color: 0 },
+        { name: "end", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "split", i: 0, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "ramp-1.2.1", i: -1, j: -8, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "start", i: -2, j: -8, k: 0, mirrorZ: false, color: 0 },
+        { name: "start", i: 2, j: -10, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "spiral-1.4.2", i: 1, j: -10, k: 0, mirrorX: true, color: 0 },
     ],
 };

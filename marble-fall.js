@@ -1055,19 +1055,24 @@ var testNote = {
 var testChallenge = {
     balls: [
         { x: 0.003999999664723874, y: -0.061500001311302184, z: 0 },
-        { x: -0.24988589180907558, y: 0.1936933746784428, z: 1.3877787807814457e-16 },
+        { x: -0.2519231450524533, y: 0.2548853980186968, z: -2.7755575615628914e-17 },
+        { x: 0.2516521758896489, y: 0.31473917098212234, z: -5.551115123125783e-17 },
     ],
     parts: [
         { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "uturn-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
         { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
         { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "end", i: 0, j: -4, k: 0, mirrorZ: false, color: 0 },
-        { name: "start", i: -2, j: -6, k: 0, mirrorZ: false, color: 0 },
-        { name: "ramp-1.2.1", i: -1, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "end", i: 1, j: -4, k: 0, mirrorZ: false, color: 0 },
+        { name: "end", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "split", i: 0, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "ramp-1.2.1", i: -1, j: -8, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "start", i: -2, j: -8, k: 0, mirrorZ: false, color: 0 },
+        { name: "start", i: 2, j: -10, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "spiral-1.4.2", i: 1, j: -10, k: 0, mirrorX: true, color: 0 },
     ],
 };
 class HelperShape {
@@ -2833,6 +2838,9 @@ class MachinePart extends BABYLON.Mesh {
         this.AABBMin.addInPlace(this.position);
         this.AABBMax.addInPlace(this.position);
         this.freezeWorldMatrix();
+        this.getChildMeshes().forEach(m => {
+            m.freezeWorldMatrix();
+        });
         this.machine.requestUpdateShadow = true;
     }
     dispose() {
@@ -5808,12 +5816,17 @@ class End extends MachinePart {
         template.trackTemplates[1] = new TrackTemplate(template);
         template.trackTemplates[1].colorOffset = 1;
         template.trackTemplates[1].trackpoints = [
-            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + 1.5 * r, 0), Tools.V3Dir(180), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + 1.6 * r, 0), Tools.V3Dir(180), Tools.V3Dir(90)),
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + r, 0), Tools.V3Dir(180)),
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w + r, y0, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - 0.012, y0, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - 0.001, y0 - 0.005, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0, y0 - 0.005, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + 0.001, y0 - 0.005, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + 0.012, y0, 0), Tools.V3Dir(90)),
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w - r, y0, 0), Tools.V3Dir(90)),
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w, y0 + r, 0), Tools.V3Dir(0)),
-            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w, y0 + 1.5 * r, 0), Tools.V3Dir(0), Tools.V3Dir(-90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w, y0 + 1.6 * r, 0), Tools.V3Dir(0), Tools.V3Dir(-90)),
         ];
         template.trackTemplates[1].drawStartTip = true;
         template.trackTemplates[1].drawEndTip = true;
@@ -6318,6 +6331,10 @@ class Split extends MachinePart {
             else {
                 this.pivot.rotation.z = Math.PI / 4;
             }
+            this.pivot.freezeWorldMatrix();
+            this.pivot.getChildMeshes().forEach(child => {
+                child.freezeWorldMatrix();
+            });
         };
         this._moving = false;
         let partName = "split";
@@ -6412,6 +6429,10 @@ class Split extends MachinePart {
             if (!this.machine.playing) {
                 this.pivot.rotation.z = Math.PI / 4;
             }
+            this.pivot.freezeWorldMatrix();
+            this.pivot.getChildMeshes().forEach(child => {
+                child.freezeWorldMatrix();
+            });
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             });

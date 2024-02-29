@@ -356,6 +356,9 @@ class MachinePart extends BABYLON.Mesh {
         this.AABBMax.addInPlace(this.position);
 
         this.freezeWorldMatrix();
+        this.getChildMeshes().forEach(m => {
+            m.freezeWorldMatrix();
+        })
         this.machine.requestUpdateShadow = true;
     }
     

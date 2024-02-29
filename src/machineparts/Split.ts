@@ -116,6 +116,10 @@ class Split extends MachinePart {
             if (!this.machine.playing) {
                 this.pivot.rotation.z = Math.PI / 4;
             }
+            this.pivot.freezeWorldMatrix();
+            this.pivot.getChildMeshes().forEach(child => {
+                child.freezeWorldMatrix();
+            });
             this.wires.forEach(wire => {
                 wire.recomputeAbsolutePath();
             })
@@ -197,6 +201,10 @@ class Split extends MachinePart {
         else {
             this.pivot.rotation.z = Math.PI / 4;
         }
+        this.pivot.freezeWorldMatrix();
+        this.pivot.getChildMeshes().forEach(child => {
+            child.freezeWorldMatrix();
+        });
     }
 
     private _moving: boolean = false;
