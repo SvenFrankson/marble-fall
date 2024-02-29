@@ -59,39 +59,8 @@ class MachineEditor {
     public destinationKMinusHandle: Arrow;
 
     public handleSize: number;
-
-    /*
-    private _currentLayer: number = 0;
-    public get currentLayer(): number {
-        return this._currentLayer;
-    }
-    public set currentLayer(v: number) {
-        v = Math.round(v);
-        if (v >= 0) {
-            this._currentLayer = v;
-            this.layerMesh.position.z = - this._currentLayer * tileDepth;
-        }
-    }
-    */
     
     public grid: MachineEditorGrid;
-    /*
-    public showCurrentLayer(): void {
-        this.machine.parts.forEach(part => {
-            if (part.k === this.currentLayer) {
-                part.partVisibilityMode = PartVisibilityMode.Default;
-            }
-            else {
-                part.partVisibilityMode = PartVisibilityMode.Ghost;
-            }
-        })
-    }
-    public hideCurrentLayer(): void {
-        this.machine.parts.forEach(part => {
-            part.partVisibilityMode = PartVisibilityMode.Default;
-        })
-    }
-    */
 
     private _hoveredObject: Arrow;
     public get hoveredObject(): Arrow {
@@ -189,12 +158,10 @@ class MachineEditor {
             let object = objects[i];
             let index = this.selectedObjects.indexOf(object);
             if (index === - 1) {
-                console.log("add object to selection");
                 this.selectedObjects.push(object);
                 object.select();
             }
             else {
-                console.log("remove object from selection");
                 this.selectedObjects.splice(index, 1);
                 object.unselect();
             }
@@ -219,41 +186,49 @@ class MachineEditor {
     }
 
     public async instantiate(): Promise<void> {
+        let mode: GameMode = this.game.mode;
+
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
 
-        let ballItem = document.createElement("div") as HTMLDivElement;
-        ballItem.classList.add("machine-editor-item");
-        ballItem.style.backgroundImage = "url(./datas/icons/ball.png)"
-        ballItem.style.backgroundSize = "cover";
-        ballItem.innerText = "ball";
-        this.itemContainer.appendChild(ballItem);
-        this.items.set("ball", ballItem);
+        if (mode === GameMode.CreateMode) {
+            let ballItem = document.createElement("div") as HTMLDivElement;
+            ballItem.classList.add("machine-editor-item");
+            ballItem.style.backgroundImage = "url(./datas/icons/ball.png)"
+            ballItem.style.backgroundSize = "cover";
+            ballItem.innerText = "ball";
+            this.itemContainer.appendChild(ballItem);
+            this.items.set("ball", ballItem);
+    
+            ballItem.addEventListener("pointerdown", () => {
+                if (this.draggedObject) {
+                    this.draggedObject.dispose();
+                    this.setDraggedObject(undefined);
+                } 
+                if (this.selectedItem === "ball") {
+                    this.setSelectedItem("");
+                }
+                else {
+                    this.setSelectedItem("ball");
+                    let ball = new Ball(BABYLON.Vector3.Zero(), this.machine);
+                    ball.instantiate().then(() => {
+                        ball.setShowPositionZeroGhost(true);
+                        ball.setIsVisible(false);
+                    });
+                    this.setDraggedObject(ball);
+                    this.setSelectedObject(ball, true);
+                    this._dragOffset.copyFromFloats(0, 0, 0);
+                }
+            });
+        }
 
-        ballItem.addEventListener("pointerdown", () => {
-            if (this.draggedObject) {
-                this.draggedObject.dispose();
-                this.setDraggedObject(undefined);
-            } 
-            if (this.selectedItem === "ball") {
-                this.setSelectedItem("");
-            }
-            else {
-                this.setSelectedItem("ball");
-                let ball = new Ball(BABYLON.Vector3.Zero(), this.machine);
-                ball.instantiate().then(() => {
-                    ball.setShowPositionZeroGhost(true);
-                    ball.setIsVisible(false);
-                });
-                this.setDraggedObject(ball);
-                this.setSelectedObject(ball, true);
-                this._dragOffset.copyFromFloats(0, 0, 0);
-            }
-        });
-
-        for (let i = 0; i < TrackNames.length; i++) {
-            let trackname = TrackNames[i];
+        let availableTracks: string[] = TrackNames;
+        if (mode === GameMode.ChallengeMode) {
+            availableTracks = ["ramp-1.1.1"];
+        }
+        for (let i = 0; i < availableTracks.length; i++) {
+            let trackname = availableTracks[i];
             let item = document.createElement("div") as HTMLDivElement;
             item.classList.add("machine-editor-item");
             item.style.backgroundImage = "url(./datas/icons/" + trackname + ".png)"
@@ -1053,7 +1028,7 @@ class MachineEditor {
             }
             else if (this.selectedObject instanceof MachinePart) {
                 
-                if (this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
+                if (this.game.mode === GameMode.CreateMode && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(
                         origin.i * tileWidth - 0.5 * tileWidth,

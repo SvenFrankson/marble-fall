@@ -144,6 +144,12 @@ class Toolbar {
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
+        else if (this.game.mode === GameMode.ChallengeMode) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "";
+        }
         else if (this.game.mode === GameMode.DemoMode) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";

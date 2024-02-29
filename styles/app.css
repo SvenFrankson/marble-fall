@@ -554,3 +554,14 @@ body {
     background-color: rgba(39, 43, 46, 80%);
     pointer-events: none;
 }
+
+#challenge-tuto {
+    text-align: center;
+    font-size: 3vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    width: 100%;
+    left: 0;
+    top: calc((100vh - 1.5vh) * 0.5);
+    pointer-events: none;
+}

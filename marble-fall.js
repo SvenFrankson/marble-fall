@@ -286,6 +286,60 @@ class Ball extends BABYLON.Mesh {
     }
 }
 Ball.ConstructorIndex = 0;
+class ChallengeStep {
+    constructor(challenge) {
+        this.challenge = challenge;
+    }
+    static Wait(challenge, duration) {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            return new Promise(resolve => {
+                setTimeout(resolve, duration * 1000);
+            });
+        };
+        return step;
+    }
+    static Text(challenge, text, duration) {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            step.challenge.tutoPopup.setAttribute("duration", duration.toFixed(3));
+            step.challenge.tutoText.innerText = text;
+            return step.challenge.tutoPopup.show();
+        };
+        return step;
+    }
+}
+class Challenge {
+    constructor(game) {
+        this.game = game;
+        this.state = 0;
+        this.steps = [];
+        this.tutoPopup = document.getElementById("challenge-tuto");
+        this.tutoText = this.tutoPopup.querySelector("div");
+        this.steps = [
+            ChallengeStep.Wait(this, 1),
+            ChallengeStep.Text(this, "Challenge mode, easy start.", 3),
+            ChallengeStep.Text(this, "Bring the ball...", 1),
+            ChallengeStep.Text(this, "to its destination.", 1),
+            ChallengeStep.Text(this, "First, add the adequate Track elements.", 2),
+            ChallengeStep.Text(this, "Then press Play.", 2),
+            ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", 4),
+        ];
+    }
+    initialize() {
+        this.state = 0;
+    }
+    update() {
+        if (this.state != -1) {
+            let step = this.steps[this.state];
+            if (step) {
+                let next = this.state + 1;
+                this.state = -1;
+                step.doStep().then(() => { this.state = next; });
+            }
+        }
+    }
+}
 class Configuration {
     constructor(game) {
         this.game = game;
@@ -1052,29 +1106,7 @@ var testNote = {
         { name: "uturn-0.3", i: 5, j: -2, k: 0 },
     ],
 };
-var testChallenge = {
-    balls: [
-        { x: 0.003999999664723874, y: -0.061500001311302184, z: 0 },
-        { x: -0.2519231450524533, y: 0.2548853980186968, z: -2.7755575615628914e-17 },
-        { x: 0.2516521758896489, y: 0.31473917098212234, z: -5.551115123125783e-17 },
-    ],
-    parts: [
-        { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
-        { name: "uturn-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
-        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "end", i: 1, j: -4, k: 0, mirrorZ: false, color: 0 },
-        { name: "end", i: -1, j: -4, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "split", i: 0, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "ramp-1.2.1", i: -1, j: -8, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "start", i: -2, j: -8, k: 0, mirrorZ: false, color: 0 },
-        { name: "start", i: 2, j: -10, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "spiral-1.4.2", i: 1, j: -10, k: 0, mirrorX: true, color: 0 },
-    ],
-};
+var testChallenge = { "balls": [{ "x": -0.253072613110704, "y": 0.04504040380131484, "z": 5.551115123125783e-17 }], "parts": [{ "name": "end", "i": 0, "j": 0, "k": 0, "mirrorZ": false, "color": 0 }, { "name": "start", "i": -2, "j": -1, "k": 0, "mirrorZ": false, "color": 0 }] };
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1214,7 +1246,8 @@ var GameMode;
     GameMode[GameMode["Options"] = 1] = "Options";
     GameMode[GameMode["Credits"] = 2] = "Credits";
     GameMode[GameMode["CreateMode"] = 3] = "CreateMode";
-    GameMode[GameMode["DemoMode"] = 4] = "DemoMode";
+    GameMode[GameMode["ChallengeMode"] = 4] = "ChallengeMode";
+    GameMode[GameMode["DemoMode"] = 5] = "DemoMode";
 })(GameMode || (GameMode = {}));
 var CameraMode;
 (function (CameraMode) {
@@ -1227,7 +1260,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = true;
+        this.DEBUG_MODE = false;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -1371,10 +1404,10 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(testChallenge);
+            this.machine.deserialize(aerial);
         }
         else {
-            this.machine.deserialize(simpleLoop);
+            this.machine.deserialize(aerial);
         }
         let screenshotButton = document.querySelector("#toolbar-screenshot");
         screenshotButton.addEventListener("click", () => {
@@ -1398,6 +1431,7 @@ class Game {
         this.toolbar = new Toolbar(this);
         this.toolbar.initialize();
         this.toolbar.resize();
+        this.challenge = new Challenge(this);
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         if (this.room) {
@@ -1424,6 +1458,17 @@ class Game {
             this.machine.stop();
             this.setPageMode(GameMode.CreateMode);
         };
+        if (this.DEBUG_MODE) {
+            let buttonChallenge = container.querySelector(".panel.challenge");
+            buttonChallenge.onclick = async () => {
+                this.machine.stop();
+                this.machine.dispose();
+                this.machine.deserialize(testChallenge);
+                await this.machine.generateBaseMesh();
+                await this.machine.instantiate();
+                this.setPageMode(GameMode.ChallengeMode);
+            };
+        }
         let buttonOption = container.querySelector(".panel.option");
         buttonOption.onclick = () => {
             this.setPageMode(GameMode.Options);
@@ -1433,7 +1478,7 @@ class Game {
             this.setPageMode(GameMode.Credits);
         };
         if (this.DEBUG_MODE) {
-            await this.setPageMode(GameMode.CreateMode);
+            await this.setPageMode(GameMode.MainMenu);
         }
         else {
             await this.setPageMode(GameMode.MainMenu);
@@ -1467,7 +1512,7 @@ class Game {
             setInterval(() => {
                 let triCount = this.machine.parts.map(part => { return part.getTriCount(); }).reduce((t1, t2) => { return t1 + t2; });
                 triCount += this.machine.parts.map(ball => { return ball.getIndices().length / 3; }).reduce((b1, b2) => { return b1 + b2; });
-                console.log("global machin tricount " + triCount);
+                //console.log("global machine tricount " + triCount);
             }, 3000);
         }
     }
@@ -1486,7 +1531,6 @@ class Game {
                     this.topbar.resize();
                     this.toolbar.resize();
                     this.mainMenu.resize();
-                    this.showGraphicAutoUpdateAlert(this.engine.getRenderWidth().toFixed(0) + " x " + this.engine.getRenderHeight().toFixed(0));
                 });
             });
         };
@@ -1572,6 +1616,9 @@ class Game {
         if (this.machine) {
             this.machine.update();
         }
+        if (this.challenge && this.mode === GameMode.ChallengeMode) {
+            this.challenge.update();
+        }
         let fps = 1 / dt;
         if (isFinite(fps)) {
             if (fps < 24 && this.timeFactor > this.targetTimeFactor / 2) {
@@ -1646,6 +1693,15 @@ class Game {
             await this.optionsPage.hide();
             await this.creditsPage.hide();
             await this.machineEditor.instantiate();
+        }
+        if (mode === GameMode.ChallengeMode) {
+            this.setCameraMode(CameraMode.None);
+            this.logo.hide();
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+            await this.machineEditor.instantiate();
+            this.challenge.initialize();
         }
         if (mode === GameMode.DemoMode) {
             this.setCameraMode(CameraMode.Landscape);
@@ -1991,6 +2047,100 @@ class MainMaterials {
         return this.metalMaterials[colorIndex % this.metalMaterials.length];
     }
 }
+class Popup extends HTMLElement {
+    constructor() {
+        super(...arguments);
+        this._shown = false;
+        this._duration = 0;
+        this._update = () => {
+            if (!this.isConnected) {
+                clearInterval(this._updateInterval);
+            }
+        };
+    }
+    static get observedAttributes() {
+        return [
+            "duration"
+        ];
+    }
+    connectedCallback() {
+        this.initialize();
+        this._updateInterval = setInterval(this._update, 100);
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === "duration") {
+            let value = parseInt(newValue);
+            if (isFinite(value)) {
+                this._duration = value;
+            }
+        }
+    }
+    initialize() {
+        this.style.opacity = "0";
+        this.style.display = "none";
+        this.style.position = "fixed";
+        this.style.zIndex = "10";
+    }
+    async show(duration = 1) {
+        console.log("show");
+        return new Promise(resolve => {
+            if (!this._shown) {
+                clearInterval(this._animateOpacityInterval);
+                this._shown = true;
+                this.style.display = "block";
+                let opacity0 = parseFloat(this.style.opacity);
+                let t0 = performance.now() / 1000;
+                this._animateOpacityInterval = setInterval(() => {
+                    let t = performance.now() / 1000 - t0;
+                    if (t >= duration) {
+                        clearInterval(this._animateOpacityInterval);
+                        this.style.opacity = "1";
+                        if (this._duration > 0) {
+                            setTimeout(() => {
+                                this.hide().then(resolve);
+                            }, this._duration * 1000);
+                        }
+                        else {
+                            console.log("show resolve");
+                            resolve();
+                        }
+                    }
+                    else {
+                        let f = t / duration;
+                        this.style.opacity = ((1 - f) * opacity0 + f * 1).toFixed(3);
+                    }
+                });
+            }
+        });
+    }
+    async hide(duration = 1) {
+        console.log("hide");
+        return new Promise(resolve => {
+            if (this._shown) {
+                clearInterval(this._animateOpacityInterval);
+                this._shown = false;
+                this.style.display = "block";
+                let opacity0 = parseFloat(this.style.opacity);
+                let t0 = performance.now() / 1000;
+                this._animateOpacityInterval = setInterval(() => {
+                    let t = performance.now() / 1000 - t0;
+                    if (t >= duration) {
+                        clearInterval(this._animateOpacityInterval);
+                        this.style.opacity = "0";
+                        this.style.display = "none";
+                        console.log("hide resolve");
+                        resolve();
+                    }
+                    else {
+                        let f = t / duration;
+                        this.style.opacity = ((1 - f) * opacity0).toFixed(3);
+                    }
+                });
+            }
+        });
+    }
+}
+customElements.define("nabu-popup", Popup);
 class Sound {
     constructor(prop) {
         if (prop) {
@@ -2944,8 +3094,6 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
-    "start",
-    "end"
 ];
 class MachinePartFactory {
     constructor(machine) {
@@ -4621,12 +4769,10 @@ class MachineEditor {
             let object = objects[i];
             let index = this.selectedObjects.indexOf(object);
             if (index === -1) {
-                console.log("add object to selection");
                 this.selectedObjects.push(object);
                 object.select();
             }
             else {
-                console.log("remove object from selection");
                 this.selectedObjects.splice(index, 1);
                 object.unselect();
             }
@@ -4643,38 +4789,45 @@ class MachineEditor {
         this.updateFloatingElements();
     }
     async instantiate() {
+        let mode = this.game.mode;
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
-        let ballItem = document.createElement("div");
-        ballItem.classList.add("machine-editor-item");
-        ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
-        ballItem.style.backgroundSize = "cover";
-        ballItem.innerText = "ball";
-        this.itemContainer.appendChild(ballItem);
-        this.items.set("ball", ballItem);
-        ballItem.addEventListener("pointerdown", () => {
-            if (this.draggedObject) {
-                this.draggedObject.dispose();
-                this.setDraggedObject(undefined);
-            }
-            if (this.selectedItem === "ball") {
-                this.setSelectedItem("");
-            }
-            else {
-                this.setSelectedItem("ball");
-                let ball = new Ball(BABYLON.Vector3.Zero(), this.machine);
-                ball.instantiate().then(() => {
-                    ball.setShowPositionZeroGhost(true);
-                    ball.setIsVisible(false);
-                });
-                this.setDraggedObject(ball);
-                this.setSelectedObject(ball, true);
-                this._dragOffset.copyFromFloats(0, 0, 0);
-            }
-        });
-        for (let i = 0; i < TrackNames.length; i++) {
-            let trackname = TrackNames[i];
+        if (mode === GameMode.CreateMode) {
+            let ballItem = document.createElement("div");
+            ballItem.classList.add("machine-editor-item");
+            ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
+            ballItem.style.backgroundSize = "cover";
+            ballItem.innerText = "ball";
+            this.itemContainer.appendChild(ballItem);
+            this.items.set("ball", ballItem);
+            ballItem.addEventListener("pointerdown", () => {
+                if (this.draggedObject) {
+                    this.draggedObject.dispose();
+                    this.setDraggedObject(undefined);
+                }
+                if (this.selectedItem === "ball") {
+                    this.setSelectedItem("");
+                }
+                else {
+                    this.setSelectedItem("ball");
+                    let ball = new Ball(BABYLON.Vector3.Zero(), this.machine);
+                    ball.instantiate().then(() => {
+                        ball.setShowPositionZeroGhost(true);
+                        ball.setIsVisible(false);
+                    });
+                    this.setDraggedObject(ball);
+                    this.setSelectedObject(ball, true);
+                    this._dragOffset.copyFromFloats(0, 0, 0);
+                }
+            });
+        }
+        let availableTracks = TrackNames;
+        if (mode === GameMode.ChallengeMode) {
+            availableTracks = ["ramp-1.1.1"];
+        }
+        for (let i = 0; i < availableTracks.length; i++) {
+            let trackname = availableTracks[i];
             let item = document.createElement("div");
             item.classList.add("machine-editor-item");
             item.style.backgroundImage = "url(./datas/icons/" + trackname + ".png)";
@@ -5123,7 +5276,7 @@ class MachineEditor {
                 this.KMinusHandle.isVisible = true;
             }
             else if (this.selectedObject instanceof MachinePart) {
-                if (this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
+                if (this.game.mode === GameMode.CreateMode && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth);
                     this.originIPlusHandle.position.copyFrom(pOrigin);
@@ -5560,7 +5713,7 @@ class MachinePartEditorMenu {
         this.currentObject = undefined;
     }
     update() {
-        if (this.container) {
+        if (this.container && this.machineEditor.game.mode === GameMode.CreateMode) {
             if (!this.currentObject) {
                 this.container.style.display = "none";
             }
@@ -5784,6 +5937,10 @@ class Elevator extends MachinePart {
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
+            this.boxes[i].freezeWorldMatrix();
+            this.boxes[i].getChildMeshes().forEach(child => {
+                child.freezeWorldMatrix();
+            });
             this.wires[2 * i].recomputeAbsolutePath();
             this.wires[2 * i + 1].recomputeAbsolutePath();
         }
@@ -7915,6 +8072,12 @@ class Toolbar {
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
+        else if (this.game.mode === GameMode.ChallengeMode) {
+            this.saveButton.style.display = "none";
+            this.loadButton.style.display = "none";
+            this.loadInputShown = false;
+            this.backButton.style.display = "";
+        }
         else if (this.game.mode === GameMode.DemoMode) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
@@ -7999,7 +8162,7 @@ class Topbar {
         for (let i = 0; i < this.camModeButtons.length; i++) {
             this.camModeButtons[i].style.display = this._shown ? "" : "none";
         }
-        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.DemoMode) {
+        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.ChallengeMode || this.game.mode === GameMode.DemoMode) {
             this.container.style.display = "block";
             if (this._shown) {
                 if (this.game.mode === GameMode.CreateMode) {

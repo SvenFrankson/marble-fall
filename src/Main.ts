@@ -14,6 +14,7 @@ enum GameMode {
     Options,
     Credits,
     CreateMode,
+    ChallengeMode,
     DemoMode
 }
 
@@ -29,7 +30,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = true;
+    public DEBUG_MODE: boolean = false;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -62,6 +63,7 @@ class Game {
     public creditsPage: CreditsPage;
     public topbar: Topbar;
     public toolbar: Toolbar;
+    public challenge: Challenge;
 
     public cameraOrtho: boolean = false;
 
@@ -206,10 +208,10 @@ class Game {
         this.machineEditor = new MachineEditor(this);
 
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(testChallenge);
+            this.machine.deserialize(aerial);
         }
         else {
-            this.machine.deserialize(simpleLoop);
+            this.machine.deserialize(aerial);
         }
 
         let screenshotButton = document.querySelector("#toolbar-screenshot") as HTMLButtonElement;
@@ -242,6 +244,8 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
 
+        this.challenge = new Challenge(this);
+
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         if (this.room) {
@@ -269,6 +273,17 @@ class Game {
             this.machine.stop();
             this.setPageMode(GameMode.CreateMode);
         }
+        if (this.DEBUG_MODE) {
+            let buttonChallenge = container.querySelector(".panel.challenge") as HTMLDivElement;
+            buttonChallenge.onclick = async () => {
+                this.machine.stop();
+                this.machine.dispose();
+                this.machine.deserialize(testChallenge);
+                await this.machine.generateBaseMesh();
+                await this.machine.instantiate();
+                this.setPageMode(GameMode.ChallengeMode);
+            }
+        }
         let buttonOption = container.querySelector(".panel.option") as HTMLDivElement;
         buttonOption.onclick = () => {
             this.setPageMode(GameMode.Options);
@@ -277,8 +292,9 @@ class Game {
         buttonCredit.onclick = () => {
             this.setPageMode(GameMode.Credits);
         }
+
         if (this.DEBUG_MODE) {
-            await this.setPageMode(GameMode.CreateMode);
+            await this.setPageMode(GameMode.MainMenu);
         }
         else {
             await this.setPageMode(GameMode.MainMenu);
@@ -315,7 +331,7 @@ class Game {
             setInterval(() => {
                 let triCount = this.machine.parts.map(part => { return part.getTriCount() }).reduce((t1, t2) => { return t1 + t2 });
                 triCount += this.machine.parts.map(ball => { return ball.getIndices().length / 3 }).reduce((b1, b2) => { return b1 + b2 });
-                console.log("global machin tricount " + triCount);
+                //console.log("global machine tricount " + triCount);
             }, 3000);
         }
 	}
@@ -336,7 +352,6 @@ class Game {
                     this.topbar.resize();
                     this.toolbar.resize();
                     this.mainMenu.resize();
-                    this.showGraphicAutoUpdateAlert(this.engine.getRenderWidth().toFixed(0) + " x " + this.engine.getRenderHeight().toFixed(0));
                 })
             })
 		};
@@ -435,6 +450,9 @@ class Game {
         if (this.machine) {
             this.machine.update();
         }
+        if (this.challenge && this.mode === GameMode.ChallengeMode) {
+            this.challenge.update();
+        }
 
         let fps = 1 / dt;
         if (isFinite(fps)) {
@@ -515,6 +533,16 @@ class Game {
             await this.creditsPage.hide();
             
             await this.machineEditor.instantiate();
+        }
+        if (mode === GameMode.ChallengeMode) {
+            this.setCameraMode(CameraMode.None);
+            this.logo.hide();
+            await this.mainMenu.hide();
+            await this.optionsPage.hide();
+            await this.creditsPage.hide();
+            
+            await this.machineEditor.instantiate();
+            this.challenge.initialize();
         }
         if (mode === GameMode.DemoMode) {
             this.setCameraMode(CameraMode.Landscape);
