@@ -177,7 +177,7 @@ class SleeperMeshBuilder {
                             if (anchorYWorld < minY + props.groundAnchorsRelativeMaxY * (maxY - minY)) {
                                 let rayOrigin = anchor.add(part.position);
                                 let rayDir = new BABYLON.Vector3(0, -1, 0);
-                                rayOrigin.addInPlace(rayDir.scale(0.05));
+                                rayOrigin.addInPlace(rayDir.scale(0.01));
                                 let ray = new BABYLON.Ray(rayOrigin, rayDir, 3);
                                 let pick = part.game.scene.pickWithRay(ray, (m => { return m instanceof MachinePartSelectorMesh }));
                                 if (!pick.hit) {

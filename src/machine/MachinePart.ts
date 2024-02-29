@@ -415,21 +415,7 @@ class MachinePart extends BABYLON.Mesh {
         })
         
         requestAnimationFrame(() => {
-            let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
-            datas.forEach((vData, colorIndex) => {
-                if (!this.sleepersMeshes.get(colorIndex)) {
-                    let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
-                    sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
-                    sleeperMesh.parent = this;
-                    vData.applyToMesh(sleeperMesh);
-                    this.sleepersMeshes.set(colorIndex, sleeperMesh);
-                    sleeperMesh.freezeWorldMatrix();
-                }
-            });
-            this.machine.requestUpdateShadow = true;
-            if (this.game.DEBUG_MODE) {
-                console.log(this.partName + " tricount " + this.getTriCount());
-            }
+            this.doSleepersMeshUpdate();
         })
 
         if (rebuildNeighboursWireMeshes) {
@@ -440,6 +426,25 @@ class MachinePart extends BABYLON.Mesh {
         }
         this.freezeWorldMatrix();
         this.machine.requestUpdateShadow = true;
+    }
+
+    public doSleepersMeshUpdate(): void {
+        let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
+        datas.forEach((vData, colorIndex) => {
+            if (!this.sleepersMeshes.get(colorIndex)) {
+                let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
+                sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
+                sleeperMesh.parent = this;
+                this.sleepersMeshes.set(colorIndex, sleeperMesh);
+            }
+            let sleeperMesh = this.sleepersMeshes.get(colorIndex);
+            vData.applyToMesh(sleeperMesh);
+            sleeperMesh.freezeWorldMatrix();
+        });
+        this.machine.requestUpdateShadow = true;
+        if (this.game.DEBUG_MODE) {
+            console.log(this.partName + " tricount " + this.getTriCount());
+        }
     }
 
     public getTriCount(): number {
