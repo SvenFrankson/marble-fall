@@ -244,6 +244,10 @@ class Elevator extends MachinePart {
                 let right = this.wheels[0].position.subtract(this.boxes[i].position).normalize();
                 Mummu.QuaternionFromXZAxisToRef(right.scale(x), BABYLON.Axis.Z, this.boxes[i].rotationQuaternion);
             }
+            this.boxes[i].freezeWorldMatrix();
+            this.boxes[i].getChildMeshes().forEach(child => {
+                child.freezeWorldMatrix();
+            });
             this.wires[2 * i].recomputeAbsolutePath();
             this.wires[2 * i + 1].recomputeAbsolutePath();
         }
