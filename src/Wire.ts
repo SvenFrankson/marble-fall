@@ -25,7 +25,7 @@ class Wire extends BABYLON.Mesh {
     public endTipNormal: BABYLON.Vector3;
     public endTipDir: BABYLON.Vector3;
 
-    constructor(public track: MachinePart) {
+    constructor(public track: MachinePart, public color: number = 0) {
         super("wire");
         this.parent = this.track;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
@@ -122,7 +122,7 @@ class Wire extends BABYLON.Mesh {
 
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
-            wire.material = this.track.game.steelMaterial;
+            wire.material = this.track.game.metalMaterials[this.color % this.track.game.metalMaterialsCount];
         }
         
         if (Wire.DEBUG_DISPLAY) {

@@ -1,10 +1,10 @@
 class UTurn extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, h: number, d: number, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
-        let partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        let partName = "uturn-" + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
 

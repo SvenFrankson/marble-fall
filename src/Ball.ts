@@ -88,7 +88,7 @@ class Ball extends BABYLON.Mesh {
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
 
-        this.material = this.game.steelMaterial;
+        this.material = this.game.metalMaterials[0];
 
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();

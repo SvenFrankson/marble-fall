@@ -80,7 +80,7 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.setVolume(0);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
-        this.material = this.game.steelMaterial;
+        this.material = this.game.metalMaterials[0];
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
         }
@@ -510,27 +510,27 @@ var demo4 = {
     ],
     parts: [
         { name: "elevator-14", i: 5, j: -13 },
-        { name: "elevator-14", i: -2, j: -14, mirror: true },
+        { name: "elevator-14", i: -2, j: -14, mirrorX: true },
         { name: "spiral", i: 0, j: -12 },
-        { name: "loop", i: 3, j: -12, mirror: true },
+        { name: "loop", i: 3, j: -12, mirrorX: true },
         { name: "ramp-1.1", i: 3, j: -8 },
         { name: "uturn-s", i: 4, j: -7 },
         { name: "uturn-l", i: 0, j: -2 },
-        { name: "ramp-1.1", i: -1, j: -1, mirror: true },
+        { name: "ramp-1.1", i: -1, j: -1, mirrorX: true },
         { name: "uturn-s", i: 4, j: -3 },
-        { name: "uturn-s", i: 1, j: -5, mirror: true },
-        { name: "ramp-2.1", i: 2, j: -6, mirror: true },
-        { name: "uturn-s", i: 2, j: -2, mirror: true },
+        { name: "uturn-s", i: 1, j: -5, mirrorX: true },
+        { name: "ramp-2.1", i: 2, j: -6, mirrorX: true },
+        { name: "uturn-s", i: 2, j: -2, mirrorX: true },
         { name: "ramp-2.1", i: 2, j: -4 },
         { name: "uturn-l", i: 1, j: -7 },
-        { name: "uturn-s", i: -1, j: -3, mirror: true },
-        { name: "uturn-s", i: -1, j: -5, mirror: true },
+        { name: "uturn-s", i: -1, j: -3, mirrorX: true },
+        { name: "uturn-s", i: -1, j: -5, mirrorX: true },
         { name: "uturn-s", i: 0, j: -4 },
-        { name: "ramp-1.1", i: 0, j: -6, mirror: true },
+        { name: "ramp-1.1", i: 0, j: -6, mirrorX: true },
         { name: "ramp-1.1", i: -1, j: -13 },
-        { name: "ramp-2.1", i: 1, j: -9, mirror: true },
-        { name: "uturn-s", i: 0, j: -8, mirror: true },
-        { name: "ramp-1.0", i: 3, j: -2, mirror: true },
+        { name: "ramp-2.1", i: 1, j: -9, mirrorX: true },
+        { name: "uturn-s", i: 0, j: -8, mirrorX: true },
+        { name: "ramp-1.0", i: 3, j: -2, mirrorX: true },
         { name: "ramp-2.2", i: 3, j: -1 },
         { name: "rampX-2.1", i: 1, j: -9 },
     ],
@@ -541,7 +541,7 @@ var demoTest = {
         { name: "split", i: 0, j: -1 },
         { name: "ramp-1.1", i: -1, j: -2 },
         { name: "uturn-l", i: 1, j: 1 },
-        { name: "uturn-s", i: -1, j: 1, mirror: true },
+        { name: "uturn-s", i: -1, j: 1, mirrorX: true },
         { name: "ramp-1.0", i: 0, j: 2 },
     ],
 };
@@ -585,9 +585,9 @@ var createDefault = {
         { x: 0.3351445547662884, y: -0.045358694798261004 },
     ],
     parts: [
-        { name: "loop", i: 1, j: -6, mirror: true },
-        { name: "spiral", i: 0, j: -3, mirror: true },
-        { name: "uturn-l", i: -2, j: 0, mirror: true },
+        { name: "loop", i: 1, j: -6, mirrorX: true },
+        { name: "spiral", i: 0, j: -3, mirrorX: true },
+        { name: "uturn-l", i: -2, j: 0, mirrorX: true },
         { name: "ramp-3.1", i: 0, j: 1 },
         { name: "elevator-9", i: 3, j: -7 },
     ],
@@ -1052,6 +1052,7 @@ var testNote = {
         { name: "uturn-0.3", i: 5, j: -2, k: 0 },
     ],
 };
+var testChallenge = { "balls": [{ "x": 0.003999999664723874, "y": -0.061500001311302184, "z": 0 }, { "x": -0.24988589180907558, "y": 0.1936933746784428, "z": 1.3877787807814457e-16 }], "parts": [{ "name": "ramp-2.0.3", "i": -2, "j": 2, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "uturn-0.3", "i": -3, "j": 2, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.1.1", "i": -2, "j": 1, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "uturn-0.4", "i": -3, "j": 0, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.0.1", "i": -1, "j": 0, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturn-1.4", "i": -1, "j": 0, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "elevator-3", "i": 0, "j": -1, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "end", "i": 0, "j": -4, "k": 0, "mirrorZ": false }, { "name": "start", "i": -2, "j": -6, "k": 0, "mirrorZ": false }, { "name": "ramp-1.2.1", "i": -1, "j": -6, "k": 0, "mirrorX": false, "mirrorZ": false }] };
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1204,7 +1205,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = false;
+        this.DEBUG_MODE = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -1218,6 +1219,8 @@ class Game {
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
         this.physicDT = 0.0005;
+        this.metalMaterials = [];
+        this.metalMaterialsCount = 0;
         this.averagedFPS = 0;
         this.updateConfigTimeout = -1;
         this._showGraphicAutoUpdateAlertInterval = 0;
@@ -1320,16 +1323,18 @@ class Game {
         this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
         this.uiMaterial.emissiveColor.copyFromFloats(1, 1, 1);
         this.uiMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
-        this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
-        this.steelMaterial.metallic = 1.0;
-        this.steelMaterial.roughness = 0.15;
-        this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
-        this.copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
-        this.copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
-        this.copperMaterial.metallic = 1.0;
-        this.copperMaterial.roughness = 0.15;
-        this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
+        steelMaterial.metallic = 1.0;
+        steelMaterial.roughness = 0.15;
+        steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        let copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
+        copperMaterial.metallic = 1.0;
+        copperMaterial.roughness = 0.15;
+        copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        this.metalMaterials = [steelMaterial, copperMaterial];
+        this.metalMaterialsCount = this.metalMaterials.length;
         this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
         this.velvetMaterial.diffuseColor.copyFromFloats(0.75, 0.75, 0.75);
         this.velvetMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/velvet.jpg");
@@ -1426,7 +1431,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(nested);
+            this.machine.deserialize(testChallenge);
         }
         else {
             this.machine.deserialize(simpleLoop);
@@ -1541,6 +1546,7 @@ class Game {
                     this.topbar.resize();
                     this.toolbar.resize();
                     this.mainMenu.resize();
+                    this.showGraphicAutoUpdateAlert(this.engine.getRenderWidth().toFixed(0) + " x " + this.engine.getRenderHeight().toFixed(0));
                 });
             });
         };
@@ -1628,15 +1634,15 @@ class Game {
         }
         let fps = 1 / dt;
         if (isFinite(fps)) {
-            if (fps < 30 && this.timeFactor > this.targetTimeFactor / 2) {
+            if (fps < 24 && this.timeFactor > this.targetTimeFactor / 2) {
                 this.timeFactor *= 0.9;
             }
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
-                this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
-                if (this.averagedFPS < 30 && this.config.graphicQ > 1) {
+                this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
+                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
@@ -1648,7 +1654,7 @@ class Game {
                         }, 3000);
                     }
                 }
-                else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
+                else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
@@ -1736,7 +1742,12 @@ class Game {
                     if (objectName.startsWith("wall")) {
                         mirrorX = true;
                     }
-                    track = this.machine.trackFactory.createTrack(objectName, 0, 0, 0, mirrorX);
+                    track = this.machine.trackFactory.createTrack(objectName, {
+                        i: 0,
+                        j: 0,
+                        k: 0,
+                        mirrorX: mirrorX
+                    });
                     this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), -tileHeight * (track.h) * 0.5, 0);
                 }
@@ -1917,9 +1928,12 @@ class Game {
         }
         this.camera.detachControl();
     }
-    showGraphicAutoUpdateAlert() {
+    showGraphicAutoUpdateAlert(message) {
         let alert = document.getElementById("auto-update-graphic-alert");
-        if (this.config.graphicQ === 1) {
+        if (message) {
+            alert.innerText = message;
+        }
+        else if (this.config.graphicQ === 1) {
             alert.innerText = "Graphic Quality set to LOW";
         }
         else if (this.config.graphicQ === 2) {
@@ -1963,121 +1977,6 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
-class ActionTile extends BABYLON.Mesh {
-    constructor(value, s, game) {
-        super(value + "-action-tile");
-        this.value = value;
-        this.s = s;
-        this.game = game;
-        this.texture = new BABYLON.DynamicTexture(this.name + "-texture", { width: 64, height: 64 });
-    }
-    setIsVisible(isVisible) {
-        this.isVisible = isVisible;
-        this.getChildMeshes().forEach(m => {
-            m.isVisible = isVisible;
-        });
-    }
-    async instantiate() {
-        BABYLON.CreatePlaneVertexData({ width: this.s, height: this.s }).applyToMesh(this);
-        let material = new BABYLON.StandardMaterial("test");
-        material.diffuseTexture = this.texture;
-        material.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.material = material;
-        let frame = new BABYLON.Mesh(this.name + "-frame");
-        frame.material = this.game.steelMaterial;
-        frame.parent = this;
-        this.game.vertexDataLoader.get("./meshes/action-tile-frame.babylon").then(vertexData => {
-            let data = Mummu.CloneVertexData(vertexData[0]);
-            let positions = [...data.positions];
-            for (let i = 0; i < positions.length / 3; i++) {
-                let x = positions[3 * i];
-                let y = positions[3 * i + 1];
-                let z = positions[3 * i + 2];
-                if (x > 0) {
-                    positions[3 * i] += this.s * 0.5 - 0.001;
-                }
-                else if (x < 0) {
-                    positions[3 * i] -= this.s * 0.5 - 0.001;
-                }
-                if (y > 0) {
-                    positions[3 * i + 1] += this.s * 0.5 - 0.001;
-                }
-                else if (y < 0) {
-                    positions[3 * i + 1] -= this.s * 0.5 - 0.001;
-                }
-            }
-            data.positions = positions;
-            data.applyToMesh(frame);
-        });
-    }
-}
-class MenuTile extends BABYLON.Mesh {
-    constructor(name, w, h, game) {
-        super(name);
-        this.w = w;
-        this.h = h;
-        this.game = game;
-        this.texW = this.w * this.ppm;
-        this.texH = this.h * this.ppm;
-        this.texture = new BABYLON.DynamicTexture(this.name + "-texture", { width: this.texW, height: this.texH });
-    }
-    get ppm() {
-        return MenuTile.ppc * 100;
-    }
-    setIsVisible(isVisible) {
-        this.isVisible = isVisible;
-        this.getChildMeshes().forEach(m => {
-            m.isVisible = isVisible;
-        });
-    }
-    async instantiate() {
-        let button = BABYLON.MeshBuilder.CreateSphere("center", { diameter: 0.001 });
-        this.game.vertexDataLoader.get("./meshes/button.babylon").then(vertexData => {
-            vertexData[0].applyToMesh(button);
-        });
-        button.material = this.game.steelMaterial;
-        button.parent = this;
-        if (this.h >= this.w) {
-            button.position.y = -this.h * 0.5 + 0.01;
-        }
-        else {
-            button.position.x = this.w * 0.5 - 0.01;
-        }
-        button.rotation.x = -Math.PI * 0.5;
-        BABYLON.CreatePlaneVertexData({ width: this.w, height: this.h }).applyToMesh(this);
-        let material = new BABYLON.StandardMaterial("test");
-        material.diffuseTexture = this.texture;
-        material.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.material = material;
-        let frame = new BABYLON.Mesh(this.name + "-frame");
-        frame.material = this.game.steelMaterial;
-        frame.parent = this;
-        this.game.vertexDataLoader.get("./meshes/menu-tile-frame.babylon").then(vertexData => {
-            let data = Mummu.CloneVertexData(vertexData[0]);
-            let positions = [...data.positions];
-            for (let i = 0; i < positions.length / 3; i++) {
-                let x = positions[3 * i];
-                let y = positions[3 * i + 1];
-                let z = positions[3 * i + 2];
-                if (x > 0) {
-                    positions[3 * i] += this.w * 0.5 - 0.001;
-                }
-                else if (x < 0) {
-                    positions[3 * i] -= this.w * 0.5 - 0.001;
-                }
-                if (y > 0) {
-                    positions[3 * i + 1] += this.h * 0.5 - 0.001;
-                }
-                else if (y < 0) {
-                    positions[3 * i + 1] -= this.h * 0.5 - 0.001;
-                }
-            }
-            data.positions = positions;
-            data.applyToMesh(frame);
-        });
-    }
-}
-MenuTile.ppc = 60;
 class Sound {
     constructor(prop) {
         if (prop) {
@@ -2126,9 +2025,10 @@ class Tools {
     }
 }
 class Wire extends BABYLON.Mesh {
-    constructor(track) {
+    constructor(track, color = 0) {
         super("wire");
         this.track = track;
+        this.color = color;
         this.path = [];
         this.normals = [];
         this.absolutePath = [];
@@ -2226,7 +2126,7 @@ class Wire extends BABYLON.Mesh {
             }
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
-            wire.material = this.track.game.steelMaterial;
+            wire.material = this.track.game.metalMaterials[this.color % this.track.game.metalMaterialsCount];
         }
         if (Wire.DEBUG_DISPLAY) {
             for (let i = 0; i < this.path.length - 1; i++) {
@@ -2361,7 +2261,7 @@ class Machine {
             }
             this.baseFrame = new BABYLON.Mesh("base-frame");
             this.baseFrame.position.copyFrom(this.baseWall.position);
-            this.baseFrame.material = this.game.steelMaterial;
+            this.baseFrame.material = this.game.metalMaterials[0];
             let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon");
             let data = Mummu.CloneVertexData(vertexDatas[0]);
             let positions = [...data.positions];
@@ -2574,7 +2474,14 @@ class Machine {
         }
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror ? true : part.mirrorX, part.mirrorZ);
+            let prop = {
+                i: part.i,
+                j: part.j,
+                k: part.k,
+                mirrorX: part.mirrorX,
+                mirrorZ: part.mirrorZ,
+            };
+            let track = this.trackFactory.createTrack(part.name, prop);
             if (track) {
                 this.parts.push(track);
             }
@@ -2635,12 +2542,9 @@ class MachinePartSelectorMesh extends BABYLON.Mesh {
     }
 }
 class MachinePart extends BABYLON.Mesh {
-    constructor(machine, _i, _j, _k, isPlaced = true) {
+    constructor(machine, prop, isPlaced = true) {
         super("track", machine.game.scene);
         this.machine = machine;
-        this._i = _i;
-        this._j = _j;
-        this._k = _k;
         this.isPlaced = isPlaced;
         this.tracks = [];
         this.wires = [];
@@ -2648,6 +2552,7 @@ class MachinePart extends BABYLON.Mesh {
         this.wireSize = 0.0015;
         this.wireGauge = 0.014;
         this.renderOnlyPath = false;
+        this.color = 0;
         this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
@@ -2659,7 +2564,13 @@ class MachinePart extends BABYLON.Mesh {
         this.enclose23 = BABYLON.Vector3.One().scaleInPlace(2 / 3);
         this.encloseEnd = BABYLON.Vector3.One();
         this.neighbours = new Nabu.UniqueList();
+        this._i = 0;
+        this._j = 0;
+        this._k = 0;
         this._partVisibilityMode = PartVisibilityMode.Default;
+        this._i = prop.i;
+        this._j = prop.j;
+        this._k = prop.k;
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.position.z = -this._k * tileDepth;
@@ -2856,7 +2767,7 @@ class MachinePart extends BABYLON.Mesh {
             this.sleepersMesh.dispose();
         }
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
-        this.sleepersMesh.material = this.game.steelMaterial;
+        this.sleepersMesh.material = this.game.metalMaterials[this.color % this.game.metalMaterialsCount];
         this.sleepersMesh.parent = this;
         let datas = [];
         for (let n = 0; n < this.tracks.length; n++) {
@@ -3028,7 +2939,9 @@ var TrackNames = [
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",
-    "elevator-4"
+    "elevator-4",
+    "start",
+    "end"
 ];
 class MachinePartFactory {
     constructor(machine) {
@@ -3039,90 +2952,115 @@ class MachinePartFactory {
             props = {};
         }
         trackname = trackname.split("-")[0];
-        let whd = "";
+        let whdn = "";
         if (isFinite(props.w)) {
-            whd += props.w.toFixed(0) + ".";
+            whdn += props.w.toFixed(0) + ".";
         }
         if (isFinite(props.h)) {
-            whd += props.h.toFixed(0) + ".";
+            whdn += props.h.toFixed(0) + ".";
         }
         if (isFinite(props.d)) {
-            whd += props.d.toFixed(0) + ".";
+            whdn += props.d.toFixed(0) + ".";
         }
         if (isFinite(props.n)) {
-            whd += props.n.toFixed(0) + ".";
+            whdn += props.n.toFixed(0) + ".";
         }
-        whd = whd.substring(0, whd.length - 1);
-        trackname += "-" + whd;
-        console.log(trackname);
-        return this.createTrack(trackname, props.i, props.j, props.k, props.mirrorX, props.mirrorZ);
+        whdn = whdn.substring(0, whdn.length - 1);
+        trackname += "-" + whdn;
+        return this.createTrack(trackname, props);
     }
-    createTrack(trackname, i, j, k = 0, mirrorX, mirrorZ) {
+    createTrack(trackname, prop) {
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.d = d;
+            return new Ramp(this.machine, prop);
         }
         if (trackname.startsWith("wave-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Wave(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.d = d;
+            return new Wave(this.machine, prop);
         }
         if (trackname.startsWith("snake-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Snake(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.d = d;
+            return new Snake(this.machine, prop);
         }
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            prop.h = h;
+            prop.d = d;
             if (isFinite(h) && isFinite(d)) {
-                return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+                return new UTurn(this.machine, prop);
             }
         }
         if (trackname.startsWith("wall-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            prop.h = h;
+            prop.d = d;
             if (isFinite(h) && isFinite(d)) {
-                return new Wall(this.machine, i, j, k, h, d, mirrorX);
+                return new Wall(this.machine, prop);
             }
         }
         if (trackname === "uturnsharp") {
-            return new UTurnSharp(this.machine, i, j, k, mirrorX, mirrorZ);
+            return new UTurnSharp(this.machine, prop);
+        }
+        if (trackname === "start") {
+            return new Start(this.machine, prop);
+        }
+        if (trackname === "end") {
+            return new End(this.machine, prop);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             let n = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Loop(this.machine, i, j, k, w, d, n, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.d = d;
+            prop.n = n;
+            return new Loop(this.machine, prop);
         }
         if (trackname.startsWith("spiral-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let n = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Spiral(this.machine, i, j, k, w, h, n, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.n = n;
+            return new Spiral(this.machine, prop);
         }
         if (trackname === "join") {
-            return new Join(this.machine, i, j, k, mirrorX);
+            return new Join(this.machine, prop);
         }
         if (trackname === "flatjoin") {
-            return new FlatJoin(this.machine, i, j, k, mirrorX);
+            return new FlatJoin(this.machine, prop);
         }
         if (trackname === "split") {
-            return new Split(this.machine, i, j, k, mirrorX);
+            return new Split(this.machine, prop);
         }
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
-            return new Elevator(this.machine, i, j, k, h, mirrorX);
+            prop.h = h;
+            return new Elevator(this.machine, prop);
         }
         if (trackname === "quarter") {
-            return new QuarterNote(this.machine, i, j, k, mirrorX);
+            return new QuarterNote(this.machine, prop);
         }
         if (trackname === "double") {
-            return new DoubleNote(this.machine, i, j, k, mirrorX);
+            return new DoubleNote(this.machine, prop);
         }
     }
 }
@@ -3616,6 +3554,12 @@ class TemplateManager {
             }
             else if (partName === "double") {
                 data = DoubleNote.GenerateTemplate(mirrorX);
+            }
+            else if (partName === "start") {
+                data = Start.GenerateTemplate(mirrorX);
+            }
+            else if (partName === "end") {
+                data = End.GenerateTemplate(mirrorX);
             }
             datas[mirrorIndex] = data;
         }
@@ -4722,7 +4666,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, 0, 0, 0);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, {});
                     track.isPlaced = false;
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
@@ -5091,7 +5035,12 @@ class MachineEditor {
         return editedPart;
     }
     async mirrorXTrackInPlace(track) {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, {
+            i: track.i,
+            j: track.j,
+            k: track.k,
+            mirrorX: track.mirrorX
+        });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -5101,7 +5050,12 @@ class MachineEditor {
         return mirroredTrack;
     }
     async mirrorZTrackInPlace(track) {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, track.mirrorX, !track.mirrorZ);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, {
+            i: track.i,
+            j: track.j,
+            k: track.k,
+            mirrorX: track.mirrorX
+        });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -5595,8 +5549,8 @@ class MachinePartEditorMenu {
     }
 }
 class Elevator extends MachinePart {
-    constructor(machine, i, j, k, h = 1, mirrorX) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         this.boxesCount = 4;
         this.rWheel = 0.015;
         this.boxX = [];
@@ -5612,10 +5566,10 @@ class Elevator extends MachinePart {
         this.p = 0;
         this.chainLength = 0;
         this.speed = 0.04; // in m/s
-        let partName = "elevator-" + h.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        let partName = "elevator-" + prop.h.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         let x = 1;
-        if (mirrorX) {
+        if (prop.mirrorX) {
             x = -1;
         }
         this.wheels = [
@@ -5624,10 +5578,10 @@ class Elevator extends MachinePart {
         ];
         this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.35), 0);
         this.wheels[0].parent = this;
-        this.wheels[0].material = this.game.steelMaterial;
+        this.wheels[0].material = this.game.metalMaterials[0];
         this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
         this.wheels[1].parent = this;
-        this.wheels[1].material = this.game.steelMaterial;
+        this.wheels[1].material = this.game.metalMaterials[0];
         this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
             let vertexData = vertexDatas[0];
             if (vertexData) {
@@ -5788,11 +5742,50 @@ class Elevator extends MachinePart {
         this.wheels[1].rotation.z -= deltaAngle;
     }
 }
+class End extends MachinePart {
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "end";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
+        this.generateWires();
+    }
+    static GenerateTemplate(mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "end";
+        template.mirrorX = mirrorX;
+        template.xMirrorable = true;
+        let x0 = tileWidth * 0.15;
+        let y0 = -1.4 * tileHeight;
+        let w = tileWidth * 0.3;
+        let r = 0.01;
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.1, -0.01, 0), Tools.V3Dir(120))
+        ];
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + 1.5 * r, 0), Tools.V3Dir(180), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + r, 0), Tools.V3Dir(180)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w + r, y0, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w - r, y0, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w, y0 + r, 0), Tools.V3Dir(0)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 + w, y0 + 1.5 * r, 0), Tools.V3Dir(0), Tools.V3Dir(-90)),
+        ];
+        template.trackTemplates[1].drawStartTip = true;
+        template.trackTemplates[1].drawEndTip = true;
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+}
 class FlatJoin extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         let partName = "flatjoin";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         console.log(this.template);
         this.generateWires();
     }
@@ -5833,10 +5826,10 @@ class FlatJoin extends MachinePart {
     }
 }
 class Join extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         let partName = "join";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
     }
     static GenerateTemplate(mirrorX) {
@@ -5881,14 +5874,14 @@ class Join extends MachinePart {
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Loop extends MachinePart {
-    constructor(machine, i, j, k, w = 1, d = 1, n = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        if (!isFinite(n)) {
-            n = 1;
+    constructor(machine, prop) {
+        super(machine, prop);
+        if (!isFinite(prop.n)) {
+            prop.n = 1;
         }
-        n = Math.min(n, 2 * d);
-        let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        prop.n = Math.min(prop.n, 2 * prop.d);
+        let partName = "loop-" + prop.w.toFixed(0) + "." + prop.d.toFixed(0) + "." + prop.n.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(w, d, n, mirrorX, mirrorZ) {
@@ -6021,10 +6014,10 @@ class MachinePartWithOriginDestination extends MachinePart {
     }
 }
 class Ramp extends MachinePartWithOriginDestination {
-    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        let partName = "ramp-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "ramp-" + prop.w.toFixed(0) + "." + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
@@ -6077,14 +6070,23 @@ class Ramp extends MachinePartWithOriginDestination {
                 mirrorZ = true;
             }
         }
-        return new Ramp(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+        return new Ramp(machine, {
+            i: i,
+            j: j,
+            k: k,
+            w: w,
+            h: h,
+            d: d,
+            mirrorX: mirrorX,
+            mirrorZ: mirrorZ
+        });
     }
 }
 class UTurnSharp extends MachinePart {
-    constructor(machine, i, j, k, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         let partName = "uturnsharp";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(mirrorX, mirrorZ) {
@@ -6119,10 +6121,10 @@ class UTurnSharp extends MachinePart {
     }
 }
 class Snake extends MachinePartWithOriginDestination {
-    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        let partName = "snake-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "snake-" + prop.w.toFixed(0) + "." + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
@@ -6187,15 +6189,24 @@ class Snake extends MachinePartWithOriginDestination {
                 mirrorZ = true;
             }
         }
-        return new Snake(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+        return new Snake(machine, {
+            i: i,
+            j: j,
+            k: k,
+            w: w,
+            h: h,
+            d: d,
+            mirrorX: mirrorX,
+            mirrorZ: mirrorZ
+        });
     }
 }
 /// <reference path="../machine/MachinePart.ts"/>
 class Spiral extends MachinePart {
-    constructor(machine, i, j, k, w = 1, h = 1, n = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0) + "." + n.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "spiral-" + prop.w.toFixed(0) + "." + prop.h.toFixed(0) + "." + prop.n.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(w, h, n, mirrorX, mirrorZ) {
@@ -6253,8 +6264,8 @@ class Spiral extends MachinePart {
     }
 }
 class Split extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         this._animatePivot = Mummu.AnimationFactory.EmptyNumberCallback;
         this.reset = () => {
             this._moving = false;
@@ -6267,7 +6278,7 @@ class Split extends MachinePart {
         };
         this._moving = false;
         let partName = "split";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         let rCurb = Split.pivotL * 0.3;
         let anchorDatas = [];
         let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
@@ -6286,11 +6297,11 @@ class Split extends MachinePart {
         let anchor = new BABYLON.Mesh("anchor");
         anchor.position.copyFromFloats(0, -tileHeight, 0);
         anchor.parent = this;
-        anchor.material = this.game.steelMaterial;
+        anchor.material = this.game.metalMaterials[0];
         Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
         this.pivot = new BABYLON.Mesh("pivot");
         this.pivot.position.copyFromFloats(0, -tileHeight, 0);
-        this.pivot.material = this.game.copperMaterial;
+        this.pivot.material = this.game.metalMaterials[1];
         this.pivot.parent = this;
         let dz = this.wireGauge * 0.5;
         this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
@@ -6443,11 +6454,36 @@ class Split extends MachinePart {
     }
 }
 Split.pivotL = 0.025;
+class Start extends MachinePart {
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "start";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
+        this.generateWires();
+    }
+    static GenerateTemplate(mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "start";
+        template.mirrorX = mirrorX;
+        template.xMirrorable = true;
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.3, 0.008, 0), Tools.V3Dir(120)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), Tools.V3Dir(90))
+        ];
+        template.trackTemplates[0].drawStartTip = true;
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+}
 class UTurn extends MachinePart {
-    constructor(machine, i, j, k, h, d, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        let partName = "uturn-" + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "uturn-" + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(h, d, mirrorX, mirrorZ) {
@@ -6498,16 +6534,16 @@ class UTurn extends MachinePart {
     }
 }
 class Wall extends MachinePart {
-    constructor(machine, i, j, k, h = 4, d = 1, mirrorX) {
-        super(machine, i, j, k);
-        if (d === 3) {
-            h = Math.max(h, 5);
+    constructor(machine, prop) {
+        super(machine, prop);
+        if (prop.d === 3) {
+            prop.h = Math.max(prop.h, 5);
         }
-        if (d === 4) {
-            h = Math.max(h, 7);
+        if (prop.d === 4) {
+            prop.h = Math.max(prop.h, 7);
         }
-        let partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        let partName = "wall-" + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
     }
     static GenerateTemplate(h, d, mirrorX) {
@@ -6560,10 +6596,10 @@ class Wall extends MachinePart {
     }
 }
 class Wave extends MachinePartWithOriginDestination {
-    constructor(machine, i, j, k, w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
-        super(machine, i, j, k);
-        let partName = "wave-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+    constructor(machine, prop) {
+        super(machine, prop);
+        let partName = "wave-" + prop.w.toFixed(0) + "." + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     static GenerateTemplate(w = 1, h = 1, d = 1, mirrorX, mirrorZ) {
@@ -6627,20 +6663,29 @@ class Wave extends MachinePartWithOriginDestination {
                 mirrorZ = true;
             }
         }
-        return new Wave(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+        return new Wave(machine, {
+            i: i,
+            j: j,
+            k: k,
+            w: w,
+            h: h,
+            d: d,
+            mirrorX: mirrorX,
+            mirrorZ: mirrorZ
+        });
     }
 }
 class QuarterNote extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         this.notes = [];
         this.tings = [];
         this.noteMesh = [];
         let partName = "quarter";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
         let x = 1;
-        if (mirrorX) {
+        if (prop.mirrorX) {
             x = -1;
         }
         let ting = BABYLON.MeshBuilder.CreateGround("ting", { width: 0.015, height: 0.06 });
@@ -6657,7 +6702,7 @@ class QuarterNote extends MachinePart {
         let note = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
         this.notes.push(note);
         let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile.material = machine.game.steelMaterial;
+        tile.material = this.game.metalMaterials[0];
         tile.position.copyFrom(ting.position);
         tile.rotation.copyFrom(ting.rotation);
         tile.parent = this;
@@ -6712,16 +6757,16 @@ QuarterNote.NoteNames = [
 ];
 QuarterNote.index = 0;
 class DoubleNote extends MachinePart {
-    constructor(machine, i, j, k, mirrorX) {
-        super(machine, i, j, k);
+    constructor(machine, prop) {
+        super(machine, prop);
         this.notes = [];
         this.tings = [];
         this.noteMesh = [];
         let partName = "double";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
         let x = 1;
-        if (mirrorX) {
+        if (prop.mirrorX) {
             x = -1;
         }
         let ting = BABYLON.MeshBuilder.CreateGround("ting", { width: 0.015, height: 0.06 });
@@ -6738,7 +6783,7 @@ class DoubleNote extends MachinePart {
         let note = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
         this.notes.push(note);
         let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile.material = machine.game.steelMaterial;
+        tile.material = this.game.metalMaterials[0];
         tile.position.copyFrom(ting.position);
         tile.rotation.copyFrom(ting.rotation);
         tile.parent = this;
@@ -6758,7 +6803,7 @@ class DoubleNote extends MachinePart {
         let note2 = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
         this.notes.push(note2);
         let tile2 = BABYLON.MeshBuilder.CreateBox("tile2", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile2.material = machine.game.steelMaterial;
+        tile2.material = this.game.metalMaterials[0];
         tile2.position.copyFrom(ting2.position);
         tile2.rotation.copyFrom(ting2.rotation);
         tile2.parent = this;
@@ -6817,7 +6862,7 @@ class Painting extends BABYLON.Mesh {
             let steel = new BABYLON.Mesh("steel");
             vertexDatas[1].applyToMesh(steel);
             steel.parent = this;
-            steel.material = this.room.game.steelMaterial;
+            steel.material = this.room.game.metalMaterials[0];
             steel.layerMask = 0x10000000;
         }
         if (vertexDatas && vertexDatas[2]) {
@@ -6884,7 +6929,7 @@ class Room {
         this.wall.parent = this.ground;
         this.frame = new BABYLON.Mesh("room-frame");
         this.frame.layerMask = 0x10000000;
-        this.frame.material = this.game.steelMaterial;
+        this.frame.material = this.game.metalMaterials[0];
         this.frame.parent = this.ground;
         this.light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.game.scene);
         this.light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
@@ -6959,12 +7004,12 @@ class Room {
         paint41.position.copyFromFloats(-2.8, 0, 4.5);
         paint41.rotation.y = Math.PI;
         paint41.parent = this.ground;
-        let sculpt1 = new Sculpt(this, this.game.steelMaterial);
+        let sculpt1 = new Sculpt(this, this.game.metalMaterials[0]);
         sculpt1.instantiate();
         sculpt1.position.copyFromFloats(4.5, 0, 0);
         sculpt1.rotation.y = -0.5 * Math.PI;
         sculpt1.parent = this.ground;
-        let sculpt2 = new Sculpt(this, this.game.copperMaterial);
+        let sculpt2 = new Sculpt(this, this.game.metalMaterials[1]);
         sculpt2.instantiate();
         sculpt2.position.copyFromFloats(-4.5, 0, 0);
         sculpt2.rotation.y = 0.5 * Math.PI;

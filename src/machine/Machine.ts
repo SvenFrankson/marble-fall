@@ -9,7 +9,6 @@ interface IMachinePartData {
     i: number;
     j: number;
     k?: number;
-    mirror?: boolean;
     mirrorX?: boolean;
     mirrorZ?: boolean;
 }
@@ -158,7 +157,7 @@ class Machine {
             }
             this.baseFrame = new BABYLON.Mesh("base-frame");
             this.baseFrame.position.copyFrom(this.baseWall.position);
-            this.baseFrame.material = this.game.steelMaterial;
+            this.baseFrame.material = this.game.metalMaterials[0];
 
             let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon")
             let data = Mummu.CloneVertexData(vertexDatas[0]);
@@ -402,7 +401,14 @@ class Machine {
 
         for (let i = 0; i < data.parts.length; i++) {
             let part = data.parts[i];
-            let track = this.trackFactory.createTrack(part.name, part.i, part.j, part.k, part.mirror ? true : part.mirrorX, part.mirrorZ);
+            let prop: IMachinePartProp = {
+                i: part.i,
+                j: part.j,
+                k: part.k,
+                mirrorX: part.mirrorX,
+                mirrorZ: part.mirrorZ,
+            }
+            let track = this.trackFactory.createTrack(part.name, prop);
             if (track) {
                 this.parts.push(track);
             }

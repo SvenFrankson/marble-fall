@@ -272,7 +272,7 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, 0, 0, 0);
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, {});
                     track.isPlaced = false;
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
@@ -919,7 +919,7 @@ class MachineEditor {
         }
     }
 
-    public async editTrackInPlace(track: MachinePart, props?: ICreateTrackWHDNProp): Promise<MachinePart> {
+    public async editTrackInPlace(track: MachinePart, props?: IMachinePartProp): Promise<MachinePart> {
         if (!props) {
             props = {};
         }
@@ -985,7 +985,12 @@ class MachineEditor {
     }
 
     public async mirrorXTrackInPlace(track: MachinePart): Promise<MachinePart> {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, !track.mirrorX);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, {
+            i: track.i,
+            j: track.j,
+            k: track.k,
+            mirrorX: track.mirrorX
+        });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);
@@ -996,7 +1001,12 @@ class MachineEditor {
     }
 
     public async mirrorZTrackInPlace(track: MachinePart): Promise<MachinePart> {
-        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, track.i, track.j, track.k, track.mirrorX, !track.mirrorZ);
+        let mirroredTrack = this.machine.trackFactory.createTrack(track.partName, {
+            i: track.i,
+            j: track.j,
+            k: track.k,
+            mirrorX: track.mirrorX
+        });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
         mirroredTrack.setIsVisible(true);

@@ -29,7 +29,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = false;
+    public DEBUG_MODE: boolean = true;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -81,8 +81,8 @@ class Game {
 
     public skybox: BABYLON.Mesh;
 
-    public steelMaterial: BABYLON.PBRMetallicRoughnessMaterial;
-    public copperMaterial: BABYLON.PBRMetallicRoughnessMaterial;
+    public metalMaterials: BABYLON.PBRMetallicRoughnessMaterial[] = [];
+    public metalMaterialsCount: number = 0;
     public woodMaterial: BABYLON.StandardMaterial;
     public velvetMaterial: BABYLON.StandardMaterial;
     public logoMaterial: BABYLON.StandardMaterial;
@@ -196,17 +196,20 @@ class Game {
         this.uiMaterial.emissiveColor.copyFromFloats(1, 1, 1);
         this.uiMaterial.specularColor.copyFromFloats(0, 0, 0);
 
-        this.steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
-        this.steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
-        this.steelMaterial.metallic = 1.0;
-        this.steelMaterial.roughness = 0.15;
-        this.steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
+        steelMaterial.metallic = 1.0;
+        steelMaterial.roughness = 0.15;
+        steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
         
-        this.copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
-        this.copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
-        this.copperMaterial.metallic = 1.0;
-        this.copperMaterial.roughness = 0.15;
-        this.copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+        let copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
+        copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
+        copperMaterial.metallic = 1.0;
+        copperMaterial.roughness = 0.15;
+        copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
+
+        this.metalMaterials = [steelMaterial, copperMaterial];
+        this.metalMaterialsCount = this.metalMaterials.length;
 
         this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
         this.velvetMaterial.diffuseColor.copyFromFloats(0.75, 0.75, 0.75);
@@ -320,7 +323,7 @@ class Game {
         this.machineEditor = new MachineEditor(this);
 
         if (this.DEBUG_MODE) {
-            this.machine.deserialize(nested);
+            this.machine.deserialize(testChallenge);
         }
         else {
             this.machine.deserialize(simpleLoop);
@@ -450,6 +453,7 @@ class Game {
                     this.topbar.resize();
                     this.toolbar.resize();
                     this.mainMenu.resize();
+                    this.showGraphicAutoUpdateAlert(this.engine.getRenderWidth().toFixed(0) + " x " + this.engine.getRenderHeight().toFixed(0));
                 })
             })
 		};
@@ -551,15 +555,15 @@ class Game {
 
         let fps = 1 / dt;
         if (isFinite(fps)) {
-            if (fps < 30 && this.timeFactor > this.targetTimeFactor / 2) {
+            if (fps < 24 && this.timeFactor > this.targetTimeFactor / 2) {
                 this.timeFactor *= 0.9;
             }
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
-                this.averagedFPS = 0.95 * this.averagedFPS + 0.05 * fps;
-                if (this.averagedFPS < 30 && this.config.graphicQ > 1) {
+                this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
+                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
@@ -571,7 +575,7 @@ class Game {
                         }, 3000);
                     }
                 }
-                else if (this.averagedFPS > 55 && this.config.graphicQ < 3) {
+                else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
@@ -669,7 +673,12 @@ class Game {
                     if (objectName.startsWith("wall")) {
                         mirrorX = true;
                     }
-                    track = this.machine.trackFactory.createTrack(objectName, 0, 0, 0, mirrorX);
+                    track = this.machine.trackFactory.createTrack(objectName, {
+                        i: 0,
+                        j: 0,
+                        k: 0,
+                        mirrorX: mirrorX
+                    });
                     this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), - tileHeight * (track.h) * 0.5, 0);
                 }
@@ -876,9 +885,12 @@ class Game {
     }
 
     private _showGraphicAutoUpdateAlertInterval: number = 0;
-    public showGraphicAutoUpdateAlert(): void {
+    public showGraphicAutoUpdateAlert(message?: string): void {
         let alert = document.getElementById("auto-update-graphic-alert") as HTMLDivElement;
-        if (this.config.graphicQ === 1) {
+        if (message) {
+            alert.innerText = message;
+        }
+        else if (this.config.graphicQ === 1) {
             alert.innerText = "Graphic Quality set to LOW";
         }
         else if (this.config.graphicQ === 2) {

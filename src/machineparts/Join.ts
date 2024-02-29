@@ -1,10 +1,10 @@
 class Join extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
         let partName = "join";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
     }
 

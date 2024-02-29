@@ -3,16 +3,16 @@
 class Loop extends MachinePart {
 
 
-    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, d: number = 1, n: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
-        if (!isFinite(n)) {
-            n = 1;
+        if (!isFinite(prop.n)) {
+            prop.n = 1;
         }
-        n = Math.min(n, 2 * d);
+        prop.n = Math.min(prop.n, 2 * prop.d);
 
-        let partName = "loop-" + w.toFixed(0) + "." + d.toFixed(0) + "." + n.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        let partName = "loop-" + prop.w.toFixed(0) + "." + prop.d.toFixed(0) + "." + prop.n.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
 

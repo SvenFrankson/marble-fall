@@ -1,17 +1,17 @@
 class Wall extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, h: number = 4, d: number = 1, mirrorX?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
-        if (d === 3) {
-            h = Math.max(h, 5);
+        if (prop.d === 3) {
+            prop.h = Math.max(prop.h, 5);
         }
-        if (d === 4) {
-            h = Math.max(h, 7);
+        if (prop.d === 4) {
+            prop.h = Math.max(prop.h, 7);
         }
 
-        let partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        let partName = "wall-" + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
     }
 

@@ -3,11 +3,11 @@
 class Spiral extends MachinePart {
 
 
-    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, n: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
-        let partName = "spiral-" + w.toFixed(0) + "." + h.toFixed(0) + "." + n.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        let partName = "spiral-" + prop.w.toFixed(0) + "." + prop.h.toFixed(0) + "." + prop.n.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
 

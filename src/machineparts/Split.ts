@@ -5,11 +5,11 @@ class Split extends MachinePart {
     public pivot: BABYLON.Mesh;
     public static pivotL: number = 0.025;
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
         let partName = "split";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
        
         let rCurb = Split.pivotL * 0.3;
 
@@ -32,12 +32,12 @@ class Split extends MachinePart {
         let anchor = new BABYLON.Mesh("anchor");
         anchor.position.copyFromFloats(0, - tileHeight, 0);
         anchor.parent = this;
-        anchor.material = this.game.steelMaterial;
+        anchor.material = this.game.metalMaterials[0];
         Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
 
         this.pivot = new BABYLON.Mesh("pivot");
         this.pivot.position.copyFromFloats(0, - tileHeight, 0);
-        this.pivot.material = this.game.copperMaterial;
+        this.pivot.material = this.game.metalMaterials[1];
         this.pivot.parent = this;
         let dz = this.wireGauge * 0.5;
         this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {

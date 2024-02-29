@@ -366,6 +366,12 @@ class TemplateManager {
             else if (partName === "double") {
                 data = DoubleNote.GenerateTemplate(mirrorX);
             }
+            else if (partName === "start") {
+                data = Start.GenerateTemplate(mirrorX);
+            }
+            else if (partName === "end") {
+                data = End.GenerateTemplate(mirrorX);
+            }
             datas[mirrorIndex] = data;
         }
 

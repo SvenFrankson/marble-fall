@@ -16,16 +16,16 @@ class QuarterNote extends MachinePart {
     public tings: BABYLON.Mesh[] = [];
     public noteMesh: BABYLON.Mesh[] = [];
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
         let partName = "quarter";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
 
         this.generateWires();
         
         let x = 1;
-        if (mirrorX) {
+        if (prop.mirrorX) {
             x = - 1;
         }
 
@@ -46,7 +46,7 @@ class QuarterNote extends MachinePart {
         this.notes.push(note);
 
         let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile.material = machine.game.steelMaterial;
+        tile.material = this.game.metalMaterials[0];
         tile.position.copyFrom(ting.position);
         tile.rotation.copyFrom(ting.rotation);
         tile.parent = this;
@@ -129,16 +129,16 @@ class DoubleNote extends MachinePart {
     public tings: BABYLON.Mesh[] = [];
     public noteMesh: BABYLON.Mesh[] = [];
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
         let partName = "double";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
 
         this.generateWires();
         
         let x = 1;
-        if (mirrorX) {
+        if (prop.mirrorX) {
             x = - 1;
         }
 
@@ -159,7 +159,7 @@ class DoubleNote extends MachinePart {
         this.notes.push(note);
 
         let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile.material = machine.game.steelMaterial;
+        tile.material = this.game.metalMaterials[0];
         tile.position.copyFrom(ting.position);
         tile.rotation.copyFrom(ting.rotation);
         tile.parent = this;
@@ -184,7 +184,7 @@ class DoubleNote extends MachinePart {
         this.notes.push(note2);
 
         let tile2 = BABYLON.MeshBuilder.CreateBox("tile2", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile2.material = machine.game.steelMaterial;
+        tile2.material = this.game.metalMaterials[0];
         tile2.position.copyFrom(ting2.position);
         tile2.rotation.copyFrom(ting2.rotation);
         tile2.parent = this;

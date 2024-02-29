@@ -7,14 +7,14 @@ class Elevator extends MachinePart {
     public wheels: BABYLON.Mesh[] = [];
     public cable: BABYLON.Mesh;
 
-    constructor(machine: Machine, i: number, j: number, k: number, h: number = 1, mirrorX?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
-        let partName = "elevator-" + h.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX));
+        let partName = "elevator-" + prop.h.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
 
         let x = 1;
-        if (mirrorX) {
+        if (prop.mirrorX) {
             x = - 1;
         }
 
@@ -24,11 +24,11 @@ class Elevator extends MachinePart {
         ]
         this.wheels[0].position.copyFromFloats(0.030 * x, - tileHeight * (this.h + 0.35), 0);
         this.wheels[0].parent = this;
-        this.wheels[0].material = this.game.steelMaterial;
+        this.wheels[0].material = this.game.metalMaterials[0];
 
         this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
         this.wheels[1].parent = this;
-        this.wheels[1].material = this.game.steelMaterial;
+        this.wheels[1].material = this.game.metalMaterials[0];
 
         this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
             let vertexData = vertexDatas[0];

@@ -1,10 +1,10 @@
 class Wave extends MachinePartWithOriginDestination {
 
-    constructor(machine: Machine, i: number, j: number, k: number, w: number = 1, h: number = 1, d: number = 1, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
-        let partName = "wave-" + w.toFixed(0) + "." + h.toFixed(0) + "." + d.toFixed(0);
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        let partName = "wave-" + prop.w.toFixed(0) + "." + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
     
@@ -80,6 +80,15 @@ class Wave extends MachinePartWithOriginDestination {
                 mirrorZ = true;
             }
         }
-        return new Wave(machine, i, j, k, w, h, d, mirrorX, mirrorZ);
+        return new Wave(machine, {
+            i: i, 
+            j: j, 
+            k: k, 
+            w: w, 
+            h: h, 
+            d: d, 
+            mirrorX: mirrorX, 
+            mirrorZ: mirrorZ
+        });
     }
 }

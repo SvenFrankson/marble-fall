@@ -1,10 +1,10 @@
 class UTurnSharp extends MachinePart {
 
-    constructor(machine: Machine, i: number, j: number, k: number, mirrorX?: boolean, mirrorZ?: boolean) {
-        super(machine, i, j, k);
+    constructor(machine: Machine, prop: IMachinePartProp) {
+        super(machine, prop);
 
         let partName = "uturnsharp";
-        this.setTemplate(this.machine.templateManager.getTemplate(partName, mirrorX, mirrorZ));
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX, prop.mirrorZ));
         this.generateWires();
     }
 

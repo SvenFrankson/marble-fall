@@ -14,7 +14,7 @@ class Painting extends BABYLON.Mesh {
             let steel = new BABYLON.Mesh("steel");
             vertexDatas[1].applyToMesh(steel);
             steel.parent = this;
-            steel.material = this.room.game.steelMaterial;
+            steel.material = this.room.game.metalMaterials[0];
             steel.layerMask = 0x10000000;
         }
         if (vertexDatas && vertexDatas[2]) {

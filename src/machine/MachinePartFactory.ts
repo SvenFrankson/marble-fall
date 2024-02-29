@@ -10,10 +10,12 @@ var TrackNames = [
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",
-    "elevator-4"
+    "elevator-4",
+    "start",
+    "end"
 ];
 
-interface ICreateTrackWHDNProp {
+interface IMachinePartProp {
     i?: number;
     j?: number;
     k?: number;
@@ -21,6 +23,7 @@ interface ICreateTrackWHDNProp {
     h?: number;
     d?: number;
     n?: number;
+    color?: number;
     mirrorX?: boolean;
     mirrorZ?: boolean;
 }
@@ -31,96 +34,121 @@ class MachinePartFactory {
 
     }
 
-    public createTrackWHDN(trackname: string, props?: ICreateTrackWHDNProp): MachinePart {
+    public createTrackWHDN(trackname: string, props?: IMachinePartProp): MachinePart {
         if (!props) {
             props = {};
         }
         trackname = trackname.split("-")[0];
-        let whd = "";
+        let whdn = "";
         if (isFinite(props.w)) {
-            whd += props.w.toFixed(0) + ".";
+            whdn += props.w.toFixed(0) + ".";
         }
         if (isFinite(props.h)) {
-            whd += props.h.toFixed(0) + ".";
+            whdn += props.h.toFixed(0) + ".";
         }
         if (isFinite(props.d)) {
-            whd += props.d.toFixed(0) + ".";
+            whdn += props.d.toFixed(0) + ".";
         }
         if (isFinite(props.n)) {
-            whd += props.n.toFixed(0) + ".";
+            whdn += props.n.toFixed(0) + ".";
         }
-        whd = whd.substring(0, whd.length - 1);
-        trackname += "-" + whd;
-        console.log(trackname);
-        return this.createTrack(trackname, props.i, props.j, props.k, props.mirrorX, props.mirrorZ);
+        whdn = whdn.substring(0, whdn.length - 1);
+        trackname += "-" + whdn;
+        return this.createTrack(trackname, props);
     }
 
-    public createTrack(trackname: string, i: number, j: number, k: number = 0, mirrorX?: boolean, mirrorZ?: boolean): MachinePart {
+    public createTrack(trackname: string, prop: IMachinePartProp): MachinePart {
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Ramp(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.d = d;
+            return new Ramp(this.machine, prop);
         }
         if (trackname.startsWith("wave-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Wave(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.d = d;
+            return new Wave(this.machine, prop);
         }
         if (trackname.startsWith("snake-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let d = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Snake(this.machine, i, j, k, w, h, isFinite(d) ? d : 1, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.d = d;
+            return new Snake(this.machine, prop);
         }
         if (trackname.startsWith("uturn-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            prop.h = h;
+            prop.d = d;
             if (isFinite(h) && isFinite(d)) {
-                return new UTurn(this.machine, i, j, k, h, d, mirrorX, mirrorZ);
+                return new UTurn(this.machine, prop);
             }
         }
         if (trackname.startsWith("wall-")) {
             let h = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
+            prop.h = h;
+            prop.d = d;
             if (isFinite(h) && isFinite(d)) {
-                return new Wall(this.machine, i, j, k, h, d, mirrorX);
+                return new Wall(this.machine, prop);
             }
         }
         if (trackname === "uturnsharp") {
-            return new UTurnSharp(this.machine, i, j, k, mirrorX, mirrorZ);
+            return new UTurnSharp(this.machine, prop);
+        }
+        if (trackname === "start") {
+            return new Start(this.machine, prop);
+        }
+        if (trackname === "end") {
+            return new End(this.machine, prop);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let d = parseInt(trackname.split("-")[1].split(".")[1]);
             let n = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Loop(this.machine, i, j, k, w, d, n, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.d = d;
+            prop.n = n;
+            return new Loop(this.machine, prop);
         }
         if (trackname.startsWith("spiral-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
             let n = parseInt(trackname.split("-")[1].split(".")[2]);
-            return new Spiral(this.machine, i, j, k, w, h, n, mirrorX, mirrorZ);
+            prop.w = w;
+            prop.h = h;
+            prop.n = n;
+            return new Spiral(this.machine, prop);
         }
         if (trackname === "join") {
-            return new Join(this.machine, i, j, k, mirrorX);
+            return new Join(this.machine, prop);
         }
         if (trackname === "flatjoin") {
-            return new FlatJoin(this.machine, i, j, k, mirrorX);
+            return new FlatJoin(this.machine, prop);
         }
         if (trackname === "split") {
-            return new Split(this.machine, i, j, k, mirrorX);
+            return new Split(this.machine, prop);
         }
         if (trackname.startsWith("elevator-")) {
             let h = parseInt(trackname.split("-")[1]);
-            return new Elevator(this.machine, i, j, k, h, mirrorX);
+            prop.h = h;
+            return new Elevator(this.machine, prop);
         }
         if (trackname === "quarter") {
-            return new QuarterNote(this.machine, i, j, k, mirrorX);
+            return new QuarterNote(this.machine, prop);
         }
         if (trackname === "double") {
-            return new DoubleNote(this.machine, i, j, k, mirrorX);
+            return new DoubleNote(this.machine, prop);
         }
     }
 }

@@ -55,6 +55,7 @@ class MachinePart extends BABYLON.Mesh {
     public wireGauge: number = 0.014;
     public renderOnlyPath: boolean = false;
 
+    public color: number = 0;
     public sleepersMesh: BABYLON.Mesh;
     public selectorMesh: MachinePartSelectorMesh;
     public encloseMesh: BABYLON.Mesh;
@@ -143,8 +144,12 @@ class MachinePart extends BABYLON.Mesh {
         this._template = template;
     }
 
-    constructor(public machine: Machine, private _i: number, private _j: number, private _k: number, public isPlaced: boolean = true) {
+    constructor(public machine: Machine, prop: IMachinePartProp, public isPlaced: boolean = true) {
         super("track", machine.game.scene);
+        
+        this._i = prop.i;
+        this._j = prop.j;
+        this._k = prop.k;
         
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
@@ -153,6 +158,7 @@ class MachinePart extends BABYLON.Mesh {
         this.tracks = [new Track(this)];
     }
 
+    private _i: number = 0;
     public get i(): number {
         return this._i;
     }
@@ -169,6 +175,7 @@ class MachinePart extends BABYLON.Mesh {
         }
     }
 
+    private _j: number = 0;
     public get j(): number {
         return this._j;
     }
@@ -185,6 +192,7 @@ class MachinePart extends BABYLON.Mesh {
         }
     }
 
+    private _k: number = 0;
     public get k(): number {
         return this._k;
     }
@@ -287,7 +295,7 @@ class MachinePart extends BABYLON.Mesh {
             this.sleepersMesh.dispose();
         }
         this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
-        this.sleepersMesh.material = this.game.steelMaterial;
+        this.sleepersMesh.material = this.game.metalMaterials[this.color % this.game.metalMaterialsCount];
         this.sleepersMesh.parent = this;
 
         let datas: BABYLON.VertexData[] = [];

@@ -26,7 +26,7 @@ class Room {
         
         this.frame = new BABYLON.Mesh("room-frame");
         this.frame.layerMask = 0x10000000;
-        this.frame.material = this.game.steelMaterial;
+        this.frame.material = this.game.metalMaterials[0];
         this.frame.parent = this.ground;
 
         this.light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.game.scene);
@@ -120,13 +120,13 @@ class Room {
         paint41.rotation.y = Math.PI;
         paint41.parent = this.ground;
 
-        let sculpt1 = new Sculpt(this, this.game.steelMaterial);
+        let sculpt1 = new Sculpt(this, this.game.metalMaterials[0]);
         sculpt1.instantiate();
         sculpt1.position.copyFromFloats(4.5, 0, 0);
         sculpt1.rotation.y = - 0.5 * Math.PI;
         sculpt1.parent = this.ground;
 
-        let sculpt2 = new Sculpt(this, this.game.copperMaterial);
+        let sculpt2 = new Sculpt(this, this.game.metalMaterials[1]);
         sculpt2.instantiate();
         sculpt2.position.copyFromFloats(- 4.5, 0, 0);
         sculpt2.rotation.y = 0.5 * Math.PI;
