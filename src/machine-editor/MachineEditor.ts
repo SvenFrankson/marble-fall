@@ -272,7 +272,11 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, {});
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, {
+                        i: 0,
+                        j: 0,
+                        k: 0
+                    });
                     track.isPlaced = false;
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);

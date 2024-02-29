@@ -2179,10 +2179,10 @@ class Machine {
         this.templateManager = new TemplateManager(this);
     }
     async instantiate() {
-        this.parts = this.parts.sort((a, b) => { return b.j - a.j; });
+        this.parts = this.parts.sort((a, b) => { return (b.j + b.h) - (a.j + a.h); });
         for (let i = 0; i < this.parts.length; i++) {
             await this.parts[i].instantiate();
-            await Nabu.Wait(1);
+            await Nabu.Wait(2);
         }
         for (let i = 0; i < this.balls.length; i++) {
             await this.balls[i].instantiate();
@@ -2894,21 +2894,7 @@ class MachinePart extends BABYLON.Mesh {
             wire.instantiate(this.color);
         });
         requestAnimationFrame(() => {
-            let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
-            datas.forEach((vData, colorIndex) => {
-                if (!this.sleepersMeshes.get(colorIndex)) {
-                    let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
-                    sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
-                    sleeperMesh.parent = this;
-                    vData.applyToMesh(sleeperMesh);
-                    this.sleepersMeshes.set(colorIndex, sleeperMesh);
-                    sleeperMesh.freezeWorldMatrix();
-                }
-            });
-            this.machine.requestUpdateShadow = true;
-            if (this.game.DEBUG_MODE) {
-                console.log(this.partName + " tricount " + this.getTriCount());
-            }
+            this.doSleepersMeshUpdate();
         });
         if (rebuildNeighboursWireMeshes) {
             neighboursToUpdate = this.neighbours.cloneAsArray();
@@ -2918,6 +2904,24 @@ class MachinePart extends BABYLON.Mesh {
         }
         this.freezeWorldMatrix();
         this.machine.requestUpdateShadow = true;
+    }
+    doSleepersMeshUpdate() {
+        let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
+        datas.forEach((vData, colorIndex) => {
+            if (!this.sleepersMeshes.get(colorIndex)) {
+                let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
+                sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
+                sleeperMesh.parent = this;
+                this.sleepersMeshes.set(colorIndex, sleeperMesh);
+            }
+            let sleeperMesh = this.sleepersMeshes.get(colorIndex);
+            vData.applyToMesh(sleeperMesh);
+            sleeperMesh.freezeWorldMatrix();
+        });
+        this.machine.requestUpdateShadow = true;
+        if (this.game.DEBUG_MODE) {
+            console.log(this.partName + " tricount " + this.getTriCount());
+        }
     }
     getTriCount() {
         let triCount = this.getIndices().length / 3;
@@ -3221,7 +3225,7 @@ class SleeperMeshBuilder {
                             if (anchorYWorld < minY + props.groundAnchorsRelativeMaxY * (maxY - minY)) {
                                 let rayOrigin = anchor.add(part.position);
                                 let rayDir = new BABYLON.Vector3(0, -1, 0);
-                                rayOrigin.addInPlace(rayDir.scale(0.05));
+                                rayOrigin.addInPlace(rayDir.scale(0.01));
                                 let ray = new BABYLON.Ray(rayOrigin, rayDir, 3);
                                 let pick = part.game.scene.pickWithRay(ray, (m => { return m instanceof MachinePartSelectorMesh; }));
                                 if (!pick.hit) {
@@ -4689,7 +4693,11 @@ class MachineEditor {
                 }
                 else {
                     this.setSelectedItem(trackname);
-                    let track = this.machine.trackFactory.createTrack(this._selectedItem, {});
+                    let track = this.machine.trackFactory.createTrack(this._selectedItem, {
+                        i: 0,
+                        j: 0,
+                        k: 0
+                    });
                     track.isPlaced = false;
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
