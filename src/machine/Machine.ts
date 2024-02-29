@@ -11,6 +11,7 @@ interface IMachinePartData {
     k?: number;
     mirrorX?: boolean;
     mirrorZ?: boolean;
+    color?: number;
 }
 
 interface IMachineData {
@@ -382,7 +383,8 @@ class Machine {
                 j: this.parts[i].j,
                 k: this.parts[i].k,
                 mirrorX: this.parts[i].mirrorX,
-                mirrorZ: this.parts[i].mirrorZ
+                mirrorZ: this.parts[i].mirrorZ,
+                color: this.parts[i].color
             })
         }
 
@@ -407,6 +409,7 @@ class Machine {
                 k: part.k,
                 mirrorX: part.mirrorX,
                 mirrorZ: part.mirrorZ,
+                color: part.color
             }
             let track = this.trackFactory.createTrack(part.name, prop);
             if (track) {

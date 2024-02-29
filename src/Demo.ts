@@ -643,4 +643,21 @@ var testNote = {
     ],
 };
 
-var testChallenge = {"balls":[{"x":0.003999999664723874,"y":-0.061500001311302184,"z":0},{"x":-0.24988589180907558,"y":0.1936933746784428,"z":1.3877787807814457e-16}],"parts":[{"name":"ramp-2.0.3","i":-2,"j":2,"k":0,"mirrorX":false,"mirrorZ":true},{"name":"uturn-0.3","i":-3,"j":2,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-1.1.1","i":-2,"j":1,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"uturn-0.4","i":-3,"j":0,"k":0,"mirrorX":true,"mirrorZ":false},{"name":"ramp-1.0.1","i":-1,"j":0,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"uturn-1.4","i":-1,"j":0,"k":0,"mirrorX":false,"mirrorZ":true},{"name":"elevator-3","i":0,"j":-1,"k":0,"mirrorX":false,"mirrorZ":false},{"name":"end","i":0,"j":-4,"k":0,"mirrorZ":false},{"name":"start","i":-2,"j":-6,"k":0,"mirrorZ":false},{"name":"ramp-1.2.1","i":-1,"j":-6,"k":0,"mirrorX":false,"mirrorZ":false}]}
+var testChallenge = {
+    balls: [
+        { x: 0.003999999664723874, y: -0.061500001311302184, z: 0 },
+        { x: -0.24988589180907558, y: 0.1936933746784428, z: 1.3877787807814457e-16 },
+    ],
+    parts: [
+        { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
+        { name: "uturn-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
+        { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "end", i: 0, j: -4, k: 0, mirrorZ: false, color: 1 },
+        { name: "start", i: -2, j: -6, k: 0, mirrorZ: false, color: 0 },
+        { name: "ramp-1.2.1", i: -1, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+    ],
+};

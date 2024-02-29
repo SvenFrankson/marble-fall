@@ -33,6 +33,9 @@ class MachinePartEditorMenu {
     public nPlusButton: HTMLButtonElement;
     public nMinusButton: HTMLButtonElement;
     public nValue: HTMLSpanElement;
+    public colorPlusButton: HTMLButtonElement;
+    public colorMinusButton: HTMLButtonElement;
+    public colorValue: HTMLSpanElement;
     public mirrorXButton: HTMLButtonElement;
     public mirrorZButton: HTMLButtonElement;
     public fillButton: HTMLButtonElement;
@@ -180,6 +183,28 @@ class MachinePartEditorMenu {
         }
 
         this.nValue = document.querySelector("#machine-editor-part-menu-count .value") as HTMLSpanElement;
+    
+        this.colorPlusButton = document.querySelector("#machine-editor-part-menu-color button.plus") as HTMLButtonElement;
+        this.colorPlusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart) {
+                let color = (this.currentObject.color + 1) % this.currentObject.game.metalMaterialsCount;
+    
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
+        }
+
+        this.colorMinusButton = document.querySelector("#machine-editor-part-menu-color button.minus") as HTMLButtonElement;
+        this.colorMinusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart) {
+                let color = (this.currentObject.color - 1) % this.currentObject.game.metalMaterialsCount;
+    
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
+        }
+
+        this.colorValue = document.querySelector("#machine-editor-part-menu-color .value") as HTMLSpanElement;
 
         this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX") as HTMLDivElement;
 
@@ -255,6 +280,7 @@ class MachinePartEditorMenu {
                     this.hValue.innerText = this.currentObject.h.toFixed(0);
                     this.dValue.innerText = this.currentObject.d.toFixed(0);
                     this.nValue.innerText = this.currentObject.n.toFixed(0);
+                    this.colorValue.innerText = this.currentObject.color.toFixed(0);
                 }
                 else if (this.currentObject instanceof Ball) {
                     this.titleElement.innerText = "Marble";

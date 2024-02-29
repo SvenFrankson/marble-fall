@@ -11,6 +11,8 @@ class TrackTemplate {
     public preferedStartBank: number = 0;
     public preferedEndBank: number = 0;
 
+    public colorOffset: number = 0;
+
     public summedLength: number[] = [0];
     public totalLength: number = 0
     public globalSlope: number = 0;

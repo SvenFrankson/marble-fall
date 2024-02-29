@@ -53,10 +53,9 @@ class MachinePart extends BABYLON.Mesh {
 
     public wireSize: number = 0.0015;
     public wireGauge: number = 0.014;
-    public renderOnlyPath: boolean = false;
 
     public color: number = 0;
-    public sleepersMesh: BABYLON.Mesh;
+    public sleepersMeshes: Map<number, BABYLON.Mesh> = new Map<number, BABYLON.Mesh>();
     public selectorMesh: MachinePartSelectorMesh;
     public encloseMesh: BABYLON.Mesh;
 
@@ -150,6 +149,9 @@ class MachinePart extends BABYLON.Mesh {
         this._i = prop.i;
         this._j = prop.j;
         this._k = prop.k;
+        if (isFinite(prop.color)) {
+            this.color = prop.color
+        }
         
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
@@ -168,9 +170,9 @@ class MachinePart extends BABYLON.Mesh {
             this.position.x = this._i * tileWidth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
-            if (this.sleepersMesh) {
-                this.sleepersMesh.freezeWorldMatrix();
-            }
+            this.getChildMeshes().forEach(m => {
+                m.freezeWorldMatrix();
+            })
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -185,9 +187,9 @@ class MachinePart extends BABYLON.Mesh {
             this.position.y = - this._j * tileHeight;
             this.isPlaced = true;
             this.freezeWorldMatrix();
-            if (this.sleepersMesh) {
-                this.sleepersMesh.freezeWorldMatrix();
-            }
+            this.getChildMeshes().forEach(m => {
+                m.freezeWorldMatrix();
+            })
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -202,9 +204,9 @@ class MachinePart extends BABYLON.Mesh {
             this.position.z = - this._k * tileDepth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
-            if (this.sleepersMesh) {
-                this.sleepersMesh.freezeWorldMatrix();
-            }
+            this.getChildMeshes().forEach(m => {
+                m.freezeWorldMatrix();
+            })
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -291,13 +293,6 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public async instantiate(rebuildNeighboursWireMeshes?: boolean): Promise<void> {
-        if (this.sleepersMesh) {
-            this.sleepersMesh.dispose();
-        }
-        this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
-        this.sleepersMesh.material = this.game.metalMaterials[this.color % this.game.metalMaterialsCount];
-        this.sleepersMesh.parent = this;
-
         let datas: BABYLON.VertexData[] = [];
         for (let n = 0; n < this.tracks.length; n++) {
             let points = [...this.tracks[n].templateInterpolatedPoints].map(p => { return p.clone()});
@@ -395,68 +390,52 @@ class MachinePart extends BABYLON.Mesh {
     public update(dt: number): void {}
 
     public rebuildWireMeshes(rebuildNeighboursWireMeshes?: boolean): void {
-        if (this.renderOnlyPath) {
-            let n = 8;
-            let shape: BABYLON.Vector3[] = [];
-            for (let i = 0; i < n; i++) {
-                let a = i / n * 2 * Math.PI;
-                let cosa = Math.cos(a);
-                let sina = Math.sin(a);
-                shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
+        let neighboursToUpdate: MachinePart[];
+        if (rebuildNeighboursWireMeshes) {
+            neighboursToUpdate = this.neighbours.cloneAsArray();
+            for (let i = 0; i < neighboursToUpdate.length; i++) {
+                neighboursToUpdate[i].rebuildWireMeshes();
             }
-
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].templateInterpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-            let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
-            vertexData.applyToMesh(this.sleepersMesh);
-            tmp.dispose();
-            
-            this.allWires.forEach(wire => {
-                wire.hide();
-            })
         }
-        else {
-            let neighboursToUpdate: MachinePart[];
-            if (rebuildNeighboursWireMeshes) {
-                neighboursToUpdate = this.neighbours.cloneAsArray();
-                for (let i = 0; i < neighboursToUpdate.length; i++) {
-                    neighboursToUpdate[i].rebuildWireMeshes();
+
+        this.allWires.forEach(wire => {
+            wire.show();
+        })
+        
+        this.removeAllNeighbours();
+        this.tracks.forEach(track => {
+            track.recomputeWiresPath();
+            track.recomputeAbsolutePath();
+            track.wires.forEach(wire => {
+                wire.instantiate(this.color + track.template.colorOffset);
+            })
+        })
+        this.wires.forEach(wire => {
+            wire.instantiate(this.color);
+        })
+        
+        requestAnimationFrame(() => {
+            let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
+            datas.forEach((vData, colorIndex) => {
+                if (!this.sleepersMeshes.get(colorIndex)) {
+                    let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
+                    sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
+                    sleeperMesh.parent = this;
+                    vData.applyToMesh(sleeperMesh);
+                    this.sleepersMeshes.set(colorIndex, sleeperMesh);
+                    sleeperMesh.freezeWorldMatrix();
                 }
+            });
+            this.machine.requestUpdateShadow = true;
+            if (this.game.DEBUG_MODE) {
+                console.log(this.partName + " tricount " + this.getTriCount());
             }
+        })
 
-            this.allWires.forEach(wire => {
-                wire.show();
-            })
-            
-            this.removeAllNeighbours();
-            this.tracks.forEach(track => {
-                if (track.template) {
-                    track.recomputeWiresPath();
-                    track.recomputeAbsolutePath();
-                }
-                track.wires.forEach(wire => {
-                    wire.instantiate();
-                })
-            })
-            this.wires.forEach(wire => {
-                wire.instantiate();
-            })
-            
-            requestAnimationFrame(() => {
-                if (!this.sleepersMesh.isDisposed()) {
-                    SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
-                    this.sleepersMesh.freezeWorldMatrix();
-                    this.machine.requestUpdateShadow = true;
-                    if (this.game.DEBUG_MODE) {
-                        console.log(this.partName + " tricount " + this.getTriCount());
-                    }
-                }
-            })
-
-            if (rebuildNeighboursWireMeshes) {
-                neighboursToUpdate = this.neighbours.cloneAsArray();
-                for (let i = 0; i < neighboursToUpdate.length; i++) {
-                    neighboursToUpdate[i].rebuildWireMeshes();
-                }
+        if (rebuildNeighboursWireMeshes) {
+            neighboursToUpdate = this.neighbours.cloneAsArray();
+            for (let i = 0; i < neighboursToUpdate.length; i++) {
+                neighboursToUpdate[i].rebuildWireMeshes();
             }
         }
         this.freezeWorldMatrix();

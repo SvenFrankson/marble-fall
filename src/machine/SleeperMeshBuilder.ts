@@ -7,7 +7,7 @@ interface ISleeperMeshProps {
 
 class SleeperMeshBuilder {
 
-    public static GenerateSleepersVertexData(part: MachinePart, props: ISleeperMeshProps): BABYLON.VertexData {
+    public static GenerateSleepersVertexData(part: MachinePart, props: ISleeperMeshProps): Map<number, BABYLON.VertexData> {
         if (!isFinite(props.spacing)) {
             props.spacing = 0.03;
         }
@@ -16,10 +16,11 @@ class SleeperMeshBuilder {
         }
 
         let q = part.game.config.graphicQ;
-        let partialsDatas: BABYLON.VertexData[] = [];
+        let partialsDatas: BABYLON.VertexData[][] = [];
 
         for (let j = 0; j < part.tracks.length; j++) {
-            let interpolatedPoints = part.tracks[j].templateInterpolatedPoints;
+            let track = part.tracks[j];
+            let interpolatedPoints = track.templateInterpolatedPoints;
             let summedLength: number[] = [0];
             for (let i = 1; i < interpolatedPoints.length; i++) {
                 let prev = interpolatedPoints[i - 1];
@@ -97,7 +98,7 @@ class SleeperMeshBuilder {
         
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    let up = part.tracks[j].trackInterpolatedNormals[i];
+                    let up = track.trackInterpolatedNormals[i];
                     Mummu.QuaternionFromYZAxisToRef(up, dir, quat);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     
@@ -106,7 +107,11 @@ class SleeperMeshBuilder {
                     }
         
                     let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                    if (!partialsDatas[colorIndex]) {
+                        partialsDatas[colorIndex] = [];
+                    }
+                    partialsDatas[colorIndex].push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
 
                     if (props.drawWallAnchors) {
@@ -142,7 +147,11 @@ class SleeperMeshBuilder {
                             }
                             
                             let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                            partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                            let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                            if (!partialsDatas[colorIndex]) {
+                                partialsDatas[colorIndex] = [];
+                            }
+                            partialsDatas[colorIndex].push(BABYLON.VertexData.ExtractFromMesh(tmp));
                             tmp.dispose();
     
                             let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
@@ -150,7 +159,7 @@ class SleeperMeshBuilder {
                             Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
                             Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
                             Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
-                            partialsDatas.push(tmpVertexData);
+                            partialsDatas[colorIndex].push(tmpVertexData);
                             tmp.dispose();
     
                         }
@@ -175,12 +184,16 @@ class SleeperMeshBuilder {
                                     let fixationPath: BABYLON.Vector3[] = [anchor, anchorBase];
                                     
                                     let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                                    if (!partialsDatas[colorIndex]) {
+                                        partialsDatas[colorIndex] = [];
+                                    }
+                                    partialsDatas[colorIndex].push(BABYLON.VertexData.ExtractFromMesh(tmp));
                                     tmp.dispose();
             
                                     let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.002, diameter: 0.008, tessellation: 8 });
                                     Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorBase);
-                                    partialsDatas.push(tmpVertexData);
+                                    partialsDatas[colorIndex].push(tmpVertexData);
                                     tmp.dispose();
                                 }
                             }
@@ -191,6 +204,12 @@ class SleeperMeshBuilder {
             }
         }
         
-        return Mummu.MergeVertexDatas(...partialsDatas);
+        let datas = new Map<number, BABYLON.VertexData>();
+        for (let i = 0; i < partialsDatas.length; i++) {
+            if (partialsDatas[i]) {
+                datas.set(i, Mummu.MergeVertexDatas(...partialsDatas[i]))
+            }
+        }
+        return datas;
     }
 }

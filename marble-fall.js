@@ -1052,7 +1052,24 @@ var testNote = {
         { name: "uturn-0.3", i: 5, j: -2, k: 0 },
     ],
 };
-var testChallenge = { "balls": [{ "x": 0.003999999664723874, "y": -0.061500001311302184, "z": 0 }, { "x": -0.24988589180907558, "y": 0.1936933746784428, "z": 1.3877787807814457e-16 }], "parts": [{ "name": "ramp-2.0.3", "i": -2, "j": 2, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "uturn-0.3", "i": -3, "j": 2, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.1.1", "i": -2, "j": 1, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "uturn-0.4", "i": -3, "j": 0, "k": 0, "mirrorX": true, "mirrorZ": false }, { "name": "ramp-1.0.1", "i": -1, "j": 0, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "uturn-1.4", "i": -1, "j": 0, "k": 0, "mirrorX": false, "mirrorZ": true }, { "name": "elevator-3", "i": 0, "j": -1, "k": 0, "mirrorX": false, "mirrorZ": false }, { "name": "end", "i": 0, "j": -4, "k": 0, "mirrorZ": false }, { "name": "start", "i": -2, "j": -6, "k": 0, "mirrorZ": false }, { "name": "ramp-1.2.1", "i": -1, "j": -6, "k": 0, "mirrorX": false, "mirrorZ": false }] };
+var testChallenge = {
+    balls: [
+        { x: 0.003999999664723874, y: -0.061500001311302184, z: 0 },
+        { x: -0.24988589180907558, y: 0.1936933746784428, z: 1.3877787807814457e-16 },
+    ],
+    parts: [
+        { name: "ramp-2.0.3", i: -2, j: 2, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
+        { name: "uturn-0.3", i: -3, j: 2, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-1.1.1", i: -2, j: 1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
+        { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "end", i: 0, j: -4, k: 0, mirrorZ: false, color: 1 },
+        { name: "start", i: -2, j: -6, k: 0, mirrorZ: false, color: 0 },
+        { name: "ramp-1.2.1", i: -1, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2025,10 +2042,9 @@ class Tools {
     }
 }
 class Wire extends BABYLON.Mesh {
-    constructor(track, color = 0) {
+    constructor(track) {
         super("wire");
         this.track = track;
-        this.color = color;
         this.path = [];
         this.normals = [];
         this.absolutePath = [];
@@ -2067,7 +2083,7 @@ class Wire extends BABYLON.Mesh {
             BABYLON.Vector3.TransformCoordinatesToRef(this.path[i], this.getWorldMatrix(), this.absolutePath[i]);
         }
     }
-    async instantiate() {
+    async instantiate(color = 0) {
         let q = this.track.game.config.graphicQ;
         while (this.getChildren().length > 0) {
             this.getChildren()[0].dispose();
@@ -2126,7 +2142,7 @@ class Wire extends BABYLON.Mesh {
             }
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
-            wire.material = this.track.game.metalMaterials[this.color % this.track.game.metalMaterialsCount];
+            wire.material = this.track.game.metalMaterials[color % this.track.game.metalMaterialsCount];
         }
         if (Wire.DEBUG_DISPLAY) {
             for (let i = 0; i < this.path.length - 1; i++) {
@@ -2459,7 +2475,8 @@ class Machine {
                 j: this.parts[i].j,
                 k: this.parts[i].k,
                 mirrorX: this.parts[i].mirrorX,
-                mirrorZ: this.parts[i].mirrorZ
+                mirrorZ: this.parts[i].mirrorZ,
+                color: this.parts[i].color
             });
         }
         return data;
@@ -2480,6 +2497,7 @@ class Machine {
                 k: part.k,
                 mirrorX: part.mirrorX,
                 mirrorZ: part.mirrorZ,
+                color: part.color
             };
             let track = this.trackFactory.createTrack(part.name, prop);
             if (track) {
@@ -2551,8 +2569,8 @@ class MachinePart extends BABYLON.Mesh {
         this.allWires = [];
         this.wireSize = 0.0015;
         this.wireGauge = 0.014;
-        this.renderOnlyPath = false;
         this.color = 0;
+        this.sleepersMeshes = new Map();
         this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
@@ -2571,6 +2589,9 @@ class MachinePart extends BABYLON.Mesh {
         this._i = prop.i;
         this._j = prop.j;
         this._k = prop.k;
+        if (isFinite(prop.color)) {
+            this.color = prop.color;
+        }
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.position.z = -this._k * tileDepth;
@@ -2658,9 +2679,9 @@ class MachinePart extends BABYLON.Mesh {
             this.position.x = this._i * tileWidth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
-            if (this.sleepersMesh) {
-                this.sleepersMesh.freezeWorldMatrix();
-            }
+            this.getChildMeshes().forEach(m => {
+                m.freezeWorldMatrix();
+            });
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -2673,9 +2694,9 @@ class MachinePart extends BABYLON.Mesh {
             this.position.y = -this._j * tileHeight;
             this.isPlaced = true;
             this.freezeWorldMatrix();
-            if (this.sleepersMesh) {
-                this.sleepersMesh.freezeWorldMatrix();
-            }
+            this.getChildMeshes().forEach(m => {
+                m.freezeWorldMatrix();
+            });
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -2688,9 +2709,9 @@ class MachinePart extends BABYLON.Mesh {
             this.position.z = -this._k * tileDepth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
-            if (this.sleepersMesh) {
-                this.sleepersMesh.freezeWorldMatrix();
-            }
+            this.getChildMeshes().forEach(m => {
+                m.freezeWorldMatrix();
+            });
             this.machine.requestUpdateShadow = true;
         }
     }
@@ -2763,12 +2784,6 @@ class MachinePart extends BABYLON.Mesh {
         });
     }
     async instantiate(rebuildNeighboursWireMeshes) {
-        if (this.sleepersMesh) {
-            this.sleepersMesh.dispose();
-        }
-        this.sleepersMesh = new BABYLON.Mesh("sleepers-mesh");
-        this.sleepersMesh.material = this.game.metalMaterials[this.color % this.game.metalMaterialsCount];
-        this.sleepersMesh.parent = this;
         let datas = [];
         for (let n = 0; n < this.tracks.length; n++) {
             let points = [...this.tracks[n].templateInterpolatedPoints].map(p => { return p.clone(); });
@@ -2857,62 +2872,48 @@ class MachinePart extends BABYLON.Mesh {
     }
     update(dt) { }
     rebuildWireMeshes(rebuildNeighboursWireMeshes) {
-        if (this.renderOnlyPath) {
-            let n = 8;
-            let shape = [];
-            for (let i = 0; i < n; i++) {
-                let a = i / n * 2 * Math.PI;
-                let cosa = Math.cos(a);
-                let sina = Math.sin(a);
-                shape[i] = new BABYLON.Vector3(cosa * this.wireSize * 0.5, sina * this.wireSize * 0.5, 0);
+        let neighboursToUpdate;
+        if (rebuildNeighboursWireMeshes) {
+            neighboursToUpdate = this.neighbours.cloneAsArray();
+            for (let i = 0; i < neighboursToUpdate.length; i++) {
+                neighboursToUpdate[i].rebuildWireMeshes();
             }
-            let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: this.tracks[0].templateInterpolatedPoints, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-            let vertexData = BABYLON.VertexData.ExtractFromMesh(tmp);
-            vertexData.applyToMesh(this.sleepersMesh);
-            tmp.dispose();
-            this.allWires.forEach(wire => {
-                wire.hide();
-            });
         }
-        else {
-            let neighboursToUpdate;
-            if (rebuildNeighboursWireMeshes) {
-                neighboursToUpdate = this.neighbours.cloneAsArray();
-                for (let i = 0; i < neighboursToUpdate.length; i++) {
-                    neighboursToUpdate[i].rebuildWireMeshes();
+        this.allWires.forEach(wire => {
+            wire.show();
+        });
+        this.removeAllNeighbours();
+        this.tracks.forEach(track => {
+            track.recomputeWiresPath();
+            track.recomputeAbsolutePath();
+            track.wires.forEach(wire => {
+                wire.instantiate(this.color + track.template.colorOffset);
+            });
+        });
+        this.wires.forEach(wire => {
+            wire.instantiate(this.color);
+        });
+        requestAnimationFrame(() => {
+            let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
+            datas.forEach((vData, colorIndex) => {
+                if (!this.sleepersMeshes.get(colorIndex)) {
+                    let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
+                    sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
+                    sleeperMesh.parent = this;
+                    vData.applyToMesh(sleeperMesh);
+                    this.sleepersMeshes.set(colorIndex, sleeperMesh);
+                    sleeperMesh.freezeWorldMatrix();
                 }
+            });
+            this.machine.requestUpdateShadow = true;
+            if (this.game.DEBUG_MODE) {
+                console.log(this.partName + " tricount " + this.getTriCount());
             }
-            this.allWires.forEach(wire => {
-                wire.show();
-            });
-            this.removeAllNeighbours();
-            this.tracks.forEach(track => {
-                if (track.template) {
-                    track.recomputeWiresPath();
-                    track.recomputeAbsolutePath();
-                }
-                track.wires.forEach(wire => {
-                    wire.instantiate();
-                });
-            });
-            this.wires.forEach(wire => {
-                wire.instantiate();
-            });
-            requestAnimationFrame(() => {
-                if (!this.sleepersMesh.isDisposed()) {
-                    SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 }).applyToMesh(this.sleepersMesh);
-                    this.sleepersMesh.freezeWorldMatrix();
-                    this.machine.requestUpdateShadow = true;
-                    if (this.game.DEBUG_MODE) {
-                        console.log(this.partName + " tricount " + this.getTriCount());
-                    }
-                }
-            });
-            if (rebuildNeighboursWireMeshes) {
-                neighboursToUpdate = this.neighbours.cloneAsArray();
-                for (let i = 0; i < neighboursToUpdate.length; i++) {
-                    neighboursToUpdate[i].rebuildWireMeshes();
-                }
+        });
+        if (rebuildNeighboursWireMeshes) {
+            neighboursToUpdate = this.neighbours.cloneAsArray();
+            for (let i = 0; i < neighboursToUpdate.length; i++) {
+                neighboursToUpdate[i].rebuildWireMeshes();
             }
         }
         this.freezeWorldMatrix();
@@ -2966,7 +2967,9 @@ class MachinePartFactory {
             whdn += props.n.toFixed(0) + ".";
         }
         whdn = whdn.substring(0, whdn.length - 1);
-        trackname += "-" + whdn;
+        if (whdn.length > 0) {
+            trackname += "-" + whdn;
+        }
         return this.createTrack(trackname, props);
     }
     createTrack(trackname, prop) {
@@ -3075,7 +3078,8 @@ class SleeperMeshBuilder {
         let q = part.game.config.graphicQ;
         let partialsDatas = [];
         for (let j = 0; j < part.tracks.length; j++) {
-            let interpolatedPoints = part.tracks[j].templateInterpolatedPoints;
+            let track = part.tracks[j];
+            let interpolatedPoints = track.templateInterpolatedPoints;
             let summedLength = [0];
             for (let i = 1; i < interpolatedPoints.length; i++) {
                 let prev = interpolatedPoints[i - 1];
@@ -3147,14 +3151,18 @@ class SleeperMeshBuilder {
                     let path = basePath.map(v => { return v.clone(); });
                     let dir = interpolatedPoints[i + 1].subtract(interpolatedPoints[i - 1]).normalize();
                     let t = interpolatedPoints[i];
-                    let up = part.tracks[j].trackInterpolatedNormals[i];
+                    let up = track.trackInterpolatedNormals[i];
                     Mummu.QuaternionFromYZAxisToRef(up, dir, quat);
                     let m = BABYLON.Matrix.Compose(BABYLON.Vector3.One(), quat, t);
                     for (let j = 0; j < path.length; j++) {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
                     }
                     let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                    if (!partialsDatas[colorIndex]) {
+                        partialsDatas[colorIndex] = [];
+                    }
+                    partialsDatas[colorIndex].push(BABYLON.VertexData.ExtractFromMesh(tmp));
                     tmp.dispose();
                     if (props.drawWallAnchors) {
                         let addAnchor = false;
@@ -3187,14 +3195,18 @@ class SleeperMeshBuilder {
                                 fixationPath[i].addInPlace(anchorCenter);
                             }
                             let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                            partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                            let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                            if (!partialsDatas[colorIndex]) {
+                                partialsDatas[colorIndex] = [];
+                            }
+                            partialsDatas[colorIndex].push(BABYLON.VertexData.ExtractFromMesh(tmp));
                             tmp.dispose();
                             let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.001, diameter: 0.01 });
                             let quat = BABYLON.Quaternion.Identity();
                             Mummu.QuaternionFromYZAxisToRef(new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 1, 0), quat);
                             Mummu.RotateVertexDataInPlace(tmpVertexData, quat);
                             Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorWall);
-                            partialsDatas.push(tmpVertexData);
+                            partialsDatas[colorIndex].push(tmpVertexData);
                             tmp.dispose();
                         }
                     }
@@ -3215,11 +3227,15 @@ class SleeperMeshBuilder {
                                 if (!pick.hit) {
                                     let fixationPath = [anchor, anchorBase];
                                     let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                                    partialsDatas.push(BABYLON.VertexData.ExtractFromMesh(tmp));
+                                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                                    if (!partialsDatas[colorIndex]) {
+                                        partialsDatas[colorIndex] = [];
+                                    }
+                                    partialsDatas[colorIndex].push(BABYLON.VertexData.ExtractFromMesh(tmp));
                                     tmp.dispose();
                                     let tmpVertexData = BABYLON.CreateCylinderVertexData({ height: 0.002, diameter: 0.008, tessellation: 8 });
                                     Mummu.TranslateVertexDataInPlace(tmpVertexData, anchorBase);
-                                    partialsDatas.push(tmpVertexData);
+                                    partialsDatas[colorIndex].push(tmpVertexData);
                                     tmp.dispose();
                                 }
                             }
@@ -3229,7 +3245,13 @@ class SleeperMeshBuilder {
                 }
             }
         }
-        return Mummu.MergeVertexDatas(...partialsDatas);
+        let datas = new Map();
+        for (let i = 0; i < partialsDatas.length; i++) {
+            if (partialsDatas[i]) {
+                datas.set(i, Mummu.MergeVertexDatas(...partialsDatas[i]));
+            }
+        }
+        return datas;
     }
 }
 class TrackTemplate {
@@ -3243,6 +3265,7 @@ class TrackTemplate {
         this.drawEndTip = false;
         this.preferedStartBank = 0;
         this.preferedEndBank = 0;
+        this.colorOffset = 0;
         this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
@@ -5477,6 +5500,23 @@ class MachinePartEditorMenu {
             }
         };
         this.nValue = document.querySelector("#machine-editor-part-menu-count .value");
+        this.colorPlusButton = document.querySelector("#machine-editor-part-menu-color button.plus");
+        this.colorPlusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart) {
+                let color = (this.currentObject.color + 1) % this.currentObject.game.metalMaterialsCount;
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
+        };
+        this.colorMinusButton = document.querySelector("#machine-editor-part-menu-color button.minus");
+        this.colorMinusButton.onclick = async () => {
+            if (this.currentObject instanceof MachinePart) {
+                let color = (this.currentObject.color - 1) % this.currentObject.game.metalMaterialsCount;
+                let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
+                this.machineEditor.setSelectedObject(editedTrack);
+            }
+        };
+        this.colorValue = document.querySelector("#machine-editor-part-menu-color .value");
         this.mirrorXLine = document.getElementById("machine-editor-part-menu-mirrorX");
         this.mirrorXButton = document.querySelector("#machine-editor-part-menu-mirrorX button");
         this.mirrorXButton.onclick = async () => {
@@ -5539,6 +5579,7 @@ class MachinePartEditorMenu {
                     this.hValue.innerText = this.currentObject.h.toFixed(0);
                     this.dValue.innerText = this.currentObject.d.toFixed(0);
                     this.nValue.innerText = this.currentObject.n.toFixed(0);
+                    this.colorValue.innerText = this.currentObject.color.toFixed(0);
                 }
                 else if (this.currentObject instanceof Ball) {
                     this.titleElement.innerText = "Marble";
@@ -5764,6 +5805,7 @@ class End extends MachinePart {
             new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.1, -0.01, 0), Tools.V3Dir(120))
         ];
         template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].colorOffset = 1;
         template.trackTemplates[1].trackpoints = [
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + 1.5 * r, 0), Tools.V3Dir(180), Tools.V3Dir(90)),
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + r, 0), Tools.V3Dir(180)),

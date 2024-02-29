@@ -28,6 +28,7 @@ class End extends MachinePart {
         ];
 
         template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].colorOffset = 1;
         template.trackTemplates[1].trackpoints = [
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + 1.5 * r, 0), Tools.V3Dir(180), Tools.V3Dir(90)),
             new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(x0 - w, y0 + r, 0), Tools.V3Dir(180)),

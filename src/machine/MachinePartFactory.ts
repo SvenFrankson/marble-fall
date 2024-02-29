@@ -53,7 +53,9 @@ class MachinePartFactory {
             whdn += props.n.toFixed(0) + ".";
         }
         whdn = whdn.substring(0, whdn.length - 1);
-        trackname += "-" + whdn;
+        if (whdn.length > 0) {
+            trackname += "-" + whdn;
+        }
         return this.createTrack(trackname, props);
     }
 
