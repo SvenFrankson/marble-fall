@@ -1065,7 +1065,7 @@ var testChallenge = {
         { name: "ramp-1.0.1", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
         { name: "uturn-1.4", i: -1, j: 0, k: 0, mirrorX: false, mirrorZ: true, color: 0 },
         { name: "elevator-3", i: 0, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "end", i: 0, j: -4, k: 0, mirrorZ: false, color: 1 },
+        { name: "end", i: 0, j: -4, k: 0, mirrorZ: false, color: 0 },
         { name: "start", i: -2, j: -6, k: 0, mirrorZ: false, color: 0 },
         { name: "ramp-1.2.1", i: -1, j: -6, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
     ],
@@ -5062,7 +5062,8 @@ class MachineEditor {
             i: track.i,
             j: track.j,
             k: track.k,
-            mirrorX: track.mirrorX
+            mirrorX: !track.mirrorX,
+            mirrorZ: track.mirrorZ
         });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
@@ -5077,7 +5078,8 @@ class MachineEditor {
             i: track.i,
             j: track.j,
             k: track.k,
-            mirrorX: track.mirrorX
+            mirrorX: track.mirrorX,
+            mirrorZ: !track.mirrorZ
         });
         track.dispose();
         this.machine.parts.push(mirroredTrack);

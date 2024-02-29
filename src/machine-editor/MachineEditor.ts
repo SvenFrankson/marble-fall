@@ -989,7 +989,8 @@ class MachineEditor {
             i: track.i,
             j: track.j,
             k: track.k,
-            mirrorX: track.mirrorX
+            mirrorX: !track.mirrorX,
+            mirrorZ: track.mirrorZ
         });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
@@ -1005,7 +1006,8 @@ class MachineEditor {
             i: track.i,
             j: track.j,
             k: track.k,
-            mirrorX: track.mirrorX
+            mirrorX: track.mirrorX,
+            mirrorZ: !track.mirrorZ
         });
         track.dispose();
         this.machine.parts.push(mirroredTrack);
