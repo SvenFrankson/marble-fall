@@ -151,7 +151,6 @@ class Machine {
             this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
             this.baseWall.position.z += 0.016;
             this.baseWall.rotation.z = Math.PI / 2;
-            this.baseWall.material = this.game.materials.woodMaterial;
 
             if (this.baseFrame) {
                 this.baseFrame.dispose();

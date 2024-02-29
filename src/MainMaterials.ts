@@ -4,13 +4,11 @@ class MainMaterials {
     public getMetalMaterial(colorIndex: number): BABYLON.PBRMetallicRoughnessMaterial {
         return this.metalMaterials[colorIndex % this.metalMaterials.length];
     }
-    public woodMaterial: BABYLON.StandardMaterial;
     public velvetMaterial: BABYLON.StandardMaterial;
     public logoMaterial: BABYLON.StandardMaterial;
     public baseAxisMaterial: BABYLON.StandardMaterial;
     public leatherMaterial: BABYLON.StandardMaterial;
     public whiteMaterial: BABYLON.StandardMaterial;
-    public deepBlackMaterial: BABYLON.StandardMaterial;
     public paintingLight: BABYLON.StandardMaterial;
     public handleMaterial: BABYLON.StandardMaterial;
     public ghostMaterial: BABYLON.StandardMaterial;
@@ -19,7 +17,6 @@ class MainMaterials {
     public redMaterial: BABYLON.StandardMaterial;
     public greenMaterial: BABYLON.StandardMaterial;
     public blueMaterial: BABYLON.StandardMaterial;
-    public uiMaterial: BABYLON.StandardMaterial;
 
     constructor(public game: Game) {
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
@@ -56,11 +53,6 @@ class MainMaterials {
         this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
 
-        this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
-        this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
-        this.uiMaterial.emissiveColor.copyFromFloats(1, 1, 1);
-        this.uiMaterial.specularColor.copyFromFloats(0, 0, 0);
-
         let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.game.scene);
         steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
         steelMaterial.metallic = 1.0;
@@ -95,14 +87,6 @@ class MainMaterials {
         this.baseAxisMaterial.useAlphaFromDiffuseTexture = true;
         this.baseAxisMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         
-        this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
-        this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
-        //this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-        //this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-        //this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
-        this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        //this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
-        
         this.leatherMaterial = new BABYLON.StandardMaterial("leather-material");
         this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
         this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
@@ -110,10 +94,6 @@ class MainMaterials {
         this.whiteMaterial = new BABYLON.StandardMaterial("white-material");
         this.whiteMaterial.diffuseColor.copyFromFloats(0.9, 0.95, 1).scaleInPlace(0.9);
         this.whiteMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        
-        this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
-        this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
-        this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
 
         this.paintingLight = new BABYLON.StandardMaterial("autolit-material");
         this.paintingLight.diffuseColor.copyFromFloats(1, 1, 1);
