@@ -10,7 +10,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
         super("machine-editor-grid");
         
         this.opaquePlane = BABYLON.MeshBuilder.CreatePlane("machine-editor-opaque-grid", { size: 100 });
-        this.opaquePlane.material = this.editor.game.gridMaterial;
+        this.opaquePlane.material = this.editor.game.materials.gridMaterial;
         this.opaquePlane.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         let count = 20;

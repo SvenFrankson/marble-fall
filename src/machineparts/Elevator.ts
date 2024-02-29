@@ -24,11 +24,11 @@ class Elevator extends MachinePart {
         ]
         this.wheels[0].position.copyFromFloats(0.030 * x, - tileHeight * (this.h + 0.35), 0);
         this.wheels[0].parent = this;
-        this.wheels[0].material = this.game.metalMaterials[0];
+        this.wheels[0].material = this.game.materials.getMetalMaterial(0);
 
         this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
         this.wheels[1].parent = this;
-        this.wheels[1].material = this.game.metalMaterials[0];
+        this.wheels[1].material = this.game.materials.getMetalMaterial(0);
 
         this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
             let vertexData = vertexDatas[0];
@@ -105,7 +105,7 @@ class Elevator extends MachinePart {
             pathCable.push(new BABYLON.Vector3(x0 - cosa * this.rWheel, y0 + sina * this.rWheel));
         }
         this.cable = BABYLON.ExtrudeShape("wire", { shape: cableShape, path: pathCable, closeShape: true, closePath: true });
-        this.cable.material = this.game.leatherMaterial;
+        this.cable.material = this.game.materials.leatherMaterial;
         this.cable.parent = this;
 
         this.generateWires();

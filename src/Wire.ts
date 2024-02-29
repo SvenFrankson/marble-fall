@@ -122,7 +122,7 @@ class Wire extends BABYLON.Mesh {
 
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
-            wire.material = this.track.game.metalMaterials[color % this.track.game.metalMaterialsCount];
+            wire.material = this.track.game.materials.getMetalMaterial(color);
         }
         
         if (Wire.DEBUG_DISPLAY) {

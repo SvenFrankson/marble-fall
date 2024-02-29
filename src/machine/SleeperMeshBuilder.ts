@@ -107,7 +107,7 @@ class SleeperMeshBuilder {
                     }
         
                     let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.materials.metalMaterials.length;
                     if (!partialsDatas[colorIndex]) {
                         partialsDatas[colorIndex] = [];
                     }
@@ -147,7 +147,7 @@ class SleeperMeshBuilder {
                             }
                             
                             let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                            let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                            let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.materials.metalMaterials.length;
                             if (!partialsDatas[colorIndex]) {
                                 partialsDatas[colorIndex] = [];
                             }
@@ -184,7 +184,7 @@ class SleeperMeshBuilder {
                                     let fixationPath: BABYLON.Vector3[] = [anchor, anchorBase];
                                     
                                     let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.materials.metalMaterials.length;
                                     if (!partialsDatas[colorIndex]) {
                                         partialsDatas[colorIndex] = [];
                                     }

@@ -98,8 +98,8 @@ class Configuration {
         if (v >= 0 && v <= 1) {
             this._gridOpacity = v;
 
-            if (this.game.gridMaterial) {
-                this.game.gridMaterial.alpha = v;
+            if (this.game.materials && this.game.materials.gridMaterial) {
+                this.game.materials.gridMaterial.alpha = v;
             }
 
             if (!skipStorage) {

@@ -311,7 +311,7 @@ class MachinePart extends BABYLON.Mesh {
             this.selectorMesh.dispose();
         }
         this.selectorMesh = new MachinePartSelectorMesh(this);
-        this.selectorMesh.material = this.game.cyanMaterial;
+        this.selectorMesh.material = this.game.materials.cyanMaterial;
         this.selectorMesh.parent = this;
         if (datas.length) {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
@@ -433,7 +433,7 @@ class MachinePart extends BABYLON.Mesh {
         datas.forEach((vData, colorIndex) => {
             if (!this.sleepersMeshes.get(colorIndex)) {
                 let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
-                sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
+                sleeperMesh.material = this.game.materials.getMetalMaterial(colorIndex);
                 sleeperMesh.parent = this;
                 this.sleepersMeshes.set(colorIndex, sleeperMesh);
             }

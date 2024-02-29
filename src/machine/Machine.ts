@@ -151,14 +151,14 @@ class Machine {
             this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
             this.baseWall.position.z += 0.016;
             this.baseWall.rotation.z = Math.PI / 2;
-            this.baseWall.material = this.game.woodMaterial;
+            this.baseWall.material = this.game.materials.woodMaterial;
 
             if (this.baseFrame) {
                 this.baseFrame.dispose();
             }
             this.baseFrame = new BABYLON.Mesh("base-frame");
             this.baseFrame.position.copyFrom(this.baseWall.position);
-            this.baseFrame.material = this.game.metalMaterials[0];
+            this.baseFrame.material = this.game.materials.metalMaterials[0];
 
             let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon")
             let data = Mummu.CloneVertexData(vertexDatas[0]);
@@ -195,7 +195,7 @@ class Machine {
             this.baseFrame.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseFrame.position.y = this.baseMeshMinY;
             this.baseFrame.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseFrame.material = this.game.whiteMaterial;
+            this.baseFrame.material = this.game.materials.whiteMaterial;
             
             let vertexDatas = await this.game.vertexDataLoader.get("./meshes/museum-stand.babylon")
             let data = Mummu.CloneVertexData(vertexDatas[0]);
@@ -228,7 +228,7 @@ class Machine {
             this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseWall.position.y = this.baseMeshMinY;
             this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseWall.material = this.game.velvetMaterial;
+            this.baseWall.material = this.game.materials.velvetMaterial;
             
             data = Mummu.CloneVertexData(vertexDatas[1]);
             let uvs = [];
@@ -287,7 +287,7 @@ class Machine {
             Mummu.TranslateVertexDataInPlace(corner2Data, new BABYLON.Vector3(- this.margin + 0.02, 0, this.margin - 0.02))
 
             Mummu.MergeVertexDatas(corner1Data, corner2Data).applyToMesh(this.baseLogo);
-            this.baseLogo.material = this.game.logoMaterial;
+            this.baseLogo.material = this.game.materials.logoMaterial;
 
             this.regenerateBaseAxis();
         }
@@ -326,7 +326,7 @@ class Machine {
             this.baseAxis.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseAxis.position.y = this.baseMeshMinY + 0.0001;
             this.baseAxis.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseAxis.material = this.game.baseAxisMaterial;
+            this.baseAxis.material = this.game.materials.baseAxisMaterial;
         }
     }
 

@@ -32,12 +32,12 @@ class Split extends MachinePart {
         let anchor = new BABYLON.Mesh("anchor");
         anchor.position.copyFromFloats(0, - tileHeight, 0);
         anchor.parent = this;
-        anchor.material = this.game.metalMaterials[0];
+        anchor.material = this.game.materials.getMetalMaterial(0);
         Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
 
         this.pivot = new BABYLON.Mesh("pivot");
         this.pivot.position.copyFromFloats(0, - tileHeight, 0);
-        this.pivot.material = this.game.metalMaterials[1];
+        this.pivot.material = this.game.materials.getMetalMaterial(1);
         this.pivot.parent = this;
         let dz = this.wireGauge * 0.5;
         this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {

@@ -80,13 +80,13 @@ class Ball extends BABYLON.Mesh {
         this.marbleLoopSound.setVolume(0);
         let data = BABYLON.CreateSphereVertexData({ diameter: this.size });
         data.applyToMesh(this);
-        this.material = this.game.metalMaterials[0];
+        this.material = this.game.materials.getMetalMaterial(0);
         if (this.positionZeroGhost) {
             this.positionZeroGhost.dispose();
         }
         this.positionZeroGhost = new BallGhost(this);
         BABYLON.CreateSphereVertexData({ diameter: this.size * 0.95 }).applyToMesh(this.positionZeroGhost);
-        this.positionZeroGhost.material = this.game.ghostMaterial;
+        this.positionZeroGhost.material = this.game.materials.ghostMaterial;
         this.positionZeroGhost.position.copyFrom(this.positionZero);
         this.positionZeroGhost.isVisible = this._showPositionZeroGhost;
         if (this.selectedMesh) {
@@ -367,8 +367,8 @@ class Configuration {
     setGridOpacity(v, skipStorage) {
         if (v >= 0 && v <= 1) {
             this._gridOpacity = v;
-            if (this.game.gridMaterial) {
-                this.game.gridMaterial.alpha = v;
+            if (this.game.materials && this.game.materials.gridMaterial) {
+                this.game.materials.gridMaterial.alpha = v;
             }
             if (!skipStorage) {
                 this.saveToLocalStorage();
@@ -1236,8 +1236,6 @@ class Game {
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
         this.physicDT = 0.0005;
-        this.metalMaterials = [];
-        this.metalMaterialsCount = 0;
         this.averagedFPS = 0;
         this.updateConfigTimeout = -1;
         this._showGraphicAutoUpdateAlertInterval = 0;
@@ -1299,7 +1297,7 @@ class Game {
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
         this.config = new Configuration(this);
         this.config.initialize();
-        //let line = BABYLON.MeshBuilder.CreateLines("zero", { points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1)]});
+        this.materials = new MainMaterials(this);
         if (this.DEBUG_MODE) {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff0000");
         }
@@ -1309,86 +1307,6 @@ class Game {
         this.spotLight = new BABYLON.SpotLight("spot-light", new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 1, this.scene);
         this.spotLight.shadowMinZ = 1;
         this.spotLight.shadowMaxZ = 3;
-        this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
-        this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-        this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.handleMaterial.alpha = 1;
-        this.ghostMaterial = new BABYLON.StandardMaterial("ghost-material");
-        this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
-        this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.ghostMaterial.alpha = 0.3;
-        this.gridMaterial = new BABYLON.StandardMaterial("grid-material");
-        this.gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-        this.gridMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.gridMaterial.alpha = this.config.gridOpacity;
-        this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
-        this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
-        this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.redMaterial = new BABYLON.StandardMaterial("red-material");
-        this.redMaterial.diffuseColor = BABYLON.Color3.FromHexString("#bf212f");
-        this.redMaterial.emissiveColor = BABYLON.Color3.FromHexString("#bf212f");
-        this.redMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.greenMaterial = new BABYLON.StandardMaterial("green-material");
-        this.greenMaterial.diffuseColor = BABYLON.Color3.FromHexString("#006f3c");
-        this.greenMaterial.emissiveColor = BABYLON.Color3.FromHexString("#006f3c");
-        this.greenMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.blueMaterial = new BABYLON.StandardMaterial("blue-material");
-        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
-        this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
-        this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
-        this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
-        this.uiMaterial.emissiveColor.copyFromFloats(1, 1, 1);
-        this.uiMaterial.specularColor.copyFromFloats(0, 0, 0);
-        let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
-        steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
-        steelMaterial.metallic = 1.0;
-        steelMaterial.roughness = 0.15;
-        steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
-        let copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.scene);
-        copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
-        copperMaterial.metallic = 1.0;
-        copperMaterial.roughness = 0.15;
-        copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.scene);
-        this.metalMaterials = [steelMaterial, copperMaterial];
-        this.metalMaterialsCount = this.metalMaterials.length;
-        this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
-        this.velvetMaterial.diffuseColor.copyFromFloats(0.75, 0.75, 0.75);
-        this.velvetMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/velvet.jpg");
-        this.velvetMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.logoMaterial = new BABYLON.StandardMaterial("logo-material");
-        this.logoMaterial.diffuseColor.copyFromFloats(1, 1, 1);
-        this.logoMaterial.diffuseTexture = new BABYLON.Texture("./datas/icons/logo-white-no-bg.png");
-        this.logoMaterial.diffuseTexture.hasAlpha = true;
-        this.logoMaterial.useAlphaFromDiffuseTexture = true;
-        this.logoMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.logoMaterial.alpha = 0.3;
-        this.baseAxisMaterial = new BABYLON.StandardMaterial("logo-material");
-        this.baseAxisMaterial.diffuseColor.copyFromFloats(1, 1, 1);
-        this.baseAxisMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/axis.png");
-        this.baseAxisMaterial.diffuseTexture.hasAlpha = true;
-        this.baseAxisMaterial.useAlphaFromDiffuseTexture = true;
-        this.baseAxisMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
-        this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
-        //this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
-        //this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
-        //this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
-        this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
-        //this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
-        this.leatherMaterial = new BABYLON.StandardMaterial("leather-material");
-        this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
-        this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.whiteMaterial = new BABYLON.StandardMaterial("white-material");
-        this.whiteMaterial.diffuseColor.copyFromFloats(0.9, 0.95, 1).scaleInPlace(0.9);
-        this.whiteMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-        this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
-        this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
-        this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.paintingLight = new BABYLON.StandardMaterial("autolit-material");
-        this.paintingLight.diffuseColor.copyFromFloats(1, 1, 1);
-        this.paintingLight.emissiveTexture = new BABYLON.Texture("./datas/textures/painting-light.png");
-        this.paintingLight.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         this.skybox = BABYLON.MeshBuilder.CreateSphere("skyBox", { diameter: 20, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
         this.skybox.layerMask = 0x10000000;
         let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
@@ -1994,6 +1912,94 @@ window.addEventListener("DOMContentLoaded", () => {
         main.animate();
     });
 });
+class MainMaterials {
+    constructor(game) {
+        this.game = game;
+        this.metalMaterials = [];
+        this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
+        this.handleMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+        this.handleMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.handleMaterial.alpha = 1;
+        this.ghostMaterial = new BABYLON.StandardMaterial("ghost-material");
+        this.ghostMaterial.diffuseColor.copyFromFloats(0.8, 0.8, 1);
+        this.ghostMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.ghostMaterial.alpha = 0.3;
+        this.gridMaterial = new BABYLON.StandardMaterial("grid-material");
+        this.gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+        this.gridMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.gridMaterial.alpha = this.game.config.gridOpacity;
+        this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
+        this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
+        this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.redMaterial = new BABYLON.StandardMaterial("red-material");
+        this.redMaterial.diffuseColor = BABYLON.Color3.FromHexString("#bf212f");
+        this.redMaterial.emissiveColor = BABYLON.Color3.FromHexString("#bf212f");
+        this.redMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.greenMaterial = new BABYLON.StandardMaterial("green-material");
+        this.greenMaterial.diffuseColor = BABYLON.Color3.FromHexString("#006f3c");
+        this.greenMaterial.emissiveColor = BABYLON.Color3.FromHexString("#006f3c");
+        this.greenMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.blueMaterial = new BABYLON.StandardMaterial("blue-material");
+        this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
+        this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
+        this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.uiMaterial = new BABYLON.StandardMaterial("ghost-material");
+        this.uiMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.uiMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.uiMaterial.specularColor.copyFromFloats(0, 0, 0);
+        let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.game.scene);
+        steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
+        steelMaterial.metallic = 1.0;
+        steelMaterial.roughness = 0.15;
+        steelMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.game.scene);
+        let copperMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.game.scene);
+        copperMaterial.baseColor = BABYLON.Color3.FromHexString("#B87333");
+        copperMaterial.metallic = 1.0;
+        copperMaterial.roughness = 0.15;
+        copperMaterial.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("./datas/environment/environmentSpecular.env", this.game.scene);
+        this.metalMaterials = [steelMaterial, copperMaterial];
+        this.velvetMaterial = new BABYLON.StandardMaterial("velvet-material");
+        this.velvetMaterial.diffuseColor.copyFromFloats(0.75, 0.75, 0.75);
+        this.velvetMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/velvet.jpg");
+        this.velvetMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.logoMaterial = new BABYLON.StandardMaterial("logo-material");
+        this.logoMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.logoMaterial.diffuseTexture = new BABYLON.Texture("./datas/icons/logo-white-no-bg.png");
+        this.logoMaterial.diffuseTexture.hasAlpha = true;
+        this.logoMaterial.useAlphaFromDiffuseTexture = true;
+        this.logoMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.logoMaterial.alpha = 0.3;
+        this.baseAxisMaterial = new BABYLON.StandardMaterial("logo-material");
+        this.baseAxisMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+        this.baseAxisMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/axis.png");
+        this.baseAxisMaterial.diffuseTexture.hasAlpha = true;
+        this.baseAxisMaterial.useAlphaFromDiffuseTexture = true;
+        this.baseAxisMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.woodMaterial = new BABYLON.StandardMaterial("wood-material");
+        this.woodMaterial.diffuseColor.copyFromFloats(0.3, 0.3, 0.3);
+        //this.woodMaterial.diffuseTexture = new BABYLON.Texture("./datas/textures/wood-color.jpg");
+        //this.woodMaterial.ambientTexture = new BABYLON.Texture("./datas/textures/wood-ambient-occlusion.jpg");
+        //this.woodMaterial.specularTexture = new BABYLON.Texture("./datas/textures/wood-roughness.jpg");
+        this.woodMaterial.specularColor.copyFromFloats(0.2, 0.2, 0.2);
+        //this.woodMaterial.bumpTexture = new BABYLON.Texture("./datas/textures/wood-normal-2.png");
+        this.leatherMaterial = new BABYLON.StandardMaterial("leather-material");
+        this.leatherMaterial.diffuseColor.copyFromFloats(0.05, 0.02, 0.02);
+        this.leatherMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.whiteMaterial = new BABYLON.StandardMaterial("white-material");
+        this.whiteMaterial.diffuseColor.copyFromFloats(0.9, 0.95, 1).scaleInPlace(0.9);
+        this.whiteMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        this.deepBlackMaterial = new BABYLON.StandardMaterial("deep-black-material");
+        this.deepBlackMaterial.diffuseColor.copyFromFloats(0, 0, 0.);
+        this.deepBlackMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.paintingLight = new BABYLON.StandardMaterial("autolit-material");
+        this.paintingLight.diffuseColor.copyFromFloats(1, 1, 1);
+        this.paintingLight.emissiveTexture = new BABYLON.Texture("./datas/textures/painting-light.png");
+        this.paintingLight.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+    }
+    getMetalMaterial(colorIndex) {
+        return this.metalMaterials[colorIndex % this.metalMaterials.length];
+    }
+}
 class Sound {
     constructor(prop) {
         if (prop) {
@@ -2142,7 +2148,7 @@ class Wire extends BABYLON.Mesh {
             }
             let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
             wire.parent = this;
-            wire.material = this.track.game.metalMaterials[color % this.track.game.metalMaterialsCount];
+            wire.material = this.track.game.materials.getMetalMaterial(color);
         }
         if (Wire.DEBUG_DISPLAY) {
             for (let i = 0; i < this.path.length - 1; i++) {
@@ -2271,13 +2277,13 @@ class Machine {
             this.baseWall.position.y = (this.baseMeshMaxY + this.baseMeshMinY) * 0.5;
             this.baseWall.position.z += 0.016;
             this.baseWall.rotation.z = Math.PI / 2;
-            this.baseWall.material = this.game.woodMaterial;
+            this.baseWall.material = this.game.materials.woodMaterial;
             if (this.baseFrame) {
                 this.baseFrame.dispose();
             }
             this.baseFrame = new BABYLON.Mesh("base-frame");
             this.baseFrame.position.copyFrom(this.baseWall.position);
-            this.baseFrame.material = this.game.metalMaterials[0];
+            this.baseFrame.material = this.game.materials.metalMaterials[0];
             let vertexDatas = await this.game.vertexDataLoader.get("./meshes/base-frame.babylon");
             let data = Mummu.CloneVertexData(vertexDatas[0]);
             let positions = [...data.positions];
@@ -2311,7 +2317,7 @@ class Machine {
             this.baseFrame.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseFrame.position.y = this.baseMeshMinY;
             this.baseFrame.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseFrame.material = this.game.whiteMaterial;
+            this.baseFrame.material = this.game.materials.whiteMaterial;
             let vertexDatas = await this.game.vertexDataLoader.get("./meshes/museum-stand.babylon");
             let data = Mummu.CloneVertexData(vertexDatas[0]);
             let positions = [...data.positions];
@@ -2341,7 +2347,7 @@ class Machine {
             this.baseWall.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseWall.position.y = this.baseMeshMinY;
             this.baseWall.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseWall.material = this.game.velvetMaterial;
+            this.baseWall.material = this.game.materials.velvetMaterial;
             data = Mummu.CloneVertexData(vertexDatas[1]);
             let uvs = [];
             positions = [...data.positions];
@@ -2392,7 +2398,7 @@ class Machine {
             });
             Mummu.TranslateVertexDataInPlace(corner2Data, new BABYLON.Vector3(-this.margin + 0.02, 0, this.margin - 0.02));
             Mummu.MergeVertexDatas(corner1Data, corner2Data).applyToMesh(this.baseLogo);
-            this.baseLogo.material = this.game.logoMaterial;
+            this.baseLogo.material = this.game.materials.logoMaterial;
             this.regenerateBaseAxis();
         }
         if (this.game.room) {
@@ -2423,7 +2429,7 @@ class Machine {
             this.baseAxis.position.x = (this.baseMeshMaxX + this.baseMeshMinX) * 0.5;
             this.baseAxis.position.y = this.baseMeshMinY + 0.0001;
             this.baseAxis.position.z = (this.baseMeshMaxZ + this.baseMeshMinZ) * 0.5;
-            this.baseAxis.material = this.game.baseAxisMaterial;
+            this.baseAxis.material = this.game.materials.baseAxisMaterial;
         }
     }
     setBaseIsVisible(v) {
@@ -2801,7 +2807,7 @@ class MachinePart extends BABYLON.Mesh {
             this.selectorMesh.dispose();
         }
         this.selectorMesh = new MachinePartSelectorMesh(this);
-        this.selectorMesh.material = this.game.cyanMaterial;
+        this.selectorMesh.material = this.game.materials.cyanMaterial;
         this.selectorMesh.parent = this;
         if (datas.length) {
             Mummu.MergeVertexDatas(...datas).applyToMesh(this.selectorMesh);
@@ -2910,7 +2916,7 @@ class MachinePart extends BABYLON.Mesh {
         datas.forEach((vData, colorIndex) => {
             if (!this.sleepersMeshes.get(colorIndex)) {
                 let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
-                sleeperMesh.material = this.game.metalMaterials[colorIndex % this.game.metalMaterialsCount];
+                sleeperMesh.material = this.game.materials.getMetalMaterial(colorIndex);
                 sleeperMesh.parent = this;
                 this.sleepersMeshes.set(colorIndex, sleeperMesh);
             }
@@ -3162,7 +3168,7 @@ class SleeperMeshBuilder {
                         BABYLON.Vector3.TransformCoordinatesToRef(path[j], m, path[j]);
                     }
                     let tmp = BABYLON.ExtrudeShape("wire", { shape: shape, path: path, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.materials.metalMaterials.length;
                     if (!partialsDatas[colorIndex]) {
                         partialsDatas[colorIndex] = [];
                     }
@@ -3199,7 +3205,7 @@ class SleeperMeshBuilder {
                                 fixationPath[i].addInPlace(anchorCenter);
                             }
                             let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                            let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                            let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.materials.metalMaterials.length;
                             if (!partialsDatas[colorIndex]) {
                                 partialsDatas[colorIndex] = [];
                             }
@@ -3231,7 +3237,7 @@ class SleeperMeshBuilder {
                                 if (!pick.hit) {
                                     let fixationPath = [anchor, anchorBase];
                                     let tmp = BABYLON.ExtrudeShape("tmp", { shape: shape, path: fixationPath, closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
-                                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.metalMaterialsCount;
+                                    let colorIndex = (track.part.color + track.template.colorOffset) % track.part.game.materials.metalMaterials.length;
                                     if (!partialsDatas[colorIndex]) {
                                         partialsDatas[colorIndex] = [];
                                     }
@@ -4825,91 +4831,91 @@ class MachineEditor {
         }
         // Ramp Origin UI
         this.originIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.originIPlusHandle.material = this.game.redMaterial;
+        this.originIPlusHandle.material = this.game.materials.redMaterial;
         this.originIPlusHandle.rotation.z = -Math.PI / 2;
         this.originIPlusHandle.instantiate();
         this.originIPlusHandle.onClick = this._onOriginIPlus;
         this.originIMinusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.originIMinusHandle.material = this.game.redMaterial;
+        this.originIMinusHandle.material = this.game.materials.redMaterial;
         this.originIMinusHandle.rotation.z = Math.PI / 2;
         this.originIMinusHandle.instantiate();
         this.originIMinusHandle.onClick = this._onOriginIMinus;
         this.originJPlusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.originJPlusHandle.material = this.game.greenMaterial;
+        this.originJPlusHandle.material = this.game.materials.greenMaterial;
         this.originJPlusHandle.rotation.z = Math.PI;
         this.originJPlusHandle.instantiate();
         this.originJPlusHandle.onClick = this._onOriginJPlus;
         this.originJMinusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.originJMinusHandle.material = this.game.greenMaterial;
+        this.originJMinusHandle.material = this.game.materials.greenMaterial;
         this.originJMinusHandle.instantiate();
         this.originJMinusHandle.onClick = this._onOriginJMinus;
         this.originKPlusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.originKPlusHandle.material = this.game.blueMaterial;
+        this.originKPlusHandle.material = this.game.materials.blueMaterial;
         this.originKPlusHandle.rotation.x = -Math.PI / 2;
         this.originKPlusHandle.instantiate();
         this.originKPlusHandle.onClick = this._onOriginKPlus;
         this.originKMinusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.originKMinusHandle.material = this.game.blueMaterial;
+        this.originKMinusHandle.material = this.game.materials.blueMaterial;
         this.originKMinusHandle.rotation.x = Math.PI / 2;
         this.originKMinusHandle.instantiate();
         this.originKMinusHandle.onClick = this._onOriginKMinus;
         // Ramp Destination UI
         this.destinationIPlusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.destinationIPlusHandle.material = this.game.redMaterial;
+        this.destinationIPlusHandle.material = this.game.materials.redMaterial;
         this.destinationIPlusHandle.rotation.z = -Math.PI / 2;
         this.destinationIPlusHandle.instantiate();
         this.destinationIPlusHandle.onClick = this._onDestinationIPlus;
         this.destinationIMinusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.destinationIMinusHandle.material = this.game.redMaterial;
+        this.destinationIMinusHandle.material = this.game.materials.redMaterial;
         this.destinationIMinusHandle.rotation.z = Math.PI / 2;
         this.destinationIMinusHandle.instantiate();
         this.destinationIMinusHandle.onClick = this._onDestinationIMinus;
         this.destinationJPlusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.destinationJPlusHandle.material = this.game.greenMaterial;
+        this.destinationJPlusHandle.material = this.game.materials.greenMaterial;
         this.destinationJPlusHandle.rotation.z = Math.PI;
         this.destinationJPlusHandle.instantiate();
         this.destinationJPlusHandle.onClick = this._onDestinationJPlus;
         this.destinationJMinusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.destinationJMinusHandle.material = this.game.greenMaterial;
+        this.destinationJMinusHandle.material = this.game.materials.greenMaterial;
         this.destinationJMinusHandle.instantiate();
         this.destinationJMinusHandle.onClick = this._onDestinationJMinus;
         this.destinationKPlusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.destinationKPlusHandle.material = this.game.blueMaterial;
+        this.destinationKPlusHandle.material = this.game.materials.blueMaterial;
         this.destinationKPlusHandle.rotation.x = -Math.PI / 2;
         this.destinationKPlusHandle.instantiate();
         this.destinationKPlusHandle.onClick = this._onDestinationKPlus;
         this.destinationKMinusHandle = new Arrow("", this.game, this.smallHandleSize);
-        this.destinationKMinusHandle.material = this.game.blueMaterial;
+        this.destinationKMinusHandle.material = this.game.materials.blueMaterial;
         this.destinationKMinusHandle.rotation.x = Math.PI / 2;
         this.destinationKMinusHandle.instantiate();
         this.destinationKMinusHandle.onClick = this._onDestinationKMinus;
         // Machine Part displacer UI.
         this.IPlusHandle = new Arrow("IPlusHandle", this.game, 0.03);
-        this.IPlusHandle.material = this.game.redMaterial;
+        this.IPlusHandle.material = this.game.materials.redMaterial;
         this.IPlusHandle.rotation.z = -Math.PI / 2;
         this.IPlusHandle.instantiate();
         this.IPlusHandle.onClick = this._onIPlus;
         this.IMinusHandle = new Arrow("IMinusHandle", this.game, 0.03);
-        this.IMinusHandle.material = this.game.redMaterial;
+        this.IMinusHandle.material = this.game.materials.redMaterial;
         this.IMinusHandle.rotation.z = Math.PI / 2;
         this.IMinusHandle.instantiate();
         this.IMinusHandle.onClick = this._onIMinus;
         this.JPlusHandle = new Arrow("JPlusHandle", this.game, 0.03);
-        this.JPlusHandle.material = this.game.greenMaterial;
+        this.JPlusHandle.material = this.game.materials.greenMaterial;
         this.JPlusHandle.rotation.z = Math.PI;
         this.JPlusHandle.instantiate();
         this.JPlusHandle.onClick = this._onJPlus;
         this.JMinusHandle = new Arrow("JMinusHandle", this.game, 0.03);
-        this.JMinusHandle.material = this.game.greenMaterial;
+        this.JMinusHandle.material = this.game.materials.greenMaterial;
         this.JMinusHandle.instantiate();
         this.JMinusHandle.onClick = this._onJMinus;
         this.KPlusHandle = new Arrow("KPlusHandle", this.game, 0.03);
-        this.KPlusHandle.material = this.game.blueMaterial;
+        this.KPlusHandle.material = this.game.materials.blueMaterial;
         this.KPlusHandle.rotation.x = -Math.PI / 2;
         this.KPlusHandle.instantiate();
         this.KPlusHandle.onClick = this._onKPlus;
         this.KMinusHandle = new Arrow("KMinusHandle", this.game, 0.03);
-        this.KMinusHandle.material = this.game.blueMaterial;
+        this.KMinusHandle.material = this.game.materials.blueMaterial;
         this.KMinusHandle.rotation.x = Math.PI / 2;
         this.KMinusHandle.instantiate();
         this.KMinusHandle.onClick = this._onKMinus;
@@ -5248,7 +5254,7 @@ class MachineEditorGrid extends BABYLON.Mesh {
         this._lastPosition = BABYLON.Vector3.Zero();
         this._lastCamDir = BABYLON.Vector3.One();
         this.opaquePlane = BABYLON.MeshBuilder.CreatePlane("machine-editor-opaque-grid", { size: 100 });
-        this.opaquePlane.material = this.editor.game.gridMaterial;
+        this.opaquePlane.material = this.editor.game.materials.gridMaterial;
         this.opaquePlane.rotationQuaternion = BABYLON.Quaternion.Identity();
         let count = 20;
         let xLines = [];
@@ -5513,7 +5519,7 @@ class MachinePartEditorMenu {
         this.colorPlusButton = document.querySelector("#machine-editor-part-menu-color button.plus");
         this.colorPlusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart) {
-                let color = (this.currentObject.color + 1) % this.currentObject.game.metalMaterialsCount;
+                let color = (this.currentObject.color + 1) % this.currentObject.game.materials.metalMaterials.length;
                 let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
@@ -5521,7 +5527,7 @@ class MachinePartEditorMenu {
         this.colorMinusButton = document.querySelector("#machine-editor-part-menu-color button.minus");
         this.colorMinusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart) {
-                let color = (this.currentObject.color - 1) % this.currentObject.game.metalMaterialsCount;
+                let color = (this.currentObject.color + this.currentObject.game.materials.metalMaterials.length - 1) % this.currentObject.game.materials.metalMaterials.length;
                 let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
                 this.machineEditor.setSelectedObject(editedTrack);
             }
@@ -5629,10 +5635,10 @@ class Elevator extends MachinePart {
         ];
         this.wheels[0].position.copyFromFloats(0.030 * x, -tileHeight * (this.h + 0.35), 0);
         this.wheels[0].parent = this;
-        this.wheels[0].material = this.game.metalMaterials[0];
+        this.wheels[0].material = this.game.materials.getMetalMaterial(0);
         this.wheels[1].position.copyFromFloats(0.030 * x, 0.035 - tileHeight, 0);
         this.wheels[1].parent = this;
-        this.wheels[1].material = this.game.metalMaterials[0];
+        this.wheels[1].material = this.game.materials.getMetalMaterial(0);
         this.game.vertexDataLoader.get("./meshes/wheel.babylon").then(vertexDatas => {
             let vertexData = vertexDatas[0];
             if (vertexData) {
@@ -5700,7 +5706,7 @@ class Elevator extends MachinePart {
             pathCable.push(new BABYLON.Vector3(x0 - cosa * this.rWheel, y0 + sina * this.rWheel));
         }
         this.cable = BABYLON.ExtrudeShape("wire", { shape: cableShape, path: pathCable, closeShape: true, closePath: true });
-        this.cable.material = this.game.leatherMaterial;
+        this.cable.material = this.game.materials.leatherMaterial;
         this.cable.parent = this;
         this.generateWires();
         this.machine.onStopCallbacks.push(this.reset);
@@ -6349,11 +6355,11 @@ class Split extends MachinePart {
         let anchor = new BABYLON.Mesh("anchor");
         anchor.position.copyFromFloats(0, -tileHeight, 0);
         anchor.parent = this;
-        anchor.material = this.game.metalMaterials[0];
+        anchor.material = this.game.materials.getMetalMaterial(0);
         Mummu.MergeVertexDatas(...anchorDatas).applyToMesh(anchor);
         this.pivot = new BABYLON.Mesh("pivot");
         this.pivot.position.copyFromFloats(0, -tileHeight, 0);
-        this.pivot.material = this.game.metalMaterials[1];
+        this.pivot.material = this.game.materials.getMetalMaterial(1);
         this.pivot.parent = this;
         let dz = this.wireGauge * 0.5;
         this.game.vertexDataLoader.get("./meshes/splitter-arrow.babylon").then(datas => {
@@ -6754,7 +6760,7 @@ class QuarterNote extends MachinePart {
         let note = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
         this.notes.push(note);
         let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile.material = this.game.metalMaterials[0];
+        tile.material = this.game.materials.getMetalMaterial(0);
         tile.position.copyFrom(ting.position);
         tile.rotation.copyFrom(ting.rotation);
         tile.parent = this;
@@ -6835,7 +6841,7 @@ class DoubleNote extends MachinePart {
         let note = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
         this.notes.push(note);
         let tile = BABYLON.MeshBuilder.CreateBox("tile", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile.material = this.game.metalMaterials[0];
+        tile.material = this.game.materials.getMetalMaterial(0);
         tile.position.copyFrom(ting.position);
         tile.rotation.copyFrom(ting.rotation);
         tile.parent = this;
@@ -6855,7 +6861,7 @@ class DoubleNote extends MachinePart {
         let note2 = new BABYLON.Sound("note-" + index, "./datas/sounds/notes/" + QuarterNote.NoteNames[index] + ".mp3", this.getScene(), undefined, { loop: false, autoplay: false });
         this.notes.push(note2);
         let tile2 = BABYLON.MeshBuilder.CreateBox("tile2", { width: 0.015, height: 0.005, depth: 0.06 });
-        tile2.material = this.game.metalMaterials[0];
+        tile2.material = this.game.materials.getMetalMaterial(0);
         tile2.position.copyFrom(ting2.position);
         tile2.rotation.copyFrom(ting2.rotation);
         tile2.parent = this;
@@ -6914,14 +6920,14 @@ class Painting extends BABYLON.Mesh {
             let steel = new BABYLON.Mesh("steel");
             vertexDatas[1].applyToMesh(steel);
             steel.parent = this;
-            steel.material = this.room.game.metalMaterials[0];
+            steel.material = this.room.game.materials.getMetalMaterial(0);
             steel.layerMask = 0x10000000;
         }
         if (vertexDatas && vertexDatas[2]) {
             let lightedPlane = new BABYLON.Mesh("lighted-plane");
             vertexDatas[2].applyToMesh(lightedPlane);
             lightedPlane.parent = this;
-            lightedPlane.material = this.room.game.paintingLight;
+            lightedPlane.material = this.room.game.materials.paintingLight;
             lightedPlane.layerMask = 0x10000000;
         }
         let texture = new BABYLON.Texture("./datas/textures/" + this.paintingName + ".jpg");
@@ -6977,11 +6983,11 @@ class Room {
         this.ground.material = groundMaterial;
         this.wall = new BABYLON.Mesh("room-wall");
         this.wall.layerMask = 0x10000000;
-        this.wall.material = this.game.whiteMaterial;
+        this.wall.material = this.game.materials.whiteMaterial;
         this.wall.parent = this.ground;
         this.frame = new BABYLON.Mesh("room-frame");
         this.frame.layerMask = 0x10000000;
-        this.frame.material = this.game.metalMaterials[0];
+        this.frame.material = this.game.materials.getMetalMaterial(0);
         this.frame.parent = this.ground;
         this.light1 = new BABYLON.HemisphericLight("light1", (new BABYLON.Vector3(1, 3, 0)).normalize(), this.game.scene);
         this.light1.groundColor.copyFromFloats(0.3, 0.3, 0.3);
@@ -7056,12 +7062,12 @@ class Room {
         paint41.position.copyFromFloats(-2.8, 0, 4.5);
         paint41.rotation.y = Math.PI;
         paint41.parent = this.ground;
-        let sculpt1 = new Sculpt(this, this.game.metalMaterials[0]);
+        let sculpt1 = new Sculpt(this, this.game.materials.getMetalMaterial(0));
         sculpt1.instantiate();
         sculpt1.position.copyFromFloats(4.5, 0, 0);
         sculpt1.rotation.y = -0.5 * Math.PI;
         sculpt1.parent = this.ground;
-        let sculpt2 = new Sculpt(this, this.game.metalMaterials[1]);
+        let sculpt2 = new Sculpt(this, this.game.materials.getMetalMaterial(1));
         sculpt2.instantiate();
         sculpt2.position.copyFromFloats(-4.5, 0, 0);
         sculpt2.rotation.y = 0.5 * Math.PI;
@@ -7116,7 +7122,7 @@ class Arrow extends BABYLON.Mesh {
                 Mummu.QuaternionFromYZAxisToRef(this.dir, z, this.rotationQuaternion);
             }
         };
-        this.material = game.handleMaterial;
+        this.material = game.materials.handleMaterial;
         this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();

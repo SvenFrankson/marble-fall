@@ -187,7 +187,7 @@ class MachinePartEditorMenu {
         this.colorPlusButton = document.querySelector("#machine-editor-part-menu-color button.plus") as HTMLButtonElement;
         this.colorPlusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart) {
-                let color = (this.currentObject.color + 1) % this.currentObject.game.metalMaterialsCount;
+                let color = (this.currentObject.color + 1) % this.currentObject.game.materials.metalMaterials.length;
     
                 let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
                 this.machineEditor.setSelectedObject(editedTrack);
@@ -197,7 +197,7 @@ class MachinePartEditorMenu {
         this.colorMinusButton = document.querySelector("#machine-editor-part-menu-color button.minus") as HTMLButtonElement;
         this.colorMinusButton.onclick = async () => {
             if (this.currentObject instanceof MachinePart) {
-                let color = (this.currentObject.color - 1) % this.currentObject.game.metalMaterialsCount;
+                let color = (this.currentObject.color + this.currentObject.game.materials.metalMaterials.length - 1) % this.currentObject.game.materials.metalMaterials.length;
     
                 let editedTrack = await this.machineEditor.editTrackInPlace(this.currentObject, { color: color });
                 this.machineEditor.setSelectedObject(editedTrack);
