@@ -304,7 +304,7 @@ class ChallengeStep {
         step.doStep = () => {
             step.challenge.tutoPopup.setAttribute("duration", duration.toFixed(3));
             step.challenge.tutoText.innerText = text;
-            return step.challenge.tutoPopup.show();
+            return step.challenge.tutoPopup.show(0.5);
         };
         return step;
     }
@@ -320,7 +320,7 @@ class ChallengeStep {
             }
             let dir = new BABYLON.Vector3(0, -1, 0);
             let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, dir);
-            arrow.position = p.subtract(dir.scale(0.05));
+            arrow.position = p.subtract(dir.scale(0.0));
             return new Promise(resolve => {
                 arrow.instantiate().then(async () => {
                     await arrow.show(0.5);
@@ -344,15 +344,35 @@ class Challenge {
         this.tutoPopup = document.getElementById("challenge-tuto");
         this.tutoText = this.tutoPopup.querySelector("div");
         this.steps = [
-            ChallengeStep.Wait(this, 1),
-            ChallengeStep.Text(this, "Challenge mode, easy start.", 1),
-            ChallengeStep.Arrow(this, () => {
-                console.log(game.machine.balls);
-                console.log(game.machine.balls[0].positionZero);
-                return game.machine.balls[0].positionZero;
-            }, 6),
-            ChallengeStep.Text(this, "Bring the ball...", 1),
-            ChallengeStep.Text(this, "to its destination.", 1),
+            ChallengeStep.Wait(this, 0.5),
+            ChallengeStep.Text(this, "Challenge mode, easy start.", 0.5),
+            [
+                ChallengeStep.Arrow(this, () => {
+                    let ball = game.machine.balls[0];
+                    if (ball) {
+                        return ball.position;
+                    }
+                    return BABYLON.Vector3.Zero();
+                }, 0.5),
+                ChallengeStep.Text(this, "Bring the ball...", 0.5),
+            ],
+            [
+                ChallengeStep.Arrow(this, () => {
+                    let arrival = game.machine.parts.find(part => { return part.partName === "end"; });
+                    console.log(game.machine.parts);
+                    console.log(arrival);
+                    if (arrival) {
+                        let p = arrival.position.clone();
+                        let x0 = tileWidth * 0.15;
+                        let y0 = -1.4 * tileHeight - 0.005;
+                        p.x += x0;
+                        p.y += y0;
+                        return p;
+                    }
+                    return BABYLON.Vector3.Zero();
+                }, 3),
+                ChallengeStep.Text(this, "to its destination.", 3),
+            ],
             ChallengeStep.Text(this, "First, add the adequate Track elements.", 2),
             ChallengeStep.Text(this, "Then press Play.", 2),
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", 4),
@@ -363,11 +383,26 @@ class Challenge {
     }
     update() {
         if (this.state != -1) {
+            let next = this.state + 1;
             let step = this.steps[this.state];
-            if (step) {
-                let next = this.state + 1;
+            if (step instanceof ChallengeStep) {
                 this.state = -1;
                 step.doStep().then(() => { this.state = next; });
+            }
+            else if (step) {
+                let count = step.length;
+                this.state = -1;
+                for (let i = 0; i < step.length; i++) {
+                    let I = i;
+                    step[i].doStep().then(() => { console.log("step " + I + " done"); count--; });
+                }
+                let checkAllDone = setInterval(() => {
+                    if (count === 0) {
+                        console.log("all done");
+                        this.state = next;
+                        clearInterval(checkAllDone);
+                    }
+                }, 15);
             }
         }
     }
@@ -1138,7 +1173,13 @@ var testNote = {
         { name: "uturn-0.3", i: 5, j: -2, k: 0 },
     ],
 };
-var testChallenge = { "balls": [{ "x": -0.253072613110704, "y": 0.04504040380131484, "z": 5.551115123125783e-17 }], "parts": [{ "name": "end", "i": 0, "j": 0, "k": 0, "mirrorZ": false, "color": 0 }, { "name": "start", "i": -2, "j": -1, "k": 0, "mirrorZ": false, "color": 0 }] };
+var testChallenge = {
+    balls: [{ x: -0.253072613110704, y: 0.04504040380131484, z: 5.551115123125783e-17 }],
+    parts: [
+        { name: "end", i: 0, j: 0, k: 0, mirrorZ: false, color: 0 },
+        { name: "start", i: -2, j: -1, k: 0, mirrorZ: false, color: 0 },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -2036,6 +2077,10 @@ class MainMaterials {
         this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.whiteAutolitMaterial = new BABYLON.StandardMaterial("white-autolit-material");
+        this.whiteAutolitMaterial.diffuseColor = BABYLON.Color3.FromHexString("#baccc8");
+        this.whiteAutolitMaterial.emissiveColor = BABYLON.Color3.FromHexString("#baccc8").scaleInPlace(0.5);
+        this.whiteAutolitMaterial.specularColor.copyFromFloats(0, 0, 0);
         let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.game.scene);
         steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
         steelMaterial.metallic = 1.0;
@@ -2101,7 +2146,7 @@ class Popup extends HTMLElement {
     }
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === "duration") {
-            let value = parseInt(newValue);
+            let value = parseFloat(newValue);
             if (isFinite(value)) {
                 this._duration = value;
             }
@@ -2114,7 +2159,6 @@ class Popup extends HTMLElement {
         this.style.zIndex = "10";
     }
     async show(duration = 1) {
-        console.log("show");
         return new Promise(resolve => {
             if (!this._shown) {
                 clearInterval(this._animateOpacityInterval);
@@ -2129,11 +2173,10 @@ class Popup extends HTMLElement {
                         this.style.opacity = "1";
                         if (this._duration > 0) {
                             setTimeout(() => {
-                                this.hide().then(resolve);
+                                this.hide(duration).then(resolve);
                             }, this._duration * 1000);
                         }
                         else {
-                            console.log("show resolve");
                             resolve();
                         }
                     }
@@ -2146,7 +2189,6 @@ class Popup extends HTMLElement {
         });
     }
     async hide(duration = 1) {
-        console.log("hide");
         return new Promise(resolve => {
             if (this._shown) {
                 clearInterval(this._animateOpacityInterval);
@@ -2160,7 +2202,6 @@ class Popup extends HTMLElement {
                         clearInterval(this._animateOpacityInterval);
                         this.style.opacity = "0";
                         this.style.display = "none";
-                        console.log("hide resolve");
                         resolve();
                     }
                     else {
@@ -7498,7 +7539,7 @@ class HighlightArrow extends BABYLON.Mesh {
                 Mummu.QuaternionFromYZAxisToRef(y, this.dir, this.rotationQuaternion);
             }
         };
-        this.material = game.materials.blueMaterial;
+        this.material = game.materials.whiteAutolitMaterial;
         this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         this.visibility = 0;
         if (this.dir) {

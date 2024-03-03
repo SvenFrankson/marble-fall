@@ -18,7 +18,7 @@ class Popup extends HTMLElement {
 
     public attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         if (name === "duration") {
-            let value = parseInt(newValue);
+            let value = parseFloat(newValue);
             if (isFinite(value)) {
                 this._duration = value;
             }
@@ -39,7 +39,6 @@ class Popup extends HTMLElement {
     }
 
     public async show(duration: number = 1): Promise<void> {
-        console.log("show");
         return new Promise<void>(resolve => {
             if (!this._shown) {
                 clearInterval(this._animateOpacityInterval);
@@ -55,11 +54,10 @@ class Popup extends HTMLElement {
                         this.style.opacity = "1";
                         if (this._duration > 0) {
                             setTimeout(() => {
-                                this.hide().then(resolve);
+                                this.hide(duration).then(resolve);
                             }, this._duration * 1000);
                         }
                         else {
-                            console.log("show resolve");
                             resolve();
                         }
                     }
@@ -73,7 +71,6 @@ class Popup extends HTMLElement {
     }
 
     public async hide(duration: number = 1): Promise<void> {
-        console.log("hide");
         return new Promise<void>(resolve => {
             if (this._shown) {
                 clearInterval(this._animateOpacityInterval);
@@ -88,7 +85,6 @@ class Popup extends HTMLElement {
                         clearInterval(this._animateOpacityInterval);
                         this.style.opacity = "0";
                         this.style.display = "none";
-                        console.log("hide resolve");
                         resolve();
                     }
                     else {

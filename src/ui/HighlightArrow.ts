@@ -13,7 +13,7 @@ class HighlightArrow extends BABYLON.Mesh {
 
     constructor(name: string, public game: Game, public readonly baseSize: number = 0.1, public dir?: BABYLON.Vector3) {
         super(name);
-        this.material = game.materials.blueMaterial;
+        this.material = game.materials.whiteAutolitMaterial;
         this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         this.visibility = 0;
         if (this.dir) {

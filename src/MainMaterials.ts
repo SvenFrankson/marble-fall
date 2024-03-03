@@ -17,6 +17,7 @@ class MainMaterials {
     public redMaterial: BABYLON.StandardMaterial;
     public greenMaterial: BABYLON.StandardMaterial;
     public blueMaterial: BABYLON.StandardMaterial;
+    public whiteAutolitMaterial: BABYLON.StandardMaterial;
 
     constructor(public game: Game) {
         this.handleMaterial = new BABYLON.StandardMaterial("handle-material");
@@ -52,6 +53,11 @@ class MainMaterials {
         this.blueMaterial.diffuseColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.emissiveColor = BABYLON.Color3.FromHexString("#264b96");
         this.blueMaterial.specularColor.copyFromFloats(0, 0, 0);
+        
+        this.whiteAutolitMaterial = new BABYLON.StandardMaterial("white-autolit-material");
+        this.whiteAutolitMaterial.diffuseColor = BABYLON.Color3.FromHexString("#baccc8");
+        this.whiteAutolitMaterial.emissiveColor = BABYLON.Color3.FromHexString("#baccc8").scaleInPlace(0.5);
+        this.whiteAutolitMaterial.specularColor.copyFromFloats(0, 0, 0);
 
         let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.game.scene);
         steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
