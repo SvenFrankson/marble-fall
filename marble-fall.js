@@ -308,17 +308,49 @@ class ChallengeStep {
         };
         return step;
     }
+    static Arrow(challenge, position, duration) {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            let p;
+            if (position instanceof BABYLON.Vector3) {
+                p = position;
+            }
+            else {
+                p = position();
+            }
+            let dir = new BABYLON.Vector3(0, -1, 0);
+            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, dir);
+            arrow.position = p.subtract(dir.scale(0.05));
+            return new Promise(resolve => {
+                arrow.instantiate().then(async () => {
+                    await arrow.show(0.5);
+                    await challenge.WaitAnimation(duration);
+                    await arrow.hide(0.5);
+                    arrow.dispose();
+                    resolve();
+                });
+            });
+        };
+        return step;
+    }
 }
 class Challenge {
     constructor(game) {
         this.game = game;
+        this.WaitAnimation = Mummu.AnimationFactory.EmptyVoidCallback;
         this.state = 0;
         this.steps = [];
+        this.WaitAnimation = Mummu.AnimationFactory.CreateWait(this.game);
         this.tutoPopup = document.getElementById("challenge-tuto");
         this.tutoText = this.tutoPopup.querySelector("div");
         this.steps = [
             ChallengeStep.Wait(this, 1),
-            ChallengeStep.Text(this, "Challenge mode, easy start.", 3),
+            ChallengeStep.Text(this, "Challenge mode, easy start.", 1),
+            ChallengeStep.Arrow(this, () => {
+                console.log(game.machine.balls);
+                console.log(game.machine.balls[0].positionZero);
+                return game.machine.balls[0].positionZero;
+            }, 6),
             ChallengeStep.Text(this, "Bring the ball...", 1),
             ChallengeStep.Text(this, "to its destination.", 1),
             ChallengeStep.Text(this, "First, add the adequate Track elements.", 2),
@@ -1260,7 +1292,7 @@ var CameraMode;
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
-        this.DEBUG_MODE = false;
+        this.DEBUG_MODE = true;
         this.screenRatio = 1;
         this.cameraMode = CameraMode.None;
         this.menuCameraMode = CameraMode.Ball;
@@ -7453,6 +7485,53 @@ class FloatingElement extends HTMLElement {
     }
 }
 window.customElements.define("floating-element", FloatingElement);
+class HighlightArrow extends BABYLON.Mesh {
+    constructor(name, game, baseSize = 0.1, dir) {
+        super(name);
+        this.game = game;
+        this.baseSize = baseSize;
+        this.dir = dir;
+        this.AlphaAnimation = Mummu.AnimationFactory.EmptyNumberCallback;
+        this._update = () => {
+            if (this.dir && this.isVisible) {
+                let y = this.position.subtract(this.game.camera.globalPosition);
+                Mummu.QuaternionFromYZAxisToRef(y, this.dir, this.rotationQuaternion);
+            }
+        };
+        this.material = game.materials.blueMaterial;
+        this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
+        this.visibility = 0;
+        if (this.dir) {
+            this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        }
+        this.AlphaAnimation = Mummu.AnimationFactory.CreateNumber(this, this, "visibility");
+    }
+    get size() {
+        return this.scaling.x / this.baseSize;
+    }
+    set size(v) {
+        let s = v * this.baseSize;
+        this.scaling.copyFromFloats(s, s, s);
+    }
+    async instantiate() {
+        let datas = await this.game.vertexDataLoader.get("./meshes/highlight-arrow.babylon");
+        if (datas && datas[0]) {
+            let data = datas[0];
+            data.applyToMesh(this);
+        }
+        this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+    show(duration) {
+        return this.AlphaAnimation(1, duration);
+    }
+    hide(duration) {
+        return this.AlphaAnimation(0, duration);
+    }
+    dispose() {
+        super.dispose();
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
+    }
+}
 class Logo {
     constructor(game) {
         this.game = game;
