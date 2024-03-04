@@ -10,11 +10,10 @@ function addLine(text: string): void {
 }
 
 enum GameMode {
-    MainMenu,
-    Options,
-    Credits,
-    CreateMode,
-    ChallengeMode,
+    Home,
+    Page,
+    Create,
+    Challenge,
     Demo
 }
 
@@ -68,14 +67,14 @@ class Game {
     public router: MarbleRouter;
 
     public cameraOrtho: boolean = false;
-    private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
-    private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
+    public animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+    public animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
 
     public mainVolume: number = 0;
     public targetTimeFactor: number = 0.8;
     public timeFactor: number = 0.1;
     public get currentTimeFactor(): number {
-        return this.timeFactor * (this.mode === GameMode.MainMenu ? 0.5 : 1); 
+        return this.timeFactor * (this.mode === GameMode.Home ? 0.5 : 1); 
     }
     public physicDT: number = 0.0005;
 
@@ -170,8 +169,8 @@ class Game {
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
 
-        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false], Nabu.Easing.easeInOutSine);
-        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
+        this.animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false], Nabu.Easing.easeInOutSine);
+        this.animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
 
         this.updateCameraLayer();
         this.updateShadowGenerator();
@@ -199,7 +198,7 @@ class Game {
             else {
                 this.menuCameraMode = CameraMode.Ball;
             }
-            if (this.mode <= GameMode.Credits) {
+            if (this.mode <= GameMode.Page) {
                 this.setCameraMode(this.menuCameraMode);
             }
             setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
@@ -227,7 +226,7 @@ class Game {
             this.makeCircuitScreenshot();
         });
 
-        this.mode = GameMode.MainMenu;
+        this.mode = GameMode.Home;
 
         this.logo = new Logo(this);
         this.logo.initialize();
@@ -252,33 +251,14 @@ class Game {
 
         this.challenge = new Challenge(this);
 
-        this.router = new MarbleRouter(this);
-        this.router.initialize();
-
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         if (this.room) {
             await this.room.instantiate();
         }
 
-        
-        let container = document.getElementById("main-menu");
-        
-        let buttonCreate = container.querySelector(".panel.create") as HTMLDivElement;
-        buttonCreate.onclick = () => {
-            this.machine.stop();
-            this.setGameMode(GameMode.CreateMode);
-        }
-        /*
-        this.machine.stop();
-        this.machine.dispose();
-        this.machine.deserialize(testChallenge);
-        await this.machine.generateBaseMesh();
-        await this.machine.instantiate();
-        this.setGameMode(GameMode.ChallengeMode);
-        */
-
-        this.machine.play();
+        this.router = new MarbleRouter(this);
+        this.router.initialize();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
             //await this.makeScreenshot("join");
@@ -431,7 +411,7 @@ class Game {
         if (this.machine) {
             this.machine.update();
         }
-        if (this.challenge && this.mode === GameMode.ChallengeMode) {
+        if (this.challenge && this.mode === GameMode.Challenge) {
             this.challenge.update(dt);
         }
 
@@ -443,12 +423,12 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
+            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
                 if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ - 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -460,7 +440,7 @@ class Game {
                 else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ + 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -475,38 +455,6 @@ class Game {
                 }
             }
         }
-    }
-
-    public async setGameMode(mode: GameMode): Promise<void> {
-        this.toolbar.closeAllDropdowns();
-        this.machineEditor.dispose();
-        this.mode = mode;
-        this.topbar.resize();
-        if (mode === GameMode.CreateMode) {
-            this.setCameraMode(CameraMode.None);
-            this.logo.hide();
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
-            
-            await this.machineEditor.instantiate();
-        }
-        if (mode === GameMode.ChallengeMode) {
-            this._animateCamera([- Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
-            this._animateCameraTarget(new BABYLON.Vector3(- 0.15, 0, 0), 3);
-            this.setCameraMode(CameraMode.None);
-
-            this.logo.hide();
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
-
-            await this.machineEditor.instantiate();
-            this.challenge.initialize();
-        }
-        this.topbar.resize();
-        this.toolbar.resize();
-        this.machine.regenerateBaseAxis();
     }
 
     public mode: GameMode;
@@ -682,7 +630,7 @@ class Game {
             }
         }
         else if (camMode === CameraMode.Selected) {
-            if (this.mode === GameMode.CreateMode) {
+            if (this.mode === GameMode.Create) {
                 this.cameraMode = camMode;
                 this.targetCamAlpha = this.camera.alpha;
                 this.targetCamBeta = this.camera.beta;

@@ -192,7 +192,7 @@ class MachineEditor {
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
 
-        if (mode === GameMode.CreateMode) {
+        if (mode === GameMode.Create) {
             let ballItem = document.createElement("div") as HTMLDivElement;
             ballItem.classList.add("machine-editor-item");
             ballItem.style.backgroundImage = "url(./datas/icons/ball.png)"
@@ -224,7 +224,7 @@ class MachineEditor {
         }
 
         let availableTracks: string[] = TrackNames;
-        if (mode === GameMode.ChallengeMode) {
+        if (mode === GameMode.Challenge) {
             availableTracks = ["ramp-1.1.1"];
         }
         for (let i = 0; i < availableTracks.length; i++) {
@@ -1028,7 +1028,7 @@ class MachineEditor {
             }
             else if (this.selectedObject instanceof MachinePart) {
                 
-                if (this.game.mode === GameMode.CreateMode && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
+                if (this.game.mode === GameMode.Create && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(
                         origin.i * tileWidth - 0.5 * tileWidth,

@@ -308,7 +308,7 @@ class Machine {
         if (this.baseAxis) {
             this.baseAxis.dispose();
         }
-        if (this.game.mode === GameMode.CreateMode) {
+        if (this.game.mode === GameMode.Create) {
             let w = this.baseMeshMaxX - this.baseMeshMinX;
             let d = this.baseMeshMaxZ - this.baseMeshMinZ;
             let w05 = w * 0.5;

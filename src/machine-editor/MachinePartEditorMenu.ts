@@ -251,7 +251,7 @@ class MachinePartEditorMenu {
     }
 
     public update(): void {
-        if (this.container && this.machineEditor.game.mode === GameMode.CreateMode) {
+        if (this.container && this.machineEditor.game.mode === GameMode.Create) {
             if (!this.currentObject) {
                 this.container.style.display = "none";
             }

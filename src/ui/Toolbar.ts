@@ -121,30 +121,24 @@ class Toolbar {
     }
 
     public updateButtonsVisibility(): void {
-        if (this.game.mode === GameMode.MainMenu) {
+        if (this.game.mode === GameMode.Home) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
             this.backButton.style.display = "none";
         }
-        else if (this.game.mode === GameMode.Credits) {
+        else if (this.game.mode === GameMode.Page) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
             this.backButton.style.display = "";
         }
-        else if (this.game.mode === GameMode.Options) {
-            this.saveButton.style.display = "none";
-            this.loadButton.style.display = "none";
-            this.loadInputShown = false;
-            this.backButton.style.display = "";
-        }
-        else if (this.game.mode === GameMode.CreateMode) {
+        else if (this.game.mode === GameMode.Create) {
             this.saveButton.style.display = "";
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
-        else if (this.game.mode === GameMode.ChallengeMode) {
+        else if (this.game.mode === GameMode.Challenge) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;

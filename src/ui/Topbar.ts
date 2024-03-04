@@ -42,10 +42,10 @@ class Topbar {
         for (let i = 0; i < this.camModeButtons.length; i++) {
             this.camModeButtons[i].style.display = this._shown ? "" : "none";
         }
-        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.Demo) {
+        if (this.game.mode === GameMode.Create || this.game.mode === GameMode.Demo) {
             this.container.style.display = "block";
             if (this._shown) {
-                if (this.game.mode === GameMode.CreateMode) {
+                if (this.game.mode === GameMode.Create) {
                     this.camModeButtons[CameraMode.Selected].style.display = "";
                 }
                 else {

@@ -1354,12 +1354,11 @@ function addLine(text) {
 }
 var GameMode;
 (function (GameMode) {
-    GameMode[GameMode["MainMenu"] = 0] = "MainMenu";
-    GameMode[GameMode["Options"] = 1] = "Options";
-    GameMode[GameMode["Credits"] = 2] = "Credits";
-    GameMode[GameMode["CreateMode"] = 3] = "CreateMode";
-    GameMode[GameMode["ChallengeMode"] = 4] = "ChallengeMode";
-    GameMode[GameMode["Demo"] = 5] = "Demo";
+    GameMode[GameMode["Home"] = 0] = "Home";
+    GameMode[GameMode["Page"] = 1] = "Page";
+    GameMode[GameMode["Create"] = 2] = "Create";
+    GameMode[GameMode["Challenge"] = 3] = "Challenge";
+    GameMode[GameMode["Demo"] = 4] = "Demo";
 })(GameMode || (GameMode = {}));
 var CameraMode;
 (function (CameraMode) {
@@ -1383,8 +1382,8 @@ class Game {
         this.targetCamRadius = 0.3;
         this._trackTargetCamSpeed = 0;
         this.cameraOrtho = false;
-        this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
-        this._animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
+        this.animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+        this.animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
         this.mainVolume = 0;
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
@@ -1442,7 +1441,7 @@ class Game {
         return this.scene;
     }
     get currentTimeFactor() {
-        return this.timeFactor * (this.mode === GameMode.MainMenu ? 0.5 : 1);
+        return this.timeFactor * (this.mode === GameMode.Home ? 0.5 : 1);
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
@@ -1483,8 +1482,8 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
-        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false], Nabu.Easing.easeInOutSine);
-        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
+        this.animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false], Nabu.Easing.easeInOutSine);
+        this.animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
         this.updateCameraLayer();
         this.updateShadowGenerator();
         let test = BABYLON.MeshBuilder.CreateBox("zero", { size: 0.01 });
@@ -1508,7 +1507,7 @@ class Game {
             else {
                 this.menuCameraMode = CameraMode.Ball;
             }
-            if (this.mode <= GameMode.Credits) {
+            if (this.mode <= GameMode.Page) {
                 this.setCameraMode(this.menuCameraMode);
             }
             setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
@@ -1531,7 +1530,7 @@ class Game {
         screenshotButton.addEventListener("click", () => {
             this.makeCircuitScreenshot();
         });
-        this.mode = GameMode.MainMenu;
+        this.mode = GameMode.Home;
         this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
@@ -1548,28 +1547,13 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
         this.challenge = new Challenge(this);
-        this.router = new MarbleRouter(this);
-        this.router.initialize();
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         if (this.room) {
             await this.room.instantiate();
         }
-        let container = document.getElementById("main-menu");
-        let buttonCreate = container.querySelector(".panel.create");
-        buttonCreate.onclick = () => {
-            this.machine.stop();
-            this.setGameMode(GameMode.CreateMode);
-        };
-        /*
-        this.machine.stop();
-        this.machine.dispose();
-        this.machine.deserialize(testChallenge);
-        await this.machine.generateBaseMesh();
-        await this.machine.instantiate();
-        this.setGameMode(GameMode.ChallengeMode);
-        */
-        this.machine.play();
+        this.router = new MarbleRouter(this);
+        this.router.initialize();
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
@@ -1704,7 +1688,7 @@ class Game {
         if (this.machine) {
             this.machine.update();
         }
-        if (this.challenge && this.mode === GameMode.ChallengeMode) {
+        if (this.challenge && this.mode === GameMode.Challenge) {
             this.challenge.update(dt);
         }
         let fps = 1 / dt;
@@ -1715,12 +1699,12 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
+            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
                 if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ - 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -1732,7 +1716,7 @@ class Game {
                 else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ + 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -1747,34 +1731,6 @@ class Game {
                 }
             }
         }
-    }
-    async setGameMode(mode) {
-        this.toolbar.closeAllDropdowns();
-        this.machineEditor.dispose();
-        this.mode = mode;
-        this.topbar.resize();
-        if (mode === GameMode.CreateMode) {
-            this.setCameraMode(CameraMode.None);
-            this.logo.hide();
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
-            await this.machineEditor.instantiate();
-        }
-        if (mode === GameMode.ChallengeMode) {
-            this._animateCamera([-Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
-            this._animateCameraTarget(new BABYLON.Vector3(-0.15, 0, 0), 3);
-            this.setCameraMode(CameraMode.None);
-            this.logo.hide();
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
-            await this.machineEditor.instantiate();
-            this.challenge.initialize();
-        }
-        this.topbar.resize();
-        this.toolbar.resize();
-        this.machine.regenerateBaseAxis();
     }
     async makeScreenshot(objectName) {
         this.machine.setBaseIsVisible(false);
@@ -1929,7 +1885,7 @@ class Game {
             }
         }
         else if (camMode === CameraMode.Selected) {
-            if (this.mode === GameMode.CreateMode) {
+            if (this.mode === GameMode.Create) {
                 this.cameraMode = camMode;
                 this.targetCamAlpha = this.camera.alpha;
                 this.targetCamBeta = this.camera.beta;
@@ -2618,7 +2574,7 @@ class Machine {
         if (this.baseAxis) {
             this.baseAxis.dispose();
         }
-        if (this.game.mode === GameMode.CreateMode) {
+        if (this.game.mode === GameMode.Create) {
             let w = this.baseMeshMaxX - this.baseMeshMinX;
             let d = this.baseMeshMaxZ - this.baseMeshMinZ;
             let w05 = w * 0.5;
@@ -4859,7 +4815,7 @@ class MachineEditor {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
-        if (mode === GameMode.CreateMode) {
+        if (mode === GameMode.Create) {
             let ballItem = document.createElement("div");
             ballItem.classList.add("machine-editor-item");
             ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -4889,7 +4845,7 @@ class MachineEditor {
             });
         }
         let availableTracks = TrackNames;
-        if (mode === GameMode.ChallengeMode) {
+        if (mode === GameMode.Challenge) {
             availableTracks = ["ramp-1.1.1"];
         }
         for (let i = 0; i < availableTracks.length; i++) {
@@ -5342,7 +5298,7 @@ class MachineEditor {
                 this.KMinusHandle.isVisible = true;
             }
             else if (this.selectedObject instanceof MachinePart) {
-                if (this.game.mode === GameMode.CreateMode && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
+                if (this.game.mode === GameMode.Create && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth);
                     this.originIPlusHandle.position.copyFrom(pOrigin);
@@ -5779,7 +5735,7 @@ class MachinePartEditorMenu {
         this.currentObject = undefined;
     }
     update() {
-        if (this.container && this.machineEditor.game.mode === GameMode.CreateMode) {
+        if (this.container && this.machineEditor.game.mode === GameMode.Create) {
             if (!this.currentObject) {
                 this.container.style.display = "none";
             }
@@ -7696,45 +7652,76 @@ class MarbleRouter extends Nabu.Router {
         this.optionsPage = this.game.optionsPage;
         this.pages.push(this.creditsPage);
         this.pages.push(this.optionsPage);
+        this.pages.push(this.game.challenge.tutoPopup);
+        this.pages.push(this.game.challenge.tutoComplete);
     }
     onUpdate() {
     }
     async onHRefChange(page) {
         console.log("router " + page);
+        this.game.machineEditor.dispose();
         if (page.startsWith("#options")) {
-            this.game.mode = GameMode.Options;
+            this.game.machine.play();
+            this.game.mode = GameMode.Page;
             this.game.setCameraMode(this.game.menuCameraMode);
             this.game.logo.show();
             this.show(this.optionsPage);
         }
         else if (page.startsWith("#credits")) {
-            this.game.mode = GameMode.Credits;
+            this.game.machine.play();
+            this.game.mode = GameMode.Page;
             this.game.setCameraMode(this.game.menuCameraMode);
             this.game.logo.show();
             this.show(this.creditsPage);
         }
+        else if (page.startsWith("#challenge-menu")) {
+            this.game.machine.play();
+            this.game.mode = GameMode.Page;
+            this.game.setCameraMode(this.game.menuCameraMode);
+            this.game.logo.show();
+            this.show(this.challengePage);
+        }
+        else if (page.startsWith("#editor")) {
+            this.game.mode = GameMode.Create;
+            this.game.setCameraMode(CameraMode.None);
+            this.game.machine.stop();
+            this.game.logo.hide();
+            this.hideAll();
+            this.game.machineEditor.instantiate();
+        }
         else if (page.startsWith("#demo-")) {
-            let index = parseInt(page.replace("#demo-", ""));
+            let index = parseInt(page.replace("#demo-", "")) - 1;
             this.game.mode = GameMode.Demo;
             this.game.setCameraMode(CameraMode.Landscape);
             this.game.logo.hide();
             this.hideAll();
             this.game.machine.dispose();
             this.game.machine.deserialize(this.demos[index]);
-            await this.game.machine.generateBaseMesh();
-            await this.game.machine.instantiate();
+            this.game.machine.generateBaseMesh();
+            this.game.machine.instantiate().then(() => { this.game.machine.play(); });
         }
-        else if (page.startsWith("#challenge-menu")) {
-            this.game.mode = GameMode.MainMenu;
-            this.show(this.challengePage);
+        else if (page.startsWith("#challenge-")) {
+            this.game.mode = GameMode.Challenge;
+            this.game.animateCamera([-Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
+            this.game.animateCameraTarget(new BABYLON.Vector3(-0.15, 0, 0), 3);
+            this.game.setCameraMode(CameraMode.None);
+            this.game.logo.hide();
+            this.hideAll();
+            this.game.machine.stop();
+            this.game.machine.dispose();
+            this.game.machine.deserialize(testChallenge);
+            this.game.machine.generateBaseMesh();
+            this.game.machine.instantiate();
+            this.game.machineEditor.instantiate();
+            this.game.challenge.initialize();
         }
         else if (page.startsWith("#home") || true) {
-            this.game.mode = GameMode.MainMenu;
+            this.game.machine.play();
+            this.game.mode = GameMode.Home;
             this.game.logo.show();
             this.show(this.homePage);
         }
         this.game.toolbar.closeAllDropdowns();
-        this.game.machineEditor.dispose();
         this.game.topbar.resize();
         this.game.toolbar.resize();
         this.game.machine.regenerateBaseAxis();
@@ -8040,30 +8027,24 @@ class Toolbar {
         this.game.scene.onBeforeRenderObservable.removeCallback(this._udpate);
     }
     updateButtonsVisibility() {
-        if (this.game.mode === GameMode.MainMenu) {
+        if (this.game.mode === GameMode.Home) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
             this.backButton.style.display = "none";
         }
-        else if (this.game.mode === GameMode.Credits) {
+        else if (this.game.mode === GameMode.Page) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
             this.backButton.style.display = "";
         }
-        else if (this.game.mode === GameMode.Options) {
-            this.saveButton.style.display = "none";
-            this.loadButton.style.display = "none";
-            this.loadInputShown = false;
-            this.backButton.style.display = "";
-        }
-        else if (this.game.mode === GameMode.CreateMode) {
+        else if (this.game.mode === GameMode.Create) {
             this.saveButton.style.display = "";
             this.loadButton.style.display = "";
             this.backButton.style.display = "";
         }
-        else if (this.game.mode === GameMode.ChallengeMode) {
+        else if (this.game.mode === GameMode.Challenge) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -8153,10 +8134,10 @@ class Topbar {
         for (let i = 0; i < this.camModeButtons.length; i++) {
             this.camModeButtons[i].style.display = this._shown ? "" : "none";
         }
-        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.Demo) {
+        if (this.game.mode === GameMode.Create || this.game.mode === GameMode.Demo) {
             this.container.style.display = "block";
             if (this._shown) {
-                if (this.game.mode === GameMode.CreateMode) {
+                if (this.game.mode === GameMode.Create) {
                     this.camModeButtons[CameraMode.Selected].style.display = "";
                 }
                 else {
