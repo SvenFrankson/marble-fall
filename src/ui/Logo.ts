@@ -128,5 +128,8 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
         earlyAccessDisclaimer.innerHTML = "> v0.1.5 early access";
         this.container.appendChild(earlyAccessDisclaimer);
+        
+        this.fullScreenBanner.style.visibility = "hidden";
+        this.container.style.visibility = "hidden";
     }
 }

@@ -1359,7 +1359,7 @@ var GameMode;
     GameMode[GameMode["Credits"] = 2] = "Credits";
     GameMode[GameMode["CreateMode"] = 3] = "CreateMode";
     GameMode[GameMode["ChallengeMode"] = 4] = "ChallengeMode";
-    GameMode[GameMode["DemoMode"] = 5] = "DemoMode";
+    GameMode[GameMode["Demo"] = 5] = "Demo";
 })(GameMode || (GameMode = {}));
 var CameraMode;
 (function (CameraMode) {
@@ -1555,44 +1555,20 @@ class Game {
         if (this.room) {
             await this.room.instantiate();
         }
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
         let container = document.getElementById("main-menu");
-        let demoButtons = container.querySelectorAll(".panel.demo");
-        for (let i = 0; i < demoButtons.length; i++) {
-            let demo = demos[i];
-            if (demo) {
-                let buttonDemo = demoButtons[i];
-                buttonDemo.onclick = async () => {
-                    this.machine.dispose();
-                    this.machine.deserialize(demo);
-                    await this.machine.generateBaseMesh();
-                    await this.machine.instantiate();
-                    this.setGameMode(GameMode.DemoMode);
-                };
-            }
-        }
         let buttonCreate = container.querySelector(".panel.create");
         buttonCreate.onclick = () => {
             this.machine.stop();
             this.setGameMode(GameMode.CreateMode);
         };
-        if (this.DEBUG_MODE) {
-            let buttonChallenge = container.querySelector(".panel.challenge");
-            buttonChallenge.onclick = async () => {
-                this.machine.stop();
-                this.machine.dispose();
-                this.machine.deserialize(testChallenge);
-                await this.machine.generateBaseMesh();
-                await this.machine.instantiate();
-                this.setGameMode(GameMode.ChallengeMode);
-            };
-        }
-        if (this.DEBUG_MODE) {
-            await this.setGameMode(GameMode.MainMenu);
-        }
-        else {
-            await this.setGameMode(GameMode.MainMenu);
-        }
+        /*
+        this.machine.stop();
+        this.machine.dispose();
+        this.machine.deserialize(testChallenge);
+        await this.machine.generateBaseMesh();
+        await this.machine.instantiate();
+        this.setGameMode(GameMode.ChallengeMode);
+        */
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
@@ -1739,12 +1715,12 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
+            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
                 if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ - 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -1756,7 +1732,7 @@ class Game {
                 else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ + 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -1777,13 +1753,6 @@ class Game {
         this.machineEditor.dispose();
         this.mode = mode;
         this.topbar.resize();
-        if (mode === GameMode.MainMenu) {
-            this.setCameraMode(this.menuCameraMode);
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
-            this.logo.show();
-            await this.mainMenu.show();
-        }
         if (mode === GameMode.CreateMode) {
             this.setCameraMode(CameraMode.None);
             this.logo.hide();
@@ -1802,13 +1771,6 @@ class Game {
             await this.creditsPage.hide();
             await this.machineEditor.instantiate();
             this.challenge.initialize();
-        }
-        if (mode === GameMode.DemoMode) {
-            this.setCameraMode(CameraMode.Landscape);
-            this.logo.hide();
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
         }
         this.topbar.resize();
         this.toolbar.resize();
@@ -7716,12 +7678,16 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
         earlyAccessDisclaimer.innerHTML = "> v0.1.5 early access";
         this.container.appendChild(earlyAccessDisclaimer);
+        this.fullScreenBanner.style.visibility = "hidden";
+        this.container.style.visibility = "hidden";
     }
 }
 class MarbleRouter extends Nabu.Router {
     constructor(game) {
         super();
         this.game = game;
+        this.demos = [];
+        this.demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
     }
     onFindAllPages() {
         this.homePage = document.getElementById("main-menu");
@@ -7734,17 +7700,29 @@ class MarbleRouter extends Nabu.Router {
     onUpdate() {
     }
     async onHRefChange(page) {
+        console.log("router " + page);
         if (page.startsWith("#options")) {
             this.game.mode = GameMode.Options;
             this.game.setCameraMode(this.game.menuCameraMode);
             this.game.logo.show();
-            await this.show(this.optionsPage);
+            this.show(this.optionsPage);
         }
         else if (page.startsWith("#credits")) {
             this.game.mode = GameMode.Credits;
             this.game.setCameraMode(this.game.menuCameraMode);
             this.game.logo.show();
-            await this.show(this.creditsPage);
+            this.show(this.creditsPage);
+        }
+        else if (page.startsWith("#demo-")) {
+            let index = parseInt(page.replace("#demo-", ""));
+            this.game.mode = GameMode.Demo;
+            this.game.setCameraMode(CameraMode.Landscape);
+            this.game.logo.hide();
+            this.hideAll();
+            this.game.machine.dispose();
+            this.game.machine.deserialize(this.demos[index]);
+            await this.game.machine.generateBaseMesh();
+            await this.game.machine.instantiate();
         }
         else if (page.startsWith("#challenge-menu")) {
             this.game.mode = GameMode.MainMenu;
@@ -7752,6 +7730,7 @@ class MarbleRouter extends Nabu.Router {
         }
         else if (page.startsWith("#home") || true) {
             this.game.mode = GameMode.MainMenu;
+            this.game.logo.show();
             this.show(this.homePage);
         }
         this.game.toolbar.closeAllDropdowns();
@@ -8090,7 +8069,7 @@ class Toolbar {
             this.loadInputShown = false;
             this.backButton.style.display = "";
         }
-        else if (this.game.mode === GameMode.DemoMode) {
+        else if (this.game.mode === GameMode.Demo) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;
@@ -8174,7 +8153,7 @@ class Topbar {
         for (let i = 0; i < this.camModeButtons.length; i++) {
             this.camModeButtons[i].style.display = this._shown ? "" : "none";
         }
-        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.DemoMode) {
+        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.Demo) {
             this.container.style.display = "block";
             if (this._shown) {
                 if (this.game.mode === GameMode.CreateMode) {

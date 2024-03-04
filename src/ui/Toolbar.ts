@@ -150,7 +150,7 @@ class Toolbar {
             this.loadInputShown = false;
             this.backButton.style.display = "";
         }
-        else if (this.game.mode === GameMode.DemoMode) {
+        else if (this.game.mode === GameMode.Demo) {
             this.saveButton.style.display = "none";
             this.loadButton.style.display = "none";
             this.loadInputShown = false;

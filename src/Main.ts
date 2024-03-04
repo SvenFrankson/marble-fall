@@ -15,7 +15,7 @@ enum GameMode {
     Credits,
     CreateMode,
     ChallengeMode,
-    DemoMode
+    Demo
 }
 
 enum CameraMode {
@@ -261,45 +261,23 @@ class Game {
             await this.room.instantiate();
         }
 
-        let demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
+        
         let container = document.getElementById("main-menu");
-        let demoButtons = container.querySelectorAll(".panel.demo");
-        for (let i = 0; i < demoButtons.length; i++) {
-            let demo = demos[i];
-            if (demo) {
-                let buttonDemo = demoButtons[i] as HTMLDivElement;
-                buttonDemo.onclick = async () => {
-                    this.machine.dispose();
-                    this.machine.deserialize(demo);
-                    await this.machine.generateBaseMesh();
-                    await this.machine.instantiate();
-                    this.setGameMode(GameMode.DemoMode);
-                }
-            }
-        }
+        
         let buttonCreate = container.querySelector(".panel.create") as HTMLDivElement;
         buttonCreate.onclick = () => {
             this.machine.stop();
             this.setGameMode(GameMode.CreateMode);
         }
-        if (this.DEBUG_MODE) {
-            let buttonChallenge = container.querySelector(".panel.challenge") as HTMLDivElement;
-            buttonChallenge.onclick = async () => {
-                this.machine.stop();
-                this.machine.dispose();
-                this.machine.deserialize(testChallenge);
-                await this.machine.generateBaseMesh();
-                await this.machine.instantiate();
-                this.setGameMode(GameMode.ChallengeMode);
-            }
-        }
+        /*
+        this.machine.stop();
+        this.machine.dispose();
+        this.machine.deserialize(testChallenge);
+        await this.machine.generateBaseMesh();
+        await this.machine.instantiate();
+        this.setGameMode(GameMode.ChallengeMode);
+        */
 
-        if (this.DEBUG_MODE) {
-            await this.setGameMode(GameMode.MainMenu);
-        }
-        else {
-            await this.setGameMode(GameMode.MainMenu);
-        }
         this.machine.play();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
@@ -465,12 +443,12 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
+            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
                 if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ - 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -482,7 +460,7 @@ class Game {
                 else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.DemoMode)) {
+                            if (this.config.autoGraphicQ && (this.mode === GameMode.MainMenu || this.mode === GameMode.Demo)) {
                                 let newConfig = this.config.graphicQ + 1;
                                 this.config.setGraphicQ(newConfig);
                                 this.showGraphicAutoUpdateAlert();
@@ -504,14 +482,6 @@ class Game {
         this.machineEditor.dispose();
         this.mode = mode;
         this.topbar.resize();
-        if (mode === GameMode.MainMenu) {
-            this.setCameraMode(this.menuCameraMode);
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
-            
-            this.logo.show();
-            await this.mainMenu.show();
-        }
         if (mode === GameMode.CreateMode) {
             this.setCameraMode(CameraMode.None);
             this.logo.hide();
@@ -533,13 +503,6 @@ class Game {
 
             await this.machineEditor.instantiate();
             this.challenge.initialize();
-        }
-        if (mode === GameMode.DemoMode) {
-            this.setCameraMode(CameraMode.Landscape);
-            this.logo.hide();
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            await this.creditsPage.hide();
         }
         this.topbar.resize();
         this.toolbar.resize();
