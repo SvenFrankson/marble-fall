@@ -31,8 +31,8 @@ class ChallengeStep {
                 p = position();
             }
             let dir = new BABYLON.Vector3(0, - 1, 0);
-            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, dir);
-            arrow.position = p.subtract(dir.scale(0.0));
+            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, 0.02, dir);
+            arrow.position = p;
             return new Promise<void>(resolve => {
                 arrow.instantiate().then(async () => {
                     await arrow.show(0.5);

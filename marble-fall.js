@@ -319,8 +319,8 @@ class ChallengeStep {
                 p = position();
             }
             let dir = new BABYLON.Vector3(0, -1, 0);
-            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, dir);
-            arrow.position = p.subtract(dir.scale(0.0));
+            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, 0.02, dir);
+            arrow.position = p;
             return new Promise(resolve => {
                 arrow.instantiate().then(async () => {
                     await arrow.show(0.5);
@@ -7541,7 +7541,7 @@ class FloatingElement extends HTMLElement {
 }
 window.customElements.define("floating-element", FloatingElement);
 class HighlightArrow extends BABYLON.Mesh {
-    constructor(name, game, baseSize = 0.1, dir) {
+    constructor(name, game, baseSize = 0.1, distanceFromTarget = 0, dir) {
         super(name);
         this.game = game;
         this.baseSize = baseSize;
@@ -7553,26 +7553,29 @@ class HighlightArrow extends BABYLON.Mesh {
                 Mummu.QuaternionFromYZAxisToRef(y, this.dir, this.rotationQuaternion);
             }
         };
-        this.material = game.materials.whiteAutolitMaterial;
-        this.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
-        this.visibility = 0;
+        this.arrowMesh = new BABYLON.Mesh("arrow");
+        this.arrowMesh.parent = this;
+        this.arrowMesh.position.z = -distanceFromTarget;
+        this.arrowMesh.material = game.materials.whiteAutolitMaterial;
+        this.arrowMesh.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
+        this.arrowMesh.visibility = 0;
         if (this.dir) {
             this.rotationQuaternion = BABYLON.Quaternion.Identity();
         }
-        this.AlphaAnimation = Mummu.AnimationFactory.CreateNumber(this, this, "visibility");
+        this.AlphaAnimation = Mummu.AnimationFactory.CreateNumber(this.arrowMesh, this.arrowMesh, "visibility");
     }
     get size() {
-        return this.scaling.x / this.baseSize;
+        return this.arrowMesh.scaling.x / this.baseSize;
     }
     set size(v) {
         let s = v * this.baseSize;
-        this.scaling.copyFromFloats(s, s, s);
+        this.arrowMesh.scaling.copyFromFloats(s, s, s);
     }
     async instantiate() {
         let datas = await this.game.vertexDataLoader.get("./meshes/highlight-arrow.babylon");
         if (datas && datas[0]) {
             let data = datas[0];
-            data.applyToMesh(this);
+            data.applyToMesh(this.arrowMesh);
         }
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
