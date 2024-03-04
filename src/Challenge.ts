@@ -58,13 +58,12 @@ class Challenge {
     public WaitAnimation = Mummu.AnimationFactory.EmptyVoidCallback;
     public tutoPopup: Popup;
     public tutoText: HTMLDivElement;
+    public tutoComplete: Popup;
 
     public state: number = 0;
 
     public delay = 0.5;
     public steps: (ChallengeStep | ChallengeStep[])[] = [];
-
-    public winSteps: (ChallengeStep | ChallengeStep[])[] = [];
 
     public winZoneMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public winZoneMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -74,6 +73,8 @@ class Challenge {
 
         this.tutoPopup = document.getElementById("challenge-tuto") as Popup;
         this.tutoText = this.tutoPopup.querySelector("div");
+
+        this.tutoComplete = document.getElementById("challenge-next") as Popup;
 
         this.steps = [
             ChallengeStep.Wait(this, this.delay),
@@ -107,10 +108,6 @@ class Challenge {
             ChallengeStep.Text(this, "Then press Play.", this.delay),
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
         ];
-
-        this.winSteps = [
-            ChallengeStep.Text(this, "Well done !", 3)
-        ]
     }
 
     public initialize(): void {
@@ -129,14 +126,6 @@ class Challenge {
             this.winZoneMax.x += 0.04;
             this.winZoneMax.y += 0.02;
             this.winZoneMax.z += 0.01;
-
-            let test = BABYLON.MeshBuilder.CreateBox("zone", { 
-                width: this.winZoneMax.x - this.winZoneMin.x,
-                height: this.winZoneMax.y - this.winZoneMin.y,
-                depth: this.winZoneMax.z - this.winZoneMin.z,
-            })
-            test.position.copyFrom(this.winZoneMin).addInPlace(this.winZoneMax).scaleInPlace(0.5);
-            test.material = this.game.materials.cyanMaterial;
         }
     }
 
@@ -178,25 +167,15 @@ class Challenge {
             }
         }
         else if (this.state > 100) {
-            let next = this.state + 1;
-            let step = this.winSteps[this.state - 101];
-            if (step instanceof ChallengeStep) {
-                this.state = 100;
-                step.doStep().then(() => { this.state = next; });
+            this.state = 100;
+            let doFinalStep = async () => {
+                this.tutoText.innerText = "Challenge completed - Well done";
+                this.tutoPopup.setAttribute("duration", "0");
+                this.tutoPopup.show(0.5);
+                await this.WaitAnimation(2);
+                this.tutoComplete.show(0.5);
             }
-            else if (step) {
-                let count = step.length;
-                this.state = 100;
-                for (let i = 0; i < step.length; i++) {
-                    step[i].doStep().then(() => { count --; });
-                }
-                let checkAllDone = setInterval(() => {
-                    if (count === 0) {
-                        this.state = next;
-                        clearInterval(checkAllDone);
-                    }
-                }, 15);
-            }
+            doFinalStep();
         }
     }
 }
