@@ -12,8 +12,8 @@
 		<link rel="stylesheet" type="text/css" href="./styles/machine-editor.css">
 	</head>
 	<body>
-		<panel-page id="main-menu" class="page" file="home-page.html" anim-line-height="2">
-		</panel-page>
+		<panel-page id="main-menu" class="page" file="home-page.html" anim-line-height="2"></panel-page>
+		<panel-page id="challenge-menu" class="page" file="challenge-page.html" anim-line-height="1"></panel-page>
 		<div id="options" class="page" style="opacity: 0;">
 			<div id="options" class="background">
 				<h2 style="opacity: 0.5;">Options</h2>
@@ -220,12 +220,12 @@
 				</svg>
 			</button>
 
-			<button id="toolbar-back" class="btn s"  title="Back to main menu">
+			<a href="#home"><button id="toolbar-back" class="btn s"  title="Back to main menu">
 				<svg class="label" viewBox="0 0 100 100">
 					<path d="M5 45 L25 30 L25 60 Z" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
 					<path d="M10 45 L80 45 L80 75" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
 				</svg>
-			</button>
+			</button></a>
 
 			<button id="toolbar-screenshot" class="btn s"  title="Take circuit screenshot" style="display: none">
 				<svg class="label" viewBox="0 0 100 100">

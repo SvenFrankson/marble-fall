@@ -1548,6 +1548,8 @@ class Game {
         this.toolbar.initialize();
         this.toolbar.resize();
         this.challenge = new Challenge(this);
+        this.router = new MarbleRouter(this);
+        this.router.initialize();
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         if (this.room) {
@@ -1585,14 +1587,6 @@ class Game {
                 this.setGameMode(GameMode.ChallengeMode);
             };
         }
-        let buttonOption = container.querySelector(".panel.option");
-        buttonOption.onclick = () => {
-            this.setGameMode(GameMode.Options);
-        };
-        let buttonCredit = container.querySelector(".panel.credit");
-        buttonCredit.onclick = () => {
-            this.setGameMode(GameMode.Credits);
-        };
         if (this.DEBUG_MODE) {
             await this.setGameMode(GameMode.MainMenu);
         }
@@ -1789,20 +1783,6 @@ class Game {
             await this.creditsPage.hide();
             this.logo.show();
             await this.mainMenu.show();
-        }
-        if (mode === GameMode.Options) {
-            this.setCameraMode(this.menuCameraMode);
-            await this.mainMenu.hide();
-            await this.creditsPage.hide();
-            this.logo.show();
-            await this.optionsPage.show();
-        }
-        if (mode === GameMode.Credits) {
-            this.setCameraMode(this.menuCameraMode);
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            this.logo.show();
-            await this.creditsPage.show();
         }
         if (mode === GameMode.CreateMode) {
             this.setCameraMode(CameraMode.None);
@@ -6595,8 +6575,6 @@ class Spiral extends MachinePart {
             template.mirrorZTrackPointsInPlace();
         }
         template.initialize();
-        console.log(template.trackTemplates[0].preferedStartBank);
-        console.log(template.trackTemplates[0].preferedEndBank);
         return template;
     }
 }
@@ -7740,6 +7718,49 @@ class Logo {
         this.container.appendChild(earlyAccessDisclaimer);
     }
 }
+class MarbleRouter extends Nabu.Router {
+    constructor(game) {
+        super();
+        this.game = game;
+    }
+    onFindAllPages() {
+        this.homePage = document.getElementById("main-menu");
+        this.challengePage = document.getElementById("challenge-menu");
+        this.creditsPage = this.game.creditsPage;
+        this.optionsPage = this.game.optionsPage;
+        this.pages.push(this.creditsPage);
+        this.pages.push(this.optionsPage);
+    }
+    onUpdate() {
+    }
+    async onHRefChange(page) {
+        if (page.startsWith("#options")) {
+            this.game.mode = GameMode.Options;
+            this.game.setCameraMode(this.game.menuCameraMode);
+            this.game.logo.show();
+            await this.show(this.optionsPage);
+        }
+        else if (page.startsWith("#credits")) {
+            this.game.mode = GameMode.Credits;
+            this.game.setCameraMode(this.game.menuCameraMode);
+            this.game.logo.show();
+            await this.show(this.creditsPage);
+        }
+        else if (page.startsWith("#challenge-menu")) {
+            this.game.mode = GameMode.MainMenu;
+            this.show(this.challengePage);
+        }
+        else if (page.startsWith("#home") || true) {
+            this.game.mode = GameMode.MainMenu;
+            this.show(this.homePage);
+        }
+        this.game.toolbar.closeAllDropdowns();
+        this.game.machineEditor.dispose();
+        this.game.topbar.resize();
+        this.game.toolbar.resize();
+        this.game.machine.regenerateBaseAxis();
+    }
+}
 class OptionsPage {
     constructor(game) {
         this.game = game;
@@ -7974,9 +7995,6 @@ class Toolbar {
                 //this.game.machineEditor.currentLayer--;
             }
         };
-        this.onBack = () => {
-            this.game.setGameMode(GameMode.MainMenu);
-        };
         this.closeAllDropdowns = () => {
             if (this.camModeInputShown || this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {
                 this.camModeInputShown = false;
@@ -8034,7 +8052,6 @@ class Toolbar {
         this.layerButton = document.querySelector("#toolbar-layer");
         this.layerButton.addEventListener("click", this.onLayer);
         this.backButton = document.querySelector("#toolbar-back");
-        this.backButton.addEventListener("click", this.onBack);
         this.resize();
         this.game.canvas.addEventListener("pointerdown", this.closeAllDropdowns);
         this.game.scene.onBeforeRenderObservable.add(this._udpate);

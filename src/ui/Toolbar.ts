@@ -108,7 +108,7 @@ class Toolbar {
         this.layerButton.addEventListener("click", this.onLayer);
 
         this.backButton = document.querySelector("#toolbar-back") as HTMLButtonElement;
-        this.backButton.addEventListener("click", this.onBack);
+        
         this.resize();
 
         this.game.canvas.addEventListener("pointerdown", this.closeAllDropdowns);
@@ -335,10 +335,6 @@ class Toolbar {
         else {
             //this.game.machineEditor.currentLayer--;
         }
-    }
-
-    public onBack = () => {
-        this.game.setGameMode(GameMode.MainMenu);
     }
 
     public closeAllDropdowns = () => {

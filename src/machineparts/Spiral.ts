@@ -84,9 +84,6 @@ class Spiral extends MachinePart {
 
         template.initialize();
 
-        console.log(template.trackTemplates[0].preferedStartBank);
-        console.log(template.trackTemplates[0].preferedEndBank);
-
         return template;
     }
 }

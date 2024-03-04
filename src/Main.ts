@@ -65,6 +65,7 @@ class Game {
     public topbar: Topbar;
     public toolbar: Toolbar;
     public challenge: Challenge;
+    public router: MarbleRouter;
 
     public cameraOrtho: boolean = false;
     private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
@@ -251,6 +252,9 @@ class Game {
 
         this.challenge = new Challenge(this);
 
+        this.router = new MarbleRouter(this);
+        this.router.initialize();
+
         await this.machine.generateBaseMesh();
         await this.machine.instantiate();
         if (this.room) {
@@ -288,14 +292,6 @@ class Game {
                 await this.machine.instantiate();
                 this.setGameMode(GameMode.ChallengeMode);
             }
-        }
-        let buttonOption = container.querySelector(".panel.option") as HTMLDivElement;
-        buttonOption.onclick = () => {
-            this.setGameMode(GameMode.Options);
-        }
-        let buttonCredit = container.querySelector(".panel.credit") as HTMLDivElement;
-        buttonCredit.onclick = () => {
-            this.setGameMode(GameMode.Credits);
         }
 
         if (this.DEBUG_MODE) {
@@ -515,22 +511,6 @@ class Game {
             
             this.logo.show();
             await this.mainMenu.show();
-        }
-        if (mode === GameMode.Options) {
-            this.setCameraMode(this.menuCameraMode);
-            await this.mainMenu.hide();
-            await this.creditsPage.hide();
-            
-            this.logo.show();
-            await this.optionsPage.show();
-        }
-        if (mode === GameMode.Credits) {
-            this.setCameraMode(this.menuCameraMode);
-            await this.mainMenu.hide();
-            await this.optionsPage.hide();
-            
-            this.logo.show();
-            await this.creditsPage.show();
         }
         if (mode === GameMode.CreateMode) {
             this.setCameraMode(CameraMode.None);
