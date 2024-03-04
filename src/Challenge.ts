@@ -61,7 +61,13 @@ class Challenge {
 
     public state: number = 0;
 
+    public delay = 0.5;
     public steps: (ChallengeStep | ChallengeStep[])[] = [];
+
+    public winSteps: (ChallengeStep | ChallengeStep[])[] = [];
+
+    public winZoneMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public winZoneMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     
     constructor(public game: Game) {
         this.WaitAnimation = Mummu.AnimationFactory.CreateWait(this.game);
@@ -70,8 +76,8 @@ class Challenge {
         this.tutoText = this.tutoPopup.querySelector("div");
 
         this.steps = [
-            ChallengeStep.Wait(this, 0.5),
-            ChallengeStep.Text(this, "Challenge mode, easy start.", 0.5),
+            ChallengeStep.Wait(this, this.delay),
+            ChallengeStep.Text(this, "Challenge mode, easy start.", this.delay),
             [
                 ChallengeStep.Arrow(this, () => {
                     let ball = game.machine.balls[0];
@@ -79,14 +85,12 @@ class Challenge {
                         return ball.position;
                     }
                     return BABYLON.Vector3.Zero();
-                }, 0.5),
-                ChallengeStep.Text(this, "Bring the ball...", 0.5),
+                }, this.delay),
+                ChallengeStep.Text(this, "Bring the ball...", this.delay),
             ],
             [
                 ChallengeStep.Arrow(this, () => {
                     let arrival = game.machine.parts.find(part => { return part.partName === "end"; });
-                    console.log(game.machine.parts);
-                    console.log(arrival);
                     if (arrival) {
                         let p = arrival.position.clone();
                         let x0 = tileWidth * 0.15;
@@ -96,21 +100,63 @@ class Challenge {
                         return p;
                     }
                     return BABYLON.Vector3.Zero();
-                }, 3),
-                ChallengeStep.Text(this, "to its destination.", 3),
+                }, this.delay),
+                ChallengeStep.Text(this, "to its destination.", this.delay),
             ],
-            ChallengeStep.Text(this, "First, add the adequate Track elements.", 2),
-            ChallengeStep.Text(this, "Then press Play.", 2),
-            ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", 4),
+            ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
+            ChallengeStep.Text(this, "Then press Play.", this.delay),
+            ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
+        ];
+
+        this.winSteps = [
+            ChallengeStep.Text(this, "Well done !", 3)
         ]
     }
 
     public initialize(): void {
         this.state = 0;
+        let arrival = this.game.machine.parts.find(part => { return part.partName === "end"; });
+        if (arrival) {
+            let p = arrival.position.clone();
+            let x0 = tileWidth * 0.15;
+            let y0 = - 1.4 * tileHeight - 0.005;
+            p.x += x0;
+            p.y += y0;
+            this.winZoneMin.copyFrom(p);
+            this.winZoneMin.x -= 0.04;
+            this.winZoneMin.z -= 0.01;
+            this.winZoneMax.copyFrom(p);
+            this.winZoneMax.x += 0.04;
+            this.winZoneMax.y += 0.02;
+            this.winZoneMax.z += 0.01;
+
+            let test = BABYLON.MeshBuilder.CreateBox("zone", { 
+                width: this.winZoneMax.x - this.winZoneMin.x,
+                height: this.winZoneMax.y - this.winZoneMin.y,
+                depth: this.winZoneMax.z - this.winZoneMin.z,
+            })
+            test.position.copyFrom(this.winZoneMin).addInPlace(this.winZoneMax).scaleInPlace(0.5);
+            test.material = this.game.materials.cyanMaterial;
+        }
     }
 
-    public update(): void {
-        if (this.state != - 1) {
+    private _successTime: number = 0;
+    public update(dt: number): void {
+        if (this.state < 100) {
+            let ball = this.game.machine.balls[0];
+            if (ball && Mummu.SphereAABBCheck(ball.position, ball.radius, this.winZoneMin, this.winZoneMax)) {
+                this._successTime += dt;
+            }
+            else {
+                this._successTime = 0;
+            }
+    
+            if (this._successTime > 1) {
+                this.state = 101;
+            } 
+        }
+
+        if (this.state != - 1 && this.state < 100) {
             let next = this.state + 1;
             let step = this.steps[this.state];
             if (step instanceof ChallengeStep) {
@@ -121,12 +167,31 @@ class Challenge {
                 let count = step.length;
                 this.state = -1;
                 for (let i = 0; i < step.length; i++) {
-                    let I = i;
-                    step[i].doStep().then(() => { console.log("step " + I + " done"); count --; });
+                    step[i].doStep().then(() => { count --; });
                 }
                 let checkAllDone = setInterval(() => {
                     if (count === 0) {
-                        console.log("all done");
+                        this.state = next;
+                        clearInterval(checkAllDone);
+                    }
+                }, 15);
+            }
+        }
+        else if (this.state > 100) {
+            let next = this.state + 1;
+            let step = this.winSteps[this.state - 101];
+            if (step instanceof ChallengeStep) {
+                this.state = 100;
+                step.doStep().then(() => { this.state = next; });
+            }
+            else if (step) {
+                let count = step.length;
+                this.state = 100;
+                for (let i = 0; i < step.length; i++) {
+                    step[i].doStep().then(() => { count --; });
+                }
+                let checkAllDone = setInterval(() => {
+                    if (count === 0) {
                         this.state = next;
                         clearInterval(checkAllDone);
                     }

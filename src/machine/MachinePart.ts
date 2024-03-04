@@ -446,7 +446,7 @@ class MachinePart extends BABYLON.Mesh {
         });
         this.machine.requestUpdateShadow = true;
         if (this.game.DEBUG_MODE) {
-            console.log(this.partName + " tricount " + this.getTriCount());
+            //console.log(this.partName + " tricount " + this.getTriCount());
         }
     }
 

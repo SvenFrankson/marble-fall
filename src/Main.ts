@@ -460,7 +460,7 @@ class Game {
             this.machine.update();
         }
         if (this.challenge && this.mode === GameMode.ChallengeMode) {
-            this.challenge.update();
+            this.challenge.update(dt);
         }
 
         let fps = 1 / dt;
@@ -545,7 +545,7 @@ class Game {
         }
         if (mode === GameMode.ChallengeMode) {
             this._animateCamera([- Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
-            this._animateCameraTarget(new BABYLON.Vector3(- 0.1, 0, 0), 3);
+            this._animateCameraTarget(new BABYLON.Vector3(- 0.15, 0, 0), 3);
             this.setCameraMode(CameraMode.None);
 
             this.logo.hide();
