@@ -24,7 +24,8 @@ enum CameraMode {
     Landscape,
     Selected,
     Focusing,
-    FocusingSelected
+    FocusingSelected,
+    Transition
 }
 
 class Game {
@@ -66,6 +67,8 @@ class Game {
     public challenge: Challenge;
 
     public cameraOrtho: boolean = false;
+    private _animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+    private _animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
 
     public mainVolume: number = 0;
     public targetTimeFactor: number = 0.8;
@@ -166,9 +169,13 @@ class Game {
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
 
-        this.updateCameraLayer();
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false], Nabu.Easing.easeInOutSine);
+        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
 
+        this.updateCameraLayer();
         this.updateShadowGenerator();
+
+        let test = BABYLON.MeshBuilder.CreateBox("zero", { size: 0.01 });
 
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
@@ -425,9 +432,11 @@ class Game {
             }
         }
 
-        this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
-        this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
-        this.camera.target.z = Nabu.MinMax(this.camera.target.z, this.machine.baseMeshMinZ, this.machine.baseMeshMaxZ);
+        if (this.cameraMode === CameraMode.None) {
+            this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
+            this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
+            this.camera.target.z = Nabu.MinMax(this.camera.target.z, this.machine.baseMeshMinZ, this.machine.baseMeshMaxZ);
+        }
 
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
@@ -535,12 +544,15 @@ class Game {
             await this.machineEditor.instantiate();
         }
         if (mode === GameMode.ChallengeMode) {
+            this._animateCamera([- Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
+            this._animateCameraTarget(new BABYLON.Vector3(- 0.1, 0, 0), 3);
             this.setCameraMode(CameraMode.None);
+
             this.logo.hide();
             await this.mainMenu.hide();
             await this.optionsPage.hide();
             await this.creditsPage.hide();
-            
+
             await this.machineEditor.instantiate();
             this.challenge.initialize();
         }
@@ -706,6 +718,7 @@ class Game {
     }
 
     public setCameraMode(camMode: CameraMode): void {
+        console.log("setCameraMode " + camMode);
         if (camMode >= CameraMode.None && camMode <= CameraMode.Landscape) {
             this.cameraMode = camMode;
             if (this.cameraMode == CameraMode.None) {
@@ -735,6 +748,9 @@ class Game {
                 this.targetCamRadius = this.camera.radius;
                 this.targetCamTarget.copyFrom(this.camera.target);
             }
+        }
+        else if (camMode === CameraMode.Transition) {
+            this.cameraMode = camMode;
         }
         this.topbar.resize();
     }

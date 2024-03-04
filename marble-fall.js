@@ -1046,35 +1046,35 @@ var xxlStressTest = {
 };
 var aerial = {
     balls: [
-        { x: 0.3039999976158142, y: -0.36149999833106994, z: 0 },
-        { x: 0.3039999976158142, y: -0.28106269574165343, z: 0 },
-        { x: 0.3039999976158142, y: -0.20062536334991454, z: 0 },
-        { x: 0.3039999976158142, y: -0.12018804585933686, z: 0 },
-        { x: 0.3039999976158142, y: -0.03975073954463005, z: 0 },
-        { x: 0.3039999976158142, y: 0.04068657422065735, z: 0 },
+        { x: 0.3039999976158142, y: 0.02849998736381531, z: 0.18000000715255737 },
+        { x: 0.3039999976158142, y: 0.10736521744728088, z: 0.18000000715255737 },
+        { x: 0.3039999976158142, y: 0.18623041772842408, z: 0.18000000715255737 },
+        { x: 0.3039999976158142, y: 0.26509564781188966, z: 0.18000000715255737 },
+        { x: 0.3039999976158142, y: 0.34396084809303284, z: 0.18000000715255737 },
+        { x: 0.3039999976158142, y: 0.42282604837417603, z: 0.18000000715255737 },
     ],
     parts: [
-        { name: "uturn-0.3", i: 1, j: 12, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.2.3", i: 2, j: 12, k: 1, mirrorX: true, mirrorZ: false },
-        { name: "uturn-0.3", i: 3, j: 12, k: 1 },
-        { name: "ramp-1.0.2", i: 2, j: 12, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "loop-1.3.1", i: 1, j: 10, k: 1 },
-        { name: "ramp-1.1.1", i: 0, j: 9, k: 5, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.6.2", i: -2, j: 8, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-1.5", i: 1, j: 8, k: 1 },
-        { name: "uturn-0.4", i: -4, j: 8, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-3.0.3", i: -2, j: 8, k: 1, mirrorX: false, mirrorZ: true },
-        { name: "uturn-0.3", i: 3, j: 6, k: 5 },
-        { name: "loop-1.4.1", i: -1, j: 6, k: 2 },
-        { name: "ramp-2.3.6", i: 1, j: 3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "ramp-2.7.2", i: -1, j: 3, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "loop-1.6.1", i: 2, j: 2, k: 2 },
-        { name: "ramp-2.4.1", i: 0, j: 2, k: 2, mirrorX: false, mirrorZ: false },
-        { name: "uturn-1.3", i: -1, j: 1, k: 0, mirrorX: true, mirrorZ: false },
-        { name: "ramp-1.0.1", i: 0, j: 1, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "spiral-1.3.2", i: 1, j: -2, k: 0, mirrorX: true },
-        { name: "elevator-15", i: 2, j: -3, k: 0, mirrorX: false, mirrorZ: false },
-        { name: "uturn-0.2", i: -2, j: 10, k: 1, mirrorX: true },
+        { name: "ramp-1.2.3", i: 2, j: -1, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "uturn-0.3", i: 1, j: -1, k: -3, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "uturn-0.3", i: 3, j: -1, k: -2, color: 0 },
+        { name: "ramp-1.0.2", i: 2, j: -1, k: -1, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "loop-1.3.1", i: 1, j: -3, k: -2, color: 0 },
+        { name: "uturn-0.2", i: -2, j: -3, k: -2, mirrorX: true, color: 0 },
+        { name: "ramp-1.1.1", i: 0, j: -4, k: 2, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-3.6.2", i: -2, j: -5, k: -3, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "uturn-1.5", i: 1, j: -5, k: -2, color: 0 },
+        { name: "uturn-0.4", i: -4, j: -5, k: -3, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-3.0.3", i: -2, j: -5, k: -2, mirrorX: false, mirrorZ: true, color: 0 },
+        { name: "loop-1.4.1", i: -1, j: -7, k: -1, color: 0 },
+        { name: "uturn-0.3", i: 3, j: -7, k: 2, color: 0 },
+        { name: "ramp-2.7.2", i: -1, j: -10, k: -3, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-2.3.6", i: 1, j: -10, k: -3, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "loop-1.6.1", i: 2, j: -11, k: -1, color: 0 },
+        { name: "ramp-2.4.1", i: 0, j: -11, k: -1, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "uturn-1.3", i: -1, j: -12, k: -3, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-1.0.1", i: 0, j: -12, k: -3, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "spiral-1.3.2", i: 1, j: -15, k: -3, mirrorX: true, color: 0 },
+        { name: "elevator-15", i: 2, j: -16, k: -3, mirrorX: false, mirrorZ: false, color: 0 },
     ],
 };
 var nested = {
@@ -1330,6 +1330,7 @@ var CameraMode;
     CameraMode[CameraMode["Selected"] = 3] = "Selected";
     CameraMode[CameraMode["Focusing"] = 4] = "Focusing";
     CameraMode[CameraMode["FocusingSelected"] = 5] = "FocusingSelected";
+    CameraMode[CameraMode["Transition"] = 6] = "Transition";
 })(CameraMode || (CameraMode = {}));
 class Game {
     constructor(canvasElement) {
@@ -1343,6 +1344,8 @@ class Game {
         this.targetCamRadius = 0.3;
         this._trackTargetCamSpeed = 0;
         this.cameraOrtho = false;
+        this._animateCamera = Mummu.AnimationFactory.EmptyNumbersCallback;
+        this._animateCameraTarget = Mummu.AnimationFactory.EmptyVector3Callback;
         this.mainVolume = 0;
         this.targetTimeFactor = 0.8;
         this.timeFactor = 0.1;
@@ -1441,8 +1444,11 @@ class Game {
         this.camera.angularSensibilityX = 2000;
         this.camera.angularSensibilityY = 2000;
         this.camera.pinchPrecision = 5000;
+        this._animateCamera = Mummu.AnimationFactory.CreateNumbers(this.camera, this.camera, ["alpha", "beta", "radius"], undefined, [true, true, false], Nabu.Easing.easeInOutSine);
+        this._animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
         this.updateCameraLayer();
         this.updateShadowGenerator();
+        let test = BABYLON.MeshBuilder.CreateBox("zero", { size: 0.01 });
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));
@@ -1667,9 +1673,11 @@ class Game {
                 }
             }
         }
-        this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
-        this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
-        this.camera.target.z = Nabu.MinMax(this.camera.target.z, this.machine.baseMeshMinZ, this.machine.baseMeshMaxZ);
+        if (this.cameraMode === CameraMode.None) {
+            this.camera.target.x = Nabu.MinMax(this.camera.target.x, this.machine.baseMeshMinX, this.machine.baseMeshMaxX);
+            this.camera.target.y = Nabu.MinMax(this.camera.target.y, this.machine.baseMeshMinY, this.machine.baseMeshMaxY);
+            this.camera.target.z = Nabu.MinMax(this.camera.target.z, this.machine.baseMeshMinZ, this.machine.baseMeshMaxZ);
+        }
         window.localStorage.setItem("saved-main-volume", this.mainVolume.toFixed(2));
         window.localStorage.setItem("saved-time-factor", this.targetTimeFactor.toFixed(2));
         if (this.cameraOrtho) {
@@ -1768,6 +1776,8 @@ class Game {
             await this.machineEditor.instantiate();
         }
         if (mode === GameMode.ChallengeMode) {
+            this._animateCamera([-Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
+            this._animateCameraTarget(new BABYLON.Vector3(-0.1, 0, 0), 3);
             this.setCameraMode(CameraMode.None);
             this.logo.hide();
             await this.mainMenu.hide();
@@ -1919,6 +1929,7 @@ class Game {
         this.camera.radius = (1 - f) * (this.camera.upperRadiusLimit - this.camera.lowerRadiusLimit) + this.camera.lowerRadiusLimit;
     }
     setCameraMode(camMode) {
+        console.log("setCameraMode " + camMode);
         if (camMode >= CameraMode.None && camMode <= CameraMode.Landscape) {
             this.cameraMode = camMode;
             if (this.cameraMode == CameraMode.None) {
@@ -1946,6 +1957,9 @@ class Game {
                 this.targetCamRadius = this.camera.radius;
                 this.targetCamTarget.copyFrom(this.camera.target);
             }
+        }
+        else if (camMode === CameraMode.Transition) {
+            this.cameraMode = camMode;
         }
         this.topbar.resize();
     }
@@ -8282,7 +8296,7 @@ class Topbar {
         for (let i = 0; i < this.camModeButtons.length; i++) {
             this.camModeButtons[i].style.display = this._shown ? "" : "none";
         }
-        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.ChallengeMode || this.game.mode === GameMode.DemoMode) {
+        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.DemoMode) {
             this.container.style.display = "block";
             if (this._shown) {
                 if (this.game.mode === GameMode.CreateMode) {
@@ -8317,6 +8331,8 @@ class Topbar {
         this.camModeButtons.forEach(button => {
             button.classList.remove("active");
         });
-        this.camModeButtons[this.game.cameraMode].classList.add("active");
+        if (this.camModeButtons[this.game.cameraMode]) {
+            this.camModeButtons[this.game.cameraMode].classList.add("active");
+        }
     }
 }

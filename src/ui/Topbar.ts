@@ -42,7 +42,7 @@ class Topbar {
         for (let i = 0; i < this.camModeButtons.length; i++) {
             this.camModeButtons[i].style.display = this._shown ? "" : "none";
         }
-        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.ChallengeMode || this.game.mode === GameMode.DemoMode) {
+        if (this.game.mode === GameMode.CreateMode || this.game.mode === GameMode.DemoMode) {
             this.container.style.display = "block";
             if (this._shown) {
                 if (this.game.mode === GameMode.CreateMode) {
@@ -79,7 +79,9 @@ class Topbar {
         this.camModeButtons.forEach(button => {
             button.classList.remove("active");
         })
-        this.camModeButtons[this.game.cameraMode].classList.add("active");
+        if (this.camModeButtons[this.game.cameraMode]) {
+            this.camModeButtons[this.game.cameraMode].classList.add("active");
+        }
     }
 
     private _lastPlaying: boolean;
