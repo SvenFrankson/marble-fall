@@ -59,7 +59,7 @@ class Game {
     public config: Configuration;
 
     public logo: Logo;
-    public mainMenu: MainMenu;
+    public mainMenu: Nabu.PanelPage;
     public optionsPage: OptionsPage;
     public creditsPage: CreditsPage;
     public topbar: Topbar;
@@ -232,9 +232,7 @@ class Game {
         this.logo.initialize();
         this.logo.hide();
 
-        this.mainMenu = new MainMenu(this);
-        this.mainMenu.resize();
-        this.mainMenu.hide();
+        this.mainMenu = document.getElementById("main-menu") as Nabu.PanelPage;
 
         this.optionsPage = new OptionsPage(this);
         this.optionsPage.initialize();
@@ -271,14 +269,14 @@ class Game {
                     this.machine.deserialize(demo);
                     await this.machine.generateBaseMesh();
                     await this.machine.instantiate();
-                    this.setPageMode(GameMode.DemoMode);
+                    this.setGameMode(GameMode.DemoMode);
                 }
             }
         }
         let buttonCreate = container.querySelector(".panel.create") as HTMLDivElement;
         buttonCreate.onclick = () => {
             this.machine.stop();
-            this.setPageMode(GameMode.CreateMode);
+            this.setGameMode(GameMode.CreateMode);
         }
         if (this.DEBUG_MODE) {
             let buttonChallenge = container.querySelector(".panel.challenge") as HTMLDivElement;
@@ -288,23 +286,23 @@ class Game {
                 this.machine.deserialize(testChallenge);
                 await this.machine.generateBaseMesh();
                 await this.machine.instantiate();
-                this.setPageMode(GameMode.ChallengeMode);
+                this.setGameMode(GameMode.ChallengeMode);
             }
         }
         let buttonOption = container.querySelector(".panel.option") as HTMLDivElement;
         buttonOption.onclick = () => {
-            this.setPageMode(GameMode.Options);
+            this.setGameMode(GameMode.Options);
         }
         let buttonCredit = container.querySelector(".panel.credit") as HTMLDivElement;
         buttonCredit.onclick = () => {
-            this.setPageMode(GameMode.Credits);
+            this.setGameMode(GameMode.Credits);
         }
 
         if (this.DEBUG_MODE) {
-            await this.setPageMode(GameMode.MainMenu);
+            await this.setGameMode(GameMode.MainMenu);
         }
         else {
-            await this.setPageMode(GameMode.MainMenu);
+            await this.setGameMode(GameMode.MainMenu);
         }
         this.machine.play();
 
@@ -505,7 +503,7 @@ class Game {
         }
     }
 
-    public async setPageMode(mode: GameMode): Promise<void> {
+    public async setGameMode(mode: GameMode): Promise<void> {
         this.toolbar.closeAllDropdowns();
         this.machineEditor.dispose();
         this.mode = mode;

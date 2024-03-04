@@ -1535,9 +1535,7 @@ class Game {
         this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
-        this.mainMenu = new MainMenu(this);
-        this.mainMenu.resize();
-        this.mainMenu.hide();
+        this.mainMenu = document.getElementById("main-menu");
         this.optionsPage = new OptionsPage(this);
         this.optionsPage.initialize();
         this.optionsPage.hide();
@@ -1567,14 +1565,14 @@ class Game {
                     this.machine.deserialize(demo);
                     await this.machine.generateBaseMesh();
                     await this.machine.instantiate();
-                    this.setPageMode(GameMode.DemoMode);
+                    this.setGameMode(GameMode.DemoMode);
                 };
             }
         }
         let buttonCreate = container.querySelector(".panel.create");
         buttonCreate.onclick = () => {
             this.machine.stop();
-            this.setPageMode(GameMode.CreateMode);
+            this.setGameMode(GameMode.CreateMode);
         };
         if (this.DEBUG_MODE) {
             let buttonChallenge = container.querySelector(".panel.challenge");
@@ -1584,22 +1582,22 @@ class Game {
                 this.machine.deserialize(testChallenge);
                 await this.machine.generateBaseMesh();
                 await this.machine.instantiate();
-                this.setPageMode(GameMode.ChallengeMode);
+                this.setGameMode(GameMode.ChallengeMode);
             };
         }
         let buttonOption = container.querySelector(".panel.option");
         buttonOption.onclick = () => {
-            this.setPageMode(GameMode.Options);
+            this.setGameMode(GameMode.Options);
         };
         let buttonCredit = container.querySelector(".panel.credit");
         buttonCredit.onclick = () => {
-            this.setPageMode(GameMode.Credits);
+            this.setGameMode(GameMode.Credits);
         };
         if (this.DEBUG_MODE) {
-            await this.setPageMode(GameMode.MainMenu);
+            await this.setGameMode(GameMode.MainMenu);
         }
         else {
-            await this.setPageMode(GameMode.MainMenu);
+            await this.setGameMode(GameMode.MainMenu);
         }
         this.machine.play();
         document.addEventListener("keydown", async (event) => {
@@ -1780,7 +1778,7 @@ class Game {
             }
         }
     }
-    async setPageMode(mode) {
+    async setGameMode(mode) {
         this.toolbar.closeAllDropdowns();
         this.machineEditor.dispose();
         this.mode = mode;
@@ -7742,185 +7740,6 @@ class Logo {
         this.container.appendChild(earlyAccessDisclaimer);
     }
 }
-class MainMenu {
-    constructor(game) {
-        this.game = game;
-        this.xCount = 1;
-        this.yCount = 1;
-        this.container = document.getElementById("main-menu");
-        this.updateNode = new BABYLON.Node("main-menu-update-node");
-    }
-    async show() {
-        if (this.container.style.visibility === "visible") {
-            this.container.style.pointerEvents = "";
-            return;
-        }
-        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        this.container.style.visibility = "visible";
-        await anim(1, 1);
-        this.container.style.pointerEvents = "";
-    }
-    async hide() {
-        if (this.container.style.visibility === "hidden") {
-            this.container.style.pointerEvents = "none";
-            return;
-        }
-        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        this.container.style.visibility = "visible";
-        await anim(0, 0.5);
-        this.container.style.visibility = "hidden";
-        this.container.style.pointerEvents = "none";
-    }
-    resize() {
-        let requestedTileCount = 0;
-        let requestedFullLines = 0;
-        let panels = [];
-        let elements = this.container.querySelectorAll("menu-panel");
-        for (let i = 0; i < elements.length; i++) {
-            let panel = elements[i];
-            panels[i] = panel;
-            panel.w = parseInt(panel.getAttribute("w"));
-            panel.h = parseInt(panel.getAttribute("h"));
-            let area = panel.w * panel.h;
-            requestedTileCount += area;
-        }
-        let rect = this.container.getBoundingClientRect();
-        let containerW = rect.width;
-        let containerH = rect.height;
-        let min = 0;
-        let ok = false;
-        let emptyLinesBottom = 0;
-        while (!ok) {
-            ok = true;
-            min++;
-            let bestValue = 0;
-            for (let xC = min; xC <= 10; xC++) {
-                for (let yC = min; yC <= 10; yC++) {
-                    let count = xC * yC;
-                    if (count >= requestedTileCount) {
-                        let w = containerW / xC;
-                        let h = containerH / (yC + requestedFullLines);
-                        let area = w * h;
-                        let squareness = Math.min(w / h, h / w);
-                        let value = area * squareness;
-                        if (value > bestValue) {
-                            this.xCount = xC;
-                            this.yCount = yC + requestedFullLines;
-                            bestValue = value;
-                        }
-                    }
-                }
-            }
-            let grid = [];
-            for (let y = 0; y <= this.yCount; y++) {
-                grid[y] = [];
-                for (let x = 0; x <= this.xCount; x++) {
-                    grid[y][x] = (x < this.xCount && y < this.yCount);
-                }
-            }
-            for (let n = 0; n < panels.length; n++) {
-                let panel = panels[n];
-                panel.x = -1;
-                panel.y = -1;
-                for (let line = 0; line < this.yCount && panel.x === -1; line++) {
-                    for (let col = 0; col < this.xCount && panel.x === -1; col++) {
-                        let fit = true;
-                        for (let x = 0; x < panel.w; x++) {
-                            for (let y = 0; y < panel.h; y++) {
-                                fit = fit && grid[line + y][col + x];
-                            }
-                        }
-                        if (fit) {
-                            panel.x = col;
-                            panel.y = line;
-                            for (let x = 0; x < panel.w; x++) {
-                                for (let y = 0; y < panel.h; y++) {
-                                    grid[line + y][col + x] = false;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (panel.x === -1) {
-                    ok = false;
-                }
-            }
-            if (ok) {
-                let empty = true;
-                emptyLinesBottom = 0;
-                for (let y = this.yCount - 1; y > 0 && empty; y--) {
-                    for (let x = 0; x < this.xCount && empty; x++) {
-                        if (!grid[y][x]) {
-                            empty = false;
-                        }
-                    }
-                    if (empty) {
-                        emptyLinesBottom++;
-                    }
-                }
-            }
-        }
-        let tileW = containerW / this.xCount;
-        let tileH = containerH / this.yCount;
-        let m = Math.min(tileW, tileH) / 15;
-        for (let i = 0; i < panels.length; i++) {
-            let panel = panels[i];
-            panel.style.display = "block";
-            panel.style.width = (panel.w * tileW - 2 * m).toFixed(0) + "px";
-            panel.style.height = (panel.h * tileH - 2 * m).toFixed(0) + "px";
-            panel.style.position = "absolute";
-            panel.computedLeft = (panel.x * tileW + m);
-            if (panel.style.display != "none") {
-                panel.style.left = panel.computedLeft.toFixed(0) + "px";
-            }
-            panel.computedTop = (panel.y * tileH + m + emptyLinesBottom * 0.5 * tileH);
-            panel.style.top = panel.computedTop.toFixed(0) + "px";
-            let label = panel.querySelector(".label");
-            if (label) {
-                label.style.fontSize = (tileW / 4).toFixed(0) + "px";
-            }
-            let label2 = panel.querySelector(".label-2");
-            if (label2) {
-                label2.style.fontSize = (tileW / 7).toFixed(0) + "px";
-            }
-        }
-        this.container.querySelector("menu-panel.create").style.backgroundImage = "url(./datas/icons/create.png)";
-        let demoPanels = this.container.querySelectorAll("menu-panel.demo");
-        demoPanels.forEach((e, i) => {
-            if (e instanceof HTMLElement) {
-                e.style.backgroundImage = "url(./datas/icons/demo-" + (i + 1).toFixed(0) + ".png)";
-            }
-        });
-    }
-}
-class MainMenuPanel extends HTMLElement {
-    constructor() {
-        super(...arguments);
-        this.x = 0;
-        this.y = 0;
-        this.w = 1;
-        this.h = 1;
-        this.computedTop = 0;
-        this.computedLeft = 0;
-    }
-    get top() {
-        return parseFloat(this.style.top);
-    }
-    set top(v) {
-        if (this) {
-            this.style.top = v.toFixed(1) + "px";
-        }
-    }
-    get left() {
-        return parseFloat(this.style.left);
-    }
-    set left(v) {
-        if (this) {
-            this.style.left = v.toFixed(1) + "px";
-        }
-    }
-}
-customElements.define("menu-panel", MainMenuPanel);
 class OptionsPage {
     constructor(game) {
         this.game = game;
@@ -8156,7 +7975,7 @@ class Toolbar {
             }
         };
         this.onBack = () => {
-            this.game.setPageMode(GameMode.MainMenu);
+            this.game.setGameMode(GameMode.MainMenu);
         };
         this.closeAllDropdowns = () => {
             if (this.camModeInputShown || this.timeFactorInputShown || this.loadInputShown || this.soundInputShown || this.zoomInputShown) {

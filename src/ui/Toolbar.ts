@@ -338,7 +338,7 @@ class Toolbar {
     }
 
     public onBack = () => {
-        this.game.setPageMode(GameMode.MainMenu);
+        this.game.setGameMode(GameMode.MainMenu);
     }
 
     public closeAllDropdowns = () => {
