@@ -365,6 +365,11 @@ class Challenge {
         this.steps = [];
         this.winZoneMin = BABYLON.Vector3.Zero();
         this.winZoneMax = BABYLON.Vector3.Zero();
+        this.gridIMin = -4;
+        this.gridIMax = 4;
+        this.gridJMin = -10;
+        this.gridJMax = 1;
+        this.gridDepth = 0;
         this.availableElements = [];
         this._successTime = 0;
         this.WaitAnimation = Mummu.AnimationFactory.CreateWait(this.game);
@@ -407,7 +412,7 @@ class Challenge {
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
         ];
     }
-    initialize() {
+    initialize(data) {
         this.state = 0;
         let arrival = this.game.machine.parts.find(part => { return part.partName === "end"; });
         if (arrival) {
@@ -424,6 +429,12 @@ class Challenge {
             this.winZoneMax.y += 0.02;
             this.winZoneMax.z += 0.01;
         }
+        this.game.machineEditor.grid.position.copyFromFloats(0, 0, 0);
+        this.gridIMin = data.gridIMin;
+        this.gridIMax = data.gridIMax;
+        this.gridJMin = data.gridJMin;
+        this.gridJMax = data.gridJMax;
+        this.gridDepth = data.gridDepth;
     }
     update(dt) {
         if (this.state < 100) {
@@ -889,7 +900,6 @@ class Game {
         this.animateCameraTarget = Mummu.AnimationFactory.CreateVector3(this.camera, this.camera, "target", undefined, Nabu.Easing.easeInOutSine);
         this.updateCameraLayer();
         this.updateShadowGenerator();
-        let test = BABYLON.MeshBuilder.CreateBox("zero", { size: 0.01 });
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));
@@ -1890,7 +1900,7 @@ class Machine {
             this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 0.5));
             this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
-        if (this.game.DEBUG_MODE) {
+        if (false && this.game.DEBUG_MODE) {
             if (this.debugAxis) {
                 this.debugAxis.dispose();
             }
@@ -2319,6 +2329,9 @@ class MachinePart extends BABYLON.Mesh {
     setI(v) {
         if (this._i != v) {
             this._i = v;
+            if (this.game.mode === GameMode.Challenge) {
+                this._i = Nabu.MinMax(this._i, this.game.challenge.gridIMin, this.game.challenge.gridIMax);
+            }
             this.position.x = this._i * tileWidth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
@@ -2334,6 +2347,9 @@ class MachinePart extends BABYLON.Mesh {
     setJ(v) {
         if (this._j != v) {
             this._j = v;
+            if (this.game.mode === GameMode.Challenge) {
+                this._j = Nabu.MinMax(this._j, this.game.challenge.gridJMin, this.game.challenge.gridJMax);
+            }
             this.position.y = -this._j * tileHeight;
             this.isPlaced = true;
             this.freezeWorldMatrix();
@@ -2349,6 +2365,9 @@ class MachinePart extends BABYLON.Mesh {
     setK(v) {
         if (this._k != v) {
             this._k = v;
+            if (this.game.mode === GameMode.Challenge) {
+                this._k = Nabu.MinMax(this._k, -this.game.challenge.gridDepth, this.game.challenge.gridDepth);
+            }
             this.position.z = -this._k * tileDepth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
@@ -7209,7 +7228,7 @@ class MarbleRouter extends Nabu.Router {
                     this.game.machine.instantiate().then(() => { this.game.machine.setAllIsSelectable(false); });
                     this.game.challenge.availableElements = data.elements;
                     this.game.machineEditor.instantiate();
-                    this.game.challenge.initialize();
+                    this.game.challenge.initialize(data);
                 }
             }
         }

@@ -144,7 +144,7 @@ class Machine {
             this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
 
-        if (this.game.DEBUG_MODE) {
+        if (false && this.game.DEBUG_MODE) {
             if (this.debugAxis) {
                 this.debugAxis.dispose();
             }

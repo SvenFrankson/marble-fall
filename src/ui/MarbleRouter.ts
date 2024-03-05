@@ -107,7 +107,7 @@ class MarbleRouter extends Nabu.Router {
         
                     this.game.challenge.availableElements = data.elements;
                     this.game.machineEditor.instantiate();
-                    this.game.challenge.initialize();
+                    this.game.challenge.initialize(data);
                 }
             }
         }

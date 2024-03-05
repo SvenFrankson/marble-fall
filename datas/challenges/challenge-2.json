@@ -1,14 +1,19 @@
 {
     "machine": {
-        "balls": [{ "x": -0.40177018652623864, "y": 0.045259412443840456, "z": 2.7755575615628914e-17 }],
+        "balls": [{ "x": -0.25126743563483067, "y": 0.044800075666207355, "z": 2.7755575615628914e-17 }],
         "parts": [
-            { "name": "end", "i": 1, "j": 0, "k": 0, "mirrorZ": false, "color": 0 },
-            { "name": "start", "i": -3, "j": -1, "k": 0, "mirrorZ": false, "color": 0 }
+            { "name": "end", "i": 2, "j": 0, "k": 0, "mirrorZ": false, "color": 0 },
+            { "name": "start", "i": -2, "j": -1, "k": 0, "mirrorZ": false, "color": 0 }
         ]
     },
     "camAlpha": -1.57,
     "camBeta": 1.26,
     "camRadius": 0.55,
-    "camTarget": { "x": -0.15, "y": 0, "z": 0 },
+    "camTarget": { "x": 0, "y": 0, "z": 0 },
+    "gridIMin": -5,
+    "gridIMax": 5,
+    "gridJMin": -10,
+    "gridJMax": 2,
+    "gridDepth": 0,
     "elements": ["ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1"]
 }

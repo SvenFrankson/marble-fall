@@ -6,6 +6,11 @@ interface IChallengeData {
     camTarget: { x: number, y: number, z: number },
     tutoMode: number;
     elements: string[];
+    gridIMin: number;
+    gridIMax: number;
+    gridJMin: number;
+    gridJMax: number;
+    gridDepth: number;
 }
 
 class ChallengeStep {
@@ -100,6 +105,12 @@ class Challenge {
 
     public winZoneMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public winZoneMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    
+    public gridIMin: number = - 4;
+    public gridIMax: number = 4;
+    public gridJMin: number = - 10;
+    public gridJMax: number = 1;
+    public gridDepth: number = 0;
 
     public availableElements: string[] = [];
     
@@ -148,7 +159,7 @@ class Challenge {
         ];
     }
 
-    public initialize(): void {
+    public initialize(data: IChallengeData): void {
         this.state = 0;
         let arrival = this.game.machine.parts.find(part => { return part.partName === "end"; });
         if (arrival) {
@@ -165,6 +176,12 @@ class Challenge {
             this.winZoneMax.y += 0.02;
             this.winZoneMax.z += 0.01;
         }
+        this.game.machineEditor.grid.position.copyFromFloats(0, 0, 0);
+        this.gridIMin = data.gridIMin;
+        this.gridIMax = data.gridIMax;
+        this.gridJMin = data.gridJMin;
+        this.gridJMax = data.gridJMax;
+        this.gridDepth = data.gridDepth;
     }
 
     private _successTime: number = 0;

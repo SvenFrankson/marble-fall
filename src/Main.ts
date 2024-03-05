@@ -174,8 +174,6 @@ class Game {
         this.updateCameraLayer();
         this.updateShadowGenerator();
 
-        let test = BABYLON.MeshBuilder.CreateBox("zero", { size: 0.01 });
-
         if (this.DEBUG_MODE) {
             if (window.localStorage.getItem("camera-target")) {
                 let target = JSON.parse(window.localStorage.getItem("camera-target"));

@@ -172,6 +172,9 @@ class MachinePart extends BABYLON.Mesh {
     public setI(v: number) {
         if (this._i != v) {
             this._i = v;
+            if (this.game.mode === GameMode.Challenge) {
+                this._i = Nabu.MinMax(this._i, this.game.challenge.gridIMin, this.game.challenge.gridIMax);
+            }
             this.position.x = this._i * tileWidth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
@@ -189,6 +192,9 @@ class MachinePart extends BABYLON.Mesh {
     public setJ(v: number) {
         if (this._j != v) {
             this._j = v;
+            if (this.game.mode === GameMode.Challenge) {
+                this._j = Nabu.MinMax(this._j, this.game.challenge.gridJMin, this.game.challenge.gridJMax);
+            }
             this.position.y = - this._j * tileHeight;
             this.isPlaced = true;
             this.freezeWorldMatrix();
@@ -206,6 +212,9 @@ class MachinePart extends BABYLON.Mesh {
     public setK(v: number) {
         if (this._k != v) {
             this._k = v;
+            if (this.game.mode === GameMode.Challenge) {
+                this._k = Nabu.MinMax(this._k, - this.game.challenge.gridDepth, this.game.challenge.gridDepth);
+            }
             this.position.z = - this._k * tileDepth;
             this.isPlaced = true;
             this.freezeWorldMatrix();
