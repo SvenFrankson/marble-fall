@@ -217,8 +217,13 @@ class Challenge {
     private _successTime: number = 0;
     public update(dt: number): void {
         if (this.state < 100) {
-            let ball = this.game.machine.balls[0];
-            if (ball && Mummu.SphereAABBCheck(ball.position, ball.radius, this.winZoneMin, this.winZoneMax)) {
+            let ballsIn = true;
+            for (let i = 0; i < this.game.machine.balls.length; i++) {
+                let ball = this.game.machine.balls[i];
+                ballsIn = ballsIn && ball && Mummu.SphereAABBCheck(ball.position, ball.radius, this.winZoneMin, this.winZoneMax);
+            }
+            
+            if (ballsIn) {
                 this._successTime += dt;
             }
             else {

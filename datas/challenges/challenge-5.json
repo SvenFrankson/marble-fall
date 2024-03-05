@@ -1,0 +1,26 @@
+{
+    "machine": {
+        "balls": [{ "x": -0.09869073024221654, "y": 0.162334062970167, "z": -1.3877787807814457e-16 }],
+        "parts": [
+            { "name": "end", "i": 3, "j": -3, "k": 2, "mirrorZ": false, "color": 0 },
+            { "name": "start", "i": -1, "j": -5, "k": 0, "mirrorZ": false, "color": 0 }
+        ]
+    },
+    "camAlpha": -1.57,
+    "camBeta": 1.26,
+    "camRadius": 0.55,
+    "camTarget": { "x": 0, "y": 0, "z": 0 },
+    "gridIMin": -5,
+    "gridIMax": 5,
+    "gridJMin": -10,
+    "gridJMax": 2,
+    "gridDepth": 2,
+    "elements": [
+        "uturn-0.2",
+        "uturn-0.2_X",
+        "ramp-1.5.1_X",
+        "ramp-1.0.1",
+        "ramp-1.1.1",
+        "ramp-2.6.1"
+    ]
+}

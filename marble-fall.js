@@ -471,8 +471,12 @@ class Challenge {
     }
     update(dt) {
         if (this.state < 100) {
-            let ball = this.game.machine.balls[0];
-            if (ball && Mummu.SphereAABBCheck(ball.position, ball.radius, this.winZoneMin, this.winZoneMax)) {
+            let ballsIn = true;
+            for (let i = 0; i < this.game.machine.balls.length; i++) {
+                let ball = this.game.machine.balls[i];
+                ballsIn = ballsIn && ball && Mummu.SphereAABBCheck(ball.position, ball.radius, this.winZoneMin, this.winZoneMax);
+            }
+            if (ballsIn) {
                 this._successTime += dt;
             }
             else {
@@ -1013,8 +1017,17 @@ class Game {
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 //await this.makeScreenshot("spiral-1.2.1");
-                //let parts = ["ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1"];
-                let parts = TrackNames;
+                let parts = [
+                    "end",
+                    "uturn-0.2",
+                    "uturn-0.2_X",
+                    "ramp-1.5.1_X",
+                    "ramp-1.0.1",
+                    "ramp-1.1.1",
+                    "start",
+                    "ramp-2.6.1"
+                ];
+                //let parts = TrackNames;
                 for (let i = 0; i < parts.length; i++) {
                     await this.makeScreenshot(parts[i]);
                 }
@@ -2642,6 +2655,8 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
+    "start",
+    "end"
 ];
 class MachinePartFactory {
     constructor(machine) {

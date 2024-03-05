@@ -11,8 +11,8 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
-    //"start",
-    //"end"
+    "start",
+    "end"
 ];
 
 interface IMachinePartProp {

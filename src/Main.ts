@@ -270,8 +270,17 @@ class Game {
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 //await this.makeScreenshot("spiral-1.2.1");
-                //let parts = ["ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1"];
-                let parts = TrackNames;
+                let parts = [
+                    "end",
+                    "uturn-0.2",
+                    "uturn-0.2_X",
+                    "ramp-1.5.1_X",
+                    "ramp-1.0.1",
+                    "ramp-1.1.1",
+                    "start",
+                    "ramp-2.6.1"
+                ];
+                //let parts = TrackNames;
                 for (let i = 0; i < parts.length; i++) {
                     await this.makeScreenshot(parts[i]);
                 }
