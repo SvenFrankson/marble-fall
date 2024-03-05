@@ -214,11 +214,12 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        if (this.DEBUG_MODE) {
-            this.machine.deserialize(aerial);
-        }
-        else {
-            this.machine.deserialize(aerial);
+        let dataResponse = await fetch("./datas/demos/demo-8.json");
+        if (dataResponse) {
+            let data = await dataResponse.json();
+            if (data) {
+                this.machine.deserialize(data);
+            }
         }
 
         let screenshotButton = document.querySelector("#toolbar-screenshot") as HTMLButtonElement;

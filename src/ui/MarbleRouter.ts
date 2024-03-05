@@ -5,11 +5,8 @@ class MarbleRouter extends Nabu.Router {
     public creditsPage: CreditsPage;
     public optionsPage: OptionsPage;
 
-    public demos = [];
-
     constructor(public game: Game) {
         super();
-        this.demos = [simpleLoop, demo1, demoLoops, demo3, largeTornado, deathLoop, popopo, aerial];
     }
     
     protected onFindAllPages(): void {
@@ -68,18 +65,24 @@ class MarbleRouter extends Nabu.Router {
             this.game.machineEditor.instantiate();
         }
         else if (page.startsWith("#demo-")) {
-            let index = parseInt(page.replace("#demo-", "")) - 1;
+            let index = parseInt(page.replace("#demo-", ""));
             this.game.mode = GameMode.Demo;
             this.game.setCameraMode(CameraMode.Landscape);
 
             this.game.logo.hide();
             this.hideAll();
 
-            this.game.machine.dispose();
-            this.game.machine.deserialize(this.demos[index]);
-
-            this.game.machine.generateBaseMesh();
-            this.game.machine.instantiate().then(() => { this.game.machine.play(); });
+            let dataResponse = await fetch("./datas/demos/demo-" + index.toFixed(0) + ".json")
+            if (dataResponse) {
+                let data = await dataResponse.json();
+                if (data) {
+                    this.game.machine.dispose();
+                    this.game.machine.deserialize(data);
+        
+                    this.game.machine.generateBaseMesh();
+                    this.game.machine.instantiate().then(() => { this.game.machine.play(); });
+                }
+            }
         }
         else if (page.startsWith("#challenge-")) {
             this.game.mode = GameMode.Challenge;

@@ -1,0 +1,30 @@
+{
+    "balls": [
+        { "x": 0.15400000655651092, "y": -0.2408360127210617, "z": 0 },
+        { "x": 0.15400000655651092, "y": -0.16197078263759612, "z": 0 },
+        { "x": 0.15400000655651092, "y": -0.08310558235645295, "z": 0 },
+        { "x": 0.15400000655651092, "y": -0.00424036717414856, "z": 0 },
+        { "x": 0.15400000655651092, "y": 0.07462484800815582, "z": 0 },
+        { "x": 0.15400000655651092, "y": 0.1534900631904602, "z": 0 }
+    ],
+    "parts": [
+        { "name": "uturn-1.5", "i": -1, "j": -6, "k": 0, "mirrorX": true, "mirrorZ": false },
+        { "name": "uturn-1.5", "i": 1, "j": -5, "k": 4, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-1.8", "i": -2, "j": -4, "k": 1, "mirrorX": true, "mirrorZ": true },
+        { "name": "uturn-1.7", "i": 1, "j": -3, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-1.7", "i": -2, "j": -2, "k": 1, "mirrorX": true, "mirrorZ": true },
+        { "name": "uturn-1.6", "i": 1, "j": -1, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-1.6", "i": -1, "j": 0, "k": 1, "mirrorX": true, "mirrorZ": true },
+        { "name": "uturn-1.5", "i": 1, "j": 1, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-1.5", "i": -1, "j": 2, "k": 1, "mirrorX": true, "mirrorZ": true },
+        { "name": "uturn-1.4", "i": 1, "j": 3, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-1.4", "i": -1, "j": 4, "k": 1, "mirrorX": true, "mirrorZ": true },
+        { "name": "elevator-15", "i": 1, "j": -7, "k": 0, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-1.5", "i": 1, "j": 5, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "ramp-2.4.1", "i": -1, "j": 6, "k": 5, "mirrorX": true, "mirrorZ": false },
+        { "name": "uturn-0.5", "i": -4, "j": 10, "k": 0, "mirrorX": true, "mirrorZ": true },
+        { "name": "loop-1.2", "i": -2, "j": 6, "k": 4, "mirrorX": false, "mirrorZ": false },
+        { "name": "ramp-2.2.1", "i": -2, "j": 8, "k": 0, "mirrorX": true, "mirrorZ": false },
+        { "name": "ramp-1.0.1", "i": 0, "j": 8, "k": 0, "mirrorX": false, "mirrorZ": false }
+    ]
+}

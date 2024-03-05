@@ -1,0 +1,31 @@
+{
+    "balls": [
+        { "x": -0.45039562940864025, "y": -0.14880134622293845, "z": 0 },
+        { "x": -0.4507414790693519, "y": 0.00570802711480296, "z": 0 },
+        { "x": -0.4512511582822969, "y": 0.15488847198893452, "z": 1.1102230246251565e-16 }
+    ],
+    "parts": [
+        { "name": "split", "i": 0, "j": -5, "k": 0, "mirrorX": false, "mirrorZ": false },
+        { "name": "split", "i": 0, "j": -2, "k": 2, "mirrorX": false, "mirrorZ": false },
+        { "name": "ramp-2.1.1", "i": -2, "j": -6, "k": 0, "mirrorX": false, "mirrorZ": false },
+        { "name": "join", "i": -1, "j": 2, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-0.3", "i": -2, "j": -2, "k": 0, "mirrorX": true },
+        { "name": "ramp-1.1.1", "i": -1, "j": -3, "k": 0, "mirrorX": true, "mirrorZ": false },
+        { "name": "ramp-1.0.1", "i": -1, "j": -2, "k": 2, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-0.3", "i": 1, "j": 0, "k": 0, "mirrorX": false, "mirrorZ": true },
+        { "name": "uturn-1.2", "i": -2, "j": 1, "k": 0, "mirrorX": true, "mirrorZ": false },
+        { "name": "ramp-2.1.1", "i": -1, "j": 0, "k": 0, "mirrorX": true, "mirrorZ": false },
+        { "name": "join", "i": 0, "j": 3, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-0.3", "i": 1, "j": 3, "k": 1, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-0.2", "i": 1, "j": 4, "k": 0 },
+        { "name": "elevator-12", "i": -3, "j": -7, "k": 0, "mirrorX": true, "mirrorZ": false },
+        { "name": "ramp-2.3.1", "i": 0, "j": -1, "k": 1, "mirrorX": true, "mirrorZ": false },
+        { "name": "snake-1.2.3", "i": 1, "j": -3, "k": 0, "mirrorX": false, "mirrorZ": false },
+        { "name": "uturn-0.2", "i": 2, "j": -1, "k": 1 },
+        { "name": "loop-1.1.1", "i": -2, "j": 0, "k": 2 },
+        { "name": "ramp-1.4.1", "i": -1, "j": 0, "k": 2, "mirrorX": true, "mirrorZ": false },
+        { "name": "uturn-0.2", "i": -3, "j": 4, "k": 2, "mirrorX": true, "mirrorZ": true },
+        { "name": "ramp-3.1.1", "i": -2, "j": 3, "k": 3, "mirrorX": true, "mirrorZ": false },
+        { "name": "ramp-3.1.1", "i": -2, "j": 4, "k": 0, "mirrorX": true, "mirrorZ": false }
+    ]
+}
