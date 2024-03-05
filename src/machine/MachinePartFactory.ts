@@ -60,6 +60,15 @@ class MachinePartFactory {
     }
 
     public createTrack(trackname: string, prop: IMachinePartProp): MachinePart {
+        if (trackname.indexOf("_X") != -1) {
+            prop.mirrorX = true;
+            trackname = trackname.replace("_X", "");
+        }
+        if (trackname.indexOf("_Z") != -1) {
+            prop.mirrorX = true;
+            trackname = trackname.replace("_Z", "");
+        }
+
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);

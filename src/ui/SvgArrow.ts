@@ -19,6 +19,7 @@ class SvgArrow {
         this.image.style.position = "fixed";
         this.image.style.transformOrigin = "center";
         this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+        this.image.style.pointerEvents = "none";
         document.body.appendChild(this.image);
     }
 

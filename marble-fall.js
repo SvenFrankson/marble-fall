@@ -2564,6 +2564,14 @@ class MachinePartFactory {
         return this.createTrack(trackname, props);
     }
     createTrack(trackname, prop) {
+        if (trackname.indexOf("_X") != -1) {
+            prop.mirrorX = true;
+            trackname = trackname.replace("_X", "");
+        }
+        if (trackname.indexOf("_Z") != -1) {
+            prop.mirrorX = true;
+            trackname = trackname.replace("_Z", "");
+        }
         if (trackname.startsWith("ramp-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
             let h = parseInt(trackname.split("-")[1].split(".")[1]);
@@ -7282,6 +7290,7 @@ class SvgArrow {
         this.image.style.position = "fixed";
         this.image.style.transformOrigin = "center";
         this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+        this.image.style.pointerEvents = "none";
         document.body.appendChild(this.image);
     }
     setTarget(e) {
