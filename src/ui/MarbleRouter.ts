@@ -85,22 +85,29 @@ class MarbleRouter extends Nabu.Router {
             }
         }
         else if (page.startsWith("#challenge-")) {
+            let index = parseInt(page.replace("#challenge-", ""));
             this.game.mode = GameMode.Challenge;
-            this.game.animateCamera([- Math.PI * 0.5, 0.8 * Math.PI * 0.5, 0.4], 3);
-            this.game.animateCameraTarget(new BABYLON.Vector3(- 0.15, 0, 0), 3);
-            this.game.setCameraMode(CameraMode.None);
-
-            this.game.logo.hide();
-            this.hideAll();
-
-            this.game.machine.stop();
-            this.game.machine.dispose();
-            this.game.machine.deserialize(testChallenge);
-            this.game.machine.generateBaseMesh();
-            this.game.machine.instantiate();
-
-            this.game.machineEditor.instantiate();
-            this.game.challenge.initialize();
+            let dataResponse = await fetch("./datas/challenges/challenge-" + index.toFixed() + ".json")
+            if (dataResponse) {
+                let data = await dataResponse.json() as IChallengeData;
+                if (data) {
+                    this.game.animateCamera([data.camAlpha, data.camBeta, data.camRadius], 3);
+                    this.game.animateCameraTarget(new BABYLON.Vector3(data.camTarget.x, data.camTarget.y, data.camTarget.z), 3);
+                    this.game.setCameraMode(CameraMode.None);
+        
+                    this.game.logo.hide();
+                    this.hideAll();
+        
+                    this.game.machine.stop();
+                    this.game.machine.dispose();
+                    this.game.machine.deserialize(data.machine);
+                    this.game.machine.generateBaseMesh();
+                    this.game.machine.instantiate();
+        
+                    this.game.machineEditor.instantiate();
+                    this.game.challenge.initialize();
+                }
+            }
         }
         else if (page.startsWith("#home") || true) {
             this.game.machine.play();

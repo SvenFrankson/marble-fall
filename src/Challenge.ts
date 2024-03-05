@@ -1,3 +1,13 @@
+interface IChallengeData {
+    machine: IMachineData;
+    camAlpha: number;
+    camBeta: number;
+    camRadius: number;
+    camTarget: { x: number, y: number, z: number },
+    tutoMode: number;
+    elements: string[];
+}
+
 class ChallengeStep {
 
     public static Wait(challenge: Challenge, duration: number): ChallengeStep {
