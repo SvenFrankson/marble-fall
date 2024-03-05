@@ -185,14 +185,16 @@ class MachineEditor {
         this.machinePartEditorMenu = new MachinePartEditorMenu(this);
     }
 
-    public async instantiate(): Promise<void> {
-        let mode: GameMode = this.game.mode;
+    public get challengeMode(): boolean {
+        return this.game.mode === GameMode.Challenge;
+    }
 
+    public async instantiate(): Promise<void> {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
 
-        if (mode === GameMode.Create) {
+        if (this.challengeMode) {
             let ballItem = document.createElement("div") as HTMLDivElement;
             ballItem.classList.add("machine-editor-item");
             ballItem.style.backgroundImage = "url(./datas/icons/ball.png)"
@@ -224,7 +226,7 @@ class MachineEditor {
         }
 
         let availableTracks: string[] = TrackNames;
-        if (mode === GameMode.Challenge) {
+        if (this.challengeMode) {
             availableTracks = this.game.challenge.availableElements;
         }
         for (let i = 0; i < availableTracks.length; i++) {
@@ -657,7 +659,7 @@ class MachineEditor {
                     this.game.scene.pointerX,
                     this.game.scene.pointerY,
                     (mesh) => {
-                        if (mesh instanceof BallGhost) {
+                        if (!this.challengeMode && mesh instanceof BallGhost) {
                             return true;
                         }
                         return false;
@@ -811,7 +813,7 @@ class MachineEditor {
             this.game.scene.pointerX,
             this.game.scene.pointerY,
             (mesh) => {
-                if (!this.draggedObject && mesh instanceof BallGhost) {
+                if (!this.challengeMode && !this.draggedObject && mesh instanceof BallGhost) {
                     return true;
                 }
                 else if (this.draggedObject && mesh === this.grid.opaquePlane) {
@@ -1028,7 +1030,7 @@ class MachineEditor {
             }
             else if (this.selectedObject instanceof MachinePart) {
                 
-                if (this.game.mode === GameMode.Create && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
+                if (!this.challengeMode && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(
                         origin.i * tileWidth - 0.5 * tileWidth,

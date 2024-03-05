@@ -3486,7 +3486,7 @@ class MachineEditor {
                 });
                 if (!pick.hit) {
                     pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                        if (mesh instanceof BallGhost) {
+                        if (!this.challengeMode && mesh instanceof BallGhost) {
                             return true;
                         }
                         return false;
@@ -3614,7 +3614,7 @@ class MachineEditor {
                 }
             }
             let pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                if (!this.draggedObject && mesh instanceof BallGhost) {
+                if (!this.challengeMode && !this.draggedObject && mesh instanceof BallGhost) {
                     return true;
                 }
                 else if (this.draggedObject && mesh === this.grid.opaquePlane) {
@@ -4222,12 +4222,14 @@ class MachineEditor {
         }
         this.updateFloatingElements();
     }
+    get challengeMode() {
+        return this.game.mode === GameMode.Challenge;
+    }
     async instantiate() {
-        let mode = this.game.mode;
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
-        if (mode === GameMode.Create) {
+        if (this.challengeMode) {
             let ballItem = document.createElement("div");
             ballItem.classList.add("machine-editor-item");
             ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -4257,7 +4259,7 @@ class MachineEditor {
             });
         }
         let availableTracks = TrackNames;
-        if (mode === GameMode.Challenge) {
+        if (this.challengeMode) {
             availableTracks = this.game.challenge.availableElements;
         }
         for (let i = 0; i < availableTracks.length; i++) {
@@ -4710,7 +4712,7 @@ class MachineEditor {
                 this.KMinusHandle.isVisible = true;
             }
             else if (this.selectedObject instanceof MachinePart) {
-                if (this.game.mode === GameMode.Create && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
+                if (!this.challengeMode && this.selectedObject instanceof MachinePartWithOriginDestination && this.selectedObjectsCount === 1) {
                     let origin = this.selectedObject.getOrigin();
                     let pOrigin = new BABYLON.Vector3(origin.i * tileWidth - 0.5 * tileWidth, -origin.j * tileHeight, -origin.k * tileDepth);
                     this.originIPlusHandle.position.copyFrom(pOrigin);
