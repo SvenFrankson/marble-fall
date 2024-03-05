@@ -144,7 +144,12 @@ class Ball extends BABYLON.Mesh {
         this._lastWireIndexes[this._pouet] = index;
     }
     update(dt) {
-        if (this.position.y < this.machine.baseMeshMinY - 0.5) {
+        if (this.position.y < this.machine.baseMeshMinY - 0.2) {
+            if (this.game.mode === GameMode.Challenge) {
+                if (this.machine.playing) {
+                    this.machine.stop();
+                }
+            }
             return;
         }
         this._timer += dt * this.game.currentTimeFactor;

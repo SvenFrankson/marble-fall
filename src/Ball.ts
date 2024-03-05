@@ -170,7 +170,12 @@ class Ball extends BABYLON.Mesh {
     private _timer: number = 0;
     public strReaction: number = 0;
     public update(dt: number): void {
-        if (this.position.y < this.machine.baseMeshMinY - 0.5) {
+        if (this.position.y < this.machine.baseMeshMinY - 0.2) {
+            if (this.game.mode === GameMode.Challenge) {
+                if (this.machine.playing) {
+                    this.machine.stop();
+                }
+            }
             return;
         }
 
