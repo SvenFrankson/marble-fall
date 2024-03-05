@@ -58,7 +58,6 @@ class Game {
     public config: Configuration;
 
     public logo: Logo;
-    public mainMenu: Nabu.PanelPage;
     public optionsPage: OptionsPage;
     public creditsPage: CreditsPage;
     public topbar: Topbar;
@@ -233,8 +232,6 @@ class Game {
         this.logo.initialize();
         this.logo.hide();
 
-        this.mainMenu = document.getElementById("main-menu") as Nabu.PanelPage;
-
         this.optionsPage = new OptionsPage(this);
         this.optionsPage.initialize();
         this.optionsPage.hide();
@@ -320,7 +317,14 @@ class Game {
                     this.engine.resize();
                     this.topbar.resize();
                     this.toolbar.resize();
-                    this.mainMenu.resize();
+                    if (this.router) {
+                        if (this.router.homePage) {
+                            this.router.homePage.resize();
+                        }
+                        if (this.router.challengePage) {
+                            this.router.challengePage.resize();
+                        }
+                    }
                 })
             })
 		};

@@ -938,7 +938,6 @@ class Game {
         this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
-        this.mainMenu = document.getElementById("main-menu");
         this.optionsPage = new OptionsPage(this);
         this.optionsPage.initialize();
         this.optionsPage.hide();
@@ -1012,7 +1011,14 @@ class Game {
                     this.engine.resize();
                     this.topbar.resize();
                     this.toolbar.resize();
-                    this.mainMenu.resize();
+                    if (this.router) {
+                        if (this.router.homePage) {
+                            this.router.homePage.resize();
+                        }
+                        if (this.router.challengePage) {
+                            this.router.challengePage.resize();
+                        }
+                    }
                 });
             });
         };
