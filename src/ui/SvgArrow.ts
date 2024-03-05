@@ -44,6 +44,6 @@ class SvgArrow {
     }
 
     public dispose(): void {
-        document.removeChild(this.image);
+        document.body.removeChild(this.image);
     }
 }

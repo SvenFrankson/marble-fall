@@ -333,6 +333,28 @@ class ChallengeStep {
         };
         return step;
     }
+    static SvgArrow(challenge, element, duration) {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, -45);
+            return new Promise(resolve => {
+                arrow.instantiate().then(async () => {
+                    if (element instanceof HTMLElement) {
+                        arrow.setTarget(element);
+                    }
+                    else {
+                        arrow.setTarget(element());
+                    }
+                    await arrow.show(0.5);
+                    await challenge.WaitAnimation(duration);
+                    await arrow.hide(0.5);
+                    arrow.dispose();
+                    resolve();
+                });
+            });
+        };
+        return step;
+    }
 }
 class Challenge {
     constructor(game) {
@@ -376,7 +398,10 @@ class Challenge {
                 }, this.delay),
                 ChallengeStep.Text(this, "to its destination.", this.delay),
             ],
-            ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
+            [
+                ChallengeStep.SvgArrow(this, () => { return document.querySelector(".machine-editor-item"); }, this.delay),
+                ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
+            ],
             ChallengeStep.Text(this, "Then press Play.", this.delay),
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
         ];
@@ -932,12 +957,14 @@ class Game {
         }
         this.router = new MarbleRouter(this);
         this.router.initialize();
-        let arrow = new SvgArrow("test", this, 0.3, 0.2, -45);
+        /*
+        let arrow = new SvgArrow("test", this, 0.3, 0.2, - 45);
         arrow.instantiate();
         setTimeout(() => {
             arrow.setTarget(document.querySelector("panel-element"));
             arrow.show();
         }, 2000);
+        */
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
@@ -7267,7 +7294,7 @@ class SvgArrow {
         return this.image.hide(duration);
     }
     dispose() {
-        document.removeChild(this.image);
+        document.body.removeChild(this.image);
     }
 }
 class Toolbar {

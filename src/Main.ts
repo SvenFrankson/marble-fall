@@ -261,12 +261,14 @@ class Game {
         this.router = new MarbleRouter(this);
         this.router.initialize();
 
+        /*
         let arrow = new SvgArrow("test", this, 0.3, 0.2, - 45);
         arrow.instantiate();
         setTimeout(() => {
             arrow.setTarget(document.querySelector("panel-element"));
             arrow.show();
         }, 2000);
+        */
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
             //await this.makeScreenshot("join");

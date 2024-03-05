@@ -46,6 +46,29 @@ class ChallengeStep {
         return step;
     }
 
+    public static SvgArrow(challenge: Challenge, element: HTMLElement | (() => HTMLElement), duration: number): ChallengeStep {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, -45);
+            return new Promise<void>(resolve => {
+                arrow.instantiate().then(async () => {
+                    if (element instanceof HTMLElement) {
+                        arrow.setTarget(element);
+                    }
+                    else {
+                        arrow.setTarget(element());
+                    }
+                    await arrow.show(0.5);
+                    await challenge.WaitAnimation(duration);
+                    await arrow.hide(0.5);
+                    arrow.dispose();
+                    resolve();
+                });
+            })
+        }
+        return step;
+    }
+
     constructor(public challenge: Challenge) {
 
     }
@@ -104,7 +127,10 @@ class Challenge {
                 }, this.delay),
                 ChallengeStep.Text(this, "to its destination.", this.delay),
             ],
-            ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
+            [
+                ChallengeStep.SvgArrow(this, () => { return document.querySelector(".machine-editor-item"); }, this.delay),
+                ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
+            ],
             ChallengeStep.Text(this, "Then press Play.", this.delay),
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
         ];
