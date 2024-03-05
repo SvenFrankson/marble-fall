@@ -1890,6 +1890,16 @@ class Machine {
             this.baseMeshMinZ = Math.min(this.baseMeshMinZ, track.position.z - tileDepth * (track.d - 0.5));
             this.baseMeshMaxZ = Math.max(this.baseMeshMaxZ, track.position.z);
         }
+        if (this.game.DEBUG_MODE) {
+            if (this.debugAxis) {
+                this.debugAxis.dispose();
+            }
+            let x = (this.baseMeshMinX + this.baseMeshMaxX) * 0.5;
+            let z = (this.baseMeshMinZ + this.baseMeshMaxZ) * 0.5;
+            this.debugAxis = BABYLON.MeshBuilder.CreateLines("debug-axis", {
+                points: [new BABYLON.Vector3(x, this.baseMeshMaxY, z), new BABYLON.Vector3(x, this.baseMeshMinY, z), new BABYLON.Vector3(x + 0.1, this.baseMeshMinY, z)]
+            });
+        }
         if (false) {
             let w = this.baseMeshMaxX - this.baseMeshMinX;
             let h = this.baseMeshMaxY - this.baseMeshMinY;
