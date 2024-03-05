@@ -104,6 +104,9 @@ body {
     text-align: center;
     font-family: Arial, Helvetica, sans-serif;
     color: white;
+}
+
+panel-page {
     pointer-events: none;
 }
 
