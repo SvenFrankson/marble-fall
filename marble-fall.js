@@ -932,6 +932,12 @@ class Game {
         }
         this.router = new MarbleRouter(this);
         this.router.initialize();
+        let arrow = new SvgArrow("test", this, 0.3, 0.2, -45);
+        arrow.instantiate();
+        setTimeout(() => {
+            arrow.setTarget(document.querySelector("panel-element"));
+            arrow.show();
+        }, 2000);
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
@@ -7219,6 +7225,49 @@ class OptionsPage {
         await anim(0, 0.5);
         this.container.style.visibility = "hidden";
         this.container.style.pointerEvents = "none";
+    }
+}
+class SvgArrow {
+    constructor(name, game, baseSize = 0.1, distanceFromTarget = 0, dirInDegrees) {
+        this.game = game;
+        this.baseSize = baseSize;
+        this.distanceFromTarget = distanceFromTarget;
+        this.dirInDegrees = dirInDegrees;
+        this.image = document.createElement("nabu-popup");
+        this.image.style.position = "fixed";
+        this.image.style.transformOrigin = "center";
+        this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+        document.body.appendChild(this.image);
+    }
+    setTarget(e) {
+        let rect = e.getBoundingClientRect();
+        this.image.style.top = (rect.top + rect.height * 0.5 - this._w * 1.5 * 0.5).toFixed(1) + "px";
+        this.image.style.left = (rect.left + rect.width * 0.5 - this._w * 0.5).toFixed(1) + "px";
+    }
+    setTargetXY(x, y) {
+        this.image.style.left = x.toFixed(1) + "px";
+        this.image.style.top = y.toFixed(1) + "px";
+    }
+    async instantiate() {
+        this.image.innerHTML = `
+            <svg viewBox="0 0 200 300">
+                <path d="M100 150 L125 200 L109 200 L109 250 L91 250 L91 200 L75 200 Z" fill="white" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        `;
+        let svg = this.image.querySelector("svg");
+        this._w = (Math.min(window.innerWidth, window.innerHeight) * this.baseSize);
+        svg.style.width = this._w.toFixed(1) + "px";
+        let d = (Math.min(window.innerWidth, window.innerHeight) * this.baseSize * this.distanceFromTarget);
+        svg.style.transform = "translate(0px, " + d.toFixed(1) + "px)";
+    }
+    show(duration) {
+        return this.image.show(duration);
+    }
+    hide(duration) {
+        return this.image.hide(duration);
+    }
+    dispose() {
+        document.removeChild(this.image);
     }
 }
 class Toolbar {

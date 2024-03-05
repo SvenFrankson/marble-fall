@@ -55,6 +55,4 @@ class HighlightArrow extends BABYLON.Mesh {
             Mummu.QuaternionFromYZAxisToRef(y, this.dir, this.rotationQuaternion);
         }
     }
-
-    public onClick: () => void;
 }
