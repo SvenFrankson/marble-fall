@@ -9,5 +9,6 @@
     "camAlpha": -1.57,
     "camBeta": 1.26,
     "camRadius": 0.4,
-    "camTarget": { "x": -0.15, "y": 0, "z": 0 }
+    "camTarget": { "x": -0.15, "y": 0, "z": 0 },
+    "elements": ["ramp-1.1.1"]
 }

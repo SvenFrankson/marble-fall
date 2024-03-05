@@ -365,6 +365,7 @@ class Challenge {
         this.steps = [];
         this.winZoneMin = BABYLON.Vector3.Zero();
         this.winZoneMax = BABYLON.Vector3.Zero();
+        this.availableElements = [];
         this._successTime = 0;
         this.WaitAnimation = Mummu.AnimationFactory.CreateWait(this.game);
         this.tutoPopup = document.getElementById("challenge-tuto");
@@ -4257,7 +4258,7 @@ class MachineEditor {
         }
         let availableTracks = TrackNames;
         if (mode === GameMode.Challenge) {
-            availableTracks = ["ramp-1.1.1"];
+            availableTracks = this.game.challenge.availableElements;
         }
         for (let i = 0; i < availableTracks.length; i++) {
             let trackname = availableTracks[i];
@@ -7132,6 +7133,7 @@ class MarbleRouter extends Nabu.Router {
                     this.game.machine.deserialize(data.machine);
                     this.game.machine.generateBaseMesh();
                     this.game.machine.instantiate();
+                    this.game.challenge.availableElements = data.elements;
                     this.game.machineEditor.instantiate();
                     this.game.challenge.initialize();
                 }

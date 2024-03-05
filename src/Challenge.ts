@@ -100,6 +100,8 @@ class Challenge {
 
     public winZoneMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public winZoneMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
+    public availableElements: string[] = [];
     
     constructor(public game: Game) {
         this.WaitAnimation = Mummu.AnimationFactory.CreateWait(this.game);

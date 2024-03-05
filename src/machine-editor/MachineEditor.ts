@@ -225,7 +225,7 @@ class MachineEditor {
 
         let availableTracks: string[] = TrackNames;
         if (mode === GameMode.Challenge) {
-            availableTracks = ["ramp-1.1.1"];
+            availableTracks = this.game.challenge.availableElements;
         }
         for (let i = 0; i < availableTracks.length; i++) {
             let trackname = availableTracks[i];
