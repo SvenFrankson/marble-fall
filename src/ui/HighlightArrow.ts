@@ -17,7 +17,7 @@ class HighlightArrow extends BABYLON.Mesh {
         this.arrowMesh = new BABYLON.Mesh("arrow");
         this.arrowMesh.parent = this;
         this.arrowMesh.position.z = - distanceFromTarget;
-        this.arrowMesh.material = game.materials.whiteAutolitMaterial;
+        this.arrowMesh.material = game.materials.whiteFullLitMaterial;
         this.arrowMesh.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         this.arrowMesh.visibility = 0;
         if (this.dir) {
@@ -37,7 +37,7 @@ class HighlightArrow extends BABYLON.Mesh {
     }
 
     public show(duration: number): Promise<void> {
-        return this.AlphaAnimation(1, duration);
+        return this.AlphaAnimation(0.7, duration);
     }
 
     public hide(duration: number): Promise<void> {

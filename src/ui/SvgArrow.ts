@@ -26,7 +26,7 @@ class SvgArrow {
     public async instantiate(): Promise<void> {
         this.image.innerHTML = `
             <svg viewBox="0 0 200 300">
-                <path d="M100 150 L125 200 L109 200 L109 250 L91 250 L91 200 L75 200 Z" fill="white" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M100 150 L125 200 L109 200 L109 250 L91 250 L91 200 L75 200 Z" fill="#baccc8" stroke="#baccc8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
         `;
         let svg = this.image.querySelector("svg");
@@ -45,7 +45,7 @@ class SvgArrow {
     }
 
     private _animationSlideInterval: number = 0;
-    public async slide(x: number, y: number, targetDir: number, duration: number = 1): Promise<void> {
+    public async slide(x: number, y: number, targetDir: number, duration: number = 1, easing?: (n: number) => number): Promise<void> {
         return new Promise<void>(resolve => {
             clearInterval(this._animationSlideInterval);
     
@@ -67,6 +67,9 @@ class SvgArrow {
                 }
                 else {
                     let f = t / duration;
+                    if (easing) {
+                        f = easing(f);
+                    }
                     this.dirInDegrees = (1 - f) * dir0 + f * targetDir;
                     this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
                     this.image.style.left = ((1 - f) * x0 + f * x1).toFixed(1) + "px";

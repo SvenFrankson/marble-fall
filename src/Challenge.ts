@@ -1,4 +1,5 @@
 interface IChallengeData {
+    index: number;
     machine: IMachineData;
     camAlpha: number;
     camBeta: number;
@@ -46,7 +47,7 @@ class ChallengeStep {
                 p = position();
             }
             let dir = new BABYLON.Vector3(0, - 1, 0);
-            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, 0.02, dir);
+            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.07, 0.02, dir);
             arrow.position = p;
             return new Promise<void>(resolve => {
                 arrow.instantiate().then(async () => {
@@ -64,7 +65,7 @@ class ChallengeStep {
     public static SvgArrow(challenge: Challenge, element: HTMLElement | (() => HTMLElement), dir: number, duration: number): ChallengeStep {
         let step = new ChallengeStep(challenge);
         step.doStep = () => {
-            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, dir);
+            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.15, dir);
             return new Promise<void>(resolve => {
                 arrow.instantiate().then(async () => {
                     if (element instanceof HTMLElement) {
@@ -97,7 +98,7 @@ class ChallengeStep {
                         arrow.setTarget(element());
                     }
                     await arrow.show(0.5);
-                    await arrow.slide(target.x(), target.y(), target.dir, duration);
+                    await arrow.slide(target.x(), target.y(), target.dir, duration, Nabu.Easing.easeInOutSine);
                     await arrow.hide(0.5);
                     arrow.dispose();
                     resolve();
@@ -123,7 +124,7 @@ class Challenge {
 
     public state: number = 0;
 
-    public delay = 0.5;
+    public delay = 2.5;
     public steps: (ChallengeStep | ChallengeStep[])[] = [];
 
     public winZoneMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -144,48 +145,11 @@ class Challenge {
         this.tutoText = this.tutoPopup.querySelector("div");
 
         this.tutoComplete = document.getElementById("challenge-next") as Popup;
-
-        this.steps = [
-            ChallengeStep.Wait(this, this.delay),
-            ChallengeStep.Text(this, "Challenge mode, easy start.", this.delay),
-            [
-                ChallengeStep.Arrow(this, () => {
-                    let ball = game.machine.balls[0];
-                    if (ball) {
-                        return ball.position;
-                    }
-                    return BABYLON.Vector3.Zero();
-                }, this.delay),
-                ChallengeStep.Text(this, "Bring the ball...", this.delay),
-            ],
-            [
-                ChallengeStep.Arrow(this, () => {
-                    let arrival = game.machine.parts.find(part => { return part.partName === "end"; });
-                    if (arrival) {
-                        let p = arrival.position.clone();
-                        let x0 = tileWidth * 0.15;
-                        let y0 = - 1.4 * tileHeight - 0.005;
-                        p.x += x0;
-                        p.y += y0;
-                        return p;
-                    }
-                    return BABYLON.Vector3.Zero();
-                }, this.delay),
-                ChallengeStep.Text(this, "to its destination.", this.delay),
-            ],
-            [
-                ChallengeStep.SvgArrowSlide(this, () => { return document.querySelector(".machine-editor-item"); }, { x: () => { return window.innerWidth * 0.5 }, y: () => { return window.innerHeight * 0.5 }, dir: - 135 }, this.delay),
-                ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
-            ],
-            [
-                ChallengeStep.SvgArrow(this, () => { return document.querySelector("#toolbar-play"); }, - 155, 3 * this.delay),
-                ChallengeStep.Text(this, "Then press Play.", 3 * this.delay),
-            ],
-            ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
-        ];
     }
 
     public initialize(data: IChallengeData): void {
+        this.steps = ChallengeSteps.GetSteps(this, data.index);
+        
         this.state = 0;
         let arrival = this.game.machine.parts.find(part => { return part.partName === "end"; });
         if (arrival) {
@@ -259,7 +223,7 @@ class Challenge {
         else if (this.state > 100) {
             this.state = 100;
             let doFinalStep = async () => {
-                this.tutoText.innerText = "Challenge completed - Well done";
+                this.tutoText.innerText = "Challenge completed - Well done !";
                 this.tutoPopup.setAttribute("duration", "0");
                 this.tutoPopup.show(0.5);
                 await this.WaitAnimation(2);

@@ -324,7 +324,7 @@ class ChallengeStep {
                 p = position();
             }
             let dir = new BABYLON.Vector3(0, -1, 0);
-            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.1, 0.02, dir);
+            let arrow = new HighlightArrow("challenge-step-arrow", challenge.game, 0.07, 0.02, dir);
             arrow.position = p;
             return new Promise(resolve => {
                 arrow.instantiate().then(async () => {
@@ -341,7 +341,7 @@ class ChallengeStep {
     static SvgArrow(challenge, element, dir, duration) {
         let step = new ChallengeStep(challenge);
         step.doStep = () => {
-            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, dir);
+            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.15, dir);
             return new Promise(resolve => {
                 arrow.instantiate().then(async () => {
                     if (element instanceof HTMLElement) {
@@ -373,7 +373,7 @@ class ChallengeStep {
                         arrow.setTarget(element());
                     }
                     await arrow.show(0.5);
-                    await arrow.slide(target.x(), target.y(), target.dir, duration);
+                    await arrow.slide(target.x(), target.y(), target.dir, duration, Nabu.Easing.easeInOutSine);
                     await arrow.hide(0.5);
                     arrow.dispose();
                     resolve();
@@ -388,7 +388,7 @@ class Challenge {
         this.game = game;
         this.WaitAnimation = Mummu.AnimationFactory.EmptyVoidCallback;
         this.state = 0;
-        this.delay = 0.5;
+        this.delay = 2.5;
         this.steps = [];
         this.winZoneMin = BABYLON.Vector3.Zero();
         this.winZoneMax = BABYLON.Vector3.Zero();
@@ -403,46 +403,9 @@ class Challenge {
         this.tutoPopup = document.getElementById("challenge-tuto");
         this.tutoText = this.tutoPopup.querySelector("div");
         this.tutoComplete = document.getElementById("challenge-next");
-        this.steps = [
-            ChallengeStep.Wait(this, this.delay),
-            ChallengeStep.Text(this, "Challenge mode, easy start.", this.delay),
-            [
-                ChallengeStep.Arrow(this, () => {
-                    let ball = game.machine.balls[0];
-                    if (ball) {
-                        return ball.position;
-                    }
-                    return BABYLON.Vector3.Zero();
-                }, this.delay),
-                ChallengeStep.Text(this, "Bring the ball...", this.delay),
-            ],
-            [
-                ChallengeStep.Arrow(this, () => {
-                    let arrival = game.machine.parts.find(part => { return part.partName === "end"; });
-                    if (arrival) {
-                        let p = arrival.position.clone();
-                        let x0 = tileWidth * 0.15;
-                        let y0 = -1.4 * tileHeight - 0.005;
-                        p.x += x0;
-                        p.y += y0;
-                        return p;
-                    }
-                    return BABYLON.Vector3.Zero();
-                }, this.delay),
-                ChallengeStep.Text(this, "to its destination.", this.delay),
-            ],
-            [
-                ChallengeStep.SvgArrowSlide(this, () => { return document.querySelector(".machine-editor-item"); }, { x: () => { return window.innerWidth * 0.5; }, y: () => { return window.innerHeight * 0.5; }, dir: -135 }, this.delay),
-                ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
-            ],
-            [
-                ChallengeStep.SvgArrow(this, () => { return document.querySelector("#toolbar-play"); }, -155, 3 * this.delay),
-                ChallengeStep.Text(this, "Then press Play.", 3 * this.delay),
-            ],
-            ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
-        ];
     }
     initialize(data) {
+        this.steps = ChallengeSteps.GetSteps(this, data.index);
         this.state = 0;
         let arrival = this.game.machine.parts.find(part => { return part.partName === "end"; });
         if (arrival) {
@@ -510,13 +473,89 @@ class Challenge {
         else if (this.state > 100) {
             this.state = 100;
             let doFinalStep = async () => {
-                this.tutoText.innerText = "Challenge completed - Well done";
+                this.tutoText.innerText = "Challenge completed - Well done !";
                 this.tutoPopup.setAttribute("duration", "0");
                 this.tutoPopup.show(0.5);
                 await this.WaitAnimation(2);
                 this.tutoComplete.show(0.5);
             };
             doFinalStep();
+        }
+    }
+}
+class ChallengeSteps {
+    static GetSteps(challenge, index) {
+        if (index === 1) {
+            return [
+                ChallengeStep.Wait(challenge, challenge.delay * 0.5),
+                ChallengeStep.Text(challenge, "Challenge 1 - Easy", challenge.delay),
+                ChallengeStep.Text(challenge, "To complete the puzzle,", challenge.delay),
+                [
+                    ChallengeStep.Arrow(challenge, () => {
+                        let ball = challenge.game.machine.balls[0];
+                        if (ball) {
+                            return ball.position;
+                        }
+                        return BABYLON.Vector3.Zero();
+                    }, challenge.delay),
+                    ChallengeStep.Text(challenge, "bring the ball...", challenge.delay),
+                ],
+                [
+                    ChallengeStep.Arrow(challenge, () => {
+                        let arrival = challenge.game.machine.parts.find(part => { return part.partName === "end"; });
+                        if (arrival) {
+                            let p = arrival.position.clone();
+                            let x0 = tileWidth * 0.15;
+                            let y0 = -1.4 * tileHeight - 0.005;
+                            p.x += x0;
+                            p.y += y0;
+                            return p;
+                        }
+                        return BABYLON.Vector3.Zero();
+                    }, challenge.delay),
+                    ChallengeStep.Text(challenge, "... to its destination.", challenge.delay),
+                ],
+                [
+                    ChallengeStep.SvgArrowSlide(challenge, () => { return document.querySelector(".machine-editor-item"); }, { x: () => { return window.innerWidth * 0.5; }, y: () => { return window.innerHeight * 0.5; }, dir: -135 }, challenge.delay),
+                    ChallengeStep.Text(challenge, "Add track elements to complete the circuit.", challenge.delay),
+                ],
+                [
+                    ChallengeStep.SvgArrow(challenge, () => { return document.querySelector("#toolbar-play"); }, -155, challenge.delay),
+                    ChallengeStep.Text(challenge, "Press PLAY to run your solution.", challenge.delay),
+                ]
+            ];
+        }
+        else if (index === 2) {
+            return [
+                ChallengeStep.Wait(challenge, challenge.delay * 0.5),
+                ChallengeStep.Text(challenge, "Challenge 2 - Gravity", challenge.delay),
+                ChallengeStep.Text(challenge, "Gravity causes mutual attraction", challenge.delay),
+                ChallengeStep.Text(challenge, "between all things that have mass.", challenge.delay)
+            ];
+        }
+        else if (index === 3) {
+            return [
+                ChallengeStep.Wait(challenge, challenge.delay * 0.5),
+                ChallengeStep.Text(challenge, "Challenge 3 - Turn Around", challenge.delay),
+                ChallengeStep.Text(challenge, "There's no straight path", challenge.delay),
+                ChallengeStep.Text(challenge, "make a detour.", challenge.delay)
+            ];
+        }
+        else if (index === 4) {
+            return [
+                ChallengeStep.Wait(challenge, challenge.delay * 0.5),
+                ChallengeStep.Text(challenge, "Challenge 4 - Join", challenge.delay),
+                ChallengeStep.Text(challenge, "Completion requires both balls", challenge.delay),
+                ChallengeStep.Text(challenge, "to reach their same destination.", challenge.delay)
+            ];
+        }
+        else if (index === 5) {
+            return [
+                ChallengeStep.Wait(challenge, challenge.delay * 0.5),
+                ChallengeStep.Text(challenge, "Challenge 5 - Gravity II", challenge.delay),
+                ChallengeStep.Text(challenge, "Gravitational energy is the potential energy", challenge.delay),
+                ChallengeStep.Text(challenge, "an object has due to gravity.", challenge.delay)
+            ];
         }
     }
 }
@@ -1532,6 +1571,10 @@ class MainMaterials {
         this.whiteAutolitMaterial.diffuseColor = BABYLON.Color3.FromHexString("#baccc8");
         this.whiteAutolitMaterial.emissiveColor = BABYLON.Color3.FromHexString("#baccc8").scaleInPlace(0.5);
         this.whiteAutolitMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.whiteFullLitMaterial = new BABYLON.StandardMaterial("white-autolit-material");
+        this.whiteFullLitMaterial.diffuseColor = BABYLON.Color3.FromHexString("#baccc8");
+        this.whiteFullLitMaterial.emissiveColor = BABYLON.Color3.FromHexString("#baccc8");
+        this.whiteFullLitMaterial.specularColor.copyFromFloats(0, 0, 0);
         let steelMaterial = new BABYLON.PBRMetallicRoughnessMaterial("pbr", this.game.scene);
         steelMaterial.baseColor = new BABYLON.Color3(0.5, 0.75, 1.0);
         steelMaterial.metallic = 1.0;
@@ -7077,7 +7120,7 @@ class HighlightArrow extends BABYLON.Mesh {
         this.arrowMesh = new BABYLON.Mesh("arrow");
         this.arrowMesh.parent = this;
         this.arrowMesh.position.z = -distanceFromTarget;
-        this.arrowMesh.material = game.materials.whiteAutolitMaterial;
+        this.arrowMesh.material = game.materials.whiteFullLitMaterial;
         this.arrowMesh.scaling.copyFromFloats(this.baseSize, this.baseSize, this.baseSize);
         this.arrowMesh.visibility = 0;
         if (this.dir) {
@@ -7101,7 +7144,7 @@ class HighlightArrow extends BABYLON.Mesh {
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
     show(duration) {
-        return this.AlphaAnimation(1, duration);
+        return this.AlphaAnimation(0.7, duration);
     }
     hide(duration) {
         return this.AlphaAnimation(0, duration);
@@ -7300,6 +7343,7 @@ class MarbleRouter extends Nabu.Router {
             if (dataResponse) {
                 let data = await dataResponse.json();
                 if (data) {
+                    data.index = index;
                     this.game.animateCamera([data.camAlpha, data.camBeta, data.camRadius], 3);
                     this.game.animateCameraTarget(new BABYLON.Vector3(data.camTarget.x, data.camTarget.y, data.camTarget.z), 3);
                     this.game.setCameraMode(CameraMode.None);
@@ -7466,7 +7510,7 @@ class SvgArrow {
     async instantiate() {
         this.image.innerHTML = `
             <svg viewBox="0 0 200 300">
-                <path d="M100 150 L125 200 L109 200 L109 250 L91 250 L91 200 L75 200 Z" fill="white" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M100 150 L125 200 L109 200 L109 250 L91 250 L91 200 L75 200 Z" fill="#baccc8" stroke="#baccc8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
         `;
         let svg = this.image.querySelector("svg");
@@ -7481,7 +7525,7 @@ class SvgArrow {
     hide(duration) {
         return this.image.hide(duration);
     }
-    async slide(x, y, targetDir, duration = 1) {
+    async slide(x, y, targetDir, duration = 1, easing) {
         return new Promise(resolve => {
             clearInterval(this._animationSlideInterval);
             let x0 = parseFloat(this.image.style.left);
@@ -7502,6 +7546,9 @@ class SvgArrow {
                 }
                 else {
                     let f = t / duration;
+                    if (easing) {
+                        f = easing(f);
+                    }
                     this.dirInDegrees = (1 - f) * dir0 + f * targetDir;
                     this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
                     this.image.style.left = ((1 - f) * x0 + f * x1).toFixed(1) + "px";

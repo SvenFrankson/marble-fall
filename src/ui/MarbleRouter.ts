@@ -92,6 +92,7 @@ class MarbleRouter extends Nabu.Router {
             if (dataResponse) {
                 let data = await dataResponse.json() as IChallengeData;
                 if (data) {
+                    data.index = index;
                     this.game.animateCamera([data.camAlpha, data.camBeta, data.camRadius], 3);
                     this.game.animateCameraTarget(new BABYLON.Vector3(data.camTarget.x, data.camTarget.y, data.camTarget.z), 3);
                     this.game.setCameraMode(CameraMode.None);
