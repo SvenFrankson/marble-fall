@@ -15,12 +15,5 @@
     "gridJMin": -10,
     "gridJMax": 2,
     "gridDepth": 2,
-    "elements": [
-        "uturn-0.2",
-        "uturn-0.2_X",
-        "ramp-1.5.1_X",
-        "ramp-1.0.1",
-        "ramp-1.1.1",
-        "ramp-2.6.1"
-    ]
+    "elements": ["uturn-0.2", "uturn-0.2_X", "ramp-1.5.1_X", "ramp-1.0.1", "ramp-1.1.1", "ramp-2.6.1"]
 }

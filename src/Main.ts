@@ -270,26 +270,22 @@ class Game {
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 //await this.makeScreenshot("spiral-1.2.1");
-                let parts = [
-                    "end",
-                    "uturn-0.2",
-                    "uturn-0.2_X",
-                    "ramp-1.5.1_X",
-                    "ramp-1.0.1",
-                    "ramp-1.1.1",
-                    "start",
-                    "ramp-2.6.1"
-                ];
-                //let parts = TrackNames;
-                for (let i = 0; i < parts.length; i++) {
-                    await this.makeScreenshot(parts[i]);
-                }
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
                 }
                 else {
-                    this.makeCircuitScreenshot();
+                    let parts = [
+                        "ramp-1.1.1",
+                        "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
+                        "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
+                        "spiral-1.3.2", "join",
+                        "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
+                    ];
+                    parts = TrackNames;
+                    for (let i = 0; i < parts.length; i++) {
+                        await this.makeScreenshot(parts[i]);
+                    }
                 }
                 /*
                 for (let i = 0; i < TrackNames.length; i++) {
@@ -509,8 +505,6 @@ class Game {
                         mirrorX: mirrorX
                     });
                     track.sleepersMeshProp = { };
-                    this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
-                    this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), - tileHeight * (track.h) * 0.5, 0);
                 }
 
                 if (objectName.startsWith("spiral") || objectName.startsWith("wall")) {
@@ -564,6 +558,10 @@ class Game {
                     wire.material = this.materials.ghostMaterial
                     wire.parent = encloseMesh;
                 }
+
+                let diag = Math.sqrt(w * w + h * h + d * d);
+                this.camera.radius = 0 + Math.sqrt(diag) * 0.8;
+                this.camera.target.copyFromFloats(0.5 * x0 + 0.5 * x1, 0.7 * y0 + 0.3 * y1, (z0 + z1) * 0.5);
 
                 requestAnimationFrame(async () => {
                     await Mummu.MakeScreenshot({ miniatureName: objectName, size: 256 });
@@ -663,7 +661,6 @@ class Game {
     }
 
     public setCameraMode(camMode: CameraMode): void {
-        console.log("setCameraMode " + camMode);
         if (camMode >= CameraMode.None && camMode <= CameraMode.Landscape) {
             this.cameraMode = camMode;
             if (this.cameraMode == CameraMode.None) {
