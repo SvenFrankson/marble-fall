@@ -4319,14 +4319,16 @@ class MachineEditor {
     addOrRemoveSelectedObjects(...objects) {
         for (let i = 0; i < objects.length; i++) {
             let object = objects[i];
-            let index = this.selectedObjects.indexOf(object);
-            if (index === -1) {
-                this.selectedObjects.push(object);
-                object.select();
-            }
-            else {
-                this.selectedObjects.splice(index, 1);
-                object.unselect();
+            if (!(this.challengeMode && object instanceof MachinePart && !object.isSelectable)) {
+                let index = this.selectedObjects.indexOf(object);
+                if (index === -1) {
+                    this.selectedObjects.push(object);
+                    object.select();
+                }
+                else {
+                    this.selectedObjects.splice(index, 1);
+                    object.unselect();
+                }
             }
         }
         if (this.game.cameraMode === CameraMode.Selected) {
