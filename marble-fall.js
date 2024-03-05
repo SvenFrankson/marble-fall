@@ -1759,6 +1759,11 @@ class Machine {
         this.trackFactory = new MachinePartFactory(this);
         this.templateManager = new TemplateManager(this);
     }
+    setAllIsSelectable(isSelectable) {
+        for (let i = 0; i < this.parts.length; i++) {
+            this.parts[i].isSelectable = isSelectable;
+        }
+    }
     async instantiate() {
         this.parts = this.parts.sort((a, b) => { return (b.j + b.h) - (a.j + a.h); });
         for (let i = 0; i < this.parts.length; i++) {
@@ -2151,6 +2156,7 @@ class MachinePart extends BABYLON.Mesh {
         this.wireGauge = 0.014;
         this.color = 0;
         this.sleepersMeshes = new Map();
+        this.isSelectable = true;
         this.summedLength = [0];
         this.totalLength = 0;
         this.globalSlope = 0;
@@ -3494,7 +3500,7 @@ class MachineEditor {
                 }
                 if (!pick.hit) {
                     pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                        if (mesh instanceof MachinePartSelectorMesh) {
+                        if (mesh instanceof MachinePartSelectorMesh && !(this.challengeMode && !mesh.part.isSelectable)) {
                             return true;
                         }
                         return false;
@@ -3624,7 +3630,7 @@ class MachineEditor {
             });
             if (!pick.hit) {
                 pick = this.game.scene.pick(this.game.scene.pointerX, this.game.scene.pointerY, (mesh) => {
-                    if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh) {
+                    if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh && !(this.challengeMode && !mesh.part.isSelectable)) {
                         return true;
                     }
                     else if (this.draggedObject && mesh === this.grid.opaquePlane) {
@@ -4229,7 +4235,7 @@ class MachineEditor {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
-        if (this.challengeMode) {
+        if (!this.challengeMode) {
             let ballItem = document.createElement("div");
             ballItem.classList.add("machine-editor-item");
             ballItem.style.backgroundImage = "url(./datas/icons/ball.png)";
@@ -7097,6 +7103,7 @@ class MarbleRouter extends Nabu.Router {
             this.game.mode = GameMode.Create;
             this.game.setCameraMode(CameraMode.None);
             this.game.machine.stop();
+            this.game.machine.setAllIsSelectable(true);
             this.game.logo.hide();
             this.hideAll();
             this.game.machineEditor.instantiate();
@@ -7134,7 +7141,7 @@ class MarbleRouter extends Nabu.Router {
                     this.game.machine.dispose();
                     this.game.machine.deserialize(data.machine);
                     this.game.machine.generateBaseMesh();
-                    this.game.machine.instantiate();
+                    this.game.machine.instantiate().then(() => { this.game.machine.setAllIsSelectable(false); });
                     this.game.challenge.availableElements = data.elements;
                     this.game.machineEditor.instantiate();
                     this.game.challenge.initialize();

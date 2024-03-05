@@ -40,6 +40,12 @@ class Machine {
         this.templateManager = new TemplateManager(this);
     }
 
+    public setAllIsSelectable(isSelectable: boolean): void {
+        for (let i = 0; i < this.parts.length; i++) {
+            this.parts[i].isSelectable = isSelectable;
+        }
+    }
+
     public async instantiate(): Promise<void> {
         this.parts = this.parts.sort((a, b) => { return (b.j + b.h) - (a.j + a.h) });
         for (let i = 0; i < this.parts.length; i++) {

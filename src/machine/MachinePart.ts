@@ -58,6 +58,7 @@ class MachinePart extends BABYLON.Mesh {
     public sleepersMeshes: Map<number, BABYLON.Mesh> = new Map<number, BABYLON.Mesh>();
     public selectorMesh: MachinePartSelectorMesh;
     public encloseMesh: BABYLON.Mesh;
+    public isSelectable: boolean = true;
 
     public summedLength: number[] = [0];
     public totalLength: number = 0

@@ -194,7 +194,7 @@ class MachineEditor {
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
 
-        if (this.challengeMode) {
+        if (!this.challengeMode) {
             let ballItem = document.createElement("div") as HTMLDivElement;
             ballItem.classList.add("machine-editor-item");
             ballItem.style.backgroundImage = "url(./datas/icons/ball.png)"
@@ -671,7 +671,7 @@ class MachineEditor {
                     this.game.scene.pointerX,
                     this.game.scene.pointerY,
                     (mesh) => {
-                        if (mesh instanceof MachinePartSelectorMesh) {
+                        if (mesh instanceof MachinePartSelectorMesh && !(this.challengeMode && !mesh.part.isSelectable)) {
                             return true;
                         }
                         return false;
@@ -827,7 +827,7 @@ class MachineEditor {
                 this.game.scene.pointerX,
                 this.game.scene.pointerY,
                 (mesh) => {
-                    if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh) {
+                    if (!this.draggedObject && mesh instanceof MachinePartSelectorMesh && !(this.challengeMode && !mesh.part.isSelectable)) {
                         return true;
                     }
                     else if (this.draggedObject && mesh === this.grid.opaquePlane) {

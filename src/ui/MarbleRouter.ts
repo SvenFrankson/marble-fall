@@ -58,6 +58,7 @@ class MarbleRouter extends Nabu.Router {
             this.game.setCameraMode(CameraMode.None);
 
             this.game.machine.stop();
+            this.game.machine.setAllIsSelectable(true);
 
             this.game.logo.hide();
             this.hideAll();
@@ -102,7 +103,7 @@ class MarbleRouter extends Nabu.Router {
                     this.game.machine.dispose();
                     this.game.machine.deserialize(data.machine);
                     this.game.machine.generateBaseMesh();
-                    this.game.machine.instantiate();
+                    this.game.machine.instantiate().then(() => { this.game.machine.setAllIsSelectable(false); });
         
                     this.game.challenge.availableElements = data.elements;
                     this.game.machineEditor.instantiate();
