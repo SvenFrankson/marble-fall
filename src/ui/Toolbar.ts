@@ -237,6 +237,9 @@ class Toolbar {
 
     public onPlay = () => {
         this.game.machine.playing = true;
+        if (this.game.machineEditor) {
+            this.game.machineEditor.setSelectedObject(undefined);
+        }
     }
 
     public onPause = () => {

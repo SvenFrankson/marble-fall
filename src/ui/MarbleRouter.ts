@@ -72,7 +72,7 @@ class MarbleRouter extends Nabu.Router {
             this.game.logo.hide();
             this.hideAll();
 
-            let dataResponse = await fetch("./datas/demos/demo-" + index.toFixed(0) + ".json")
+            let dataResponse = await fetch("./datas/demos/demo-" + index.toFixed() + ".json")
             if (dataResponse) {
                 let data = await dataResponse.json();
                 if (data) {
