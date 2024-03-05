@@ -189,10 +189,42 @@ class MachineEditor {
         return this.game.mode === GameMode.Challenge;
     }
 
+    public itemsCounts: Map<string, number>;
+
+    public getItemCount(trackName: string): number {
+        if (this.itemsCounts) {
+            return this.itemsCounts.get(trackName);
+        }
+        return 0;
+    }
+
+    public setItemCount(trackName: string, c: number): void {
+        if (this.itemsCounts) {
+            this.itemsCounts.set(trackName, c);
+            let e = document.querySelector("#machine-editor-objects");
+            if (e) {
+                e = e.querySelector("[track='" + trackName + "']");
+                if (e) {
+                    e = e.querySelector("div");
+                    if (e instanceof HTMLDivElement) {
+                        if (isFinite(c)) {
+                            e.innerHTML = c.toFixed(0);
+                        }
+                        else {
+                            e.innerHTML = "&#8734;";
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public async instantiate(): Promise<void> {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
+
+        this.itemsCounts = new Map<string, number>();
 
         if (!this.challengeMode) {
             let ballItem = document.createElement("div") as HTMLDivElement;
@@ -231,15 +263,27 @@ class MachineEditor {
         }
         for (let i = 0; i < availableTracks.length; i++) {
             let trackname = availableTracks[i];
+            this.setItemCount(trackname, Infinity);
+
             let item = document.createElement("div") as HTMLDivElement;
             item.classList.add("machine-editor-item");
+            item.setAttribute("track", trackname);
             item.style.backgroundImage = "url(./datas/icons/" + trackname + ".png)"
             item.style.backgroundSize = "cover";
             item.innerText = trackname.split("-")[0];
             this.itemContainer.appendChild(item);
             this.items.set(trackname, item);
 
+            let itemCountElement = document.createElement("div") as HTMLDivElement;
+            itemCountElement.classList.add("machine-editor-item-count");
+            itemCountElement.innerHTML = "&#8734;";
+            item.appendChild(itemCountElement);
+
+
             item.addEventListener("pointerdown", () => {
+                if (this.getItemCount(trackname) <= 0) {
+                    return;
+                }
                 if (this.draggedObject) {
                     this.draggedObject.dispose();
                     this.setDraggedObject(undefined);
@@ -250,6 +294,7 @@ class MachineEditor {
                 else {
                     this.setSelectedItem(trackname);
                     let track = this.machine.trackFactory.createTrack(this._selectedItem, {
+                        fullPartName: trackname,
                         i: 0,
                         j: 0,
                         k: 0
@@ -261,6 +306,7 @@ class MachineEditor {
                     this.setDraggedObject(track);
                     this.setSelectedObject(track, true);
                     this._dragOffset.copyFromFloats(0, 0, 0);
+                    this.setItemCount(trackname, this.getItemCount(trackname) - 1);
                 }
             });
         }

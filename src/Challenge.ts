@@ -208,6 +208,10 @@ class Challenge {
         this.gridJMin = data.gridJMin;
         this.gridJMax = data.gridJMax;
         this.gridDepth = data.gridDepth;
+
+        for (let i = 0; i < this.availableElements.length; i++) {
+            this.game.machineEditor.setItemCount(this.availableElements[i], 1);
+        }
     }
 
     private _successTime: number = 0;

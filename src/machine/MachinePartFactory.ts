@@ -16,6 +16,7 @@ var TrackNames = [
 ];
 
 interface IMachinePartProp {
+    fullPartName?: string;
     i?: number;
     j?: number;
     k?: number;
@@ -38,6 +39,8 @@ class MachinePartFactory {
         if (!props) {
             props = {};
         }
+        props.fullPartName = trackname; // hacky but work
+        
         trackname = trackname.split("-")[0];
         let whdn = "";
         if (isFinite(props.w)) {

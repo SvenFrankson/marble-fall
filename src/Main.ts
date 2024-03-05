@@ -294,14 +294,6 @@ class Game {
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
         this.canvas.addEventListener("pointerup", this.onPointerUp);
         this.canvas.addEventListener("wheel", this.onWheelEvent);
-
-        if (this.DEBUG_MODE) {
-            setInterval(() => {
-                let triCount = this.machine.parts.map(part => { return part.getTriCount() }).reduce((t1, t2) => { return t1 + t2 });
-                triCount += this.machine.parts.map(ball => { return ball.getIndices().length / 3 }).reduce((b1, b2) => { return b1 + b2 });
-                //console.log("global machine tricount " + triCount);
-            }, 3000);
-        }
 	}
 
 	public animate(): void {

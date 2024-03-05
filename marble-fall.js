@@ -460,6 +460,9 @@ class Challenge {
         this.gridJMin = data.gridJMin;
         this.gridJMax = data.gridJMax;
         this.gridDepth = data.gridDepth;
+        for (let i = 0; i < this.availableElements.length; i++) {
+            this.game.machineEditor.setItemCount(this.availableElements[i], 1);
+        }
     }
     update(dt) {
         if (this.state < 100) {
@@ -1028,13 +1031,6 @@ class Game {
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
         this.canvas.addEventListener("pointerup", this.onPointerUp);
         this.canvas.addEventListener("wheel", this.onWheelEvent);
-        if (this.DEBUG_MODE) {
-            setInterval(() => {
-                let triCount = this.machine.parts.map(part => { return part.getTriCount(); }).reduce((t1, t2) => { return t1 + t2; });
-                triCount += this.machine.parts.map(ball => { return ball.getIndices().length / 3; }).reduce((b1, b2) => { return b1 + b2; });
-                //console.log("global machine tricount " + triCount);
-            }, 3000);
-        }
     }
     animate() {
         this.engine.runRenderLoop(() => {
@@ -2239,6 +2235,7 @@ class MachinePart extends BABYLON.Mesh {
         super("track", machine.game.scene);
         this.machine = machine;
         this.isPlaced = isPlaced;
+        this.fullPartName = "";
         this.tracks = [];
         this.wires = [];
         this.allWires = [];
@@ -2262,6 +2259,9 @@ class MachinePart extends BABYLON.Mesh {
         this._j = 0;
         this._k = 0;
         this._partVisibilityMode = PartVisibilityMode.Default;
+        if (prop.fullPartName) {
+            this.fullPartName = prop.fullPartName;
+        }
         this._i = prop.i;
         this._j = prop.j;
         this._k = prop.k;
@@ -2540,6 +2540,9 @@ class MachinePart extends BABYLON.Mesh {
         if (index > -1) {
             this.machine.parts.splice(index, 1);
         }
+        if (this.game.mode === GameMode.Challenge) {
+            this.game.machineEditor.setItemCount(this.fullPartName, this.game.machineEditor.getItemCount(this.fullPartName) + 1);
+        }
     }
     generateWires() {
         this.allWires = [...this.wires];
@@ -2643,6 +2646,7 @@ class MachinePartFactory {
         if (!props) {
             props = {};
         }
+        props.fullPartName = trackname; // hacky but work
         trackname = trackname.split("-")[0];
         let whdn = "";
         if (isFinite(props.w)) {
@@ -4339,10 +4343,37 @@ class MachineEditor {
     get challengeMode() {
         return this.game.mode === GameMode.Challenge;
     }
+    getItemCount(trackName) {
+        if (this.itemsCounts) {
+            return this.itemsCounts.get(trackName);
+        }
+        return 0;
+    }
+    setItemCount(trackName, c) {
+        if (this.itemsCounts) {
+            this.itemsCounts.set(trackName, c);
+            let e = document.querySelector("#machine-editor-objects");
+            if (e) {
+                e = e.querySelector("[track='" + trackName + "']");
+                if (e) {
+                    e = e.querySelector("div");
+                    if (e instanceof HTMLDivElement) {
+                        if (isFinite(c)) {
+                            e.innerHTML = c.toFixed(0);
+                        }
+                        else {
+                            e.innerHTML = "&#8734;";
+                        }
+                    }
+                }
+            }
+        }
+    }
     async instantiate() {
         document.getElementById("machine-editor-objects").style.display = "block";
         this.game.toolbar.resize();
         this.machinePartEditorMenu.initialize();
+        this.itemsCounts = new Map();
         if (!this.challengeMode) {
             let ballItem = document.createElement("div");
             ballItem.classList.add("machine-editor-item");
@@ -4378,14 +4409,23 @@ class MachineEditor {
         }
         for (let i = 0; i < availableTracks.length; i++) {
             let trackname = availableTracks[i];
+            this.setItemCount(trackname, Infinity);
             let item = document.createElement("div");
             item.classList.add("machine-editor-item");
+            item.setAttribute("track", trackname);
             item.style.backgroundImage = "url(./datas/icons/" + trackname + ".png)";
             item.style.backgroundSize = "cover";
             item.innerText = trackname.split("-")[0];
             this.itemContainer.appendChild(item);
             this.items.set(trackname, item);
+            let itemCountElement = document.createElement("div");
+            itemCountElement.classList.add("machine-editor-item-count");
+            itemCountElement.innerHTML = "&#8734;";
+            item.appendChild(itemCountElement);
             item.addEventListener("pointerdown", () => {
+                if (this.getItemCount(trackname) <= 0) {
+                    return;
+                }
                 if (this.draggedObject) {
                     this.draggedObject.dispose();
                     this.setDraggedObject(undefined);
@@ -4396,6 +4436,7 @@ class MachineEditor {
                 else {
                     this.setSelectedItem(trackname);
                     let track = this.machine.trackFactory.createTrack(this._selectedItem, {
+                        fullPartName: trackname,
                         i: 0,
                         j: 0,
                         k: 0
@@ -4407,6 +4448,7 @@ class MachineEditor {
                     this.setDraggedObject(track);
                     this.setSelectedObject(track, true);
                     this._dragOffset.copyFromFloats(0, 0, 0);
+                    this.setItemCount(trackname, this.getItemCount(trackname) - 1);
                 }
             });
         }

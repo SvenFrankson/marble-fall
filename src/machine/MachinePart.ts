@@ -39,6 +39,8 @@ class MachinePartSelectorMesh extends BABYLON.Mesh {
 
 class MachinePart extends BABYLON.Mesh {
 
+    public fullPartName: string = "";
+
     public get partName(): string {
         return this.template ? this.template.partName : "machine-part-no-template";
     }
@@ -149,6 +151,10 @@ class MachinePart extends BABYLON.Mesh {
     constructor(public machine: Machine, prop: IMachinePartProp, public isPlaced: boolean = true) {
         super("track", machine.game.scene);
         
+        if (prop.fullPartName) {
+            this.fullPartName = prop.fullPartName;
+        }
+
         this._i = prop.i;
         this._j = prop.j;
         this._k = prop.k;
@@ -382,6 +388,9 @@ class MachinePart extends BABYLON.Mesh {
         let index = this.machine.parts.indexOf(this);
         if (index > - 1) {
             this.machine.parts.splice(index, 1);
+        }
+        if (this.game.mode === GameMode.Challenge) {
+            this.game.machineEditor.setItemCount(this.fullPartName, this.game.machineEditor.getItemCount(this.fullPartName) + 1);
         }
     }
 
