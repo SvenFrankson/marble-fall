@@ -65,7 +65,7 @@ class Popup extends HTMLElement {
                         let f = t / duration;
                         this.style.opacity = ((1 - f) * opacity0 + f * 1).toFixed(3);
                     }
-                })
+                }, 15)
             }
         });
     }
@@ -91,7 +91,7 @@ class Popup extends HTMLElement {
                         let f = t / duration;
                         this.style.opacity = ((1 - f) * opacity0).toFixed(3);
                     }
-                })
+                }, 15)
             }
         });
     }

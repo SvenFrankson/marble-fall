@@ -61,7 +61,30 @@ class ChallengeStep {
         return step;
     }
 
-    public static SvgArrow(challenge: Challenge, element: HTMLElement | (() => HTMLElement), duration: number): ChallengeStep {
+    public static SvgArrow(challenge: Challenge, element: HTMLElement | (() => HTMLElement), dir: number, duration: number): ChallengeStep {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, dir);
+            return new Promise<void>(resolve => {
+                arrow.instantiate().then(async () => {
+                    if (element instanceof HTMLElement) {
+                        arrow.setTarget(element);
+                    }
+                    else {
+                        arrow.setTarget(element());
+                    }
+                    await arrow.show(0.5);
+                    await challenge.WaitAnimation(duration);
+                    await arrow.hide(0.5);
+                    arrow.dispose();
+                    resolve();
+                });
+            })
+        }
+        return step;
+    }
+
+    public static SvgArrowSlide(challenge: Challenge, element: HTMLElement | (() => HTMLElement), target: { x: () => number, y: () => number, dir: number }, duration: number): ChallengeStep {
         let step = new ChallengeStep(challenge);
         step.doStep = () => {
             let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, -45);
@@ -74,7 +97,7 @@ class ChallengeStep {
                         arrow.setTarget(element());
                     }
                     await arrow.show(0.5);
-                    await challenge.WaitAnimation(duration);
+                    await arrow.slide(target.x(), target.y(), target.dir, duration);
                     await arrow.hide(0.5);
                     arrow.dispose();
                     resolve();
@@ -151,10 +174,13 @@ class Challenge {
                 ChallengeStep.Text(this, "to its destination.", this.delay),
             ],
             [
-                ChallengeStep.SvgArrow(this, () => { return document.querySelector(".machine-editor-item"); }, this.delay),
+                ChallengeStep.SvgArrowSlide(this, () => { return document.querySelector(".machine-editor-item"); }, { x: () => { return window.innerWidth * 0.5 }, y: () => { return window.innerHeight * 0.5 }, dir: - 135 }, this.delay),
                 ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
             ],
-            ChallengeStep.Text(this, "Then press Play.", this.delay),
+            [
+                ChallengeStep.SvgArrow(this, () => { return document.querySelector("#toolbar-play"); }, - 155, 3 * this.delay),
+                ChallengeStep.Text(this, "Then press Play.", 3 * this.delay),
+            ],
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
         ];
     }

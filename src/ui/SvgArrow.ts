@@ -44,6 +44,38 @@ class SvgArrow {
         return this.image.hide(duration);
     }
 
+    private _animationSlideInterval: number = 0;
+    public async slide(x: number, y: number, targetDir: number, duration: number = 1): Promise<void> {
+        return new Promise<void>(resolve => {
+            clearInterval(this._animationSlideInterval);
+    
+            let x0 = parseFloat(this.image.style.left);
+            let y0 = parseFloat(this.image.style.top);
+            let x1 = x - this._w * 0.5;
+            let y1 = y - this._w * 1.5 * 0.5
+            let dir0 = this.dirInDegrees;
+            let t0 = performance.now() / 1000;
+            this._animationSlideInterval = setInterval(() => {
+                let t = performance.now() / 1000 - t0;
+                if (t >= duration) {
+                    clearInterval(this._animationSlideInterval);
+                    this.dirInDegrees = targetDir;
+                    this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+                    this.image.style.left = x1.toFixed(1) + "px";
+                    this.image.style.top = y1.toFixed(1) + "px";
+                    resolve();
+                }
+                else {
+                    let f = t / duration;
+                    this.dirInDegrees = (1 - f) * dir0 + f * targetDir;
+                    this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+                    this.image.style.left = ((1 - f) * x0 + f * x1).toFixed(1) + "px";
+                    this.image.style.top = ((1 - f) * y0 + f * y1).toFixed(1) + "px";
+                }
+            }, 15)
+        });
+    }
+
     public dispose(): void {
         document.body.removeChild(this.image);
     }

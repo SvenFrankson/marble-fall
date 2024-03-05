@@ -333,7 +333,29 @@ class ChallengeStep {
         };
         return step;
     }
-    static SvgArrow(challenge, element, duration) {
+    static SvgArrow(challenge, element, dir, duration) {
+        let step = new ChallengeStep(challenge);
+        step.doStep = () => {
+            let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, dir);
+            return new Promise(resolve => {
+                arrow.instantiate().then(async () => {
+                    if (element instanceof HTMLElement) {
+                        arrow.setTarget(element);
+                    }
+                    else {
+                        arrow.setTarget(element());
+                    }
+                    await arrow.show(0.5);
+                    await challenge.WaitAnimation(duration);
+                    await arrow.hide(0.5);
+                    arrow.dispose();
+                    resolve();
+                });
+            });
+        };
+        return step;
+    }
+    static SvgArrowSlide(challenge, element, target, duration) {
         let step = new ChallengeStep(challenge);
         step.doStep = () => {
             let arrow = new SvgArrow("challenge-step-arrow", challenge.game, 0.3, 0.1, -45);
@@ -346,7 +368,7 @@ class ChallengeStep {
                         arrow.setTarget(element());
                     }
                     await arrow.show(0.5);
-                    await challenge.WaitAnimation(duration);
+                    await arrow.slide(target.x(), target.y(), target.dir, duration);
                     await arrow.hide(0.5);
                     arrow.dispose();
                     resolve();
@@ -405,10 +427,13 @@ class Challenge {
                 ChallengeStep.Text(this, "to its destination.", this.delay),
             ],
             [
-                ChallengeStep.SvgArrow(this, () => { return document.querySelector(".machine-editor-item"); }, this.delay),
+                ChallengeStep.SvgArrowSlide(this, () => { return document.querySelector(".machine-editor-item"); }, { x: () => { return window.innerWidth * 0.5; }, y: () => { return window.innerHeight * 0.5; }, dir: -135 }, this.delay),
                 ChallengeStep.Text(this, "First, add the adequate Track elements.", this.delay),
             ],
-            ChallengeStep.Text(this, "Then press Play.", this.delay),
+            [
+                ChallengeStep.SvgArrow(this, () => { return document.querySelector("#toolbar-play"); }, -155, 3 * this.delay),
+                ChallengeStep.Text(this, "Then press Play.", 3 * this.delay),
+            ],
             ChallengeStep.Text(this, "Puzzle is completed when the ball is in the golden receptacle.", this.delay),
         ];
     }
@@ -980,7 +1005,6 @@ class Game {
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 //await this.makeScreenshot("spiral-1.2.1");
-                test.dispose();
                 //let parts = ["ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1"];
                 let parts = TrackNames;
                 for (let i = 0; i < parts.length; i++) {
@@ -1601,7 +1625,7 @@ class Popup extends HTMLElement {
                         let f = t / duration;
                         this.style.opacity = ((1 - f) * opacity0 + f * 1).toFixed(3);
                     }
-                });
+                }, 15);
             }
         });
     }
@@ -1625,7 +1649,7 @@ class Popup extends HTMLElement {
                         let f = t / duration;
                         this.style.opacity = ((1 - f) * opacity0).toFixed(3);
                     }
-                });
+                }, 15);
             }
         });
     }
@@ -7362,6 +7386,7 @@ class SvgArrow {
         this.baseSize = baseSize;
         this.distanceFromTarget = distanceFromTarget;
         this.dirInDegrees = dirInDegrees;
+        this._animationSlideInterval = 0;
         this.image = document.createElement("nabu-popup");
         this.image.style.position = "fixed";
         this.image.style.transformOrigin = "center";
@@ -7395,6 +7420,35 @@ class SvgArrow {
     }
     hide(duration) {
         return this.image.hide(duration);
+    }
+    async slide(x, y, targetDir, duration = 1) {
+        return new Promise(resolve => {
+            clearInterval(this._animationSlideInterval);
+            let x0 = parseFloat(this.image.style.left);
+            let y0 = parseFloat(this.image.style.top);
+            let x1 = x - this._w * 0.5;
+            let y1 = y - this._w * 1.5 * 0.5;
+            let dir0 = this.dirInDegrees;
+            let t0 = performance.now() / 1000;
+            this._animationSlideInterval = setInterval(() => {
+                let t = performance.now() / 1000 - t0;
+                if (t >= duration) {
+                    clearInterval(this._animationSlideInterval);
+                    this.dirInDegrees = targetDir;
+                    this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+                    this.image.style.left = x1.toFixed(1) + "px";
+                    this.image.style.top = y1.toFixed(1) + "px";
+                    resolve();
+                }
+                else {
+                    let f = t / duration;
+                    this.dirInDegrees = (1 - f) * dir0 + f * targetDir;
+                    this.image.style.transform = "rotate(" + this.dirInDegrees + "deg)";
+                    this.image.style.left = ((1 - f) * x0 + f * x1).toFixed(1) + "px";
+                    this.image.style.top = ((1 - f) * y0 + f * y1).toFixed(1) + "px";
+                }
+            }, 15);
+        });
     }
     dispose() {
         document.body.removeChild(this.image);
