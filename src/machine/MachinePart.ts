@@ -144,6 +144,8 @@ class MachinePart extends BABYLON.Mesh {
         this._template = template;
     }
 
+    public sleepersMeshProp: ISleeperMeshProps;
+
     constructor(public machine: Machine, prop: IMachinePartProp, public isPlaced: boolean = true) {
         super("track", machine.game.scene);
         
@@ -157,6 +159,8 @@ class MachinePart extends BABYLON.Mesh {
         this.position.x = this._i * tileWidth;
         this.position.y = - this._j * tileHeight;
         this.position.z = - this._k * tileDepth;
+
+        this.sleepersMeshProp = { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 };
 
         this.tracks = [new Track(this)];
     }
@@ -433,7 +437,7 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public doSleepersMeshUpdate(): void {
-        let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
+        let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, this.sleepersMeshProp);
         datas.forEach((vData, colorIndex) => {
             if (!this.sleepersMeshes.get(colorIndex)) {
                 let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);

@@ -970,7 +970,12 @@ class Game {
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
                 //await this.makeScreenshot("spiral-1.2.1");
-                await this.makeScreenshot("wall-4.2");
+                test.dispose();
+                //let parts = ["ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1"];
+                let parts = TrackNames;
+                for (let i = 0; i < parts.length; i++) {
+                    await this.makeScreenshot(parts[i]);
+                }
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
@@ -1157,8 +1162,8 @@ class Game {
             this.room.ground.position.y = 100;
         }
         this.scene.clearColor = BABYLON.Color4.FromHexString("#272B2EFF");
-        this.camera.alpha = -0.8 * Math.PI / 2;
-        this.camera.beta = 0.75 * Math.PI / 2;
+        this.camera.alpha = -0.9 * Math.PI / 2;
+        this.camera.beta = 0.85 * Math.PI / 2;
         return new Promise(resolve => {
             requestAnimationFrame(async () => {
                 this.machine.dispose();
@@ -1180,6 +1185,7 @@ class Game {
                         k: 0,
                         mirrorX: mirrorX
                     });
+                    track.sleepersMeshProp = {};
                     this.camera.radius = 0.25 + Math.max(0.15 * (track.w - 1), 0);
                     this.camera.target.copyFromFloats(tileWidth * ((track.w - 1) * 0.55), -tileHeight * (track.h) * 0.5, 0);
                 }
@@ -1195,8 +1201,42 @@ class Game {
                     this.machine.balls = [ball];
                 }
                 await this.machine.instantiate();
+                let w = track.w * tileWidth;
+                let h = (track.h + 1) * tileHeight;
+                let d = track.d * tileDepth;
+                let x0 = -tileWidth * 0.5;
+                let y1 = tileHeight * 0.5;
+                let z1 = tileDepth * 0.5;
+                let x1 = x0 + w;
+                let y0 = y1 - h;
+                let z0 = z1 - d;
+                let lines = [];
+                lines.push([new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x1, y0, z0)]);
+                lines.push([new BABYLON.Vector3(x0, y0, z1), new BABYLON.Vector3(x1, y0, z1)]);
+                lines.push([new BABYLON.Vector3(x0, y0, z0), new BABYLON.Vector3(x0, y1, z0)]);
+                lines.push([new BABYLON.Vector3(x0, y0, z1), new BABYLON.Vector3(x0, y1, z1)]);
+                for (let y = y0; y <= y1; y += tileHeight) {
+                    lines.push([new BABYLON.Vector3(x0, y, z0), new BABYLON.Vector3(x0, y, z1)]);
+                }
+                for (let x = x0 + tileWidth; x <= x1; x += tileWidth) {
+                    lines.push([new BABYLON.Vector3(x, y0, z0), new BABYLON.Vector3(x, y0, z1)]);
+                }
+                let encloseMesh = new BABYLON.Mesh("test");
+                encloseMesh.parent = track;
+                let shape = [];
+                for (let i = 0; i < 8; i++) {
+                    let a = i / 8 * 2 * Math.PI;
+                    let cosa = Math.cos(a);
+                    let sina = Math.sin(a);
+                    shape[i] = new BABYLON.Vector3(cosa * 0.001, sina * 0.001, 0);
+                }
+                for (let i = 0; i < lines.length; i++) {
+                    let wire = BABYLON.ExtrudeShape("wire", { shape: shape, path: lines[i], closeShape: true, cap: BABYLON.Mesh.CAP_ALL });
+                    wire.material = this.materials.ghostMaterial;
+                    wire.parent = encloseMesh;
+                }
                 requestAnimationFrame(async () => {
-                    await Mummu.MakeScreenshot({ miniatureName: objectName });
+                    await Mummu.MakeScreenshot({ miniatureName: objectName, size: 256 });
                     resolve();
                 });
             });
@@ -2187,6 +2227,7 @@ class MachinePart extends BABYLON.Mesh {
         this.position.x = this._i * tileWidth;
         this.position.y = -this._j * tileHeight;
         this.position.z = -this._k * tileDepth;
+        this.sleepersMeshProp = { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 };
         this.tracks = [new Track(this)];
     }
     get partName() {
@@ -2501,7 +2542,7 @@ class MachinePart extends BABYLON.Mesh {
         this.machine.requestUpdateShadow = true;
     }
     doSleepersMeshUpdate() {
-        let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 0.6 });
+        let datas = SleeperMeshBuilder.GenerateSleepersVertexData(this, this.sleepersMeshProp);
         datas.forEach((vData, colorIndex) => {
             if (!this.sleepersMeshes.get(colorIndex)) {
                 let sleeperMesh = new BABYLON.Mesh("sleeper-mesh-" + colorIndex);
