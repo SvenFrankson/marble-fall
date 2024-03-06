@@ -1,5 +1,6 @@
 {
     "machine": {
+        "sleepers": { "drawGroundAnchors": true, "groundAnchorsRelativeMaxY": 1 },
         "balls": [{ "x": -0.25126743563483067, "y": 0.044800075666207355, "z": 2.7755575615628914e-17 }],
         "parts": [
             { "name": "end", "i": 2, "j": 0, "k": 0, "mirrorZ": false, "color": 0 },

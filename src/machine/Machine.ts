@@ -15,6 +15,7 @@ interface IMachinePartData {
 }
 
 interface IMachineData {
+    sleepers?: ISleeperMeshProps;
     balls: IBallData[];
     parts: IMachinePartData[];
 }
@@ -430,6 +431,9 @@ class Machine {
             }
             let track = this.trackFactory.createTrack(part.name, prop);
             if (track) {
+                if (data.sleepers) {
+                    track.sleepersMeshProp = data.sleepers;
+                }
                 this.parts.push(track);
             }
         }

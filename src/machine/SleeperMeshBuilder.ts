@@ -166,7 +166,7 @@ class SleeperMeshBuilder {
                     }
 
                     if (props.drawGroundAnchors) {
-                        if ((n - 1.5) % 6 === 0 && up.y > 0.1) {
+                        if (((n - 1.5) % 6 === 0 || count === 1) && up.y > 0.1) {
                             let anchor = path[nPath / 2];
                             let anchorYWorld = anchor.y + part.position.y;
                             let anchorBase = anchor.clone();
