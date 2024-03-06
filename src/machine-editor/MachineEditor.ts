@@ -308,9 +308,12 @@ class MachineEditor {
                     this.setDraggedObject(track);
                     this.setSelectedObject(track, true);
                     this._dragOffset.copyFromFloats(0, 0, 0);
-                    this.setItemCount(trackname, this.getItemCount(trackname) - 1);
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
+                        requestAnimationFrame(() => {
+                            track.setIsVisible(false);
+                        })
+                        this.setItemCount(trackname, this.getItemCount(trackname) - 1);
                     });
                 }
             });

@@ -263,13 +263,21 @@ class MachinePart extends BABYLON.Mesh {
     }
 
     public select(): void {
-        this.selectorMesh.visibility = 0.2;
-        this.encloseMesh.visibility = 1;
+        if (this.selectorMesh) {
+            this.selectorMesh.visibility = 0.2;
+        }
+        if (this.encloseMesh) {
+            this.encloseMesh.visibility = 1;
+        }
     }
 
     public unselect(): void {
-        this.selectorMesh.visibility = 0;
-        this.encloseMesh.visibility = 0;
+        if (this.selectorMesh) {
+            this.selectorMesh.visibility = 0;
+        }
+        if (this.encloseMesh) {
+            this.encloseMesh.visibility = 0;
+        }
     }
 
     public getSlopeAt(index: number, trackIndex: number = 0): number {

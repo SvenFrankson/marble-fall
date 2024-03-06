@@ -2536,12 +2536,20 @@ class MachinePart extends BABYLON.Mesh {
         }
     }
     select() {
-        this.selectorMesh.visibility = 0.2;
-        this.encloseMesh.visibility = 1;
+        if (this.selectorMesh) {
+            this.selectorMesh.visibility = 0.2;
+        }
+        if (this.encloseMesh) {
+            this.encloseMesh.visibility = 1;
+        }
     }
     unselect() {
-        this.selectorMesh.visibility = 0;
-        this.encloseMesh.visibility = 0;
+        if (this.selectorMesh) {
+            this.selectorMesh.visibility = 0;
+        }
+        if (this.encloseMesh) {
+            this.encloseMesh.visibility = 0;
+        }
     }
     getSlopeAt(index, trackIndex = 0) {
         if (this.tracks[trackIndex]) {
@@ -4558,9 +4566,12 @@ class MachineEditor {
                     this.setDraggedObject(track);
                     this.setSelectedObject(track, true);
                     this._dragOffset.copyFromFloats(0, 0, 0);
-                    this.setItemCount(trackname, this.getItemCount(trackname) - 1);
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
+                        requestAnimationFrame(() => {
+                            track.setIsVisible(false);
+                        });
+                        this.setItemCount(trackname, this.getItemCount(trackname) - 1);
                     });
                 }
             });
