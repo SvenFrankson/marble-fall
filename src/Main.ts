@@ -269,30 +269,29 @@ class Game {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
             if (event.code === "KeyP") {
-                //await this.makeScreenshot("spiral-1.2.1");
+                let doTrackMini = false;
                 let e = document.getElementById("screenshot-frame");
                 if (e.style.display != "block") {
                     e.style.display = "block";
                 }
                 else {
-                    let parts = [
-                        "ramp-1.1.1",
-                        "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
-                        "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
-                        "spiral-1.3.2", "join",
-                        "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
-                    ];
-                    parts = TrackNames;
-                    for (let i = 0; i < parts.length; i++) {
-                        await this.makeScreenshot(parts[i]);
+                    if (doTrackMini) {
+                        let parts = [
+                            "ramp-1.1.1",
+                            "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
+                            "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
+                            "spiral-1.3.2", "join",
+                            "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
+                        ];
+                        parts = TrackNames;
+                        for (let i = 0; i < parts.length; i++) {
+                            await this.makeScreenshot(parts[i]);
+                        }
+                    }
+                    else {
+                        this.makeCircuitScreenshot();
                     }
                 }
-                /*
-                for (let i = 0; i < TrackNames.length; i++) {
-                    let trackname = TrackNames[i];
-                    await this.makeScreenshot(trackname);
-                }
-                */
             }
         })
 
@@ -578,6 +577,10 @@ class Game {
             this.room.ground.position.y = 100;
         }
         this.scene.clearColor.copyFromFloats(0, 0, 0, 0);
+        this.machine.parts.forEach(part => {
+            part.sleepersMeshProp = {};
+            part.doSleepersMeshUpdate();
+        })
 
         return new Promise<void>(resolve => {
             requestAnimationFrame(async () => {

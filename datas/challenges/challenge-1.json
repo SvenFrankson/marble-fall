@@ -10,7 +10,7 @@
     "camAlpha": -1.57,
     "camBeta": 1.26,
     "camRadius": 0.4,
-    "camTarget": { "x": 0, "y": 0, "z": 0 },
+    "camTarget": { "x": 0.04, "y": 0, "z": 0 },
     "gridIMin": -4,
     "gridIMax": 4,
     "gridJMin": -10,

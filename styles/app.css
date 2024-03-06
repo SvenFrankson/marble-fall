@@ -576,12 +576,12 @@ panel-page {
 
 #challenge-tuto {
     text-align: center;
-    font-size: 3vh;
+    font-size: min(4vh, 4vw);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: white;
     width: 100%;
     left: 0;
-    top: calc((100vh - 1.5vh) * 0.5);
+    top: calc((100vh - 1vw) * 0.5 - 10vh);
     pointer-events: none;
 }
 
@@ -592,14 +592,14 @@ panel-page {
     color: white;
     width: 100%;
     left: 0;
-    top: calc((100vh - 1.5vh) * 0.5 + 10vh);
+    top: calc((100vh - 1vw) * 0.5);
     pointer-events: none;
 }
 
 #challenge-next button {
     background: none;
     border: 2px solid white;
-    border-radius: calc(min(1.5vh, 1.5vw));
+    border-radius: calc(min(1vw, 1.5vw));
     font-size: 3.5vh;
     padding: 2vh 4vh 2vh 4vh;
     color: white;
