@@ -128,6 +128,7 @@ class Machine {
     public baseMeshMinZ: number = - this.margin;
     public baseMeshMaxZ: number = this.margin;
     public async generateBaseMesh(): Promise<void> {
+        let previousBaseMinY = this.baseMeshMinY;
 
         this.baseMeshMinX = - this.margin;
         this.baseMeshMaxX = this.margin;
@@ -308,6 +309,12 @@ class Machine {
             this.baseLogo.material = this.game.materials.logoMaterial;
 
             this.regenerateBaseAxis();
+        }
+
+        if (previousBaseMinY != this.baseMeshMinY) {
+            for (let i = 0; i < this.parts.length; i++) {
+                this.parts[i].doSleepersMeshUpdate();
+            }
         }
 
         if (this.game.room) {

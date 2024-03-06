@@ -1999,6 +1999,7 @@ class Machine {
         this.playing = false;
     }
     async generateBaseMesh() {
+        let previousBaseMinY = this.baseMeshMinY;
         this.baseMeshMinX = -this.margin;
         this.baseMeshMaxX = this.margin;
         this.baseMeshMinY = -this.margin;
@@ -2159,6 +2160,11 @@ class Machine {
             Mummu.MergeVertexDatas(corner1Data, corner2Data).applyToMesh(this.baseLogo);
             this.baseLogo.material = this.game.materials.logoMaterial;
             this.regenerateBaseAxis();
+        }
+        if (previousBaseMinY != this.baseMeshMinY) {
+            for (let i = 0; i < this.parts.length; i++) {
+                this.parts[i].doSleepersMeshUpdate();
+            }
         }
         if (this.game.room) {
             this.game.room.setGroundHeight(this.baseMeshMinY - 0.8);
@@ -4543,6 +4549,9 @@ class MachineEditor {
                         k: 0
                     });
                     track.isPlaced = false;
+                    if (this.challengeMode) {
+                        track.sleepersMeshProp = { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 1 };
+                    }
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });

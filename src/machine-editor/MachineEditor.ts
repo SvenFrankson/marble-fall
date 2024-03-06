@@ -302,6 +302,9 @@ class MachineEditor {
                         k: 0
                     });
                     track.isPlaced = false;
+                    if (this.challengeMode) {
+                        track.sleepersMeshProp = { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 1 };
+                    }
                     track.instantiate(true).then(() => {
                         track.setIsVisible(false);
                     });
