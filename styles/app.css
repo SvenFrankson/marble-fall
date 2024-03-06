@@ -111,6 +111,7 @@ panel-page {
 }
 
 .panel {
+    position: relative;
     background-color: rgba(39, 43, 46, 80%);
     outline: calc(min(0.1vh, 0.1vw)) solid white;
     border-radius: calc(min(1.5vh, 1.5vw));
@@ -169,6 +170,19 @@ panel-page {
 
 .panel.credit .label {
     text-align: left;
+    display: block;
+}
+
+.panel .check {
+    position: absolute;
+    right: 1.5vh;
+    bottom: 1.5vh;
+    width: 6vh;
+    stroke: white;
+    display: none;
+}
+
+.panel[status="completed"] .check {
     display: block;
 }
 

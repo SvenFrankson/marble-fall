@@ -397,14 +397,48 @@ class Challenge {
         this.gridJMin = -10;
         this.gridJMax = 1;
         this.gridDepth = 0;
+        this.currentIndex = 0;
         this.availableElements = [];
+        this.completedChallenges = [];
         this._successTime = 0;
         this.WaitAnimation = Mummu.AnimationFactory.CreateWait(this.game);
         this.tutoPopup = document.getElementById("challenge-tuto");
         this.tutoText = this.tutoPopup.querySelector("div");
         this.tutoComplete = document.getElementById("challenge-next");
+        let completedChallengesString = window.localStorage.getItem("completed-challenges");
+        if (completedChallengesString) {
+            let completedChallenges = JSON.parse(completedChallengesString);
+            if (completedChallenges) {
+                this.completedChallenges = completedChallenges.data;
+            }
+        }
+        let challengePanels = document.querySelector("#challenge-menu").querySelectorAll("panel-element");
+        for (let i = 0; i < challengePanels.length; i++) {
+            let panel = challengePanels[i];
+            if (this.completedChallenges[i + 1]) {
+                panel.setAttribute("status", "completed");
+            }
+            let svgCompleteCheck = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svgCompleteCheck.classList.add("check");
+            svgCompleteCheck.setAttribute("viewBox", "0 0 100 100");
+            svgCompleteCheck.innerHTML = `
+                <path d="M31 41 L51 61 L93 20" stroke-width="12" fill="none"></path>
+                <path d="M71 15 A42 42 0 1 0 91 48" stroke-width="8" fill="none"></path>
+            `;
+            panel.appendChild(svgCompleteCheck);
+        }
+    }
+    completeChallenge(index) {
+        this.completedChallenges[index] = 1;
+        window.localStorage.setItem("completed-challenges", JSON.stringify({ data: this.completedChallenges }));
+        let challengePanels = document.querySelector("#challenge-menu").querySelectorAll("panel-element");
+        let panel = challengePanels[index - 1];
+        if (panel) {
+            panel.setAttribute("status", "completed");
+        }
     }
     initialize(data) {
+        this.currentIndex = data.index;
         this.steps = ChallengeSteps.GetSteps(this, data.index);
         this.state = 0;
         let arrival = this.game.machine.parts.find(part => { return part.partName === "end"; });
@@ -475,9 +509,12 @@ class Challenge {
             let doFinalStep = async () => {
                 this.tutoText.innerText = "Challenge completed - Well done !";
                 this.tutoPopup.setAttribute("duration", "0");
+                this.completeChallenge(this.currentIndex);
                 this.tutoPopup.show(0.5);
-                await this.WaitAnimation(2);
-                this.tutoComplete.show(0.5);
+                await this.WaitAnimation(0.5);
+                if (this.game.mode === GameMode.Challenge) {
+                    this.tutoComplete.show(0.5);
+                }
             };
             doFinalStep();
         }
