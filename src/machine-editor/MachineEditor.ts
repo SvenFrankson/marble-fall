@@ -305,13 +305,13 @@ class MachineEditor {
                     if (this.challengeMode) {
                         track.sleepersMeshProp = { drawGroundAnchors: true, groundAnchorsRelativeMaxY: 1 };
                     }
-                    track.instantiate(true).then(() => {
-                        track.setIsVisible(false);
-                    });
                     this.setDraggedObject(track);
                     this.setSelectedObject(track, true);
                     this._dragOffset.copyFromFloats(0, 0, 0);
                     this.setItemCount(trackname, this.getItemCount(trackname) - 1);
+                    track.instantiate(true).then(() => {
+                        track.setIsVisible(false);
+                    });
                 }
             });
         }
