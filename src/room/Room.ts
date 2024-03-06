@@ -41,7 +41,6 @@ class Room {
     }
 
     public async instantiate(): Promise<void> {
-        console.log("Room instantiate");
         let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
 
         vertexDatas[0].applyToMesh(this.ground);

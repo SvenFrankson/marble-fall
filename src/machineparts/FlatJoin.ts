@@ -5,7 +5,6 @@ class FlatJoin extends MachinePart {
 
         let partName = "flatjoin";
         this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
-        console.log(this.template);
         this.generateWires();
     }
 

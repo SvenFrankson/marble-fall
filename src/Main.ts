@@ -188,20 +188,6 @@ class Game {
             }
         }
         
-        let alternateMenuCamMode = () => {
-            if (this.menuCameraMode === CameraMode.Ball) {
-                this.menuCameraMode = CameraMode.Landscape;
-            }
-            else {
-                this.menuCameraMode = CameraMode.Ball;
-            }
-            if (this.mode <= GameMode.Page) {
-                this.setCameraMode(this.menuCameraMode);
-            }
-            setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
-        }
-        alternateMenuCamMode();
-        
         this.camera.attachControl();
         this.camera.getScene();
 
@@ -264,6 +250,20 @@ class Game {
             arrow.show();
         }, 2000);
         */
+        
+        let alternateMenuCamMode = () => {
+            if (this.menuCameraMode === CameraMode.Ball) {
+                this.menuCameraMode = CameraMode.Landscape;
+            }
+            else {
+                this.menuCameraMode = CameraMode.Ball;
+            }
+            if (this.mode <= GameMode.Page) {
+                this.setCameraMode(this.menuCameraMode);
+            }
+            setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
+        }
+        alternateMenuCamMode();
 
         document.addEventListener("keydown", async (event: KeyboardEvent) => {
             //await this.makeScreenshot("join");

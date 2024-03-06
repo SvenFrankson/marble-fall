@@ -1026,19 +1026,6 @@ class Game {
                 this.camera.setPosition(position);
             }
         }
-        let alternateMenuCamMode = () => {
-            if (this.menuCameraMode === CameraMode.Ball) {
-                this.menuCameraMode = CameraMode.Landscape;
-            }
-            else {
-                this.menuCameraMode = CameraMode.Ball;
-            }
-            if (this.mode <= GameMode.Page) {
-                this.setCameraMode(this.menuCameraMode);
-            }
-            setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
-        };
-        alternateMenuCamMode();
         this.camera.attachControl();
         this.camera.getScene();
         if (this.config.graphicQ > 1) {
@@ -1088,6 +1075,19 @@ class Game {
             arrow.show();
         }, 2000);
         */
+        let alternateMenuCamMode = () => {
+            if (this.menuCameraMode === CameraMode.Ball) {
+                this.menuCameraMode = CameraMode.Landscape;
+            }
+            else {
+                this.menuCameraMode = CameraMode.Ball;
+            }
+            if (this.mode <= GameMode.Page) {
+                this.setCameraMode(this.menuCameraMode);
+            }
+            setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
+        };
+        alternateMenuCamMode();
         document.addEventListener("keydown", async (event) => {
             //await this.makeScreenshot("join");
             //await this.makeScreenshot("split");
@@ -5715,7 +5715,6 @@ class FlatJoin extends MachinePart {
         super(machine, prop);
         let partName = "flatjoin";
         this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
-        console.log(this.template);
         this.generateWires();
     }
     static GenerateTemplate(mirrorX) {
@@ -6876,7 +6875,6 @@ class Room {
         this.light2.includeOnlyWithLayerMask = 0x10000000;
     }
     async instantiate() {
-        console.log("Room instantiate");
         let vertexDatas = await this.game.vertexDataLoader.get("./meshes/room.babylon");
         vertexDatas[0].applyToMesh(this.ground);
         vertexDatas[1].applyToMesh(this.wall);
@@ -7350,7 +7348,6 @@ class MarbleRouter extends Nabu.Router {
     onUpdate() {
     }
     async onHRefChange(page) {
-        console.log("router " + page);
         this.game.machineEditor.dispose();
         if (page.startsWith("#options")) {
             this.game.machine.play();

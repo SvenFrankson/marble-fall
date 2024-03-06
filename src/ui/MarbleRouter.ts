@@ -27,7 +27,6 @@ class MarbleRouter extends Nabu.Router {
     }
 
     protected async onHRefChange(page: string): Promise<void> {
-        console.log("router " + page);
         this.game.machineEditor.dispose();
         if (page.startsWith("#options")) {
             this.game.machine.play();
