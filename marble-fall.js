@@ -7324,7 +7324,7 @@ class Logo {
         earlyAccessDisclaimer.setAttribute("fill", "white");
         earlyAccessDisclaimer.setAttribute("font-family", "Consolas");
         earlyAccessDisclaimer.setAttribute("font-size", "26px");
-        earlyAccessDisclaimer.innerHTML = "> v0.1.5 early access";
+        earlyAccessDisclaimer.innerHTML = "> v0.2.1 early access";
         this.container.appendChild(earlyAccessDisclaimer);
         this.fullScreenBanner.style.visibility = "hidden";
         this.container.style.visibility = "hidden";
