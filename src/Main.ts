@@ -30,7 +30,7 @@ enum CameraMode {
 class Game {
     
     public static Instance: Game;
-    public DEBUG_MODE: boolean = true;
+    public DEBUG_MODE: boolean = false;
 
 	public canvas: HTMLCanvasElement;
 	public engine: BABYLON.Engine;
@@ -211,7 +211,7 @@ class Game {
         this.machine = new Machine(this);
         this.machineEditor = new MachineEditor(this);
 
-        let dataResponse = await fetch("./datas/demos/demo-8.json");
+        let dataResponse = await fetch("./datas/demos/demo-6.json");
         if (dataResponse) {
             let data = await dataResponse.json();
             if (data) {
@@ -446,7 +446,7 @@ class Game {
                                 this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
-                        }, 3000);
+                        }, 5000);
                     }
                 }
                 else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
@@ -458,7 +458,7 @@ class Game {
                                 this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
-                        }, 3000);
+                        }, 5000);
                     }
                 }
                 else {
