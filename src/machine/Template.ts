@@ -156,9 +156,9 @@ class TrackTemplate {
                 let r = (rPrev + rNext) * 0.5;
                 maxR = Math.max(r, maxR);
 
-                let f = 0.06 / r;
+                let f = this.partTemplate.minTurnRadius / r;
                 f = Math.max(Math.min(f, 1), 0);
-                this.angles[i] = Math.PI / 4 * sign * f;
+                this.angles[i] = this.partTemplate.maxAngle * sign * f;
             }
             else {
                 this.angles[i] = 0;
@@ -250,6 +250,8 @@ class MachinePartTemplate {
     public mirrorX: boolean = false;
     public mirrorZ: boolean = false;
     public angleSmoothSteps: number = 30;
+    public maxAngle: number = Math.PI / 4;
+    public minTurnRadius: number = 0.06;
 
     public xExtendable: boolean = false;
     public yExtendable: boolean = false;

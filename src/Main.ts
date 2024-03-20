@@ -201,7 +201,7 @@ class Game {
         if (dataResponse) {
             let data = await dataResponse.json();
             if (data) {
-                this.machine.deserialize(data);
+                this.machine.deserialize(currentTest);
             }
         }
 

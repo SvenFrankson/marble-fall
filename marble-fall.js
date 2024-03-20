@@ -746,6 +746,22 @@ var testChallenge = {
         { name: "start", i: -2, j: -1, k: 0, mirrorZ: false, color: 0 },
     ],
 };
+var currentTest = {
+    balls: [
+        { x: 0.4539999737739563, y: -0.03150001502037048, z: 0.11999999731779099 },
+        { x: 0.4539999737739563, y: 0.12937461996078492, z: 0.11999999731779099 },
+        { x: 0.4539999737739563, y: 0.2902492549419403, z: 0.11999999731779099 },
+    ],
+    parts: [
+        { name: "ramp-3.0.5", i: 0, j: 1, k: -2, mirrorX: false, mirrorZ: true, color: 0 },
+        { name: "ramp-1.1.1", i: -3, j: 0, k: -2, color: 0 },
+        { name: "uturn-0.3", i: -4, j: 0, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "loop-1.5.1", i: -2, j: -3, k: -2, color: 0 },
+        { name: "wall-1.5", i: -1, j: -3, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-3.13.1", i: 0, j: -12, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "elevator-14", i: 3, j: -13, k: -2, mirrorZ: false, color: 0 },
+    ],
+};
 class HelperShape {
     constructor() {
         this.show = true;
@@ -1037,7 +1053,7 @@ class Game {
         if (dataResponse) {
             let data = await dataResponse.json();
             if (data) {
-                this.machine.deserialize(data);
+                this.machine.deserialize(currentTest);
             }
         }
         let screenshotButton = document.querySelector("#toolbar-screenshot");
@@ -3206,9 +3222,9 @@ class TrackTemplate {
                 let rNext = Math.tan(Math.abs(a) / 2) * (dNext * 0.5);
                 let r = (rPrev + rNext) * 0.5;
                 maxR = Math.max(r, maxR);
-                let f = 0.06 / r;
+                let f = this.partTemplate.minTurnRadius / r;
                 f = Math.max(Math.min(f, 1), 0);
-                this.angles[i] = Math.PI / 4 * sign * f;
+                this.angles[i] = this.partTemplate.maxAngle * sign * f;
             }
             else {
                 this.angles[i] = 0;
@@ -3288,6 +3304,8 @@ class MachinePartTemplate {
         this.mirrorX = false;
         this.mirrorZ = false;
         this.angleSmoothSteps = 30;
+        this.maxAngle = Math.PI / 4;
+        this.minTurnRadius = 0.06;
         this.xExtendable = false;
         this.yExtendable = false;
         this.zExtendable = false;
@@ -6483,45 +6501,45 @@ class Wall extends MachinePart {
     static GenerateTemplate(h, d, mirrorX) {
         let template = new MachinePartTemplate();
         template.partName = "wall-" + h.toFixed(0) + "." + d.toFixed(0);
-        template.angleSmoothSteps = 50;
-        template.w = Math.ceil(d / 3),
-            template.h = h,
-            template.d = d,
-            template.mirrorX = mirrorX,
-            template.yExtendable = true;
+        template.angleSmoothSteps = 100;
+        template.maxAngle = 0.8 * Math.PI / 2;
+        template.minTurnRadius = 0.12;
+        template.w = 1;
+        template.h = h;
+        template.minH = 2;
+        template.d = d;
+        template.minD = 1;
+        template.mirrorX = mirrorX;
+        template.yExtendable = true;
         template.zExtendable = true;
-        template.minH = 4;
-        template.minD = 2;
-        template.maxD = 4;
         template.xMirrorable = true;
-        let dir = new BABYLON.Vector3(1, 0, 0);
-        dir.normalize();
-        let n = new BABYLON.Vector3(0, 1, 0);
-        n.normalize();
-        let r = 0.5 * tileDepth * (template.d - 1);
-        let zEnd = -tileDepth * (template.d - 1);
-        let yStart = -tileHeight * template.h;
+        let r = tileWidth * 0.5;
+        let rY = template.h * tileHeight * 0.5;
+        let depthStart = 0;
+        let depthEnd = -tileDepth * (template.d - 1);
         template.trackTemplates[0] = new TrackTemplate(template);
-        let center = new BABYLON.Vector3(-tileWidth * 0.5, 0, zEnd * 0.5);
-        template.trackTemplates[0].onNormalEvaluated = ((n, p) => {
-            let dx = Math.abs(p.x) / (tileWidth * 0.5);
-            let dy = Math.abs(p.y - yStart) / (r * 0.5);
-            let d = Math.sqrt(dx * dx + dy * dy);
-            let f = Nabu.MinMax(1 - d, 0, 1);
-            let newN = center.subtract(p).normalize();
-            n.scaleInPlace(1 - f).addInPlace(newN.scaleInPlace(f));
-        });
         template.trackTemplates[0].trackpoints = [
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, yStart, 0), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0, yStart, 0), new BABYLON.Vector3(1, 0, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, yStart + r, 0), new BABYLON.Vector3(0, 1, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, -r, 0), new BABYLON.Vector3(0, 1, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, 0, zEnd * 0.5), new BABYLON.Vector3(0, 0, -1)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, -r, zEnd), new BABYLON.Vector3(0, -1, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(r, yStart + r, zEnd), new BABYLON.Vector3(0, -1, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(0, yStart, zEnd), new BABYLON.Vector3(-1, 0, 0)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, yStart, zEnd), new BABYLON.Vector3(-1, 0, 0)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -template.h * tileHeight, 0), Tools.V3Dir(90))
         ];
+        for (let n = 0; n <= 8; n++) {
+            let f = n / 8;
+            let cosa = Math.cos(2 * Math.PI * f);
+            let sina = Math.sin(Math.PI * f);
+            template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-(1 - sina) * r + r, (1 - cosa) * rY - template.h * tileHeight, Nabu.Easing.easeInOutSine(Nabu.Easing.easeInOutSine(f)) * (depthEnd - depthStart) + depthStart), undefined, n === 4 ? Tools.V3Dir(Math.PI) : undefined));
+        }
+        template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -template.h * tileHeight, -tileDepth * (template.d - 1)), Tools.V3Dir(-90)));
+        let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone(); });
+        let f = 3;
+        for (let n = 0; n < 3; n++) {
+            let smoothedPoints = [...points].map(p => { return p.clone(); });
+            for (let i = 1; i < smoothedPoints.length - 1; i++) {
+                smoothedPoints[i].copyFrom(points[i - 1]).addInPlace(points[i].scale(f)).addInPlace(points[i + 1]).scaleInPlace(1 / (2 + f));
+            }
+            points = smoothedPoints;
+        }
+        for (let i = 0; i < points.length; i++) {
+            template.trackTemplates[0].trackpoints[i].position.copyFrom(points[i]);
+        }
         if (mirrorX) {
             template.mirrorXTrackPointsInPlace();
         }
