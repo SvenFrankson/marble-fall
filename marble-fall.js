@@ -3292,7 +3292,7 @@ class MachinePartTemplate {
         this.yExtendable = false;
         this.zExtendable = false;
         this.nExtendable = false;
-        this.minH = 1;
+        this.minH = 0;
         this.minD = 1;
         this.maxD = 10;
         this.xMirrorable = false;
