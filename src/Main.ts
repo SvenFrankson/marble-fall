@@ -265,35 +265,37 @@ class Game {
         }
         alternateMenuCamMode();
 
-        document.addEventListener("keydown", async (event: KeyboardEvent) => {
-            //await this.makeScreenshot("join");
-            //await this.makeScreenshot("split");
-            if (event.code === "KeyP") {
-                let doTrackMini = false;
-                let e = document.getElementById("screenshot-frame");
-                if (e.style.display != "block") {
-                    e.style.display = "block";
-                }
-                else {
-                    if (doTrackMini) {
-                        let parts = [
-                            "ramp-1.1.1",
-                            "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
-                            "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
-                            "spiral-1.3.2", "join",
-                            "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
-                        ];
-                        parts = TrackNames;
-                        for (let i = 0; i < parts.length; i++) {
-                            await this.makeScreenshot(parts[i]);
-                        }
+        if (this.DEBUG_MODE) {
+            document.addEventListener("keydown", async (event: KeyboardEvent) => {
+                //await this.makeScreenshot("wall-3.3");
+                //await this.makeScreenshot("split");
+                if (event.code === "KeyP") {
+                    let doTrackMini = false;
+                    let e = document.getElementById("screenshot-frame");
+                    if (e.style.display != "block") {
+                        e.style.display = "block";
                     }
                     else {
-                        this.makeCircuitScreenshot();
+                        if (doTrackMini) {
+                            let parts = [
+                                "ramp-1.1.1",
+                                "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
+                                "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
+                                "spiral-1.3.2", "join",
+                                "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
+                            ];
+                            parts = TrackNames;
+                            for (let i = 0; i < parts.length; i++) {
+                                await this.makeScreenshot(parts[i]);
+                            }
+                        }
+                        else {
+                            this.makeCircuitScreenshot();
+                        }
                     }
                 }
-            }
-        })
+            })
+        }
 
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
         this.canvas.addEventListener("pointerup", this.onPointerUp);

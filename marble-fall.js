@@ -1104,35 +1104,37 @@ class Game {
             setTimeout(alternateMenuCamMode, 10000 + 10000 * Math.random());
         };
         alternateMenuCamMode();
-        document.addEventListener("keydown", async (event) => {
-            //await this.makeScreenshot("join");
-            //await this.makeScreenshot("split");
-            if (event.code === "KeyP") {
-                let doTrackMini = false;
-                let e = document.getElementById("screenshot-frame");
-                if (e.style.display != "block") {
-                    e.style.display = "block";
-                }
-                else {
-                    if (doTrackMini) {
-                        let parts = [
-                            "ramp-1.1.1",
-                            "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
-                            "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
-                            "spiral-1.3.2", "join",
-                            "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
-                        ];
-                        parts = TrackNames;
-                        for (let i = 0; i < parts.length; i++) {
-                            await this.makeScreenshot(parts[i]);
-                        }
+        if (this.DEBUG_MODE) {
+            document.addEventListener("keydown", async (event) => {
+                //await this.makeScreenshot("wall-3.3");
+                //await this.makeScreenshot("split");
+                if (event.code === "KeyP") {
+                    let doTrackMini = false;
+                    let e = document.getElementById("screenshot-frame");
+                    if (e.style.display != "block") {
+                        e.style.display = "block";
                     }
                     else {
-                        this.makeCircuitScreenshot();
+                        if (doTrackMini) {
+                            let parts = [
+                                "ramp-1.1.1",
+                                "ramp-1.1.1_X", "ramp-1.0.1", "ramp-1.2.1",
+                                "uturn-0.2_X", "ramp-2.1.1", "uturn-0.3",
+                                "spiral-1.3.2", "join",
+                                "uturn-0.2", "ramp-1.5.1_X", "ramp-2.6.1"
+                            ];
+                            parts = TrackNames;
+                            for (let i = 0; i < parts.length; i++) {
+                                await this.makeScreenshot(parts[i]);
+                            }
+                        }
+                        else {
+                            this.makeCircuitScreenshot();
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         this.canvas.addEventListener("pointerdown", this.onPointerDown);
         this.canvas.addEventListener("pointerup", this.onPointerUp);
         this.canvas.addEventListener("wheel", this.onWheelEvent);
@@ -2762,7 +2764,7 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
-    "wall-4.2",
+    "wall-3.3",
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",
@@ -6488,12 +6490,6 @@ class UTurn extends MachinePart {
 class Wall extends MachinePart {
     constructor(machine, prop) {
         super(machine, prop);
-        if (prop.d === 3) {
-            prop.h = Math.max(prop.h, 5);
-        }
-        if (prop.d === 4) {
-            prop.h = Math.max(prop.h, 7);
-        }
         let partName = "wall-" + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
@@ -6506,9 +6502,9 @@ class Wall extends MachinePart {
         template.minTurnRadius = 0.12;
         template.w = 1;
         template.h = h;
-        template.minH = 2;
+        template.minH = 3;
         template.d = d;
-        template.minD = 1;
+        template.minD = 3;
         template.mirrorX = mirrorX;
         template.yExtendable = true;
         template.zExtendable = true;
@@ -6530,7 +6526,7 @@ class Wall extends MachinePart {
         template.trackTemplates[0].trackpoints.push(new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -template.h * tileHeight, -tileDepth * (template.d - 1)), Tools.V3Dir(-90)));
         let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone(); });
         let f = 3;
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < 2; n++) {
             let smoothedPoints = [...points].map(p => { return p.clone(); });
             for (let i = 1; i < smoothedPoints.length - 1; i++) {
                 smoothedPoints[i].copyFrom(points[i - 1]).addInPlace(points[i].scale(f)).addInPlace(points[i + 1]).scaleInPlace(1 / (2 + f));

@@ -6,7 +6,7 @@ var TrackNames = [
     "flatjoin",
     "split",
     "uturn-0.2",
-    "wall-4.2",
+    "wall-3.3",
     "uturnsharp",
     "loop-1.1",
     "spiral-1.2.1",

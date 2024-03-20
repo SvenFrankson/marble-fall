@@ -3,13 +3,6 @@ class Wall extends MachinePart {
     constructor(machine: Machine, prop: IMachinePartProp) {
         super(machine, prop);
 
-        if (prop.d === 3) {
-            prop.h = Math.max(prop.h, 5);
-        }
-        if (prop.d === 4) {
-            prop.h = Math.max(prop.h, 7);
-        }
-
         let partName = "wall-" + prop.h.toFixed(0) + "." + prop.d.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
         this.generateWires();
@@ -25,9 +18,9 @@ class Wall extends MachinePart {
 
         template.w = 1;
         template.h = h;
-        template.minH = 2;
+        template.minH = 3;
         template.d = d;
-        template.minD = 1;
+        template.minD = 3;
         template.mirrorX = mirrorX;
             
         template.yExtendable = true;
@@ -69,7 +62,7 @@ class Wall extends MachinePart {
 
         let points = template.trackTemplates[0].trackpoints.map(tp => { return tp.position.clone() });
         let f = 3;
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < 2; n++) {
             let smoothedPoints = [...points].map(p => { return p.clone() });
             for (let i = 1; i < smoothedPoints.length - 1; i++) {
                 smoothedPoints[i].copyFrom(points[i - 1]).addInPlace(points[i].scale(f)).addInPlace(points[i + 1]).scaleInPlace(1 / (2 + f));
