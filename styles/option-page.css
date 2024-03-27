@@ -1,0 +1,112 @@
+option-page {
+    background-color: rgba(0, 0, 0, 50%);
+}
+
+option-page h1 {
+    font-size: min(8svh, 8vw);
+    margin: min(2svh, 2vw);
+}
+
+option-page h2 {
+    font-size: min(4svh, 4vw);
+    margin: min(2svh, 2vw);
+    margin-left: min(4svh, 4vw);
+}
+
+option-page .container-frame {
+    height: 74%;
+    overflow-y: auto;
+    scrollbar-color: #272b2e rgba(255, 255, 255, 80%);
+    scrollbar-width: thin;
+}
+
+option-page .line {
+    height: min(4svh, 4vw);
+    margin-bottom: 0.5%;
+    padding-top: 0.5%;
+    background-color: rgba(0, 0, 0, 10%);
+}
+
+option-page .label {
+    font-size: min(3svh, 3vw);
+}
+
+option-page .label.input {
+    font-size: min(2svh, 2vw);
+}
+
+option-page .value-block {
+    font-size: min(3svh, 3vw);
+}
+
+option-page .option-button {
+    vertical-align: top;
+    display: inline-block;
+    padding: 0;
+    width: min(3svh, 3vw);
+    height: min(3svh, 3vw);
+    border: min(0.3svh, 0.3vw) solid white;
+    border-radius: min(1svh, 1vw);
+    color: white;
+    text-align: center;
+    background-size: 70%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+nabu-checkbox[value="1"] {
+    background-image: url("../datas/icons/checked.svg");
+}
+
+option-page .minus {
+    background-image: url("../datas/icons/minus.svg");
+}
+
+option-page .plus {
+    background-image: url("../datas/icons/plus.svg");
+}
+
+option-page .prev {
+    background-image: url("../datas/icons/prev.svg");
+}
+
+option-page .next {
+    background-image: url("../datas/icons/next.svg");
+}
+
+option-page .value {
+    vertical-align: top;
+    display: inline-block;
+    padding: 0;
+    margin-left: min(1svh, 1vw);
+    margin-right: min(1svh, 1vw);
+    min-width: min(15svh, 15vw);
+    height: min(3svh, 3vw);
+    text-align: center;
+}
+
+option-page .input-value {
+    font-size: min(2.5svh, 2.5vw);
+    vertical-align: top;
+    display: inline-block;
+    padding: 2px;
+    margin-right: min(2svh, 2vw);
+    min-width: min(12svh, 12vw);
+    height: min(3svh, 3vw);
+    text-align: center;
+    outline: 1px solid white;
+}
+
+option-page .back-button {
+    position: absolute;
+    border-radius: min(1.5svh, 1.5vw);
+    font-size: min(4svh, 4vw);
+    background: none;
+    border: min(0.2svh, 0.2vw) solid white;
+    color: white;
+    padding: min(1svh, 1vw);
+    padding-left: min(3svh, 3vw);
+    padding-right: min(3svh, 3vw);
+    bottom: min(3svh, 3vw);
+    right: min(6svh, 6vw);
+}

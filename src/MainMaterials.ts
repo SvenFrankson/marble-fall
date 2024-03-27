@@ -34,7 +34,7 @@ class MainMaterials {
         this.gridMaterial = new BABYLON.StandardMaterial("grid-material");
         this.gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.gridMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.gridMaterial.alpha = this.game.config.gridOpacity;
+        this.gridMaterial.alpha = this.game.config.getValue("gridOpacity");
 
         this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
         this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");

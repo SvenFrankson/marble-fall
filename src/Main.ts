@@ -55,10 +55,10 @@ class Game {
     public onFocusCallback: () => void;
 
     public vertexDataLoader: Mummu.VertexDataLoader;
-    public config: Configuration;
+    public config: MarbleConfiguration;
+    public inputManager: Nabu.InputManager;
 
     public logo: Logo;
-    public optionsPage: OptionsPage;
     public creditsPage: CreditsPage;
     public topbar: Topbar;
     public toolbar: Toolbar;
@@ -125,10 +125,12 @@ class Game {
 
     public async createScene(): Promise<void> {
         this.scene = new BABYLON.Scene(this.engine);
+        this.config = new MarbleConfiguration("marble-configuration", this);
+        this.inputManager = new Nabu.InputManager(this.canvas, this.config);
+        this.config.initialize();
+        this.config.saveToLocalStorage();
         this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
-        this.config = new Configuration(this);
-        this.config.initialize();
         
         this.materials = new MainMaterials(this);
 
@@ -191,7 +193,7 @@ class Game {
         this.camera.attachControl();
         this.camera.getScene();
 
-        if (this.config.graphicQ > 1) {
+        if (this.config.getValue("graphicQ") > 1) {
             this.room = new Room(this);
         }
         this.machine = new Machine(this);
@@ -216,10 +218,6 @@ class Game {
         this.logo.initialize();
         this.logo.hide();
 
-        this.optionsPage = new OptionsPage(this);
-        this.optionsPage.initialize();
-        this.optionsPage.hide();
-
         this.creditsPage = new CreditsPage(this);
         this.creditsPage.hide();
 
@@ -241,6 +239,7 @@ class Game {
 
         this.router = new MarbleRouter(this);
         this.router.initialize();
+        this.router.optionsPage.setConfiguration(this.config);
 
         /*
         let arrow = new SvgArrow("test", this, 0.3, 0.2, - 45);
@@ -437,26 +436,26 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
+            if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
-                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
+                if (this.averagedFPS < 24 && this.config.getValue("graphicQ") > 1) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
-                                let newConfig = this.config.graphicQ - 1;
-                                this.config.setGraphicQ(newConfig);
+                            if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
+                                let newConfig = this.config.getValue("graphicQ") - 1;
+                                //this.config.setGraphicQ(newConfig); // TODO
                                 this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
                         }, 5000);
                     }
                 }
-                else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
+                else if (this.averagedFPS > 58 && this.config.getValue("graphicQ") < 3) {
                     if (this.updateConfigTimeout === - 1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
-                                let newConfig = this.config.graphicQ + 1;
-                                this.config.setGraphicQ(newConfig);
+                            if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
+                                let newConfig = this.config.getValue("graphicQ") + 1;
+                                //this.config.setGraphicQ(newConfig); // TODO
                                 this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
@@ -607,7 +606,7 @@ class Game {
                 this.camBackGround.dispose();
             }
 
-            if (this.config.graphicQ > 1) {
+            if (this.config.getValue("graphicQ") > 1) {
                 this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
                 this.camBackGround.parent = this.camera;
                 this.camBackGround.layerMask = 0x10000000;
@@ -624,7 +623,7 @@ class Game {
 
     public updateShadowGenerator(): void {
         if (this.camera) {
-            if (this.config.graphicQ > 2 && !this.shadowGenerator) {
+            if (this.config.getValue("graphicQ") > 2 && !this.shadowGenerator) {
                 this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
                 this.shadowGenerator.useBlurExponentialShadowMap = true;
                 this.shadowGenerator.depthScale = 0.01;
@@ -764,13 +763,13 @@ class Game {
         if (message) {
             alert.innerText = message;
         }
-        else if (this.config.graphicQ === 1) {
+        else if (this.config.getValue("graphicQ") === 1) {
             alert.innerText = "Graphic Quality set to LOW";
         }
-        else if (this.config.graphicQ === 2) {
+        else if (this.config.getValue("graphicQ") === 2) {
             alert.innerText = "Graphic Quality set to MEDIUM";
         }
-        else if (this.config.graphicQ === 3) {
+        else if (this.config.getValue("graphicQ") === 3) {
             alert.innerText = "Graphic Quality set to HIGH";
         }
         alert.style.opacity = "0";

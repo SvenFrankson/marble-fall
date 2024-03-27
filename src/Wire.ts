@@ -58,7 +58,7 @@ class Wire extends BABYLON.Mesh {
     }
 
     public async instantiate(color: number = 0): Promise<void> {
-        let q = this.track.game.config.graphicQ;
+        let q = this.track.game.config.getValue("graphicQ");
 
         while (this.getChildren().length > 0) {
             this.getChildren()[0].dispose();

@@ -15,7 +15,7 @@ class SleeperMeshBuilder {
             props.groundAnchorsRelativeMaxY = 1;
         }
 
-        let q = part.game.config.graphicQ;
+        let q = part.game.config.getValue("graphicQ");
         let partialsDatas: BABYLON.VertexData[][] = [];
 
         for (let j = 0; j < part.tracks.length; j++) {

@@ -596,149 +596,6 @@ class ChallengeSteps {
         }
     }
 }
-class Configuration {
-    constructor(game) {
-        this.game = game;
-        this._handleSize = 1;
-        this._autoGraphicQ = 1;
-        this._graphicQ = 2;
-        this._uiSize = 1.3;
-        this._gridOpacity = 0.3;
-    }
-    get handleSize() {
-        return this._handleSize;
-    }
-    setHandleSize(v, skipStorage) {
-        if (isFinite(v)) {
-            if (v > 0 && v <= 3) {
-                this._handleSize = v;
-                if (this.game.machineEditor) {
-                    this.game.machineEditor.handles.forEach(handle => {
-                        handle.size = this._handleSize;
-                    });
-                }
-                if (!skipStorage) {
-                    this.saveToLocalStorage();
-                }
-            }
-        }
-    }
-    get autoGraphicQ() {
-        return this._autoGraphicQ === 1;
-    }
-    setAutoGraphicQ(v, skipStorage) {
-        this._autoGraphicQ = v ? 1 : 0;
-        if (!skipStorage) {
-            this.saveToLocalStorage();
-        }
-    }
-    get graphicQ() {
-        return this._graphicQ;
-    }
-    setGraphicQ(v, skipStorage) {
-        if (v >= 1 && v <= 3) {
-            this._graphicQ = v;
-            if (!skipStorage) {
-                if (this.game.machine) {
-                    let data = this.game.machine.serialize();
-                    this.game.machine.dispose();
-                    this.game.machine.deserialize(data);
-                    this.game.machine.instantiate();
-                }
-                if (this.game.room) {
-                    this.game.room.dispose();
-                }
-                if (this._graphicQ > 1) {
-                    this.game.room = new Room(this.game);
-                    this.game.room.instantiate();
-                }
-                this.game.updateCameraLayer();
-                this.game.updateShadowGenerator();
-                this.saveToLocalStorage();
-            }
-        }
-    }
-    get uiSize() {
-        return this._uiSize;
-    }
-    setUISize(v, skipStorage) {
-        if (v >= 0.9 && v <= 2) {
-            this._uiSize = v;
-            var r = document.querySelector(':root');
-            r.style.setProperty("--ui-size", (this._uiSize * 100).toFixed(0) + "%");
-            if (!skipStorage) {
-                this.saveToLocalStorage();
-            }
-        }
-    }
-    get gridOpacity() {
-        return this._gridOpacity;
-    }
-    setGridOpacity(v, skipStorage) {
-        if (v >= 0 && v <= 1) {
-            this._gridOpacity = v;
-            if (this.game.materials && this.game.materials.gridMaterial) {
-                this.game.materials.gridMaterial.alpha = v;
-            }
-            if (!skipStorage) {
-                this.saveToLocalStorage();
-            }
-        }
-    }
-    initialize() {
-        let data = JSON.parse(localStorage.getItem("mrs-configuration"));
-        this.deserialize(data);
-    }
-    saveToLocalStorage() {
-        let data = this.serialize();
-        localStorage.setItem("mrs-configuration", JSON.stringify(data));
-    }
-    serialize() {
-        return {
-            handleSize: this.handleSize,
-            graphicQ: this.graphicQ,
-            uiSize: this.uiSize,
-            gridOpacity: this.gridOpacity
-        };
-    }
-    deserialize(data) {
-        if (!data) {
-            data = {};
-            if (!isFinite(data.handleSize)) {
-                data.handleSize = this.handleSize;
-            }
-            if (!isFinite(data.autoGraphicQ)) {
-                data.autoGraphicQ = this._autoGraphicQ;
-            }
-            if (!isFinite(data.graphicQ)) {
-                data.graphicQ = this.graphicQ;
-            }
-            if (!isFinite(data.uiSize)) {
-                data.uiSize = this.uiSize;
-            }
-            if (!isFinite(data.gridOpacity)) {
-                data.gridOpacity = this.gridOpacity;
-            }
-        }
-        if (data) {
-            if (isFinite(data.handleSize)) {
-                this.setHandleSize(data.handleSize, true);
-            }
-            if (isFinite(data.autoGraphicQ)) {
-                this.setAutoGraphicQ(data.autoGraphicQ === 1 ? true : false, true);
-            }
-            if (isFinite(data.graphicQ)) {
-                this.setGraphicQ(data.graphicQ, true);
-            }
-            if (isFinite(data.uiSize)) {
-                this.setUISize(data.uiSize, true);
-            }
-            if (isFinite(data.gridOpacity)) {
-                this.setGridOpacity(data.gridOpacity, true);
-            }
-        }
-    }
-}
 var testChallenge = {
     balls: [{ x: -0.253072613110704, y: 0.04504040380131484, z: 5.551115123125783e-17 }],
     parts: [
@@ -988,10 +845,12 @@ class Game {
     }
     async createScene() {
         this.scene = new BABYLON.Scene(this.engine);
+        this.config = new MarbleConfiguration("marble-configuration", this);
+        this.inputManager = new Nabu.InputManager(this.canvas, this.config);
+        this.config.initialize();
+        this.config.saveToLocalStorage();
         this.screenRatio = this.engine.getRenderWidth() / this.engine.getRenderHeight();
         this.vertexDataLoader = new Mummu.VertexDataLoader(this.scene);
-        this.config = new Configuration(this);
-        this.config.initialize();
         this.materials = new MainMaterials(this);
         if (this.DEBUG_MODE) {
             this.scene.clearColor = BABYLON.Color4.FromHexString("#00ff0000");
@@ -1044,7 +903,7 @@ class Game {
         }
         this.camera.attachControl();
         this.camera.getScene();
-        if (this.config.graphicQ > 1) {
+        if (this.config.getValue("graphicQ") > 1) {
             this.room = new Room(this);
         }
         this.machine = new Machine(this);
@@ -1064,9 +923,6 @@ class Game {
         this.logo = new Logo(this);
         this.logo.initialize();
         this.logo.hide();
-        this.optionsPage = new OptionsPage(this);
-        this.optionsPage.initialize();
-        this.optionsPage.hide();
         this.creditsPage = new CreditsPage(this);
         this.creditsPage.hide();
         this.topbar = new Topbar(this);
@@ -1083,6 +939,7 @@ class Game {
         }
         this.router = new MarbleRouter(this);
         this.router.initialize();
+        this.router.optionsPage.setConfiguration(this.config);
         /*
         let arrow = new SvgArrow("test", this, 0.3, 0.2, - 45);
         arrow.instantiate();
@@ -1259,26 +1116,26 @@ class Game {
             else {
                 this.timeFactor = this.timeFactor * 0.9 + this.targetTimeFactor * 0.1;
             }
-            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
+            if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
-                if (this.averagedFPS < 24 && this.config.graphicQ > 1) {
+                if (this.averagedFPS < 24 && this.config.getValue("graphicQ") > 1) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
-                                let newConfig = this.config.graphicQ - 1;
-                                this.config.setGraphicQ(newConfig);
+                            if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
+                                let newConfig = this.config.getValue("graphicQ") - 1;
+                                //this.config.setGraphicQ(newConfig); // TODO
                                 this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
                         }, 5000);
                     }
                 }
-                else if (this.averagedFPS > 58 && this.config.graphicQ < 3) {
+                else if (this.averagedFPS > 58 && this.config.getValue("graphicQ") < 3) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
-                            if (this.config.autoGraphicQ && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
-                                let newConfig = this.config.graphicQ + 1;
-                                this.config.setGraphicQ(newConfig);
+                            if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
+                                let newConfig = this.config.getValue("graphicQ") + 1;
+                                //this.config.setGraphicQ(newConfig); // TODO
                                 this.showGraphicAutoUpdateAlert();
                             }
                             this.updateConfigTimeout = -1;
@@ -1412,7 +1269,7 @@ class Game {
             if (this.camBackGround) {
                 this.camBackGround.dispose();
             }
-            if (this.config.graphicQ > 1) {
+            if (this.config.getValue("graphicQ") > 1) {
                 this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
                 this.camBackGround.parent = this.camera;
                 this.camBackGround.layerMask = 0x10000000;
@@ -1427,7 +1284,7 @@ class Game {
     }
     updateShadowGenerator() {
         if (this.camera) {
-            if (this.config.graphicQ > 2 && !this.shadowGenerator) {
+            if (this.config.getValue("graphicQ") > 2 && !this.shadowGenerator) {
                 this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
                 this.shadowGenerator.useBlurExponentialShadowMap = true;
                 this.shadowGenerator.depthScale = 0.01;
@@ -1550,13 +1407,13 @@ class Game {
         if (message) {
             alert.innerText = message;
         }
-        else if (this.config.graphicQ === 1) {
+        else if (this.config.getValue("graphicQ") === 1) {
             alert.innerText = "Graphic Quality set to LOW";
         }
-        else if (this.config.graphicQ === 2) {
+        else if (this.config.getValue("graphicQ") === 2) {
             alert.innerText = "Graphic Quality set to MEDIUM";
         }
-        else if (this.config.graphicQ === 3) {
+        else if (this.config.getValue("graphicQ") === 3) {
             alert.innerText = "Graphic Quality set to HIGH";
         }
         alert.style.opacity = "0";
@@ -1609,7 +1466,7 @@ class MainMaterials {
         this.gridMaterial = new BABYLON.StandardMaterial("grid-material");
         this.gridMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         this.gridMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.gridMaterial.alpha = this.game.config.gridOpacity;
+        this.gridMaterial.alpha = this.game.config.getValue("gridOpacity");
         this.cyanMaterial = new BABYLON.StandardMaterial("cyan-material");
         this.cyanMaterial.diffuseColor = BABYLON.Color3.FromHexString("#00FFFF");
         this.cyanMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -1674,6 +1531,97 @@ class MainMaterials {
     }
     getMetalMaterial(colorIndex) {
         return this.metalMaterials[colorIndex % this.metalMaterials.length];
+    }
+}
+class MarbleConfiguration extends Nabu.Configuration {
+    constructor(configName, game) {
+        super(configName);
+        this.game = game;
+    }
+    _buildElementsArray() {
+        this.configurationElements = [
+            new Nabu.ConfigurationElement("graphicQ", Nabu.ConfigurationElementType.Enum, 0, Nabu.ConfigurationElementCategory.Graphic, {
+                displayName: "Graphic Quality",
+                min: 0,
+                max: 2,
+                toString: (v) => {
+                    if (v === 0) {
+                        return "LOW";
+                    }
+                    if (v === 1) {
+                        return "MEDIUM";
+                    }
+                    if (v === 2) {
+                        return "HIGH";
+                    }
+                }
+            }, (newValue) => {
+                if (this.game.machine) {
+                    let data = this.game.machine.serialize();
+                    this.game.machine.dispose();
+                    this.game.machine.deserialize(data);
+                    this.game.machine.instantiate();
+                }
+                if (this.game.room) {
+                    this.game.room.dispose();
+                }
+                if (newValue > 1) {
+                    this.game.room = new Room(this.game);
+                    this.game.room.instantiate();
+                }
+                this.game.updateCameraLayer();
+                this.game.updateShadowGenerator();
+            }),
+            new Nabu.ConfigurationElement("autoGraphicQ", Nabu.ConfigurationElementType.Boolean, 0, Nabu.ConfigurationElementCategory.Command, {
+                displayName: "Graphic Auto"
+            }),
+            new Nabu.ConfigurationElement("handleSize", Nabu.ConfigurationElementType.Number, 1, Nabu.ConfigurationElementCategory.Graphic, {
+                displayName: "Handle Size",
+                min: 0,
+                max: 3,
+                step: 0.1,
+                toString: (v) => {
+                    return v.toFixed(1);
+                }
+            }, (newValue) => {
+                if (this.game.machineEditor) {
+                    this.game.machineEditor.handles.forEach(handle => {
+                        handle.size = newValue;
+                    });
+                }
+            }),
+            new Nabu.ConfigurationElement("uiSize", Nabu.ConfigurationElementType.Number, 1, Nabu.ConfigurationElementCategory.Graphic, {
+                displayName: "UI Size",
+                min: 0.8,
+                max: 2,
+                step: 0.05,
+                toString: (v) => {
+                    return v.toFixed(2);
+                }
+            }, (newValue) => {
+                var r = document.querySelector(':root');
+                r.style.setProperty("--ui-size", (newValue * 100).toFixed(0) + "%");
+            }),
+            new Nabu.ConfigurationElement("gridOpacity", Nabu.ConfigurationElementType.Number, 1, Nabu.ConfigurationElementCategory.Graphic, {
+                displayName: "Grid Opacity",
+                min: 0,
+                max: 1,
+                step: 0.1,
+                toString: (v) => {
+                    return v.toFixed(1);
+                }
+            }, (newValue) => {
+                if (this.game.materials && this.game.materials.gridMaterial) {
+                    this.game.materials.gridMaterial.alpha = newValue;
+                }
+            })
+        ];
+    }
+    getValue(property) {
+        let configElement = this.configurationElements.find(e => { return e.property === property; });
+        if (configElement) {
+            return configElement.value;
+        }
     }
 }
 class Popup extends HTMLElement {
@@ -1856,7 +1804,7 @@ class Wire extends BABYLON.Mesh {
         }
     }
     async instantiate(color = 0) {
-        let q = this.track.game.config.graphicQ;
+        let q = this.track.game.config.getValue("graphicQ");
         while (this.getChildren().length > 0) {
             this.getChildren()[0].dispose();
         }
@@ -2912,7 +2860,7 @@ class SleeperMeshBuilder {
         if (!isFinite(props.groundAnchorsRelativeMaxY)) {
             props.groundAnchorsRelativeMaxY = 1;
         }
-        let q = part.game.config.graphicQ;
+        let q = part.game.config.getValue("graphicQ");
         let partialsDatas = [];
         for (let j = 0; j < part.tracks.length; j++) {
             let track = part.tracks[j];
@@ -4822,7 +4770,7 @@ class MachineEditor {
             this.destinationKMinusHandle
         ];
         this.handles.forEach(handle => {
-            handle.size = this.game.config.handleSize;
+            handle.size = this.game.config.getValue("handleSize");
         });
         this.updateFloatingElements();
     }
@@ -7353,7 +7301,7 @@ class MarbleRouter extends Nabu.Router {
         this.homePage = document.getElementById("main-menu");
         this.challengePage = document.getElementById("challenge-menu");
         this.creditsPage = this.game.creditsPage;
-        this.optionsPage = this.game.optionsPage;
+        this.optionsPage = document.getElementById("option-page");
         this.pages.push(this.creditsPage);
         this.pages.push(this.optionsPage);
         this.pages.push(this.game.challenge.tutoPopup);
@@ -7446,118 +7394,6 @@ class MarbleRouter extends Nabu.Router {
         this.game.topbar.resize();
         this.game.toolbar.resize();
         this.game.machine.regenerateBaseAxis();
-    }
-}
-class OptionsPage {
-    constructor(game) {
-        this.game = game;
-        this.container = document.getElementById("options");
-        this.updateNode = new BABYLON.Node("options-update-node");
-    }
-    initialize() {
-        this.handleSizeMinus = document.getElementById("handle-size-minus");
-        this.handleSizeMinus.onclick = () => {
-            this.game.config.setHandleSize(this.game.config.handleSize - 0.2);
-            this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
-        };
-        this.handleSizeValue = document.getElementById("handle-size-val");
-        this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
-        this.handleSizePlus = document.getElementById("handle-size-plus");
-        this.handleSizePlus.onclick = () => {
-            this.game.config.setHandleSize(this.game.config.handleSize + 0.2);
-            this.handleSizeValue.innerText = this.game.config.handleSize.toFixed(1);
-        };
-        this.autoGraphicQMinus = document.getElementById("auto-graphic-q-minus");
-        this.autoGraphicQMinus.onclick = () => {
-            this.game.config.setAutoGraphicQ(!this.game.config.autoGraphicQ);
-            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
-        };
-        this.autoGraphicQValue = document.getElementById("auto-graphic-q-val");
-        this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
-        this.autoGraphicQPlus = document.getElementById("auto-graphic-q-plus");
-        this.autoGraphicQPlus.onclick = () => {
-            this.game.config.setAutoGraphicQ(!this.game.config.autoGraphicQ);
-            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
-        };
-        this.graphicQMinus = document.getElementById("graphic-q-minus");
-        this.graphicQMinus.onclick = () => {
-            this.game.config.setAutoGraphicQ(false);
-            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
-            this.game.config.setGraphicQ(this.game.config.graphicQ - 1);
-            this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
-        };
-        this.graphicQValue = document.getElementById("graphic-q-val");
-        this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
-        this.graphicQPlus = document.getElementById("graphic-q-plus");
-        this.graphicQPlus.onclick = () => {
-            this.game.config.setAutoGraphicQ(false);
-            this.autoGraphicQValue.innerText = this.game.config.autoGraphicQ ? "ON" : "OFF";
-            this.game.config.setGraphicQ(this.game.config.graphicQ + 1);
-            this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
-        };
-        this.uiScaleFactorMinus = document.getElementById("ui-size-minus");
-        this.uiScaleFactorMinus.onclick = () => {
-            this.game.config.setUISize(this.game.config.uiSize - 0.1);
-            this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
-        };
-        this.uiScaleFactorValue = document.getElementById("ui-size-val");
-        this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
-        this.uiScaleFactorPlus = document.getElementById("ui-size-plus");
-        this.uiScaleFactorPlus.onclick = () => {
-            this.game.config.setUISize(this.game.config.uiSize + 0.1);
-            this.uiScaleFactorValue.innerText = this._uiSizeToString(this.game.config.uiSize);
-        };
-        this.gridOpacityMinus = document.getElementById("grid-opacity-minus");
-        this.gridOpacityMinus.onclick = () => {
-            this.game.config.setGridOpacity(this.game.config.gridOpacity - 0.05);
-            this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
-        };
-        this.gridOpacityValue = document.getElementById("grid-opacity-val");
-        this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
-        this.gridOpacityPlus = document.getElementById("grid-opacity-plus");
-        this.gridOpacityPlus.onclick = () => {
-            this.game.config.setGridOpacity(this.game.config.gridOpacity + 0.05);
-            this.gridOpacityValue.innerText = this.game.config.gridOpacity.toFixed(2);
-        };
-    }
-    _graphicQToString(graphicQ) {
-        if (graphicQ === 0) {
-            return "Auto";
-        }
-        else if (graphicQ === 1) {
-            return "Low";
-        }
-        else if (graphicQ === 2) {
-            return "Medium";
-        }
-        else if (graphicQ === 3) {
-            return "High";
-        }
-    }
-    _uiSizeToString(s) {
-        return (s * 100).toFixed(0) + "%";
-    }
-    async show() {
-        if (this.container.style.visibility === "visible") {
-            this.container.style.pointerEvents = "";
-            return;
-        }
-        this.graphicQValue.innerText = this._graphicQToString(this.game.config.graphicQ);
-        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        this.container.style.visibility = "visible";
-        await anim(1, 0.5);
-        this.container.style.pointerEvents = "";
-    }
-    async hide() {
-        if (this.container.style.visibility === "hidden") {
-            this.container.style.pointerEvents = "none";
-            return;
-        }
-        let anim = Mummu.AnimationFactory.CreateNumber(this.updateNode, this.container.style, "opacity", undefined, undefined, Nabu.Easing.easeInOutSine);
-        this.container.style.visibility = "visible";
-        await anim(0, 0.5);
-        this.container.style.visibility = "hidden";
-        this.container.style.pointerEvents = "none";
     }
 }
 class SvgArrow {

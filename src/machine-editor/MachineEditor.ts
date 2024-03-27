@@ -589,7 +589,7 @@ class MachineEditor {
         ];
 
         this.handles.forEach(handle => {
-            handle.size = this.game.config.handleSize;
+            handle.size = this.game.config.getValue("handleSize");
         })
 
         this.updateFloatingElements();

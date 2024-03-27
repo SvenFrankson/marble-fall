@@ -3,7 +3,7 @@ class MarbleRouter extends Nabu.Router {
     public homePage: Nabu.PanelPage;
     public challengePage: Nabu.PanelPage;
     public creditsPage: CreditsPage;
-    public optionsPage: OptionsPage;
+    public optionsPage: Nabu.OptionPage;
 
     constructor(public game: Game) {
         super();
@@ -13,7 +13,7 @@ class MarbleRouter extends Nabu.Router {
         this.homePage = document.getElementById("main-menu") as Nabu.PanelPage;
         this.challengePage = document.getElementById("challenge-menu") as Nabu.PanelPage;
         this.creditsPage = this.game.creditsPage;
-        this.optionsPage = this.game.optionsPage;
+        this.optionsPage = document.getElementById("option-page") as Nabu.OptionPage;
         
         this.pages.push(this.creditsPage);
         this.pages.push(this.optionsPage);
