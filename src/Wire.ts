@@ -65,10 +65,10 @@ class Wire extends BABYLON.Mesh {
         }
 
         let n = 3;
-        if (q === 2) {
+        if (q === 1) {
             n = 6;
         }
-        else if (q === 3) {
+        else if (q === 2) {
             n = 8;
         }
         let shape: BABYLON.Vector3[] = [];
@@ -81,7 +81,7 @@ class Wire extends BABYLON.Mesh {
 
         if (!Wire.DEBUG_DISPLAY) {
             let path = this.path;
-            if (q === 2) {
+            if (q === 1) {
                 path = [];
                 for (let i = 0; i < this.path.length; i++) {
                     if (i % 3 === 0 || i === this.path.length - 1) {
@@ -89,7 +89,7 @@ class Wire extends BABYLON.Mesh {
                     }
                 }
             }
-            if (q === 1) {
+            if (q === 0) {
                 path = [];
                 for (let i = 0; i < this.path.length; i++) {
                     if (i % 6 === 0 || i === this.path.length - 1) {

@@ -14,7 +14,7 @@ option-page h2 {
 }
 
 option-page .container-frame {
-    height: 74%;
+    height: 64%;
     overflow-y: auto;
     scrollbar-color: #272b2e rgba(255, 255, 255, 80%);
     scrollbar-width: thin;

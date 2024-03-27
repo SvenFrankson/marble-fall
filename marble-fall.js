@@ -903,7 +903,7 @@ class Game {
         }
         this.camera.attachControl();
         this.camera.getScene();
-        if (this.config.getValue("graphicQ") > 1) {
+        if (this.config.getValue("graphicQ") > 0) {
             this.room = new Room(this);
         }
         this.machine = new Machine(this);
@@ -1118,7 +1118,7 @@ class Game {
             }
             if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
                 this.averagedFPS = 0.99 * this.averagedFPS + 0.01 * fps;
-                if (this.averagedFPS < 24 && this.config.getValue("graphicQ") > 1) {
+                if (this.averagedFPS < 24 && this.config.getValue("graphicQ") > 0) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
@@ -1130,7 +1130,7 @@ class Game {
                         }, 5000);
                     }
                 }
-                else if (this.averagedFPS > 58 && this.config.getValue("graphicQ") < 3) {
+                else if (this.averagedFPS > 58 && this.config.getValue("graphicQ") < 2) {
                     if (this.updateConfigTimeout === -1) {
                         this.updateConfigTimeout = setTimeout(() => {
                             if (this.config.getValue("autoGraphicQ") && (this.mode === GameMode.Home || this.mode === GameMode.Demo)) {
@@ -1269,7 +1269,7 @@ class Game {
             if (this.camBackGround) {
                 this.camBackGround.dispose();
             }
-            if (this.config.getValue("graphicQ") > 1) {
+            if (this.config.getValue("graphicQ") > 0) {
                 this.camBackGround = new BABYLON.FreeCamera("background-camera", BABYLON.Vector3.Zero());
                 this.camBackGround.parent = this.camera;
                 this.camBackGround.layerMask = 0x10000000;
@@ -1284,7 +1284,7 @@ class Game {
     }
     updateShadowGenerator() {
         if (this.camera) {
-            if (this.config.getValue("graphicQ") > 2 && !this.shadowGenerator) {
+            if (this.config.getValue("graphicQ") > 1 && !this.shadowGenerator) {
                 this.shadowGenerator = new BABYLON.ShadowGenerator(2048, this.spotLight);
                 this.shadowGenerator.useBlurExponentialShadowMap = true;
                 this.shadowGenerator.depthScale = 0.01;
@@ -1407,13 +1407,13 @@ class Game {
         if (message) {
             alert.innerText = message;
         }
-        else if (this.config.getValue("graphicQ") === 1) {
+        else if (this.config.getValue("graphicQ") === 0) {
             alert.innerText = "Graphic Quality set to LOW";
         }
-        else if (this.config.getValue("graphicQ") === 2) {
+        else if (this.config.getValue("graphicQ") === 1) {
             alert.innerText = "Graphic Quality set to MEDIUM";
         }
-        else if (this.config.getValue("graphicQ") === 3) {
+        else if (this.config.getValue("graphicQ") === 2) {
             alert.innerText = "Graphic Quality set to HIGH";
         }
         alert.style.opacity = "0";
@@ -1565,7 +1565,7 @@ class MarbleConfiguration extends Nabu.Configuration {
                 if (this.game.room) {
                     this.game.room.dispose();
                 }
-                if (newValue > 1) {
+                if (newValue > 0) {
                     this.game.room = new Room(this.game);
                     this.game.room.instantiate();
                 }
@@ -1809,10 +1809,10 @@ class Wire extends BABYLON.Mesh {
             this.getChildren()[0].dispose();
         }
         let n = 3;
-        if (q === 2) {
+        if (q === 1) {
             n = 6;
         }
-        else if (q === 3) {
+        else if (q === 2) {
             n = 8;
         }
         let shape = [];
@@ -1824,7 +1824,7 @@ class Wire extends BABYLON.Mesh {
         }
         if (!Wire.DEBUG_DISPLAY) {
             let path = this.path;
-            if (q === 2) {
+            if (q === 1) {
                 path = [];
                 for (let i = 0; i < this.path.length; i++) {
                     if (i % 3 === 0 || i === this.path.length - 1) {
@@ -1832,7 +1832,7 @@ class Wire extends BABYLON.Mesh {
                     }
                 }
             }
-            if (q === 1) {
+            if (q === 0) {
                 path = [];
                 for (let i = 0; i < this.path.length; i++) {
                     if (i % 6 === 0 || i === this.path.length - 1) {
@@ -2877,10 +2877,10 @@ class SleeperMeshBuilder {
             let correctedSpacing = summedLength[summedLength.length - 1] / count;
             let radius = part.wireSize * 0.5 * 0.75;
             let nShape = 3;
-            if (q === 2) {
+            if (q === 1) {
                 nShape = 4;
             }
-            else if (q === 3) {
+            else if (q === 2) {
                 nShape = 6;
             }
             let shape = [];
@@ -2899,10 +2899,10 @@ class SleeperMeshBuilder {
             }
             let radiusPath = part.wireGauge * 0.5;
             let nPath = 4;
-            if (q === 2) {
+            if (q === 1) {
                 nPath = 8;
             }
-            else if (q === 3) {
+            else if (q === 2) {
                 nPath = 12;
             }
             let basePath = [];
@@ -2965,10 +2965,10 @@ class SleeperMeshBuilder {
                             let anchorWall = anchorCenter.clone();
                             anchorWall.y -= radiusFixation * 0.5;
                             let nFixation = 2;
-                            if (q === 2) {
+                            if (q === 1) {
                                 nFixation = 6;
                             }
-                            else if (q === 3) {
+                            else if (q === 2) {
                                 nFixation = 10;
                             }
                             let fixationPath = [];

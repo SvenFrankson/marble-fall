@@ -35,10 +35,10 @@ class SleeperMeshBuilder {
 
             let radius = part.wireSize * 0.5 * 0.75;
             let nShape = 3;
-            if (q === 2) {
+            if (q === 1) {
                 nShape = 4;
             }
-            else if (q === 3) {
+            else if (q === 2) {
                 nShape = 6;
             }
             let shape: BABYLON.Vector3[] = [];
@@ -59,10 +59,10 @@ class SleeperMeshBuilder {
 
             let radiusPath = part.wireGauge * 0.5;
             let nPath = 4;
-            if (q === 2) {
+            if (q === 1) {
                 nPath = 8;
             }
-            else if (q === 3) {
+            else if (q === 2) {
                 nPath = 12;
             }
             let basePath: BABYLON.Vector3[] = [];
@@ -131,10 +131,10 @@ class SleeperMeshBuilder {
                             let anchorWall = anchorCenter.clone();
                             anchorWall.y -= radiusFixation * 0.5;
                             let nFixation = 2;
-                            if (q === 2) {
+                            if (q === 1) {
                                 nFixation = 6;
                             }
-                            else if (q === 3) {
+                            else if (q === 2) {
                                 nFixation = 10;
                             }
                             let fixationPath: BABYLON.Vector3[] = [];

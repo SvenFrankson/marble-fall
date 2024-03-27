@@ -37,7 +37,7 @@ class MarbleConfiguration extends Nabu.Configuration {
                     if (this.game.room) {
                         this.game.room.dispose();
                     }
-                    if (newValue > 1) {
+                    if (newValue > 0) {
                         this.game.room = new Room(this.game);
                         this.game.room.instantiate();
                     }
