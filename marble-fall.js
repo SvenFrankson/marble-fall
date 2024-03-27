@@ -220,7 +220,7 @@ class Ball extends BABYLON.Mesh {
                         }
                     });
                     if (part instanceof GravityWell) {
-                        let col = Mummu.SphereMeshIntersection(this.position, this.radius, part.wellMesh);
+                        let col = Mummu.SphereLatheIntersection(this.position, this.radius, part.wellMesh.absolutePosition, part.wellPath);
                         if (col.hit) {
                             //this.setLastHit(wire, col.index);
                             let colDig = col.normal.scale(-1);
