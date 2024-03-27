@@ -12,7 +12,8 @@ var TrackNames = [
     "spiral-1.2.1",
     "elevator-4",
     "start",
-    "end"
+    "end",
+    "gravity-well"
 ];
 
 interface IMachinePartProp {
@@ -125,6 +126,9 @@ class MachinePartFactory {
         }
         if (trackname === "end") {
             return new End(this.machine, prop);
+        }
+        if (trackname === "gravity-well") {
+            return new GravityWell(this.machine, prop);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);

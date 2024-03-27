@@ -219,6 +219,24 @@ class Ball extends BABYLON.Mesh {
                             reactionsCount++;
                         }
                     });
+                    if (part instanceof GravityWell) {
+                        let col = Mummu.SphereMeshIntersection(this.position, this.radius, part.wellMesh);
+                        if (col.hit) {
+                            //this.setLastHit(wire, col.index);
+                            let colDig = col.normal.scale(-1);
+                            // Move away from collision
+                            forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                            // Cancel depth component of speed
+                            let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
+                            if (depthSpeed > 0) {
+                                canceledSpeed.addInPlace(colDig.scale(depthSpeed));
+                            }
+                            // Add ground reaction
+                            let reaction = col.normal.scale(col.depth * 1000); // 1000 is a magic number.
+                            reactions.addInPlace(reaction);
+                            reactionsCount++;
+                        }
+                    }
                     /*
                     if (part instanceof QuarterNote || part instanceof DoubleNote) {
                         part.tings.forEach(ting => {
@@ -605,18 +623,15 @@ var testChallenge = {
 };
 var currentTest = {
     balls: [
-        { x: 0.4539999737739563, y: -0.03150001502037048, z: 0.11999999731779099 },
-        { x: 0.4539999737739563, y: 0.12937461996078492, z: 0.11999999731779099 },
-        { x: 0.4539999737739563, y: 0.2902492549419403, z: 0.11999999731779099 },
+        { x: 0.15400000655651092, y: -0.061500001311302184, z: -0.05999999865889549 }
     ],
     parts: [
-        { name: "ramp-3.0.5", i: 0, j: 1, k: -2, mirrorX: false, mirrorZ: true, color: 0 },
-        { name: "ramp-1.1.1", i: -3, j: 0, k: -2, color: 0 },
-        { name: "uturn-0.3", i: -4, j: 0, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "loop-1.5.1", i: -2, j: -3, k: -2, color: 0 },
-        { name: "wall-1.5", i: -1, j: -3, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "ramp-3.13.1", i: 0, j: -12, k: -2, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "elevator-14", i: 3, j: -13, k: -2, mirrorZ: false, color: 0 },
+        { name: "uturn-0.2", i: -2, j: 0, k: 0, mirrorX: true, color: 0 },
+        { name: "gravity-well", i: 0, j: -1, k: 0, mirrorZ: false, color: 0 },
+        { name: "ramp-1.1.1", i: -1, j: -1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "ramp-1.0.1", i: 0, j: -2, k: 1, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "ramp-1.2.1", i: -1, j: -2, k: 1, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "elevator-5", i: 1, j: -3, k: 1, mirrorZ: false, color: 0 },
     ],
 };
 class HelperShape {
@@ -2718,7 +2733,8 @@ var TrackNames = [
     "spiral-1.2.1",
     "elevator-4",
     "start",
-    "end"
+    "end",
+    "gravity-well"
 ];
 class MachinePartFactory {
     constructor(machine) {
@@ -2811,6 +2827,9 @@ class MachinePartFactory {
         }
         if (trackname === "end") {
             return new End(this.machine, prop);
+        }
+        if (trackname === "gravity-well") {
+            return new GravityWell(this.machine, prop);
         }
         if (trackname.startsWith("loop-")) {
             let w = parseInt(trackname.split("-")[1].split(".")[0]);
@@ -3370,6 +3389,9 @@ class TemplateManager {
             }
             else if (partName === "end") {
                 data = End.GenerateTemplate(mirrorX);
+            }
+            else if (partName === "gravity-well") {
+                data = GravityWell.GenerateTemplate(mirrorX);
             }
             datas[mirrorIndex] = data;
         }
@@ -5714,6 +5736,62 @@ class FlatJoin extends MachinePart {
         ];
         template.trackTemplates[2].drawStartTip = true;
         template.trackTemplates[2].drawEndTip = true;
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+}
+class GravityWell extends MachinePart {
+    constructor(machine, prop) {
+        super(machine, prop);
+        this.wellPath = [];
+        let partName = "gravity-well";
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
+        this.wellPath = [
+            new BABYLON.Vector3(0.011, 0, 0),
+            new BABYLON.Vector3(tileWidth * 0.5, tileHeight * 0.9, 0),
+        ];
+        Mummu.CatmullRomPathInPlace(this.wellPath, Tools.V3Dir(0), Tools.V3Dir(0));
+        Mummu.CatmullRomPathInPlace(this.wellPath, Tools.V3Dir(0), Tools.V3Dir(0));
+        Mummu.CatmullRomPathInPlace(this.wellPath, Tools.V3Dir(0), Tools.V3Dir(0));
+        Mummu.CatmullRomPathInPlace(this.wellPath, Tools.V3Dir(0), Tools.V3Dir(0));
+        this.wellPath.splice(0, 0, new BABYLON.Vector3(0.01, -0.01, 0));
+        this.wellPath.push(new BABYLON.Vector3(tileWidth * 0.5, tileHeight * 1, 0)),
+            this.wellMesh = BABYLON.MeshBuilder.CreateLathe("gravity-well-mesh", { shape: this.wellPath, tessellation: 32, sideOrientation: BABYLON.Mesh.DOUBLESIDE });
+        this.wellMesh.material = machine.game.materials.getMetalMaterial(0);
+        this.wellMesh.position.copyFromFloats(0, -tileHeight * 1.6, -tileDepth);
+        this.wellMesh.parent = this;
+        let wireTop = BABYLON.MeshBuilder.CreateTorus("wire-top", { diameter: tileWidth * 0.5 * 2, thickness: this.wireSize, tessellation: 32 });
+        wireTop.material = this.wellMesh.material;
+        wireTop.position.y = tileHeight * 1;
+        wireTop.parent = this.wellMesh;
+        let wireBottom = BABYLON.MeshBuilder.CreateTorus("wire-top", { diameter: 0.01 * 2, thickness: this.wireSize, tessellation: 32 });
+        wireBottom.material = this.wellMesh.material;
+        wireBottom.position.y = -0.01;
+        wireBottom.parent = this.wellMesh;
+        this.generateWires();
+    }
+    static GenerateTemplate(mirrorX) {
+        let template = new MachinePartTemplate();
+        let h = 3;
+        template.h = h;
+        template.d = 3;
+        template.partName = "gravity-well";
+        template.mirrorX = mirrorX;
+        template.xMirrorable = true;
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, 0, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.1, -0.01, 0), Tools.V3Dir(120))
+        ];
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.2 + 0.01, -tileHeight * h + 0.025, -tileDepth), Tools.V3Dir(120)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.5 + 0.01, -tileHeight * h, -tileDepth), Tools.V3Dir(90))
+        ];
+        template.trackTemplates[1].drawStartTip = true;
         if (mirrorX) {
             template.mirrorXTrackPointsInPlace();
         }

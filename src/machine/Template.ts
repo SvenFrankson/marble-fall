@@ -376,6 +376,9 @@ class TemplateManager {
             else if (partName === "end") {
                 data = End.GenerateTemplate(mirrorX);
             }
+            else if (partName === "gravity-well") {
+                data = GravityWell.GenerateTemplate(mirrorX);
+            }
             datas[mirrorIndex] = data;
         }
 
