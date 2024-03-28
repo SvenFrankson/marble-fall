@@ -76,7 +76,7 @@ class TrackTemplate {
             let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
             let tanIn = this.trackpoints[i].dir.scale(dist * trackPoint.tangentOut);
             let tanOut = this.trackpoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
-            let count = Math.round(dist / 0.003);
+            let count = Math.round(dist / 0.002);
             count = Math.max(0, count);
             this.interpolatedPoints.push(trackPoint.position);
             nextTrackPoint.summedLength = trackPoint.summedLength;

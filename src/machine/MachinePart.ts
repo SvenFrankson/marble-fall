@@ -234,7 +234,7 @@ class MachinePart extends BABYLON.Mesh {
     public setIsVisible(isVisible: boolean): void {
         this.isVisible = isVisible;
         this.getChildren(undefined, false).forEach(m => {
-            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
+            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh" && !m.name.startsWith("collider-")) {
                 m.isVisible = isVisible;
             }
         })
@@ -248,14 +248,14 @@ class MachinePart extends BABYLON.Mesh {
         this._partVisibilityMode = v;
         if (this._partVisibilityMode === PartVisibilityMode.Default) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh" && !m.name.startsWith("collider-")) {
                     m.visibility = 1;
                 }
             })
         }
         if (this._partVisibilityMode === PartVisibilityMode.Ghost) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh" && !m.name.startsWith("collider-")) {
                     m.visibility = 0.3;
                 }
             })

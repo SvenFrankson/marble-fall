@@ -241,6 +241,26 @@ class Ball extends BABYLON.Mesh {
                             }
                         }
                     }
+                    if (part instanceof Stairway) {
+                        part.boxes.forEach(box => {
+                            let col = Mummu.SphereMeshIntersection(this.position, this.radius, box);
+                            if (col.hit) {
+                                //this.setLastHit(wire, col.index);
+                                let colDig = col.normal.scale(-1);
+                                // Move away from collision
+                                forcedDisplacement.addInPlace(col.normal.scale(col.depth));
+                                // Cancel depth component of speed
+                                let depthSpeed = BABYLON.Vector3.Dot(this.velocity, colDig);
+                                if (depthSpeed > 0) {
+                                    canceledSpeed.addInPlace(colDig.scale(depthSpeed));
+                                }
+                                // Add ground reaction
+                                let reaction = col.normal.scale(col.depth * 1000); // 1000 is a magic number.
+                                reactions.addInPlace(reaction);
+                                reactionsCount++;
+                            }
+                        });
+                    }
                     /*
                     if (part instanceof QuarterNote || part instanceof DoubleNote) {
                         part.tings.forEach(ting => {
@@ -275,8 +295,8 @@ class Ball extends BABYLON.Mesh {
                                 this.marbleChocSound.play();
                             }
                         }
-                        this.velocity.scaleInPlace(-0.14).addInPlace(otherSpeed.scale(0.84));
-                        ball.velocity.scaleInPlace(-0.14).addInPlace(mySpeed.scale(0.84));
+                        this.velocity.scaleInPlace(-0.15).addInPlace(otherSpeed.scale(0.85));
+                        ball.velocity.scaleInPlace(-0.15).addInPlace(mySpeed.scale(0.85));
                         //this.velocity.copyFrom(otherSpeed).scaleInPlace(.5);
                         //ball.velocity.copyFrom(mySpeed).scaleInPlace(.6);
                         let dir = this.position.subtract(ball.position).normalize();
@@ -626,15 +646,21 @@ var testChallenge = {
     ],
 };
 var currentTest = {
-    balls: [{ x: -0.0421983410139945, y: 0.04355721865963, z: 1.1102230246251565e-16 }],
+    balls: [
+        { x: -0.0421983410139945, y: 0.04355721865963, z: 1.1102230246251565e-16 },
+        { x: 0.007139195334783164, y: -0.043407151181784724, z: -0.05999999999999994 },
+        { x: 0.02570240512562319, y: -0.04786855327814165, z: -0.05999999865889549 },
+        { x: 0.04446647830118207, y: -0.051261496414794286, z: -0.05999999865889549 },
+        { x: 0.0638726685761086, y: -0.051967422414994816, z: -0.05999999865889549 },
+        { x: 0.08207408798593227, y: -0.05307193389900511, z: -0.05999999865889549 },
+    ],
     parts: [
-        { name: "stairway-1", i: 1, j: 0, k: 1, mirrorZ: false, color: 0 },
-        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, color: 0 },
+        { name: "uturn-0.5", i: 0, j: 3, k: -1, mirrorX: true, color: 0 },
         { name: "gravity-well", i: 0, j: -1, k: 0, mirrorZ: false, color: 0 },
-        { name: "ramp-1.1.1", i: -1, j: -1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "ramp-3.0.1", i: 0, j: -1, k: 3, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "ramp-1.1.1", i: -1, j: -1, k: 3, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "stairway-1", i: 2, j: -2, k: 1, mirrorZ: false, color: 0 },
+        { name: "ramp-1.0.1", i: -1, j: -1, k: 0, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "ramp-4.0.1", i: -1, j: -1, k: 3, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "uturn-0.4", i: -3, j: -1, k: 0, mirrorX: true, color: 0 },
+        { name: "stairway-2", i: 1, j: -2, k: 1, mirrorZ: false, color: 0 },
         { name: "uturn-1.3", i: 3, j: -2, k: 1, color: 0 },
     ],
 };
@@ -2495,7 +2521,7 @@ class MachinePart extends BABYLON.Mesh {
     setIsVisible(isVisible) {
         this.isVisible = isVisible;
         this.getChildren(undefined, false).forEach(m => {
-            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
+            if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh" && !m.name.startsWith("collider-")) {
                 m.isVisible = isVisible;
             }
         });
@@ -2507,14 +2533,14 @@ class MachinePart extends BABYLON.Mesh {
         this._partVisibilityMode = v;
         if (this._partVisibilityMode === PartVisibilityMode.Default) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh" && !m.name.startsWith("collider-")) {
                     m.visibility = 1;
                 }
             });
         }
         if (this._partVisibilityMode === PartVisibilityMode.Ghost) {
             this.getChildren(undefined, false).forEach(m => {
-                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh") {
+                if (m instanceof BABYLON.Mesh && m.name != "machine-part-selector" && m.name != "enclose-mesh" && !m.name.startsWith("collider-")) {
                     m.visibility = 0.3;
                 }
             });
@@ -3133,7 +3159,7 @@ class TrackTemplate {
             let dist = BABYLON.Vector3.Distance(trackPoint.position, nextTrackPoint.position);
             let tanIn = this.trackpoints[i].dir.scale(dist * trackPoint.tangentOut);
             let tanOut = this.trackpoints[i + 1].dir.scale(dist * nextTrackPoint.tangentIn);
-            let count = Math.round(dist / 0.003);
+            let count = Math.round(dist / 0.002);
             count = Math.max(0, count);
             this.interpolatedPoints.push(trackPoint.position);
             nextTrackPoint.summedLength = trackPoint.summedLength;
@@ -6453,10 +6479,11 @@ class Stairway extends MachinePart {
         super(machine, prop);
         this.boxesCount = 4;
         this.boxes = [];
+        this.bielles = [];
         this.y0 = 0;
         this.y1 = 0;
         this.stepH = 0;
-        this.dH = 0.005;
+        this.dH = 0.001;
         this.reset = () => {
             for (let i = 0; i < this.boxesCount; i++) {
                 this.a = 0;
@@ -6465,7 +6492,7 @@ class Stairway extends MachinePart {
         };
         this.l = 0;
         this.p = 0;
-        this.speed = Math.PI * 0.6; // in m/s
+        this.speed = Math.PI; // in m/s
         this.a = 0;
         let partName = "stairway-" + prop.w.toFixed(0);
         this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
@@ -6474,26 +6501,17 @@ class Stairway extends MachinePart {
             x = -1;
         }
         let h = 2 * this.template.w;
-        this.boxesCount = 5;
         let x0 = -tileWidth * 0.3;
-        let x1 = tileWidth * 0.3;
+        let x1 = tileWidth * 0.3 + (this.w - 1) * tileWidth;
+        this.boxesCount = Math.round((x1 - x0) / 0.02);
         let stepW = (x1 - x0) / this.boxesCount;
         this.y0 = -tileHeight * (h + 0.05) - 0.005;
         this.y1 = tileHeight * 0.05 + 0.005;
         this.stepH = (this.y1 - this.y0) / (this.boxesCount);
         for (let i = 0; i < this.boxesCount; i++) {
-            let data = BABYLON.CreateBoxVertexData({ width: stepW, height: this.stepH * 2, depth: 0.02 });
-            let positions = data.positions;
-            for (let p = 0; p < positions.length; p++) {
-                let x = positions[3 * p];
-                let y = positions[3 * p + 1];
-                let z = positions[3 * p + 2];
-                if (x < 0 && y > 0) {
-                    positions[3 * p + 1] += this.dH;
-                }
-            }
-            data.positions = positions;
-            let box = new BABYLON.Mesh("box-" + i);
+            let data = Stairway.MakeStairwayColliderVertexData(stepW, this.stepH * 2, 0.02, this.dH, 0.001);
+            let box = new BABYLON.Mesh("collider-" + i);
+            box.isVisible = false;
             data.applyToMesh(box);
             box.rotationQuaternion = BABYLON.Quaternion.Identity();
             box.parent = this;
@@ -6501,11 +6519,164 @@ class Stairway extends MachinePart {
             box.position.x = (1 - fX) * x0 + fX * x1 + stepW * 0.5;
             let fY = (i + 0.5) / this.boxesCount;
             box.position.y = (1 - fY) * this.y0 + fY * this.y1 - this.stepH;
+            let l = box.position.y - (-tileHeight * (h + 1.5)) + this.stepH - 0.002;
+            let bielle = new BABYLON.Mesh("bielle");
+            bielle.material = this.game.materials.getMetalMaterial(1);
+            this.bielles[i] = bielle;
+            this.game.vertexDataLoader.get("./meshes/stairway-bielle.babylon").then(vertexDatas => {
+                let vertexData = vertexDatas[0];
+                if (vertexData) {
+                    vertexData = Mummu.CloneVertexData(vertexData);
+                    let positions = vertexData.positions;
+                    for (let p = 0; p < positions.length / 3; p++) {
+                        let y = positions[3 * p + 1];
+                        if (y > 0.005) {
+                            positions[3 * p + 1] -= 0.01;
+                            positions[3 * p + 1] += l;
+                        }
+                    }
+                    vertexData.positions = positions;
+                    let normals = [];
+                    BABYLON.VertexData.ComputeNormals(vertexData.positions, vertexData.indices, normals);
+                    vertexData.normals = normals;
+                    vertexData.applyToMesh(bielle);
+                }
+            });
             this.boxes[i] = box;
+            let displayMesh = new BABYLON.Mesh("display-box-" + i);
+            displayMesh.material = this.game.materials.getMetalMaterial(0);
+            let displayData = BABYLON.CreateBoxVertexData({ width: stepW, height: this.stepH * 2, depth: 0.02 });
+            this.game.vertexDataLoader.get("./meshes/stairway-step.babylon").then(vertexDatas => {
+                let vertexData = vertexDatas[0];
+                if (vertexData) {
+                    vertexData = Mummu.CloneVertexData(vertexData);
+                    let positions = vertexData.positions;
+                    for (let p = 0; p < positions.length / 3; p++) {
+                        let x = positions[3 * p];
+                        let y = positions[3 * p + 1];
+                        let z = positions[3 * p + 2];
+                        if (x < 0) {
+                            positions[3 * p] += 0.005;
+                            positions[3 * p] -= stepW * 0.5;
+                        }
+                        else {
+                            positions[3 * p] -= 0.005;
+                            positions[3 * p] += stepW * 0.5;
+                        }
+                        if (y < 0) {
+                            positions[3 * p + 1] += 0.005;
+                            positions[3 * p + 1] -= this.stepH;
+                        }
+                        else {
+                            positions[3 * p + 1] -= 0.005;
+                            positions[3 * p + 1] += this.stepH;
+                        }
+                        if (z < 0) {
+                            positions[3 * p + 2] += 0.005;
+                            positions[3 * p + 2] -= 0.01;
+                        }
+                        else {
+                            positions[3 * p + 2] -= 0.005;
+                            positions[3 * p + 2] += 0.01;
+                        }
+                        if (x < 0 && y > 0) {
+                            positions[3 * p + 1] += this.dH;
+                        }
+                        else if (y < 0) {
+                            positions[3 * p + 1] -= this.dH;
+                        }
+                        if (x < 0) {
+                            positions[3 * p] += 0.0002;
+                        }
+                        else {
+                            positions[3 * p] -= 0.0002;
+                        }
+                    }
+                    vertexData.positions = positions;
+                    vertexData.applyToMesh(displayMesh);
+                    displayMesh.parent = box;
+                }
+            });
         }
+        this.vil = new BABYLON.Mesh("display-vil");
+        this.vil.material = this.game.materials.getMetalMaterial(0);
+        this.game.vertexDataLoader.get("./meshes/stairway-vil.babylon").then(vertexDatas => {
+            let vertexData = vertexDatas[0];
+            if (vertexData) {
+                vertexData = Mummu.CloneVertexData(vertexData);
+                let positions = vertexData.positions;
+                for (let p = 0; p < positions.length / 3; p++) {
+                    let x = positions[3 * p];
+                    let y = positions[3 * p + 1];
+                    let z = positions[3 * p + 2];
+                    if (x < -0.0045) {
+                        positions[3 * p] += 0.005;
+                        positions[3 * p] -= stepW * 0.5;
+                    }
+                    else if (x > 0.0045) {
+                        positions[3 * p] -= 0.005;
+                        positions[3 * p] += stepW * 0.5;
+                    }
+                    if (y > 0.005) {
+                        positions[3 * p + 1] -= 0.01;
+                        positions[3 * p + 1] += this.stepH * 0.5;
+                    }
+                }
+                vertexData.positions = positions;
+                let vilPartsDatas = [];
+                let altQ = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI);
+                for (let i = 0; i < this.boxesCount; i++) {
+                    let partData = Mummu.CloneVertexData(vertexData);
+                    let fX = i / this.boxesCount;
+                    let x = (1 - fX) * x0 + fX * x1 + stepW * 0.5;
+                    if (i % 2 === 1) {
+                        Mummu.RotateVertexDataInPlace(partData, altQ);
+                    }
+                    Mummu.TranslateVertexDataInPlace(partData, new BABYLON.Vector3(x, 0, 0));
+                    vilPartsDatas.push(partData);
+                }
+                Mummu.MergeVertexDatas(...vilPartsDatas).applyToMesh(this.vil);
+                this.vil.position.y = -tileHeight * (h + 1.5);
+                this.vil.parent = this;
+            }
+        });
         this.generateWires();
         this.machine.onStopCallbacks.push(this.reset);
         this.reset();
+    }
+    static MakeStairwayColliderVertexData(width, height, depth, dH, radius = 0.001) {
+        let path = [new BABYLON.Vector2(-width * 0.5, -height * 0.5)];
+        let left = -width * 0.5;
+        let top = height * 0.5;
+        for (let i = 0; i <= 6; i++) {
+            let a = i / 6 * Math.PI / 2;
+            let cosa = Math.cos(a);
+            let sina = Math.sin(a);
+            let v = new BABYLON.Vector2(left, top + dH);
+            v.x += (1 - cosa) * radius;
+            v.y -= (1 - sina) * radius;
+            path.push(v);
+        }
+        path.push(new BABYLON.Vector2(width * 0.5, height * 0.5));
+        let data = new BABYLON.VertexData();
+        let positions = [];
+        let indices = [];
+        for (let i = 0; i < path.length; i++) {
+            let p = path[i];
+            let l = positions.length / 3;
+            positions.push(p.x, p.y, depth * 0.5);
+            positions.push(p.x, p.y, -depth * 0.5);
+            if (i < path.length - 1) {
+                indices.push(l, l + 1, l + 3);
+                indices.push(l, l + 3, l + 2);
+            }
+        }
+        data.positions = positions;
+        data.indices = indices;
+        let normals = [];
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        data.normals = normals;
+        return data;
     }
     static GenerateTemplate(w, mirrorX) {
         let template = new MachinePartTemplate();
@@ -6535,9 +6706,12 @@ class Stairway extends MachinePart {
         ];
         template.trackTemplates[1] = new TrackTemplate(template);
         template.trackTemplates[1].trackpoints = [
-            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.3, tileHeight * 0.05, 0), dir),
-            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir)
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3((template.w - 1) * tileWidth + tileWidth * 0.3, tileHeight * 0.05 - 0.02, 0), Tools.V3Dir(0), Tools.V3Dir(-90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3((template.w - 1) * tileWidth + tileWidth * 0.3, tileHeight * 0.05 - 0.003, 0), Tools.V3Dir(0)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3((template.w - 1) * tileWidth + tileWidth * 0.3 + 0.003, tileHeight * 0.05, 0), Tools.V3Dir(90)),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3((template.w - 1) * tileWidth + tileWidth * 0.5, 0, 0), Tools.V3Dir(90))
         ];
+        template.trackTemplates[1].drawStartTip = true;
         if (mirrorX) {
             template.mirrorXTrackPointsInPlace();
         }
@@ -6546,6 +6720,9 @@ class Stairway extends MachinePart {
     }
     dispose() {
         super.dispose();
+        this.bielles.forEach(bielle => {
+            bielle.dispose();
+        });
         this.machine.onStopCallbacks.remove(this.reset);
     }
     update(dt) {
@@ -6558,20 +6735,31 @@ class Stairway extends MachinePart {
         while (this.a > 2 * Math.PI) {
             this.a -= 2 * Math.PI;
         }
+        this.vil.rotation.x = this.a;
+        this.vil.freezeWorldMatrix();
         for (let i = 0; i < this.boxes.length; i++) {
+            let a = this.a;
+            if (i % 2 === 1) {
+                a += Math.PI;
+            }
             let box = this.boxes[i];
             let fY = (i + 0.5) / this.boxesCount;
             box.position.y = (1 - fY) * this.y0 + fY * this.y1 - this.stepH - this.dH * 0.5;
-            if (i % 2 === 0) {
-                box.position.y += Math.cos(this.a) * (this.stepH * 0.5 + this.dH * 0.5);
-            }
-            else {
-                box.position.y += Math.cos(this.a + Math.PI) * (this.stepH * 0.5 + this.dH * 0.5);
-            }
+            box.position.y += Math.cos(a) * (this.stepH * 0.5 + this.dH * 0.5);
             this.boxes[i].freezeWorldMatrix();
             this.boxes[i].getChildMeshes().forEach(child => {
                 child.freezeWorldMatrix();
             });
+            this.bielles[i].position.copyFrom(this.vil.absolutePosition);
+            let fX = i / this.boxesCount;
+            let x0 = -tileWidth * 0.3;
+            let x1 = tileWidth * 0.3 + (this.w - 1) * tileWidth;
+            let stepW = (x1 - x0) / this.boxesCount;
+            this.bielles[i].position.x += (1 - fX) * x0 + fX * x1 + stepW * 0.5;
+            this.bielles[i].position.y += Math.cos(a) * this.stepH * 0.5;
+            this.bielles[i].position.z += Math.sin(a) * this.stepH * 0.5;
+            let dir = this.boxes[i].absolutePosition.subtract(this.bielles[i].position).addInPlaceFromFloats(0, +this.stepH - 0.002, 0);
+            this.bielles[i].rotationQuaternion = Mummu.QuaternionFromYZAxis(dir, BABYLON.Axis.Z);
         }
     }
 }
