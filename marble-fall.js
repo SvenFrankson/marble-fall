@@ -6456,6 +6456,7 @@ class Stairway extends MachinePart {
         this.y0 = 0;
         this.y1 = 0;
         this.stepH = 0;
+        this.dH = 0.005;
         this.reset = () => {
             for (let i = 0; i < this.boxesCount; i++) {
                 this.a = 0;
@@ -6477,11 +6478,23 @@ class Stairway extends MachinePart {
         let x0 = -tileWidth * 0.3;
         let x1 = tileWidth * 0.3;
         let stepW = (x1 - x0) / this.boxesCount;
-        this.y0 = -tileHeight * (h + 0.05);
-        this.y1 = tileHeight * 0.05;
+        this.y0 = -tileHeight * (h + 0.05) - 0.005;
+        this.y1 = tileHeight * 0.05 + 0.005;
         this.stepH = (this.y1 - this.y0) / (this.boxesCount);
         for (let i = 0; i < this.boxesCount; i++) {
-            let box = BABYLON.MeshBuilder.CreateBox("box", { width: stepW, height: this.stepH * 2, depth: 0.02 });
+            let data = BABYLON.CreateBoxVertexData({ width: stepW, height: this.stepH * 2, depth: 0.02 });
+            let positions = data.positions;
+            for (let p = 0; p < positions.length; p++) {
+                let x = positions[3 * p];
+                let y = positions[3 * p + 1];
+                let z = positions[3 * p + 2];
+                if (x < 0 && y > 0) {
+                    positions[3 * p + 1] += this.dH;
+                }
+            }
+            data.positions = positions;
+            let box = new BABYLON.Mesh("box-" + i);
+            data.applyToMesh(box);
             box.rotationQuaternion = BABYLON.Quaternion.Identity();
             box.parent = this;
             let fX = i / this.boxesCount;
@@ -6548,12 +6561,12 @@ class Stairway extends MachinePart {
         for (let i = 0; i < this.boxes.length; i++) {
             let box = this.boxes[i];
             let fY = (i + 0.5) / this.boxesCount;
-            box.position.y = (1 - fY) * this.y0 + fY * this.y1 - this.stepH;
+            box.position.y = (1 - fY) * this.y0 + fY * this.y1 - this.stepH - this.dH * 0.5;
             if (i % 2 === 0) {
-                box.position.y += Math.cos(this.a) * this.stepH * 0.5;
+                box.position.y += Math.cos(this.a) * (this.stepH * 0.5 + this.dH * 0.5);
             }
             else {
-                box.position.y += Math.cos(this.a + Math.PI) * this.stepH * 0.5;
+                box.position.y += Math.cos(this.a + Math.PI) * (this.stepH * 0.5 + this.dH * 0.5);
             }
             this.boxes[i].freezeWorldMatrix();
             this.boxes[i].getChildMeshes().forEach(child => {
