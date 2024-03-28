@@ -235,6 +235,10 @@ class Ball extends BABYLON.Mesh {
                             let reaction = col.normal.scale(col.depth * 1000); // 1000 is a magic number.
                             reactions.addInPlace(reaction);
                             reactionsCount++;
+                            let dyFix = Math.abs(this.position.y - (part.wellMesh.absolutePosition.y - 0.01));
+                            if (dyFix < 0.001) {
+                                this.velocity.z = 0;
+                            }
                         }
                     }
                     /*
@@ -622,16 +626,16 @@ var testChallenge = {
     ],
 };
 var currentTest = {
-    balls: [
-        { x: 0.15400000655651092, y: -0.061500001311302184, z: -0.05999999865889549 }
-    ],
+    balls: [{ x: -0.0421983410139945, y: 0.04355721865963, z: 1.1102230246251565e-16 }],
     parts: [
-        { name: "uturn-0.2", i: -2, j: 0, k: 0, mirrorX: true, color: 0 },
+        { name: "stairway-1", i: 1, j: 0, k: 1, mirrorZ: false, color: 0 },
+        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, color: 0 },
         { name: "gravity-well", i: 0, j: -1, k: 0, mirrorZ: false, color: 0 },
         { name: "ramp-1.1.1", i: -1, j: -1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "ramp-1.0.1", i: 0, j: -2, k: 1, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "ramp-1.2.1", i: -1, j: -2, k: 1, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "elevator-5", i: 1, j: -3, k: 1, mirrorZ: false, color: 0 },
+        { name: "ramp-3.0.1", i: 0, j: -1, k: 3, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "ramp-1.1.1", i: -1, j: -1, k: 3, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "stairway-1", i: 2, j: -2, k: 1, mirrorZ: false, color: 0 },
+        { name: "uturn-1.3", i: 3, j: -2, k: 1, color: 0 },
     ],
 };
 class HelperShape {
@@ -2732,6 +2736,7 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
+    "stairway-1",
     "start",
     "end",
     "gravity-well"
@@ -2862,6 +2867,11 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1]);
             prop.h = h;
             return new Elevator(this.machine, prop);
+        }
+        if (trackname.startsWith("stairway-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            prop.w = w;
+            return new Stairway(this.machine, prop);
         }
         if (trackname === "quarter") {
             return new QuarterNote(this.machine, prop);
@@ -3356,6 +3366,10 @@ class TemplateManager {
             else if (partName.startsWith("elevator-")) {
                 let h = parseInt(partName.split("-")[1]);
                 data = Elevator.GenerateTemplate(h, mirrorX);
+            }
+            else if (partName.startsWith("stairway-")) {
+                let w = parseInt(partName.split("-")[1]);
+                data = Stairway.GenerateTemplate(w, mirrorX);
             }
             else if (partName === "split") {
                 data = Split.GenerateTemplate(mirrorX);
@@ -5788,8 +5802,8 @@ class GravityWell extends MachinePart {
         ];
         template.trackTemplates[1] = new TrackTemplate(template);
         template.trackTemplates[1].trackpoints = [
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.2 + 0.01, -tileHeight * h + 0.025, -tileDepth), Tools.V3Dir(120)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.5 + 0.01, -tileHeight * h, -tileDepth), Tools.V3Dir(90))
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.1, -tileHeight * h + 0.025, -tileDepth), Tools.V3Dir(150)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.5, -tileHeight * h, -tileDepth), Tools.V3Dir(90))
         ];
         template.trackTemplates[1].drawStartTip = true;
         if (mirrorX) {
@@ -6434,6 +6448,120 @@ class Split extends MachinePart {
     }
 }
 Split.pivotL = 0.025;
+class Stairway extends MachinePart {
+    constructor(machine, prop) {
+        super(machine, prop);
+        this.boxesCount = 4;
+        this.boxes = [];
+        this.y0 = 0;
+        this.y1 = 0;
+        this.stepH = 0;
+        this.reset = () => {
+            for (let i = 0; i < this.boxesCount; i++) {
+                this.a = 0;
+                this.update(0);
+            }
+        };
+        this.l = 0;
+        this.p = 0;
+        this.speed = Math.PI * 0.6; // in m/s
+        this.a = 0;
+        let partName = "stairway-" + prop.w.toFixed(0);
+        this.setTemplate(this.machine.templateManager.getTemplate(partName, prop.mirrorX));
+        let x = 1;
+        if (prop.mirrorX) {
+            x = -1;
+        }
+        let h = 2 * this.template.w;
+        this.boxesCount = 5;
+        let x0 = -tileWidth * 0.3;
+        let x1 = tileWidth * 0.3;
+        let stepW = (x1 - x0) / this.boxesCount;
+        this.y0 = -tileHeight * (h + 0.05);
+        this.y1 = tileHeight * 0.05;
+        this.stepH = (this.y1 - this.y0) / (this.boxesCount);
+        for (let i = 0; i < this.boxesCount; i++) {
+            let box = BABYLON.MeshBuilder.CreateBox("box", { width: stepW, height: this.stepH * 2, depth: 0.02 });
+            box.rotationQuaternion = BABYLON.Quaternion.Identity();
+            box.parent = this;
+            let fX = i / this.boxesCount;
+            box.position.x = (1 - fX) * x0 + fX * x1 + stepW * 0.5;
+            let fY = (i + 0.5) / this.boxesCount;
+            box.position.y = (1 - fY) * this.y0 + fY * this.y1 - this.stepH;
+            this.boxes[i] = box;
+        }
+        this.generateWires();
+        this.machine.onStopCallbacks.push(this.reset);
+        this.reset();
+    }
+    static GenerateTemplate(w, mirrorX) {
+        let template = new MachinePartTemplate();
+        template.partName = "stairway-" + w.toFixed(0);
+        let h = 2 * w;
+        template.h = h;
+        template.w = w;
+        template.mirrorX = mirrorX;
+        template.xExtendable = true;
+        template.xMirrorable = true;
+        let dir = new BABYLON.Vector3(1, 0, 0);
+        dir.normalize();
+        let n = new BABYLON.Vector3(0, 1, 0);
+        n.normalize();
+        let dirLeft = new BABYLON.Vector3(1, 0, 0);
+        dirLeft.normalize();
+        let nLeft = new BABYLON.Vector3(0, 1, 0);
+        nLeft.normalize();
+        let dirRight = new BABYLON.Vector3(1, 1, 0);
+        dirRight.normalize();
+        let nRight = new BABYLON.Vector3(-1, 1, 0);
+        nRight.normalize();
+        template.trackTemplates[0] = new TrackTemplate(template);
+        template.trackTemplates[0].trackpoints = [
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.5, -tileHeight * h, 0), dir),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(-tileWidth * 0.3, -tileHeight * (h + 0.05), 0), dir)
+        ];
+        template.trackTemplates[1] = new TrackTemplate(template);
+        template.trackTemplates[1].trackpoints = [
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.3, tileHeight * 0.05, 0), dir),
+            new TrackPoint(template.trackTemplates[1], new BABYLON.Vector3(tileWidth * 0.5, 0, 0), dir)
+        ];
+        if (mirrorX) {
+            template.mirrorXTrackPointsInPlace();
+        }
+        template.initialize();
+        return template;
+    }
+    dispose() {
+        super.dispose();
+        this.machine.onStopCallbacks.remove(this.reset);
+    }
+    update(dt) {
+        let dA = this.speed * dt * this.game.currentTimeFactor;
+        let x = 1;
+        if (this.mirrorX) {
+            x = -1;
+        }
+        this.a = (this.a + dA);
+        while (this.a > 2 * Math.PI) {
+            this.a -= 2 * Math.PI;
+        }
+        for (let i = 0; i < this.boxes.length; i++) {
+            let box = this.boxes[i];
+            let fY = (i + 0.5) / this.boxesCount;
+            box.position.y = (1 - fY) * this.y0 + fY * this.y1 - this.stepH;
+            if (i % 2 === 0) {
+                box.position.y += Math.cos(this.a) * this.stepH * 0.5;
+            }
+            else {
+                box.position.y += Math.cos(this.a + Math.PI) * this.stepH * 0.5;
+            }
+            this.boxes[i].freezeWorldMatrix();
+            this.boxes[i].getChildMeshes().forEach(child => {
+                child.freezeWorldMatrix();
+            });
+        }
+    }
+}
 class Start extends MachinePart {
     constructor(machine, prop) {
         super(machine, prop);

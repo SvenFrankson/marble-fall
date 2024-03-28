@@ -60,8 +60,8 @@ class GravityWell extends MachinePart {
         
         template.trackTemplates[1] = new TrackTemplate(template);
         template.trackTemplates[1].trackpoints = [
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.2 + 0.01, - tileHeight * h + 0.025,  - tileDepth), Tools.V3Dir(120)),
-            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.5 + 0.01, - tileHeight * h,  - tileDepth), Tools.V3Dir(90))
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(- tileWidth * 0.1, - tileHeight * h + 0.025,  - tileDepth), Tools.V3Dir(150)),
+            new TrackPoint(template.trackTemplates[0], new BABYLON.Vector3(tileWidth * 0.5, - tileHeight * h,  - tileDepth), Tools.V3Dir(90))
         ];
         template.trackTemplates[1].drawStartTip = true;
 

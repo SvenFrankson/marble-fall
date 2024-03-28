@@ -343,6 +343,10 @@ class TemplateManager {
                 let h = parseInt(partName.split("-")[1]);
                 data = Elevator.GenerateTemplate(h, mirrorX);
             }
+            else if (partName.startsWith("stairway-")) {
+                let w = parseInt(partName.split("-")[1]);
+                data = Stairway.GenerateTemplate(w, mirrorX);
+            }
             else if (partName === "split") {
                 data = Split.GenerateTemplate(mirrorX);
             }

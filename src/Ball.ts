@@ -274,6 +274,11 @@ class Ball extends BABYLON.Mesh {
                             let reaction = col.normal.scale(col.depth * 1000); // 1000 is a magic number.
                             reactions.addInPlace(reaction);
                             reactionsCount++;
+
+                            let dyFix = Math.abs(this.position.y - (part.wellMesh.absolutePosition.y - 0.01));
+                            if (dyFix < 0.001) {
+                                this.velocity.z = 0;
+                            }
                         }
                     }
                     /*

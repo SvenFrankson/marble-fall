@@ -7,15 +7,15 @@ var testChallenge = {
 };
 
 var currentTest = {
-    balls: [
-        { x: 0.15400000655651092, y: -0.061500001311302184, z: -0.05999999865889549 }
-    ],
+    balls: [{ x: -0.0421983410139945, y: 0.04355721865963, z: 1.1102230246251565e-16 }],
     parts: [
-        { name: "uturn-0.2", i: -2, j: 0, k: 0, mirrorX: true, color: 0 },
+        { name: "stairway-1", i: 1, j: 0, k: 1, mirrorZ: false, color: 0 },
+        { name: "uturn-0.4", i: -3, j: 0, k: 0, mirrorX: true, color: 0 },
         { name: "gravity-well", i: 0, j: -1, k: 0, mirrorZ: false, color: 0 },
         { name: "ramp-1.1.1", i: -1, j: -1, k: 0, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "ramp-1.0.1", i: 0, j: -2, k: 1, mirrorX: false, mirrorZ: false, color: 0 },
-        { name: "ramp-1.2.1", i: -1, j: -2, k: 1, mirrorX: true, mirrorZ: false, color: 0 },
-        { name: "elevator-5", i: 1, j: -3, k: 1, mirrorZ: false, color: 0 },
+        { name: "ramp-3.0.1", i: 0, j: -1, k: 3, mirrorX: false, mirrorZ: false, color: 0 },
+        { name: "ramp-1.1.1", i: -1, j: -1, k: 3, mirrorX: true, mirrorZ: false, color: 0 },
+        { name: "stairway-1", i: 2, j: -2, k: 1, mirrorZ: false, color: 0 },
+        { name: "uturn-1.3", i: 3, j: -2, k: 1, color: 0 },
     ],
 };

@@ -11,6 +11,7 @@ var TrackNames = [
     "loop-1.1",
     "spiral-1.2.1",
     "elevator-4",
+    "stairway-1",
     "start",
     "end",
     "gravity-well"
@@ -161,6 +162,11 @@ class MachinePartFactory {
             let h = parseInt(trackname.split("-")[1]);
             prop.h = h;
             return new Elevator(this.machine, prop);
+        }
+        if (trackname.startsWith("stairway-")) {
+            let w = parseInt(trackname.split("-")[1]);
+            prop.w = w;
+            return new Stairway(this.machine, prop);
         }
         if (trackname === "quarter") {
             return new QuarterNote(this.machine, prop);
